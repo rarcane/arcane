@@ -1,0 +1,14 @@
+internal void DrawGameUI();
+
+typedef struct InventoryIconCanvasData
+{
+	StorageComponent *storage_comp;
+	ItemComponent *item_comp;
+	i32 slot;
+	b8 is_hovered;
+} InventoryIconCanvasData;
+
+typedef struct GrabbedIconCanvasData
+{
+	StaticSprite *static_sprite;
+} GrabbedIconCanvasData;

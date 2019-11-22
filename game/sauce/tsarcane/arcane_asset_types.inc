@@ -1,0 +1,2 @@
+TsAssetsAssetType(Ts2dTexture,  Ts2dTextureLoadInfo,  1024, PreLoadTs2dTexture,   LoadTs2dTexture,  PostLoadTs2dTexture,  CleanUpTs2dTexture,  IsTs2dTextureLoaded,  "texture")
+TsAssetsAssetType(Ts2dFont,     Ts2dFontLoadInfo,     1024, PreLoadTs2dFont,      LoadTs2dFont,     PostLoadTs2dFont,     CleanUpTs2dFont,     IsTs2dFontLoaded,     "font")

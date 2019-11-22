@@ -1,0 +1,4 @@
+struct TsAssetsWatchDirectory
+{
+    char *path;
+};

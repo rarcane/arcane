@@ -1,0 +1,13 @@
+/* --- component_struct, component_name --- */
+Component(Position, position)
+Component(Sprite, sprite)
+Component(SubSprite, sub_sprite)
+Component(Animation, animation)
+Component(Collider, collider)
+Component(Velocity, velocity)
+Component(Physics, physics)
+Component(Movement, movement)
+Component(ArcEntity, arc_entity)
+Component(Item, item)
+Component(Trigger, trigger)
+Component(Storage, storage)

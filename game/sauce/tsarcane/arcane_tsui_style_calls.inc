@@ -1,0 +1,2 @@
+TsUIStyleCall(Menu, ARCANE_UI_STYLE_MENU)
+TsUIStyleCall(Game, ARCANE_UI_STYLE_GAME)

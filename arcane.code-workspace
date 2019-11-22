@@ -1,0 +1,53 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"terminal.integrated.automationShell.windows": "C:\\WINDOWS\\System32\\cmd.exe",
+		"terminal.integrated.shellArgs.windows": [
+			"/K",
+			"D:\\ArcaneStartup.bat"
+		],
+		"files.associations": {
+			"*.inc": "csharp",
+			"tsfoundation.h": "c",
+			"xmemory": "c",
+			"xstddef": "c",
+			"xstring": "c",
+			"xtr1common": "c",
+			"xutility": "c",
+			"initializer_list": "c",
+			"type_traits": "c",
+			"iosfwd": "c",
+			"tsdevterminal.h": "c",
+			"physics.h": "c",
+			"entity.h": "c",
+			"components.h": "c",
+			"tuple": "cpp",
+			"tsfoundation_win32_threads.h": "c",
+			"action.h": "c",
+			"arcane.h": "c",
+			"randall_debug.h": "c",
+			"item.h": "c"
+		},
+		"editor.formatOnSave": true,
+		"editor.find.autoFindInSelection": true,
+		"editor.detectIndentation": false,
+		"editor.insertSpaces": false,
+		"editor.tabSize": 4,
+		"editor.suggestSelection": "recentlyUsed",
+		"editor.trimAutoWhitespace": false,
+		"workbench.activityBar.visible": false,
+		"C_Cpp.formatting": "Default",
+		"files.exclude": {
+			"**/.git": true,
+			"**/.svn": true,
+			"**/.hg": true,
+			"**/CVS": true,
+			"art-dev/**": true
+		},
+		"bookmarks.saveBookmarksInProject": true
+	}
+}

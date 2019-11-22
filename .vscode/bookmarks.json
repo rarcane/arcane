@@ -1,0 +1,37 @@
+[
+	{
+		"path": "$ROOTPATH$\\game\\sauce\\arcane.c",
+		"bookmarks": [
+			{
+				"line": 53,
+				"column": 16,
+				"label": ""
+			},
+			{
+				"line": 118,
+				"column": 39,
+				"label": ""
+			},
+			{
+				"line": 360,
+				"column": 22,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$\\game\\sauce\\arc\\ui\\ui.c",
+		"bookmarks": [
+			{
+				"line": 9,
+				"column": 27,
+				"label": ""
+			},
+			{
+				"line": 404,
+				"column": 34,
+				"label": ""
+			}
+		]
+	}
+]
