@@ -156,6 +156,7 @@ _TsAssetsInitWatchDirectories(TsAssets *assets)
         TsAssetsWatchDirectory *watch_directory = assets->asset_directories + i;
         char path[MAX_PATH] = {0};
         snprintf(path, sizeof(path), "%s\\%s\\", assets->assets_root_path, watch_directory->path);
+        Log("[TsAssets] Watching directory \"%s\".", path);
         watch_directory->directory_handle = CreateFileA(path, FILE_LIST_DIRECTORY,
                                                         FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
                                                         0,
@@ -175,7 +176,7 @@ _TsAssetsInitWatchDirectories(TsAssets *assets)
             if(ReadDirectoryChangesW(watch_directory->directory_handle,
                                      &watch_directory->file_notify_information,
                                      sizeof(watch_directory->file_notify_information),
-                                     FALSE,
+                                     TRUE,
                                      FILE_NOTIFY_CHANGE_FILE_NAME |
                                      FILE_NOTIFY_CHANGE_LAST_WRITE |
                                      FILE_NOTIFY_CHANGE_CREATION,
@@ -194,7 +195,8 @@ _TsAssetsInitWatchDirectories(TsAssets *assets)
         goto end;
         fail:;
         {
-            // TODO(rjf): Error.
+            // NOTE(rjf): Error.
+            LogError("[TsAssets] Could not watch directory \"%s\".", path);
         }
         end:;
     }
