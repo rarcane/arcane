@@ -14,7 +14,7 @@ Win32AppCodeLoad(Win32AppCode *app_code)
 {
     b32 result = 1;
     
-#if BUILD_RELEASE
+#if 1 // || BUILD_RELEASE
     app_code->dll = LoadLibraryA(global_app_dll_path);
 #else
     CopyFile(global_app_dll_path, global_temp_app_dll_path, FALSE);
@@ -65,6 +65,7 @@ Win32AppCodeUnload(Win32AppCode *app_code)
 internal void
 Win32AppCodeUpdate(Win32AppCode *app_code)
 {
+#if 0
     FILETIME last_write_time = Win32GetLastWriteTime(global_app_dll_path);
     if(CompareFileTime(&last_write_time, &app_code->last_dll_write_time))
     {
@@ -73,4 +74,5 @@ Win32AppCodeUpdate(Win32AppCode *app_code)
         Win32AppCodeLoad(app_code);
         app_code->HotLoad(&global_platform);
     }
+#endif
 }
