@@ -27,7 +27,7 @@ global HDC global_device_context;
 global HINSTANCE global_instance_handle;
 global Win32Timer global_win32_timer = {0};
 global u32 global_win32_worker_thread_max = 0;
-global Win32WorkerThreadData global_win32_worker_threads[64] = {0};
+global Align(64) Win32WorkerThreadData global_win32_worker_threads[64] = {0};
 
 // NOTE(rjf): Telescope Implementations
 #include "tsfoundation_win32_utilities.c"
