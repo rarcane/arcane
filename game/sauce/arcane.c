@@ -79,6 +79,7 @@ PermanentLoad(TsPlatform *platform_)
 
 				TsDevTerminalVariable variables[] = {
 					{"camera_zoom", TSDEVTERMINAL_VARIABLE_TYPE_f32, &core->camera_zoom},
+					{"camera_offset", TSDEVTERMINAL_VARIABLE_TYPE_v2, &core->camera_offset},
 					{"shadow_opacity", TSDEVTERMINAL_VARIABLE_TYPE_f32, &core->shadow_opacity},
 					{"slow_mult", TSDEVTERMINAL_VARIABLE_TYPE_f32, &core->slow_mult},
 					{"bloom", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->bloom},
@@ -129,7 +130,8 @@ PermanentLoad(TsPlatform *platform_)
 			InitialiseECS();
 
 			core->camera_zoom = 3.3f;
-			core->shadow_opacity = 0.95f;
+			core->camera_offset = v2(0.0f, 45.0f);
+			core->shadow_opacity = 0.9f;
 			core->slow_mult = 0.25f;
 
 			core->delta_mult = 1.0f;

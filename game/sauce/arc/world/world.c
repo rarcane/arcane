@@ -2,7 +2,7 @@ internal void TempInitGameWorld()
 {
 	core->is_ingame = 1;
 
-	{
+	/* {
 		Entity *tree1 = NewEntity("Tree");
 		AttachPosition(tree1, v2(100.0f, 0.0f));
 		AttachSprite(tree1, DYNAMIC_SPRITE_birch_tree2, 2.0f);
@@ -12,6 +12,13 @@ internal void TempInitGameWorld()
 		AttachPosition(tree2, v2(-100.0f, 0.0f));
 		AttachSprite(tree2, DYNAMIC_SPRITE_birch_tree1, 2.0f);
 		AttachPhysics(tree2, 1.0f, 0.0f);
+	} */
+
+	{
+		Entity *tree1 = NewEntity("Tree");
+		AttachPosition(tree1, v2(-100.0f, 0.0f));
+		AttachSprite(tree1, STATIC_SPRITE_pine_tree_1, 2.0f);
+		AttachPhysics(tree1, 1.0f, 0.0f);
 	}
 
 	{
