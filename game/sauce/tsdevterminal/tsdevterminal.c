@@ -134,6 +134,15 @@ TSDEVTERMINAL_COMMAND_PROC(TsDevTerminalCommandSet)
                         *(f32 *)terminal->variables[i].address = GetFirstF32FromCString(val);
                         break;
                     }
+
+                    case TSDEVTERMINAL_VARIABLE_TYPE_v2:
+                    {
+                        if(word_count > 2)
+                        {
+                            *(v2 *)terminal->variables[i].address = v2(GetFirstF32FromCString(val), GetFirstF32FromCString(words[2]));
+                        }
+                        break;
+                    }
                     
                     default: break;
                 }
@@ -678,6 +687,12 @@ TsDevTerminalRender(TsDevTerminal *terminal)
                     case TSDEVTERMINAL_VARIABLE_TYPE_f32:
                     {
                         snprintf(value_str, sizeof(value_str), "%f", *(f32 *)terminal->variables[i].address);
+                        value_color = v4(0.9f, 0.8f, 0.4f, 0.9f);
+                        break;
+                    }
+                    case TSDEVTERMINAL_VARIABLE_TYPE_v2:
+                    {
+                        snprintf(value_str, sizeof(value_str), "(%f, %f)", ((v2 *)terminal->variables[i].address)->x, ((v2 *)terminal->variables[i].address)->y);
                         value_color = v4(0.9f, 0.8f, 0.4f, 0.9f);
                         break;
                     }

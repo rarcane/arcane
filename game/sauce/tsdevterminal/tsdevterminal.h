@@ -20,6 +20,7 @@ enum TsDevTerminalVariableType
 {
     TSDEVTERMINAL_VARIABLE_TYPE_b32,
     TSDEVTERMINAL_VARIABLE_TYPE_f32,
+    TSDEVTERMINAL_VARIABLE_TYPE_v2,
 };
 
 typedef struct TsDevTerminalVariable TsDevTerminalVariable;
