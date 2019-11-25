@@ -1,0 +1,36 @@
+This End-User License Agreement ("EULA") is a legal agreement between you and Randall
+
+This EULA agreement governs your acquisition and use of Arcane's ("Arcane") source ("Source code") directly from Randall.
+
+Please read this EULA agreement carefully before accessing Arcane's source - it provides a license to compile, contribute, and modify.
+
+By accessing Arcane's source, you are confirming your acceptance of the source and agreeing to become bound by the terms of this EULA agreement.
+
+This EULA agreement shall apply only to the source code supplied by Randall herewith regardless of whether other source code is referred to or described herein. The terms also apply to any updates of the source code.
+
+License Grant
+Randall hereby grants you a personal, non-transferable, non-exclusive licence to use in accordance with the terms of this EULA agreement.
+
+You are permitted to download Arcane's source and compile it and/or make personal alterations.
+Contribute alterations of the soruce code to the git repository in accordance with the README.md guidelines.
+
+You are not permitted to:
+
+Reproduce, copy, distribute, resell or otherwise use the source code for any commercial purpose.
+Incorporate Arcane's source with any of your own projects, unless the source code was contributed by you.
+Allow any third party to use the source code on behalf of or for the benefit of any third party.
+Use the source code in any way which breaches any applicable local, national or international law.
+Use the source code for any purpose that Randall considers is a breach of this EULA agreement.
+
+Intellectual Property and Ownership
+Randall shall at all times retain ownership of the source code as originally downloaded by you and all subsequent downloads of the source code by you. The source code (and the copyright, and other intellectual property rights of whatever nature in the source code, including any modifications made thereto) are and shall remain the property of Randall.
+
+Randall reserves the right to grant licences to use the source code to third parties.
+
+Termination
+This EULA agreement is effective from the date you first access the source code and shall continue until terminated. You may terminate it at any time upon written notice to Randall.
+
+It will also terminate immediately if you fail to comply with any term of this EULA agreement. Upon such termination, the licenses granted by this EULA agreement will immediately terminate and you agree to stop all access and use of the source code. The provisions that by their nature continue and survive will survive any termination of this EULA agreement.
+
+Governing Law
+This EULA agreement, and any dispute arising out of or in connection with this EULA agreement, shall be governed by and construed in accordance with the laws of Australia.
