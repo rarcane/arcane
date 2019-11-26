@@ -14,7 +14,7 @@ typedef struct AnimationComponent AnimationComponent;
 internal void UpdateAnimations(AnimationComponent animation_components[], i32 count);
 typedef struct SpriteComponent SpriteComponent;
 typedef struct SubSpriteComponent SubSpriteComponent;
-internal void RenderSprites(SpriteComponent sprite_components[], SubSpriteComponent sub_sprite_components[], i32 sprite_count, i32 sub_sprite_count);
+internal void RenderForegroundSprites(SpriteComponent sprite_components[], SubSpriteComponent sub_sprite_components[], i32 sprite_count, i32 sub_sprite_count);
 
 enum SpriteType
 {

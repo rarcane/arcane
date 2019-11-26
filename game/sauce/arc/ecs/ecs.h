@@ -35,6 +35,7 @@ typedef struct SpriteComponent
 	i32 component_id;
 	SpriteData sprite_data;
 	b8 is_flipped;
+	b8 is_background_sprite; // Temporary solution: Need to break out into two different sets somehow.
 } SpriteComponent;
 typedef struct SubSpriteComponent
 {
@@ -150,6 +151,14 @@ typedef struct StorageComponent
 	i32 storage_size;
 	ItemComponent *items[MAX_STORAGE_COMPONENT_SIZE];
 } StorageComponent;
+
+typedef struct ParallaxComponent
+{
+	i32 entity_id;
+	i32 component_id;
+	v2 parallax_amount;  // 0.0f being no movement, 1.0f being a 1:1 with the camera
+	v2 desired_position; // The position in which the object should be placed if it weren't to be affected by parallax
+} ParallaxComponent;
 
 /* --- ECS Core --- */
 

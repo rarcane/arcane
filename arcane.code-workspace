@@ -30,7 +30,10 @@
 			"action.h": "c",
 			"arcane.h": "c",
 			"randall_debug.h": "c",
-			"item.h": "c"
+			"item.h": "c",
+			"camera.h": "c",
+			"ui.h": "c",
+			"catchall.h": "c"
 		},
 		"editor.formatOnSave": true,
 		"editor.find.autoFindInSelection": true,

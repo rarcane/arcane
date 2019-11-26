@@ -379,3 +379,40 @@ internal void AttachStorage(Entity *entity, i32 storage_size)
 	};
 	AddComponent(entity, COMPONENT_storage, &storage);
 }
+
+// NOTE(tjr): A component that updates the entity's position in the world based on camera movement. Used to simulate a 3D effect.
+internal void AttachParallax(Entity *entity, v2 parallax_amount, v2 desired_position)
+{
+	ParallaxComponent parallax = {
+		.parallax_amount = parallax_amount,
+		.desired_position = desired_position,
+	};
+	AddComponent(entity, COMPONENT_parallax, &parallax);
+}
+
+// TODO: Think of a more elegant solution to this whole background/foreground problem?
+// NOTE(tjr): Attaches a position, parallax, and sprite component (marked as background for the backdrop rendering).
+internal void SetupBackgroundEntity(Entity *entity, v2 desired_position, SpriteType sprite_type, f32 render_layer, v2 parallax_amount)
+{
+	PositionComponent position = {
+		.position = desired_position,
+	};
+	AddComponent(entity, COMPONENT_position, &position);
+
+	SpriteComponent sprite = {
+		.sprite_data = {
+			sprite_type,
+			v2(0, 0),
+			render_layer,
+			v2(1.0f, 1.0f),
+		},
+		.is_background_sprite = 1,
+	};
+	AddComponent(entity, COMPONENT_sprite, &sprite);
+
+	ParallaxComponent parallax = {
+		.parallax_amount = parallax_amount,
+		.desired_position = desired_position,
+	};
+	AddComponent(entity, COMPONENT_parallax, &parallax);
+}

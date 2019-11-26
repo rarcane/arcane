@@ -15,10 +15,26 @@ internal void TempInitGameWorld()
 	} */
 
 	{
-		Entity *tree1 = NewEntity("Tree");
+		/* Entity *tree1 = NewEntity("Tree");
 		AttachPosition(tree1, v2(-100.0f, 0.0f));
 		AttachSprite(tree1, STATIC_SPRITE_pine_tree_1, 2.0f);
-		AttachPhysics(tree1, 1.0f, 0.0f);
+		AttachParallax(tree1, v2(0.25, 0.25), v2(-100.0f, 0.0f)); */
+
+		Entity *tree2 = NewEntity("Tree");
+		AttachPosition(tree2, v2(-100.0f, 0.0f));
+		AttachSprite(tree2, STATIC_SPRITE_pine_tree_1, 2.0f);
+	}
+
+	{
+		Entity *hills1 = NewEntity("Hill");
+		SetupBackgroundEntity(hills1, v2(-100.0f, 0.0f), STATIC_SPRITE_hills_1_v1, 5.0f, v2(0.2f, 0.1f));
+		Entity *hills1left = NewEntity("Hill");
+		SetupBackgroundEntity(hills1left, v2(-230.0f, 0.0f), STATIC_SPRITE_hills_1_v1_left_end, 5.0f, v2(0.2f, 0.1f));
+
+		Entity *hills2 = NewEntity("Hill");
+		SetupBackgroundEntity(hills2, v2(100.0f, 0.0f), STATIC_SPRITE_hills_1_v2, 5.0f, v2(0.2f, 0.1f));
+		Entity *hills2right = NewEntity("Hill");
+		SetupBackgroundEntity(hills2right, v2(230.0f, 0.0f), STATIC_SPRITE_hills_1_v2_right_end, 5.0f, v2(0.2f, 0.1f));
 	}
 
 	{
@@ -87,6 +103,8 @@ internal void DrawWorld()
 			middle_sky_colour,
 			bottom_sky_colour,
 			v4(0.0f, core->render_height / 2.0f, core->renderer->render_width, core->render_height / 2.0f));
+
+		RenderBackgroundSprites();
 	}
 	Ts2dPushBackgroundEnd(core->renderer);
 
@@ -108,9 +126,10 @@ internal void DrawWorld()
 
 	// NOTE(tjr): Sprite rendering.
 	{
+		// TODO: Cleanliness: Do I really need to be passing in all of this data in via a variable? It can just be globally accessed lmao why I am doing this?
 		UpdateAnimations(core->component_set->animation_components, core->component_set->animation_component_count);
 		PostUpdateWorldAnimations();
-		RenderSprites(core->component_set->sprite_components, core->component_set->sub_sprite_components, core->component_set->sprite_component_count, core->component_set->sub_sprite_component_count);
+		RenderForegroundSprites(core->component_set->sprite_components, core->component_set->sub_sprite_components, core->component_set->sprite_component_count, core->component_set->sub_sprite_component_count);
 	}
 
 	// NOTE(tjr): Collision bounds rendering.
@@ -168,5 +187,28 @@ internal void PostUpdateWorldAnimations()
 
 		SpriteComponent *held_item_sprite_comp = core->held_item->components[COMPONENT_sprite];
 		held_item_sprite_comp->is_flipped = sub_sprite_comp->is_flipped;
+	}
+}
+
+internal void UpdateParallax()
+{
+	for (int i = 0; i < core->component_set->parallax_component_count; i++)
+	{
+		ParallaxComponent *parallax_comp = &core->component_set->parallax_components[i];
+		if (parallax_comp->entity_id > 0)
+		{
+			Entity *entity = &core->entity_set->entities[parallax_comp->entity_id];
+			PositionComponent *position_comp = entity->components[COMPONENT_position];
+			R_DEV_ASSERT(position_comp, "Parallax must be attached with a position to update.");
+
+			PositionComponent *player_pos = core->player->components[COMPONENT_position];
+
+			// TODO: Need to find a way to centralise the desired_position of the parallax, whilst still maintaining spatial consistency across sprites
+			position_comp->position.x = parallax_comp->desired_position.x + (player_pos->position.x + core->camera_offset.x) * parallax_comp->parallax_amount.x;
+			position_comp->position.y = parallax_comp->desired_position.y + (player_pos->position.y + core->camera_offset.y) * parallax_comp->parallax_amount.y;
+
+			// position_comp->position.x = parallax_comp->desired_position.x - (parallax_comp->desired_position.x - player_pos->position.x + core->camera_offset.x) * parallax_comp->parallax_amount.x;
+			// position_comp->position.y = parallax_comp->desired_position.y - (parallax_comp->desired_position.y - player_pos->position.y + core->camera_offset.y) * parallax_comp->parallax_amount.y;
+		}
 	}
 }

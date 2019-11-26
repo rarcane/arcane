@@ -27,6 +27,7 @@
 #include "arc/world/world.h"
 #include "arc/world/collision.h"
 #include "arc/entity/player/player.h"
+#include "arc/entity/player/camera.h"
 #include "arc/ui/ui.h"
 #include "generated/catchall.h"
 
@@ -130,7 +131,6 @@ PermanentLoad(TsPlatform *platform_)
 			InitialiseECS();
 
 			core->camera_zoom = 3.3f;
-			core->camera_offset = v2(0.0f, 45.0f);
 			core->shadow_opacity = 0.9f;
 			core->slow_mult = 0.25f;
 
@@ -375,6 +375,7 @@ Update(void)
 			UpdateTriggers(core->component_set->trigger_components, core->component_set->trigger_component_count);
 
 			PositionCamera();
+			UpdateParallax();
 
 			PostMoveUpdatePlayer();
 
