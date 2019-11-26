@@ -8,6 +8,7 @@ TS2D_OPENGL_SHADER_fbo_reflection,
 TS2D_OPENGL_SHADER_filled_rect,
 TS2D_OPENGL_SHADER_gaussian_blur,
 TS2D_OPENGL_SHADER_line,
+TS2D_OPENGL_SHADER_model_sprite,
 TS2D_OPENGL_SHADER_post_process,
 TS2D_OPENGL_SHADER_rect,
 TS2D_OPENGL_SHADER_reflection,
@@ -443,6 +444,45 @@ _ts2d__global_opengl_shaders[] = {
 "",
 },
 {
+"Model Sprite",
+{
+{ 2, "vert_normal", },
+{ 1, "vert_uv", },
+{ 0, "vert_position", },
+},
+3,
+{
+{ 0, "color", },
+},
+1,
+"#version 330 core\n"
+"\n"
+"\n"
+"in vec3 vert_position;\n"
+"in vec2 vert_uv;\n"
+"in vec3 vert_normal;\n"
+"\n"
+"uniform mat3 model_transform;\n"
+"uniform mat4 view_projection;\n"
+"\n"
+"void main()\n"
+"{\n"
+"    vec3 vertex_position = model_transform * vert_position;\n"
+"    vec4 world_space_position = vec4(vertex_position.x, vertex_position.y, vertex_position.z, 1);\n"
+"    vec4 clip_space_position = view_projection * world_space_position;\n"
+"    gl_Position = clip_space_position;\n"
+"}\n"
+"",
+"#version 330 core\n"
+"\n"
+"out vec4 color;\n"
+"void main()\n"
+"{\n"
+"    color = vec4(1, 0, 0, 1);\n"
+"}\n"
+"",
+},
+{
 "Post Process",
 {
 { 0, "vert_position", },
@@ -583,33 +623,40 @@ _ts2d__global_opengl_shaders[] = {
 "{\n"
 "    vec4 reflection_color = texture(reflection_color_tex, frag_uv);\n"
 "    float reflection_amount = reflection_color.a;\n"
-"    vec4 reflection_data = texture(reflection_data_tex, frag_uv);\n"
-"    float distortion_amount = reflection_data.y;\n"
-"    float distortion_by_time_factor = reflection_data.z;\n"
-"    vec4 reflection = vec4(0, 0, 0, 0);\n"
-"    \n"
-"    float kernel[33] = float[](0.000035, 0.000091, 0.000225, 0.00052,\n"
-"                               0.001131, 0.002312, 0.004442, 0.008019,\n"
-"                               0.013604, 0.021686, 0.032486, 0.04573,\n"
-"                               0.060495, 0.075201, 0.087848, 0.096435,\n"
-"                               0.09948, 0.096435, 0.087848, 0.075201,\n"
-"                               0.060495, 0.04573, 0.032486, 0.021686,\n"
-"                               0.013604, 0.008019, 0.004442, 0.002312,\n"
-"                               0.001131, 0.00052, 0.000225, 0.000091,\n"
-"                               0.000035);\n"
-"    \n"
-"    float adjusted_wave_position = wave_position * distortion_by_time_factor;\n"
-"    vec2 sample_offset;\n"
-"    for(int i = 0; i < 33; ++i)\n"
+"    if(reflection_amount > 0.01)\n"
 "    {\n"
-"        sample_offset.y = (float(i) - 16.5) / render_resolution.y;\n"
-"        sample_offset.x = 6.f * sin(adjusted_wave_position + float(i)*0.5) / render_resolution.x;\n"
-"        reflection += texture(tex, vec2(frag_uv.x + sample_offset.x, frag_uv.y + reflection_data.x * 2 + sample_offset.y)) * kernel[i];\n"
+"        vec4 reflection_data = texture(reflection_data_tex, frag_uv);\n"
+"        float distortion_amount = reflection_data.y;\n"
+"        float distortion_by_time_factor = reflection_data.z;\n"
+"        vec4 reflection = vec4(0, 0, 0, 0);\n"
+"        \n"
+"        float kernel[33] = float[](0.000035, 0.000091, 0.000225, 0.00052,\n"
+"                                   0.001131, 0.002312, 0.004442, 0.008019,\n"
+"                                   0.013604, 0.021686, 0.032486, 0.04573,\n"
+"                                   0.060495, 0.075201, 0.087848, 0.096435,\n"
+"                                   0.09948, 0.096435, 0.087848, 0.075201,\n"
+"                                   0.060495, 0.04573, 0.032486, 0.021686,\n"
+"                                   0.013604, 0.008019, 0.004442, 0.002312,\n"
+"                                   0.001131, 0.00052, 0.000225, 0.000091,\n"
+"                                   0.000035);\n"
+"        \n"
+"        float adjusted_wave_position = wave_position * distortion_by_time_factor;\n"
+"        vec2 sample_offset;\n"
+"        for(int i = 0; i < 33; ++i)\n"
+"        {\n"
+"            sample_offset.y = (float(i) - 16.5) / render_resolution.y;\n"
+"            sample_offset.x = 6.f * sin(adjusted_wave_position + float(i)*0.5) / render_resolution.x;\n"
+"            reflection += texture(tex, vec2(frag_uv.x + sample_offset.x, frag_uv.y + reflection_data.x * 2 + sample_offset.y)) * kernel[i];\n"
+"        }\n"
+"        \n"
+"        float t_reflection = reflection_data.x * render_resolution.y / 512.0;\n"
+"        color = (1 - t_reflection) * reflection + t_reflection * reflection_color;\n"
+"        color *= reflection_amount;\n"
 "    }\n"
-"    \n"
-"    float t_reflection = reflection_data.x * render_resolution.y / 512.0;\n"
-"    color = (1 - t_reflection) * reflection + t_reflection * reflection_color;\n"
-"    color *= reflection_amount;\n"
+"    else\n"
+"    {\n"
+"        discard;\n"
+"    }\n"
 "}\n"
 "\n"
 "",

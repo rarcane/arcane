@@ -1,3 +1,9 @@
+/*
+* Copyright (C) Ryan Fleury - All Rights Reserved
+* Unauthorized copying of this file, via any medium is strictly prohibited
+* Proprietary and confidential
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+*/
 
 #define XINPUT_GET_STATE(name) DWORD WINAPI name(DWORD dw_user_index, XINPUT_STATE *p_state)
 typedef XINPUT_GET_STATE(XInputGetStateProc);

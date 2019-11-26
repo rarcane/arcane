@@ -1,3 +1,10 @@
+/*
+* Copyright (C) Ryan Fleury - All Rights Reserved
+* Unauthorized copying of this file, via any medium is strictly prohibited
+* Proprietary and confidential
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+*/
+
 Ts2dTexture
 Ts2dTextureInit(Ts2d *renderer, Ts2dTextureFormat format, int width, int height, void *data)
 {
@@ -30,7 +37,7 @@ Ts2dTextureInitFlags(Ts2d *renderer, Ts2dTextureFlags flags, Ts2dTextureFormat f
 void
 Ts2dTextureCleanUp(Ts2d *renderer, Ts2dTexture *texture)
 {
-    if(texture->id)
+    if(texture && texture->id)
     {
         glDeleteTextures(1, &texture->id);
         texture->id = 0;
@@ -67,24 +74,30 @@ Ts2dFontInit(Ts2d *renderer, Ts2dTextureFormat format, int texture_width, int te
 void
 Ts2dFontCleanUp(Ts2d *renderer, Ts2dFont *font)
 {
-    Ts2dTextureCleanUp(renderer, &font->texture);
+    if(font)
+    {
+        Ts2dTextureCleanUp(renderer, &font->texture);
+    }
 }
 
 f32
 Ts2dFontGetLineHeight(Ts2dFont *font)
 {
-    return (f32)font->line_height;
+    return font ? (f32)font->line_height : 0;
 }
 
 f32
 Ts2dFontGetTextWidthN(Ts2dFont *font, char *text, u32 n)
 {
     f32 text_width = 0.f;
-    for(u32 i = 0; text[i] && i < n; ++i)
+    if(font)
     {
-        if((u32)text[i] >= font->glyph_lower_bound_character && (u32)text[i] < font->glyph_lower_bound_character+font->glyph_count)
+        for(u32 i = 0; text[i] && i < n; ++i)
         {
-            text_width += (f32)font->glyphs[text[i] - font->glyph_lower_bound_character].x_advance;
+            if((u32)text[i] >= font->glyph_lower_bound_character && (u32)text[i] < font->glyph_lower_bound_character+font->glyph_count)
+            {
+                text_width += (f32)font->glyphs[text[i] - font->glyph_lower_bound_character].x_advance;
+            }
         }
     }
     return text_width;
@@ -94,6 +107,113 @@ f32
 Ts2dFontGetTextWidth(Ts2dFont *font, char *text)
 {
     return Ts2dFontGetTextWidthN(font, text, (u32)-1);
+}
+
+Ts2dMaterial
+Ts2dMaterialInit(Ts2d *renderer, Ts2dTexture *albedo)
+{
+    Ts2dMaterial material = {0};
+    material.albedo_texture = albedo;
+    return material;
+}
+
+Ts2dMaterial
+Ts2dMaterialInitSimple(Ts2d *renderer, v3 color)
+{
+    Ts2dMaterial material = {0};
+    material.backing_color = v4(color.r, color.g, color.b, 1);
+    return material;
+}
+
+void
+Ts2dMaterialCleanUp(Ts2d *renderer, Ts2dMaterial *material)
+{
+    if(material && material->albedo_texture)
+    {
+        Ts2dTextureCleanUp(renderer, material->albedo_texture);
+    }
+}
+
+Ts2dSubModel
+Ts2dSubModelInit(Ts2d *renderer, Ts2dVertexDataFormat format, int vertex_count, f32 *vertex_data, int index_count, i32 *index_data, Ts2dMaterial *material)
+{
+    Ts2dSubModel sub_model = {0};
+    glGenVertexArrays(1, &sub_model.vao);
+    glBindVertexArray(sub_model.vao);
+    {
+        int bytes_per_vertex = Ts2dGetBytesPerVertexWithFormat(format);
+
+        sub_model.vertex_count = vertex_count;
+        glGenBuffers(1, &sub_model.vertex_buffer);
+        glBindBuffer(GL_ARRAY_BUFFER, sub_model.vertex_buffer);
+        glBufferData(GL_ARRAY_BUFFER, vertex_count * bytes_per_vertex, vertex_data, GL_STATIC_DRAW);
+
+        if(index_data)
+        {
+            sub_model.index_count = index_count;
+            glGenBuffers(1, &sub_model.index_buffer);
+            glBindBuffer(GL_ARRAY_BUFFER, sub_model.index_buffer);
+            glBufferData(GL_ARRAY_BUFFER, index_count * sizeof(int), index_data, GL_STATIC_DRAW);
+        }
+
+        sub_model.material = material;
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    return sub_model;
+}
+
+Ts2dModel
+Ts2dModelInit(Ts2d *renderer, int sub_model_count, Ts2dSubModel *sub_models)
+{
+    Ts2dModel model = {0};
+    model.sub_model_count = sub_model_count;
+    model.sub_models = platform->HeapAlloc(sizeof(*sub_models) * sub_model_count);
+    HardAssert(model.sub_models != 0);
+    if(model.sub_models)
+    {
+        MemoryCopy(model.sub_models, sub_models, sizeof(*sub_models) * sub_model_count);
+    }
+    return model;
+}
+
+void
+Ts2dSubModelCleanUp(Ts2d *renderer, Ts2dSubModel *sub_model)
+{
+    if(sub_model->vao)
+    {
+        glDeleteVertexArrays(1, &sub_model->vao);
+        sub_model->vao = 0;
+    }
+
+    if(sub_model->vertex_buffer)
+    {
+        glDeleteBuffers(1, &sub_model->vertex_buffer);
+        sub_model->vertex_buffer = 0;
+    }
+
+    if(sub_model->index_buffer)
+    {
+        glDeleteBuffers(1, &sub_model->index_buffer);
+        sub_model->index_buffer = 0;
+    }
+
+    Ts2dMaterialCleanUp(renderer, sub_model->material);
+}
+
+void
+Ts2dModelCleanUp(Ts2d *renderer, Ts2dModel *model)
+{
+    for(int i = 0; i < model->sub_model_count; ++i)
+    {
+        Ts2dSubModelCleanUp(renderer, &model->sub_models[i]);
+    }
+    model->sub_model_count = 0;
+    if(model->sub_models)
+    {
+        platform->HeapFree(model->sub_models);
+        model->sub_models = 0;
+    }
 }
 
 typedef struct Ts2dBlurRequestData Ts2dBlurRequestData;
@@ -107,6 +227,18 @@ typedef struct Ts2dTextureRequestData Ts2dTextureRequestData;
 struct Ts2dTextureRequestData
 {
     Ts2dTexture *texture;
+};
+
+typedef struct Ts2dModelRequestData Ts2dModelRequestData;
+struct Ts2dModelRequestData
+{
+    v2 position;
+    v2 size;
+    Ts2dModel *model;
+    b32 transform_with_skeleton;
+    Ts2dSkeleton skeleton;
+    float transform[3][3];
+    float pixel_scale;
 };
 
 static GLuint
@@ -1420,6 +1552,120 @@ Ts2dEndFrame(Ts2d *renderer)
                 Ts2dOpenGLFBOBind(renderer, last_fbo);
                 break;
             }
+
+            case TS2D_REQUEST_model:
+            {
+                Ts2dModelRequestData *model_data = request->data;
+                // v2 position = model_data->position;
+                // v2 size = model_data->size;
+                Ts2dModel *model = model_data->model;
+                b32 transform_with_skeleton = model_data->transform_with_skeleton;
+                // Ts2dSkeleton skeleton = model_data->skeleton;
+                float transform[3][3];
+                MemoryCopy(transform, model_data->transform, sizeof(transform));
+                float pixel_scale = model_data->pixel_scale;
+
+                m4 view = M4LookAt(v3(10, 0, 0), v3(0, 0, 0), v3(0, 1, 0));
+                m4 projection = M4Orthographic(-10.f, 10.f, -10.f, 10.f, 0.1f, 1000.f);
+                m4 view_projection = M4MultiplyM4(projection, view);
+
+                // NOTE(rjf): Render model to off-screen texture as sprite.
+                {
+                    GLuint shader = renderer->shaders[TS2D_OPENGL_SHADER_model_sprite];
+                    glUseProgram(shader);
+
+                    glUniformMatrix3fv(glGetUniformLocation(shader, "model_transform"),
+                                       1, GL_FALSE, &transform[0][0]);
+                    glUniformMatrix4fv(glGetUniformLocation(shader, "view_projection"),
+                                       1, GL_FALSE, &view_projection.elements[0][0]);
+
+                    for(int i = 0; i < model->sub_model_count; ++i)
+                    {
+                        Ts2dSubModel *sub_model = model->sub_models + i;
+                        glBindVertexArray(sub_model->vao);
+                        GLsizei count = sub_model->vertex_count;
+                        glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0);
+                    }
+                    glBindVertexArray(0);
+                    glUseProgram(0);
+                }
+
+#if 0
+                if(texture)
+                {
+                    if(additive)
+                    {
+                        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE);
+                    }
+                    
+                    // NOTE(rjf): Upload data
+                    {
+                        glBindBuffer(GL_ARRAY_BUFFER, renderer->texture.instance_buffer);
+                        glBufferSubData(GL_ARRAY_BUFFER, 0, request->instance_data_size,
+                                        renderer->texture.instance_data + request->instance_data_offset);
+                        glBindBuffer(GL_ARRAY_BUFFER, 0);
+                    }
+                    GLuint shader = renderer->shaders[TS2D_OPENGL_SHADER_texture];
+                    glUseProgram(shader);
+                    glBindVertexArray(renderer->texture.vao);
+                    {
+                        glActiveTexture(GL_TEXTURE0);
+                        glBindTexture(GL_TEXTURE_2D, texture->id);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                        glUniform1i(glGetUniformLocation(shader, "tex"), 0);
+                        glUniform2f(glGetUniformLocation(shader, "tex_resolution"), (f32)texture->width, (f32)texture->height);
+                        glUniform2f(glGetUniformLocation(shader, "render_resolution"),
+                                    renderer->render_width, renderer->render_height);
+                        
+                        GLint first = 0;
+                        GLsizei count = 4;
+                        GLsizei instance_count = request->instance_data_size / renderer->texture.instance_data_stride;
+                        glDrawArraysInstanced(GL_TRIANGLE_STRIP, first, count, instance_count);
+                    }
+                    glBindVertexArray(0);
+                    if(additive)
+                    {
+                        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+                    }
+                    
+                    if(world_rendering_enabled)
+                    {
+                        Ts2dOpenGLFBO *last_fbo = renderer->active_fbo;
+                        Ts2dOpenGLFBOBind(renderer, &renderer->world_reflection_fbo_8u);
+                        GLuint shader = renderer->shaders[TS2D_OPENGL_SHADER_texture_reflection];
+                        glUseProgram(shader);
+                        glBindVertexArray(renderer->texture.vao);
+                        glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+                        {
+                            glActiveTexture(GL_TEXTURE0);
+                            glBindTexture(GL_TEXTURE_2D, texture->id);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                            glUniform1i(glGetUniformLocation(shader, "tex"), 0);
+                            glUniform2f(glGetUniformLocation(shader, "tex_resolution"), (f32)texture->width, (f32)texture->height);
+                            glUniform2f(glGetUniformLocation(shader, "render_resolution"),
+                                        renderer->render_width, renderer->render_height);
+                            
+                            GLint first = 0;
+                            GLsizei count = 4;
+                            GLsizei instance_count = request->instance_data_size / renderer->texture.instance_data_stride;
+                            glDrawArraysInstanced(GL_TRIANGLE_STRIP, first, count, instance_count);
+                        }
+                        glBindVertexArray(0);
+                        glBlendEquation(GL_FUNC_ADD);
+                        Ts2dOpenGLFBOBind(renderer, last_fbo);
+                    }
+                    
+                }
+#endif
+                
+                break;
+            }
             
             default: break;
         }
@@ -1989,4 +2235,45 @@ _Ts2dPushReflectiveRect(Ts2d *renderer, v4 rect, v4 color, f32 distortion, f32 d
     ((f32 *)data)[10] = 0;
     ((f32 *)data)[11] = 0;
     renderer->reflective_rect.instance_data_alloc_pos += renderer->reflective_rect.instance_data_stride;
+}
+
+void
+_Ts2dPushModel(Ts2d *renderer, Ts2dModel *model, v2 position, v2 size, float transform[3][3], float pixel_scale TS2D_DEBUG_EXTRA_PARAMS)
+{
+    Ts2dRequestType request_type = TS2D_REQUEST_model;
+    Ts2dInternalFinishActiveRequest(renderer);
+    renderer->active_request.type = request_type;
+    renderer->active_request.instance_data_offset = 0;
+    renderer->active_request.instance_data_size = 0;
+    renderer->active_request.flags = 0;
+    Ts2dModelRequestData *request_data = _Ts2dAllocateRequestMemory(renderer, sizeof(*request_data)); 
+    request_data->position = position;
+    request_data->size = size;
+    request_data->model = model;
+    request_data->transform_with_skeleton = 0;
+    MemoryCopy(request_data->transform, transform, sizeof(transform));
+    request_data->pixel_scale = pixel_scale;
+    renderer->active_request.data = request_data;
+    TS2D_LOAD_REQUEST_DEBUG_DATA;
+}
+
+void
+_Ts2dPushModelWithSkeleton(Ts2d *renderer, Ts2dModel *model, Ts2dSkeleton *skeleton, v2 position, v2 size, float transform[3][3], float pixel_scale TS2D_DEBUG_EXTRA_PARAMS)
+{
+    Ts2dRequestType request_type = TS2D_REQUEST_model;
+    Ts2dInternalFinishActiveRequest(renderer);
+    renderer->active_request.type = request_type;
+    renderer->active_request.instance_data_offset = 0;
+    renderer->active_request.instance_data_size = 0;
+    renderer->active_request.flags = 0;
+    Ts2dModelRequestData *request_data = _Ts2dAllocateRequestMemory(renderer, sizeof(*request_data)); 
+    request_data->position = position;
+    request_data->size = size;
+    request_data->model = model;
+    request_data->transform_with_skeleton = 1;
+    MemoryCopy(&request_data->skeleton, skeleton, sizeof(*skeleton));
+    MemoryCopy(request_data->transform, transform, sizeof(transform));
+    request_data->pixel_scale = pixel_scale;
+    renderer->active_request.data = request_data;
+    TS2D_LOAD_REQUEST_DEBUG_DATA;
 }

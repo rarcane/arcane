@@ -1,3 +1,10 @@
+/*
+* Copyright (C) Ryan Fleury - All Rights Reserved
+* Unauthorized copying of this file, via any medium is strictly prohibited
+* Proprietary and confidential
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+*/
+
 #ifndef TSDEVTERMINAL_H_INCLUDED
 #define TSDEVTERMINAL_H_INCLUDED
 

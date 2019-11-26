@@ -28,6 +28,7 @@ GLProc(VERTEXATTRIBIPOINTER, VertexAttribIPointer)
 GLProc(VERTEXATTRIBDIVISOR, VertexAttribDivisor)
 
 GLProc(GETUNIFORMLOCATION, GetUniformLocation)
+GLProc(UNIFORMMATRIX3FV, UniformMatrix3fv)
 GLProc(UNIFORMMATRIX4FV, UniformMatrix4fv)
 GLProc(UNIFORM1I, Uniform1i)
 GLProc(UNIFORM1F, Uniform1f)

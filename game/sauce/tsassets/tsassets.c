@@ -1,3 +1,10 @@
+/*
+* Copyright (C) Ryan Fleury - All Rights Reserved
+* Unauthorized copying of this file, via any medium is strictly prohibited
+* Proprietary and confidential
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+*/
+
 void _TsAssetsInitTypeSizes(TsAssets *assets)
 {
 #define TsAssetsAssetType(name, load_info_name, max, pre_load_callback, load_callback, post_load_callback, clean_up_callback, is_loaded_callback, directory) {\

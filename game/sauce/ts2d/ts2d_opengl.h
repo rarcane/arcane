@@ -1,3 +1,9 @@
+/*
+* Copyright (C) Ryan Fleury - All Rights Reserved
+* Unauthorized copying of this file, via any medium is strictly prohibited
+* Proprietary and confidential
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+*/
 
 // TODO(rjf): We should super break this out so we don't need to remember
 // it's here when porting.
@@ -40,6 +46,29 @@ struct Ts2dFont
     u32 glyph_count;
     Ts2dFontGlyph *glyphs;
     u32 glyph_lower_bound_character;
+};
+
+struct Ts2dMaterial
+{
+    v4 backing_color;
+    Ts2dTexture *albedo_texture;
+};
+
+struct Ts2dSubModel
+{
+    GLuint vao;
+    Ts2dVertexDataFormat vertex_format;
+    int vertex_count;
+    GLuint vertex_buffer;
+    int index_count;
+    GLuint index_buffer;
+    Ts2dMaterial *material;
+};
+
+struct Ts2dModel
+{
+    int sub_model_count;
+    Ts2dSubModel *sub_models;
 };
 
 typedef struct Ts2dOpenGLShaderInput Ts2dOpenGLShaderInput;
@@ -113,6 +142,7 @@ enum Ts2dRequestType
     TS2D_REQUEST_text,
     TS2D_REQUEST_blur_rectangle,
     TS2D_REQUEST_reflective_rect,
+    TS2D_REQUEST_model,
     TS2D_REQUEST_MAX
 };
 

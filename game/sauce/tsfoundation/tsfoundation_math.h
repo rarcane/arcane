@@ -1,3 +1,10 @@
+/*
+* Copyright (C) Ryan Fleury - All Rights Reserved
+* Unauthorized copying of this file, via any medium is strictly prohibited
+* Proprietary and confidential
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+*/
+
 #define DegreesToRadians(a) (PI / 180.f * (a))
 #define RadiansToDegrees(a) (180.f / PI * (a))
 #define PI                              3.1415926535897f
@@ -250,17 +257,17 @@ V4InitUniform(f32 x)
 }
 
 #define IV2IV2OpFunc(name, op)                        \
-internal IV2 IV2##name##IV2(IV2 a, IV2 b)   \
+internal IV2 IV2##name##IV2(IV2 a, IV2 b)             \
 {                                                     \
-    IV2 result = {a.x op b.x, a.y op b.y};          \
+    IV2 result = {a.x op b.x, a.y op b.y};            \
     return result;                                    \
 }
 
-#define IV2I32OpFunc(name, op)                    \
-internal IV2 IV2##name##I32(IV2 a, i32 v)   \
-{                                                 \
-    IV2 result = {a.x op v, a.y op v};          \
-    return result;                                \
+#define IV2I32OpFunc(name, op)                        \
+internal IV2 IV2##name##I32(IV2 a, i32 v)             \
+{                                                     \
+    IV2 result = {a.x op v, a.y op v};                \
+    return result;                                    \
 }
 
 IV2IV2OpFunc(Add, +)
@@ -275,18 +282,18 @@ IV2I32OpFunc(Divide, /)
 #undef IV2IV2OpFunc
 #undef IV2I32OpFunc
 
-#define V2V2OpFunc(name, op)                     \
-internal V2 V2##name##V2(V2 a, V2 b)   \
-{                                                \
-        V2 result = {a.x op b.x, a.y op b.y};      \
+#define V2V2OpFunc(name, op)                         \
+internal V2 V2##name##V2(V2 a, V2 b)                 \
+{                                                    \
+        V2 result = {a.x op b.x, a.y op b.y};        \
         return result;                               \
 }
 
-#define V2F32OpFunc(name, op)                  \
-internal V2 V2##name##F32(V2 a, f32 v)   \
-{                                              \
-        V2 result = {a.x op v, a.y op v};        \
-        return result;                             \
+#define V2F32OpFunc(name, op)                        \
+internal V2 V2##name##F32(V2 a, f32 v)               \
+{                                                    \
+        V2 result = {a.x op v, a.y op v};            \
+        return result;                               \
 }
 
 V2V2OpFunc (Add, +)
@@ -301,17 +308,17 @@ V2F32OpFunc(Divide, /)
 #undef V2V2OpFunc
 #undef V2F32OpFunc
 
-#define V3V3OpFunc(name, op)                             \
-internal V3 V3##name##V3(V3 a, V3 b)           \
-{                                                        \
-        V3 result = {a.x op b.x, a.y op b.y, a.z op b.z};  \
+#define V3V3OpFunc(name, op)                                 \
+internal V3 V3##name##V3(V3 a, V3 b)                         \
+{                                                            \
+        V3 result = {a.x op b.x, a.y op b.y, a.z op b.z};    \
         return result;                                       \
 }
-#define V3F32OpFunc(name, op)                     \
-internal V3 V3##name##F32(V3 a, f32 v)      \
-{                                                 \
-        V3 result = {a.x op v, a.y op v, a.z op v}; \
-        return result;                                \
+#define V3F32OpFunc(name, op)                                \
+internal V3 V3##name##F32(V3 a, f32 v)                       \
+{                                                            \
+        V3 result = {a.x op v, a.y op v, a.z op v};          \
+        return result;                                       \
 }
 
 V3V3OpFunc (Add, +)
@@ -326,17 +333,17 @@ V3F32OpFunc(Divide, /)
 #undef V3V3OpFunc
 #undef V3F32OpFunc
 
-#define V4V4OpFunc(name, op)                                        \
-internal V4 V4##name##V4(V4 a, V4 b)                    \
-{                                                                   \
-        V4 result = {a.x op b.x, a.y op b.y, a.z op b.z, a.w op b.w}; \
+#define V4V4OpFunc(name, op)                                            \
+internal V4 V4##name##V4(V4 a, V4 b)                                    \
+{                                                                       \
+        V4 result = {a.x op b.x, a.y op b.y, a.z op b.z, a.w op b.w};   \
         return result;                                                  \
 }
-#define V4F32OpFunc(name, op)                               \
-internal V4 V4##name##F32(V4 a, f32 v)              \
-{                                                           \
-        V4 result = {a.x op v, a.y op v, a.z op v, a.w op v}; \
-        return result;                                          \
+#define V4F32OpFunc(name, op)                                           \
+internal V4 V4##name##F32(V4 a, f32 v)                                  \
+{                                                                       \
+        V4 result = {a.x op v, a.y op v, a.z op v, a.w op v};           \
+        return result;                                                  \
 }
 
 V4V4OpFunc (Add, +)
@@ -379,7 +386,8 @@ V3Dot(v3 a, v3 b)
 internal v3
 V3Cross(v3 a, v3 b)
 {
-    v3 c = {
+    v3 c =
+    {
         a.y*b.z - a.z*b.y,
         a.z*b.x - a.x*b.z,
         a.x*b.y - a.y*b.x,
@@ -391,7 +399,8 @@ internal v3
 V3Normalize(v3 v)
 {
     f32 v_length = V3Length(v);
-    v3 result = {
+    v3 result =
+    {
         v.x /= v_length,
         v.y /= v_length,
         v.z /= v_length,
@@ -432,11 +441,12 @@ MinimumInV3(v3 vec)
 internal m4
 M4InitD(f32 diagonal)
 {
-    m4 m = {
+    m4 m =
+    {
         {
-            { diagonal },
-            { 0.f, diagonal },
-            { 0.f, 0.f, diagonal },
+            { diagonal                },
+            { 0.f, diagonal           },
+            { 0.f, 0.f, diagonal      },
             { 0.f, 0.f, 0.f, diagonal },
         }
     };

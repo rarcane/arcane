@@ -1,3 +1,10 @@
+/*
+* Copyright (C) Ryan Fleury - All Rights Reserved
+* Unauthorized copying of this file, via any medium is strictly prohibited
+* Proprietary and confidential
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+*/
+
 #ifndef TS2D_H_INCLUDED
 #define TS2D_H_INCLUDED
 
@@ -26,6 +33,7 @@ typedef struct Ts2dTexture          Ts2dTexture;
 typedef enum   Ts2dTextureFormat    Ts2dTextureFormat;
 typedef enum   Ts2dTextureFlags     Ts2dTextureFlags;
 typedef enum   Ts2dVertexDataFormat Ts2dVertexDataFormat;
+typedef struct Ts2dMaterial         Ts2dMaterial;
 typedef struct Ts2dSubModel         Ts2dSubModel;
 typedef struct Ts2dModel            Ts2dModel;
 typedef struct Ts2dSkeleton         Ts2dSkeleton;
@@ -50,13 +58,14 @@ Ts2dTexture   Ts2dTextureInitFlags                        (Ts2d *renderer, Ts2dT
 void          Ts2dTextureCleanUp                          (Ts2d *renderer, Ts2dTexture *texture);
 void          Ts2dTextureSetFlags                         (Ts2dTexture *texture, Ts2dTextureFlags flags);
 b32           Ts2dTextureIsValid                          (Ts2dTexture *texture);
-
-Ts2dSubModel  Ts2dSubModelInit                            (Ts2d *renderer, Ts2dVertexDataFormat format, int vertex_count, f32 *vertex_data, int index_count, i32 *index_data, Ts2dTexture *albedo, Ts2dTexture *normals);
+Ts2dMaterial  Ts2dMaterialInit                            (Ts2d *renderer, Ts2dTexture *albedo);
+Ts2dMaterial  Ts2dMaterialInitSimple                      (Ts2d *renderer, v3 color);
+void          Ts2dMaterialCleanUp                         (Ts2d *renderer, Ts2dMaterial *material);
+Ts2dSubModel  Ts2dSubModelInit                            (Ts2d *renderer, Ts2dVertexDataFormat format, int vertex_count, f32 *vertex_data, int index_count, i32 *index_data, Ts2dMaterial *material);
 Ts2dModel     Ts2dModelInit                               (Ts2d *renderer, int sub_model_count, Ts2dSubModel *sub_models);
+Ts2dModel     Ts2dModelInitSimple                         (Ts2d *renderer, Ts2dVertexDataFormat format, int vertex_count, f32 *vertex_data, int index_count, i32 *index_data, Ts2dTexture *albedo);
 void          Ts2dSubModelCleanUp                         (Ts2d *renderer, Ts2dSubModel *sub_model);
 void          Ts2dModelCleanUp                            (Ts2d *renderer, Ts2dModel *model);
-void          Ts2dPushModelWithSkeleton                   (Ts2d *renderer, float *transform, Ts2dModel *model, Ts2dSkeleton *skeleton);
-
 Ts2dFont      Ts2dFontInit                                (Ts2d *renderer, Ts2dTextureFormat format, int texture_width, int texture_height, void *texture_data, int size, int line_height, u32 glyph_count, Ts2dFontGlyph *glyphs, u32 glyph_lower_bound_character);
 void          Ts2dFontCleanUp                             (Ts2d *renderer, Ts2dFont *font);
 f32           Ts2dFontGetLineHeight                       (Ts2dFont *font);
@@ -85,6 +94,8 @@ f32           _Ts2dPushTextWithBoldnessAndSoftnessN       (Ts2d *renderer, Ts2dF
 f32           _Ts2dPushTextN                              (Ts2d *renderer, Ts2dFont *font, i32 flags, v4 color, v2 position, f32 font_scale, char *text, u32 n TS2D_DEBUG_EXTRA_PARAMS);
 void          _Ts2dPushPointLight                         (Ts2d *renderer, v2 position, v3 color, f32 radius, f32 intensity TS2D_DEBUG_EXTRA_PARAMS);
 void          _Ts2dPushReflectiveRect                     (Ts2d *renderer, v4 rect, v4 color, f32 distortion, f32 distortion_time_factor TS2D_DEBUG_EXTRA_PARAMS);
+void          _Ts2dPushModel                              (Ts2d *renderer, Ts2dModel *model, v2 position, v2 size, float transform[3][3], float pixel_scale TS2D_DEBUG_EXTRA_PARAMS);
+void          _Ts2dPushModelWithSkeleton                  (Ts2d *renderer, Ts2dModel *model, Ts2dSkeleton *skeleton, v2 position, v2 size, float transform[3][3], float pixel_scale TS2D_DEBUG_EXTRA_PARAMS);
 
 #if TS2D_DEBUG
 #define Ts2dPushWorldBegin(...)                     _Ts2dPushWorldBegin(__VA_ARGS__, __FILE__, __LINE__)
@@ -110,6 +121,8 @@ void          _Ts2dPushReflectiveRect                     (Ts2d *renderer, v4 re
 #define Ts2dPushText(...)                           _Ts2dPushText(__VA_ARGS__, __FILE__, __LINE__)
 #define Ts2dPushPointLight(...)                     _Ts2dPushPointLight(__VA_ARGS__, __FILE__, __LINE__)
 #define Ts2dPushReflectiveRect(...)                 _Ts2dPushReflectiveRect(__VA_ARGS__, __FILE__, __LINE__)
+#define Ts2dPushModel(...)                          _Ts2dPushModel(__VA_ARGS__, __FILE__, __LINE__)
+#define Ts2dPushModelWithSkeleton(...)              _Ts2dPushModelWithSkeleton(__VA_ARGS__, __FILE__, __LINE__)
 #else
 #define Ts2dPushWorldBegin(...)                     _Ts2dPushWorldBegin(__VA_ARGS__)
 #define Ts2dPushBackgroundBegin(...)                _Ts2dPushBackgroundBegin(__VA_ARGS__)
@@ -134,6 +147,8 @@ void          _Ts2dPushReflectiveRect                     (Ts2d *renderer, v4 re
 #define Ts2dPushText(...)                           _Ts2dPushText(__VA_ARGS__)
 #define Ts2dPushPointLight(...)                     _Ts2dPushPointLight(__VA_ARGS__)
 #define Ts2dPushReflectiveRect(...)                 _Ts2dPushReflectiveRect(__VA_ARGS__)
+#define Ts2dPushModel(...)                          _Ts2dPushModel(__VA_ARGS__)
+#define Ts2dPushModelWithSkeleton(...)              _Ts2dPushModelWithSkeleton(__VA_ARGS__)
 #endif
 
 #if TS2D_WIN32
@@ -185,7 +200,36 @@ enum Ts2dVertexDataFormat
 {
     TS2D_VERTEX_DATA_FORMAT_POSITION_UV_NORMAL_INTERLEAVED, // PPP,UV,NNN,PPP,UV,NNN ...
     TS2D_VERTEX_DATA_FORMAT_POSITION_UV_NORMAL_SPLIT,       // PPP,PPP,PPP,PPP ... UV,UV,UV,UV ... NNN,NNN,NNN,NNN
+    TS2D_VERTEX_DATA_FORMAT_POSITION,                       // PPP,PPP,PPP ...
 };
+
+static inline int
+Ts2dGetFloatsPerVertexWithFormat(Ts2dVertexDataFormat format)
+{
+    int result = 0;
+    switch(format)
+    {
+        case TS2D_VERTEX_DATA_FORMAT_POSITION_UV_NORMAL_INTERLEAVED:
+        case TS2D_VERTEX_DATA_FORMAT_POSITION_UV_NORMAL_SPLIT:
+        {
+            result = 8;
+            break;
+        }
+        case TS2D_VERTEX_DATA_FORMAT_POSITION:
+        {
+            result = 3;
+            break;
+        }
+        default: break;
+    }
+    return result;
+}
+
+static inline int
+Ts2dGetBytesPerVertexWithFormat(Ts2dVertexDataFormat format)
+{
+    return sizeof(f32) * Ts2dGetFloatsPerVertexWithFormat(format);
+}
 
 struct Ts2dFontGlyph
 {
@@ -196,6 +240,22 @@ struct Ts2dFontGlyph
     i16 x_offset;
     i16 y_offset;
     i16 x_advance;
+};
+
+typedef struct Ts2dSkeletonBone Ts2dSkeletonBone;
+struct Ts2dSkeletonBone
+{
+    int parent_index;   
+    float transform[4][4];
+};
+
+#ifndef TS2D_SKELETON_BONE_MAX
+#define TS2D_SKELETON_BONE_MAX 32
+#endif
+
+struct Ts2dSkeleton
+{
+    Ts2dSkeletonBone bones[TS2D_SKELETON_BONE_MAX];
 };
 
 #ifndef TS2D_MAX_REQUEST_MEMORY
@@ -234,10 +294,8 @@ struct Ts2dFontGlyph
 #define TS2D_MAX_REFLECTIVE_RECTS 1024
 #endif
 
-#ifndef TS2D_MEMCPY
-#include <string.h>
-#define TS2D_MEMCPY memcpy
-#define Ts2dMemoryCopy TS2D_MEMCPY
+#ifndef TS2D_MAX_MODELS
+#define TS2D_MAX_MODELS 16384
 #endif
 
 /*---------------------------------------------------------------------------------*/
