@@ -131,7 +131,7 @@ PermanentLoad(TsPlatform *platform_)
 			InitialiseECS();
 
 			core->camera_zoom = 3.3f;
-			core->shadow_opacity = 0.9f;
+			core->shadow_opacity = 0.0f;
 			core->slow_mult = 0.25f;
 
 			core->delta_mult = 1.0f;
