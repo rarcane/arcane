@@ -47,10 +47,14 @@ internal void TempInitGameWorld()
 		Entity *bg1_tree_1 = NewEntity("bgtree");
 		SetupBackgroundEntity(bg1_tree_1, v2(10.0f, -5.0f), STATIC_SPRITE_bg1_pine_tree_v1, 5.2f, v2(0.2f, 0.1f));
 
-		/* Entity *bg2_hills1 = NewEntity("hills");
-		SetupBackgroundEntity(bg2_hills1, v2(95.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.0f, v2(0.35f, 0.2f));
+		Entity *bg2_hills3 = NewEntity("hills");
+		SetupBackgroundEntity(bg2_hills3, v2(-300.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.1f, v2(0.35f, 0.2f));
 		Entity *bg2_hills2 = NewEntity("hills");
-		SetupBackgroundEntity(bg2_hills2, v2(-95.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.1f, v2(0.35f, 0.2f));
+		SetupBackgroundEntity(bg2_hills2, v2(-100.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.1f, v2(0.35f, 0.2f));
+		Entity *bg2_hills4 = NewEntity("hills");
+		SetupBackgroundEntity(bg2_hills4, v2(100.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.0f, v2(0.35f, 0.2f));
+		Entity *bg2_hills1 = NewEntity("hills");
+		SetupBackgroundEntity(bg2_hills1, v2(300.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.0f, v2(0.35f, 0.2f));
 
 		Entity *bg3_hills1 = NewEntity("hills");
 		SetupBackgroundEntity(bg3_hills1, v2(100.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.5f, 0.3f));
@@ -59,7 +63,7 @@ internal void TempInitGameWorld()
 		Entity *bg3_hills3 = NewEntity("hills");
 		SetupBackgroundEntity(bg3_hills3, v2(300.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.5f, 0.3f));
 		Entity *bg3_hills4 = NewEntity("hills");
-		SetupBackgroundEntity(bg3_hills4, v2(-300.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.5f, 0.3f)); */
+		SetupBackgroundEntity(bg3_hills4, v2(-300.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.5f, 0.3f));
 	}
 
 	{

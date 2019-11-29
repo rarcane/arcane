@@ -15,9 +15,9 @@ StaticSprite(ground_forest, "scenic/forest_ground", v4(0.0f, 0.0f, 100.0f, 90.0f
 StaticSprite(pine_tree_v1, "scenic/trees/pine_tree", v4(0.0f, 0.0f, 150.0f, 260.0f), v2(0.0f, 0.0f))
 StaticSprite(hills_1_v1, "scenic/background/bg1_hills", v4(0.0f, 0.0f, 200.0f, 35.0f), v2(0.0f, 20.0f))
 StaticSprite(hills_1_v2, "scenic/background/bg1_hills", v4(0.0f, 35.0f, 200.0f, 35.0f), v2(0.0f, 20.0f))
-StaticSprite(bg2_hills_v1, "scenic/background/bg2_hills", v4(0.0f, 0.0f, 200.0f, 40.0f), v2(0.0f, 23.0f))
-StaticSprite(bg2_hills_v2, "scenic/background/bg2_hills", v4(0.0f, 40.0f, 200.0f, 40.0f), v2(0.0f, 23.0f))
-StaticSprite(bg3_hills_v1, "scenic/background/bg3_hills", v4(0.0f, 0.0f, 200.0f, 40.0f), v2(0.0f, 20.0f))
+StaticSprite(bg2_hills_v1, "scenic/background/bg2_hills", v4(0.0f, 0.0f, 200.0f, 40.0f), v2(0.0f, 20.0f))
+StaticSprite(bg2_hills_v2, "scenic/background/bg2_hills", v4(0.0f, 40.0f, 200.0f, 40.0f), v2(0.0f, 20.0f))
+StaticSprite(bg3_hills_v1, "scenic/background/bg3_hills", v4(0.0f, 0.0f, 200.0f, 40.0f), v2(0.0f, 15.0f))
 
 StaticSprite(bg1_canopy_v1, "scenic/background/bg1_canopy", v4(0.0f, 0.0f, 200.0f, 100.0f), v2(0.0f, 0.0f))
 StaticSprite(bg1_canopy_v2, "scenic/background/bg1_canopy", v4(200.0f, 0.0f, 200.0f, 100.0f), v2(0.0f, 0.0f))
