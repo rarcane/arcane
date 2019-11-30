@@ -22,3 +22,6 @@ StaticSprite(bg3_hills_v1, "scenic/background/bg3_hills", v4(0.0f, 0.0f, 200.0f,
 StaticSprite(bg1_canopy_v1, "scenic/background/bg1_canopy", v4(0.0f, 0.0f, 200.0f, 100.0f), v2(0.0f, 0.0f))
 StaticSprite(bg1_canopy_v2, "scenic/background/bg1_canopy", v4(200.0f, 0.0f, 200.0f, 100.0f), v2(0.0f, 0.0f))
 StaticSprite(bg1_pine_tree_v1, "scenic/background/bg1_pine_tree", v4(0.0f, 0.0f, 100.0f, 220.0f), v2(0.0f, 0.0f))
+
+StaticSprite(bg2_pine_tree_v1, "scenic/background/bg2_pine_tree", v4(0.0f, 0.0f, 80.0f, 200.0f), v2(0.0f, 0.0f))
+StaticSprite(bg3_pine_tree_v1, "scenic/background/bg3_pine_tree", v4(0.0f, 0.0f, 80.0f, 160.0f), v2(0.0f, 0.0f))
