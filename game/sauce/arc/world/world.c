@@ -35,14 +35,14 @@ internal void TempInitGameWorld()
 		Entity *hills4 = NewEntity("Hill");
 		SetupBackgroundEntity(hills4, v2(272.0f, 0.0f), STATIC_SPRITE_hills_1_v2, 5.0f, v2(0.2f, 0.1f));
 
-		Entity *canopy4 = NewEntity("Canopy");
+		/* Entity *canopy4 = NewEntity("Canopy");
 		SetupBackgroundEntity(canopy4, v2(-260.0f, -115.0f), STATIC_SPRITE_bg1_canopy_v1, 5.0f, v2(0.2f, 0.1f));
 		Entity *canopy2 = NewEntity("Canopy");
 		SetupBackgroundEntity(canopy2, v2(-89.0f, -115.0f), STATIC_SPRITE_bg1_canopy_v2, 5.1f, v2(0.2f, 0.1f));
 		Entity *canopy1 = NewEntity("Canopy");
 		SetupBackgroundEntity(canopy1, v2(89.0f, -115.0f), STATIC_SPRITE_bg1_canopy_v1, 5.0f, v2(0.2f, 0.1f));
 		Entity *canopy3 = NewEntity("Canopy");
-		SetupBackgroundEntity(canopy3, v2(260.0f, -115.0f), STATIC_SPRITE_bg1_canopy_v2, 5.1f, v2(0.2f, 0.1f));
+		SetupBackgroundEntity(canopy3, v2(260.0f, -115.0f), STATIC_SPRITE_bg1_canopy_v2, 5.1f, v2(0.2f, 0.1f)); */
 
 		Entity *bg1_tree_1 = NewEntity("bgtree");
 		SetupBackgroundEntity(bg1_tree_1, v2(10.0f, -5.0f), STATIC_SPRITE_bg1_pine_tree_v1, 5.2f, v2(0.2f, 0.1f));
