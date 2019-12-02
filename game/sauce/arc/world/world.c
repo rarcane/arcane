@@ -20,76 +20,76 @@ internal void TempInitGameWorld()
 		AttachSprite(tree1, STATIC_SPRITE_pine_tree_1, 2.0f);
 		AttachParallax(tree1, v2(0.25, 0.25), v2(-100.0f, 0.0f)); */
 
-		Entity *tree2 = NewEntity("Tree");
+		Entity *tree2 = NewEntity("Tree", ENTITY_scenic);
 		AttachPosition(tree2, v2(-100.0f, 0.0f));
 		AttachSprite(tree2, STATIC_SPRITE_pine_tree_v1, 2.0f);
 	}
 
 	{
-		Entity *hills3 = NewEntity("Hill");
+		Entity *hills3 = NewEntity("Hill", ENTITY_scenic);
 		SetupBackgroundEntity(hills3, v2(-272.0f, 0.0f), STATIC_SPRITE_hills_1_v1, 5.1f, v2(0.3f, 0.1f));
-		Entity *hills1 = NewEntity("Hill");
+		Entity *hills1 = NewEntity("Hill", ENTITY_scenic);
 		SetupBackgroundEntity(hills1, v2(-93.0f, 0.0f), STATIC_SPRITE_hills_1_v2, 5.0f, v2(0.3f, 0.1f));
-		Entity *hills2 = NewEntity("Hill");
+		Entity *hills2 = NewEntity("Hill", ENTITY_scenic);
 		SetupBackgroundEntity(hills2, v2(93.0f, 0.0f), STATIC_SPRITE_hills_1_v1, 5.1f, v2(0.3f, 0.1f));
-		Entity *hills4 = NewEntity("Hill");
+		Entity *hills4 = NewEntity("Hill", ENTITY_scenic);
 		SetupBackgroundEntity(hills4, v2(272.0f, 0.0f), STATIC_SPRITE_hills_1_v2, 5.0f, v2(0.3f, 0.1f));
 
-		/* Entity *canopy4 = NewEntity("Canopy");
+		/* Entity *canopy4 = NewEntity("Canopy", ENTITY_scenic);
 		SetupBackgroundEntity(canopy4, v2(-260.0f, -115.0f), STATIC_SPRITE_bg1_canopy_v1, 5.0f, v2(0.2f, 0.1f));
-		Entity *canopy2 = NewEntity("Canopy");
+		Entity *canopy2 = NewEntity("Canopy", ENTITY_scenic);
 		SetupBackgroundEntity(canopy2, v2(-89.0f, -115.0f), STATIC_SPRITE_bg1_canopy_v2, 5.1f, v2(0.2f, 0.1f));
-		Entity *canopy1 = NewEntity("Canopy");
+		Entity *canopy1 = NewEntity("Canopy", ENTITY_scenic);
 		SetupBackgroundEntity(canopy1, v2(89.0f, -115.0f), STATIC_SPRITE_bg1_canopy_v1, 5.0f, v2(0.2f, 0.1f));
-		Entity *canopy3 = NewEntity("Canopy");
+		Entity *canopy3 = NewEntity("Canopy", ENTITY_scenic);
 		SetupBackgroundEntity(canopy3, v2(260.0f, -115.0f), STATIC_SPRITE_bg1_canopy_v2, 5.1f, v2(0.2f, 0.1f)); */
 
-		Entity *bg1_tree_1 = NewEntity("bgtree");
+		Entity *bg1_tree_1 = NewEntity("bgtree", ENTITY_scenic);
 		SetupBackgroundEntity(bg1_tree_1, v2(10.0f, 0.0f), STATIC_SPRITE_bg1_pine_tree_v2, 5.2f, v2(0.3f, 0.1f));
-		// Entity *bg1_tree_2 = NewEntity("bgtree");
+		// Entity *bg1_tree_2 = NewEntity("bgtree", ENTITY_scenic);
 		// SetupBackgroundEntity(bg1_tree_2, v2(-35.0f, -5.0f), STATIC_SPRITE_bg1_pine_tree_v1, 5.2f, v2(0.2f, 0.1f));
 
-		Entity *bg2_hills3 = NewEntity("hills");
+		Entity *bg2_hills3 = NewEntity("hills", ENTITY_scenic);
 		SetupBackgroundEntity(bg2_hills3, v2(-300.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.1f, v2(0.45f, 0.2f));
-		Entity *bg2_hills2 = NewEntity("hills");
+		Entity *bg2_hills2 = NewEntity("hills", ENTITY_scenic);
 		SetupBackgroundEntity(bg2_hills2, v2(-100.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.1f, v2(0.45f, 0.2f));
-		Entity *bg2_hills4 = NewEntity("hills");
+		Entity *bg2_hills4 = NewEntity("hills", ENTITY_scenic);
 		SetupBackgroundEntity(bg2_hills4, v2(100.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.0f, v2(0.45f, 0.2f));
-		Entity *bg2_hills1 = NewEntity("hills");
+		Entity *bg2_hills1 = NewEntity("hills", ENTITY_scenic);
 		SetupBackgroundEntity(bg2_hills1, v2(300.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.0f, v2(0.45f, 0.2f));
 
-		Entity *bg2_tree_1 = NewEntity("bgtree");
+		Entity *bg2_tree_1 = NewEntity("bgtree", ENTITY_scenic);
 		SetupBackgroundEntity(bg2_tree_1, v2(50.0f, -5.0f), STATIC_SPRITE_bg2_pine_tree_v1, 6.5f, v2(0.45f, 0.2f));
 
-		Entity *bg3_hills1 = NewEntity("hills");
+		Entity *bg3_hills1 = NewEntity("hills", ENTITY_scenic);
 		SetupBackgroundEntity(bg3_hills1, v2(100.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.6f, 0.3f));
-		Entity *bg3_hills2 = NewEntity("hills");
+		Entity *bg3_hills2 = NewEntity("hills", ENTITY_scenic);
 		SetupBackgroundEntity(bg3_hills2, v2(-100.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.6f, 0.3f));
-		Entity *bg3_hills3 = NewEntity("hills");
+		Entity *bg3_hills3 = NewEntity("hills", ENTITY_scenic);
 		SetupBackgroundEntity(bg3_hills3, v2(300.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.6f, 0.3f));
-		Entity *bg3_hills4 = NewEntity("hills");
+		Entity *bg3_hills4 = NewEntity("hills", ENTITY_scenic);
 		SetupBackgroundEntity(bg3_hills4, v2(-300.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.6f, 0.3f));
 
-		Entity *bg3_tree_1 = NewEntity("bgtree");
+		Entity *bg3_tree_1 = NewEntity("bgtree", ENTITY_scenic);
 		SetupBackgroundEntity(bg3_tree_1, v2(-20.0f, -5.0f), STATIC_SPRITE_bg3_pine_tree_v1, 7.5f, v2(0.6f, 0.3f));
 
-		Entity *mid_mountains_1 = NewEntity("Mountains");
+		Entity *mid_mountains_1 = NewEntity("Mountains", ENTITY_scenic);
 		SetupBackgroundEntity(mid_mountains_1, v2(0.0f, 0.0f), STATIC_SPRITE_mid_mountains, 8.0f, v2(0.93f, 0.68f));
-		Entity *mid_mountains_2 = NewEntity("Mountains");
+		Entity *mid_mountains_2 = NewEntity("Mountains", ENTITY_scenic);
 		SetupBackgroundEntity(mid_mountains_2, v2(-600.0f, 0.0f), STATIC_SPRITE_mid_mountains, 8.0f, v2(0.93f, 0.68f));
-		Entity *mid_mountains_3 = NewEntity("Mountains");
+		Entity *mid_mountains_3 = NewEntity("Mountains", ENTITY_scenic);
 		SetupBackgroundEntity(mid_mountains_3, v2(600.0f, 0.0f), STATIC_SPRITE_mid_mountains, 8.0f, v2(0.93f, 0.68f));
 
-		Entity *far_mountains_1 = NewEntity("Mountains");
+		Entity *far_mountains_1 = NewEntity("Mountains", ENTITY_scenic);
 		SetupBackgroundEntity(far_mountains_1, v2(0.0f, 0.0f), STATIC_SPRITE_far_mountains, 9.0f, v2(0.95f, 0.7f));
-		Entity *far_mountains_2 = NewEntity("Mountains");
+		Entity *far_mountains_2 = NewEntity("Mountains", ENTITY_scenic);
 		SetupBackgroundEntity(far_mountains_2, v2(-600.0f, 0.0f), STATIC_SPRITE_far_mountains, 9.0f, v2(0.95f, 0.7f));
-		Entity *far_mountains_3 = NewEntity("Mountains");
+		Entity *far_mountains_3 = NewEntity("Mountains", ENTITY_scenic);
 		SetupBackgroundEntity(far_mountains_3, v2(600.0f, 0.0f), STATIC_SPRITE_far_mountains, 9.0f, v2(0.95f, 0.7f));
 	}
 
 	{
-		core->player = NewEntity("Player");
+		core->player = NewEntity("Player", ENTITY_character);
 
 		AttachPosition(core->player, v2(0.0f, -100.0f));
 		AttachCollider(core->player, GetRectangleShape(v2(14.0f, 35.0f), v2(0.0f, 0.0f)), COLLIDER_FLAG_player);
@@ -104,15 +104,15 @@ internal void TempInitGameWorld()
 	}
 
 	{
-		core->sword = NewEntity("Sword");
+		core->sword = NewEntity("Sword", ENTITY_item);
 		AttachItem(core->sword, ITEM_flint_sword, 1);
 	}
 
 	{
-		core->backpack = NewEntity("Backpack");
+		core->backpack = NewEntity("Backpack", ENTITY_storage);
 		AttachStorage(core->backpack, 9);
 
-		core->hotbar = NewEntity("Hotbar");
+		core->hotbar = NewEntity("Hotbar", ENTITY_storage); // Hotbar should technically be attached to the player entity
 		AttachStorage(core->hotbar, 2);
 
 		StorageComponent *storage = core->backpack->components[COMPONENT_storage];
@@ -121,7 +121,7 @@ internal void TempInitGameWorld()
 
 	for (int i = -10; i < 11; i++)
 	{
-		Entity *ground = NewEntity("Ground");
+		Entity *ground = NewEntity("Ground", ENTITY_ground);
 		AttachPosition(ground, v2(i * 100.0f, 0.0f));
 		// AttachSprite(ground, STATIC_SPRITE_ground_plains, -1.0f);
 		// AttachCollider(ground, GetRectangleShape(v2(100.0f, 147.0f), v2(0.0f, 147.0f)), COLLIDER_FLAG_ground);
@@ -267,6 +267,83 @@ internal void UpdateParallax()
 internal void UpdateEditor()
 {
 	TransformEditorCamera();
+
+	// NOTE(tjr): Render the editor UI
+	{
+		// NOTE(tjr): Drop-down menu
+		{
+			TsUIPushRow(core->ui, v2(0.0f, 0.0f), v2(100.0f, 30.0f));
+			if (TsUIDropdown(core->ui, "World..."))
+			{
+				TsUIButton(core->ui, "Commit");
+				TsUIButton(core->ui, "Reload");
+			}
+			TsUIDropdownEnd(core->ui);
+			TsUIPopRow(core->ui);
+		}
+
+		// NOTE(tjr): Time dilation
+		{
+			TsUIBeginInputGroup(core->ui);
+			TsUIPushColumn(core->ui, v2(core->render_w / 2.0f - 125.0f, 40.0f), v2(250.0f, 30.0f));
+
+			core->world_delta_mult = TsUISlider(core->ui, "World Time Dilation", core->world_delta_mult, 0.0f, 5.0f);
+
+			TsUIPushPosition(core->ui, v2(25.0f, 10.0f));
+			TsUIPushSize(core->ui, v2(200.0f, 30.0f));
+			if (TsUIButton(core->ui, "resume with dilation"))
+			{
+				core->is_in_editor = 0;
+
+				TsUIPopSize(core->ui);
+				TsUIPopPosition(core->ui);
+				TsUIPopY(core->ui);
+				TsUIPopColumn(core->ui);
+
+				TsUIEndInputGroup(core->ui);
+
+				return;
+			}
+			TsUIPopPosition(core->ui);
+			TsUIPopSize(core->ui);
+
+			TsUIPopY(core->ui);
+			TsUIPopColumn(core->ui);
+			TsUIEndInputGroup(core->ui);
+		}
+
+		// NOTE(tjr): Entity windows
+		{
+			TsUIWindowBegin(core->ui, "Entity List", v4(core->render_w - 310, 220, 300, 500), 0, 0);
+			{
+				for (int i = 1; i < core->entity_set->entity_count; i++)
+				{
+					TsUIPushRow(core->ui, v2(10, 10), v2(100, 30));
+					TsUIPushY(core->ui, 35 * ((f32)i - 1)); // NOTE(tjr): Temporary layout work-around.
+
+					Entity *entity = &core->entity_set->entities[i];
+					if (entity->entity_id > 0)
+					{
+						if (TsUIDropdown(core->ui, core->entity_set->entities[i].name))
+						{
+							TsUILabel(core->ui, "data");
+							TsUILabel(core->ui, "something else lmao");
+							TsUIButton(core->ui, "yeet");
+						}
+						TsUIDropdownEnd(core->ui);
+					}
+					else
+					{
+						TsUILabel(core->ui, "- - - - -");
+					}
+
+					TsUIPopY(core->ui);
+					TsUIPopRow(core->ui);
+				}
+			}
+			TsUIWindowEnd(core->ui);
+		}
+	}
 
 	TsPlatformCaptureKeyboard();
 }

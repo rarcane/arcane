@@ -3,18 +3,6 @@
 #define MAX_ENTITY_REFERENCES 10
 #define MAX_SUB_COLLIDERS 3
 
-typedef enum ComponentType ComponentType;
-typedef struct ComponentSet ComponentSet;
-typedef struct Entity Entity;
-typedef struct EntitySet EntitySet;
-
-internal Entity *NewEntity(char *name);
-internal void AddComponent(Entity *entity, ComponentType component_type, void *component);
-internal void RemoveComponent(Entity *entity, ComponentType component_type);
-internal void RequestEntity(Entity *entity, EntityReference *entity_reference);
-internal void FreeEntityReference(EntityReference *reference);
-internal void DeleteEntity(Entity *entity);
-
 typedef struct PositionComponent
 {
 	i32 entity_id;
@@ -162,15 +150,15 @@ typedef struct ParallaxComponent
 
 /* --- ECS Core --- */
 
-enum ComponentType
+typedef enum ComponentType
 {
 #define Component(component_struct, component_name) COMPONENT_##component_name,
 #include "components.inc"
 #undef Component
 	MAX_COMPONENTS,
-};
+} ComponentType;
 
-struct ComponentSet
+typedef struct ComponentSet
 {
 #define Component(component_struct, component_name)                        \
 	component_struct##Component component_name##_components[MAX_ENTITIES]; \
@@ -178,21 +166,42 @@ struct ComponentSet
 	i32 component_name##_free_component_id;
 #include "components.inc"
 #undef Component
-};
+} ComponentSet;
 
-struct Entity
+typedef enum EntityType
+{
+	ENTITY_undefined,
+	ENTITY_character,
+	ENTITY_monster,
+	ENTITY_animal,
+	ENTITY_item,
+	ENTITY_storage,
+	ENTITY_resource,
+	ENTITY_scenic,
+	ENTITY_ground
+} EntityType;
+
+typedef struct Entity
 {
 	i32 entity_id;
 	char name[20];
+	EntityType type;
 	void *components[MAX_COMPONENTS];
 	EntityReference *references[MAX_ENTITY_REFERENCES];
 	i32 reference_count;
 	i32 free_reference_index;
-};
+} Entity;
 
-struct EntitySet
+typedef struct EntitySet
 {
 	Entity entities[MAX_ENTITIES];
 	i32 entity_count;
 	i32 free_entity_id;
-};
+} EntitySet;
+
+internal Entity *NewEntity(char *name, EntityType type);
+internal void AddComponent(Entity *entity, ComponentType component_type, void *component);
+internal void RemoveComponent(Entity *entity, ComponentType component_type);
+internal void RequestEntity(Entity *entity, EntityReference *entity_reference);
+internal void FreeEntityReference(EntityReference *reference);
+internal void DeleteEntity(Entity *entity);

@@ -109,7 +109,7 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 
 			if (icon_data->item_comp && icon_data->item_comp->stack_size > 1)
 			{
-				Entity *new_item = NewEntity("Item");
+				Entity *new_item = NewEntity("Item", ENTITY_item);
 				AttachItem(new_item, icon_data->item_comp->item_type, icon_data->item_comp->stack_size / 2);
 				core->grabbed_inv_item_comp = new_item->components[COMPONENT_item];
 				core->grabbed_inv_item_origin_slot = -1;
@@ -465,40 +465,9 @@ internal void DrawGameUI()
 
 			if (TsUIButton(core->ui, "Add dummy object"))
 			{
-				NewEntity("dummy");
+				NewEntity("dummy", ENTITY_undefined);
 			}
 
-			TsUIPopColumn(core->ui);
-		}
-		TsUIWindowEnd(core->ui);
-
-		// NOTE(tjr): Displays all of the entities active in the world.
-		TsUIWindowBegin(core->ui, "Entity List", v4(core->render_w - 310, 220, 300, 500), 0, 0);
-		{
-			TsUIPushColumn(core->ui, v2(10, 10), v2(100, 30));
-			for (int i = 1; i < core->entity_set->entity_count; i++)
-			{
-				TsUIPushY(core->ui, 35 * ((f32)i - 1));
-
-				Entity *entity = &core->entity_set->entities[i];
-				if (entity->entity_id > 0)
-				{
-					TsUIPushRow(core->ui, v2(10, 0), v2(100, 30));
-					TsUILabel(core->ui, core->entity_set->entities[i].name);
-
-					// if (TsUIButton(core->ui, "Delete"))
-					// {
-					// 	DeleteEntity(entity);
-					// }
-
-					TsUIPopRow(core->ui);
-				}
-				else
-				{
-					TsUILabel(core->ui, "- - - - -");
-				}
-				TsUIPopY(core->ui);
-			}
 			TsUIPopColumn(core->ui);
 		}
 		TsUIWindowEnd(core->ui);

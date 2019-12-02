@@ -20,7 +20,7 @@ internal void InitialiseECS()
 	} */
 }
 
-internal Entity *NewEntity(char name[])
+internal Entity *NewEntity(char name[], EntityType type)
 {
 	if (core->entity_set->free_entity_id == core->entity_set->entity_count) // Entity ID is caught up
 	{

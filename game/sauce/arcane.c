@@ -82,7 +82,6 @@ PermanentLoad(TsPlatform *platform_)
 					{"camera_zoom", TSDEVTERMINAL_VARIABLE_TYPE_f32, &core->camera_zoom},
 					{"camera_offset", TSDEVTERMINAL_VARIABLE_TYPE_v2, &core->camera_offset},
 					{"shadow_opacity", TSDEVTERMINAL_VARIABLE_TYPE_f32, &core->shadow_opacity},
-					{"slow_mult", TSDEVTERMINAL_VARIABLE_TYPE_f32, &core->slow_mult},
 					{"bloom", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->bloom},
 					{"draw_colliders", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->draw_colliders},
 					{"draw_velocity", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->draw_velocity},
@@ -131,7 +130,6 @@ PermanentLoad(TsPlatform *platform_)
 
 			core->camera_zoom = DEFAULT_CAMERA_ZOOM;
 			core->shadow_opacity = 0.0f;
-			core->slow_mult = 0.25f;
 
 			core->delta_mult = 1.0f;
 			core->world_delta_mult = 1.0f;
@@ -159,21 +157,11 @@ Update(void)
 {
 	// NOTE(tjr): Key stuff
 	{
-		// NOTE(tjr): Slow motion application to delta
-		static b8 slow_motion = 0;
-		if (platform->key_pressed[KEY_x])
-			slow_motion = !slow_motion;
-
-		if (slow_motion)
-			core->delta_mult = core->slow_mult;
-		else
-			core->delta_mult = 1.0f;
-
 		// NOTE(tjr): Entering / exiting full-screen
 		if (platform->key_pressed[KEY_f11])
 			platform->fullscreen = !platform->fullscreen;
 
-		// NOTE(tjr): Entering / exiting editor mode
+		// NOTE(tjr): Toggle editor mode
 		if (platform->key_pressed[KEY_f1])
 		{
 			if (core->is_in_editor)
@@ -371,6 +359,36 @@ Update(void)
 			ui_frame.RenderWindow = ArcaneUIRenderWindow;
 		}
 		TsUIBeginFrame(core->ui, &ui_frame);
+	}
+
+	// NOTE(tjr): Application-wide slow-motion controls
+	{
+		static b8 is_time_dilated = 0;
+		static f32 last_multiplier = 0.25f;
+		if (platform->key_pressed[KEY_x])
+		{
+			if (is_time_dilated)
+			{
+				last_multiplier = core->delta_mult;
+				core->delta_mult = 1.0f;
+				is_time_dilated = 0;
+			}
+			else
+			{
+				core->delta_mult = last_multiplier;
+				is_time_dilated = 1;
+			}
+		}
+
+		if (is_time_dilated)
+		{
+			TsUIPushPosition(core->ui, v2(16.0f, 9.0f));
+			TsUIPushColumn(core->ui, v2(0.0f, 0.0f), v2(250.0f, 30.0f));
+			TsUILabel(core->ui, "Application-wide time-dilation is in effect");
+			core->delta_mult = TsUISlider(core->ui, "App Time Dilation", core->delta_mult, 0.0f, 1.0f);
+			TsUIPopColumn(core->ui);
+			TsUIPopPosition(core->ui);
+		}
 	}
 
 	// NOTE(rjf): Update.

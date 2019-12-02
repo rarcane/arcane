@@ -61,7 +61,6 @@ struct Core
 	b32 bloom;
 	b32 performance_view;
 	f32 shadow_opacity;
-	f32 slow_mult;
 
 	// NOTE(tjr): Editor
 	b32 is_in_editor;
