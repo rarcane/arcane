@@ -419,7 +419,7 @@ internal void DrawGameUI()
 	}
 
 	// NOTE(tjr): Draw developer UI.
-	if (core->developer_view)
+	if (core->performance_view)
 	{
 		// NOTE(tjr): Display performance data.
 		TsUIWindowBegin(core->ui, "Performance", v4(10, 10, 300, 280), 0, 0);

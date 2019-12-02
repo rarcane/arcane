@@ -263,3 +263,10 @@ internal void UpdateParallax()
 		}
 	}
 }
+
+internal void UpdateEditor()
+{
+	TransformEditorCamera();
+
+	TsPlatformCaptureKeyboard();
+}

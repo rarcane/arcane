@@ -86,7 +86,6 @@ PermanentLoad(TsPlatform *platform_)
 					{"bloom", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->bloom},
 					{"draw_colliders", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->draw_colliders},
 					{"draw_velocity", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->draw_velocity},
-					{"developer_view", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->developer_view}, // TODO: Extract into pressing F1
 					{"fullscreen", TSDEVTERMINAL_VARIABLE_TYPE_b32, &platform->fullscreen},
 				};
 
@@ -130,7 +129,7 @@ PermanentLoad(TsPlatform *platform_)
 			core->component_set = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(*core->component_set));
 			InitialiseECS();
 
-			core->camera_zoom = 3.3f;
+			core->camera_zoom = DEFAULT_CAMERA_ZOOM;
 			core->shadow_opacity = 0.0f;
 			core->slow_mult = 0.25f;
 
@@ -158,14 +157,9 @@ HotUnload(void)
 TS_APP_PROC void
 Update(void)
 {
-	// NOTE(tjr): Temp key stuff
+	// NOTE(tjr): Key stuff
 	{
-		if (platform->key_pressed[KEY_f11])
-			platform->fullscreen = !platform->fullscreen;
-
-		if (platform->key_pressed[KEY_f1])
-			core->developer_view = !core->developer_view;
-
+		// NOTE(tjr): Slow motion application to delta
 		static b8 slow_motion = 0;
 		if (platform->key_pressed[KEY_x])
 			slow_motion = !slow_motion;
@@ -174,6 +168,29 @@ Update(void)
 			core->delta_mult = core->slow_mult;
 		else
 			core->delta_mult = 1.0f;
+
+		// NOTE(tjr): Entering / exiting full-screen
+		if (platform->key_pressed[KEY_f11])
+			platform->fullscreen = !platform->fullscreen;
+
+		// NOTE(tjr): Entering / exiting editor mode
+		if (platform->key_pressed[KEY_f1])
+		{
+			if (core->is_in_editor)
+			{
+				core->world_delta_mult = 1.0f;
+				core->is_in_editor = 0;
+			}
+			else
+			{
+				core->world_delta_mult = 0.0f;
+				core->is_in_editor = 1;
+			}
+		}
+
+		// NOTE(tjr): Opening / exiting performance window
+		if (platform->key_pressed[KEY_f2])
+			core->performance_view = !core->performance_view;
 
 		{
 			local_persist b8 initiated_click = 0;
@@ -279,16 +296,8 @@ Update(void)
 	{
 		core->delta_t = core->raw_delta_t * core->delta_mult;
 
-		b8 is_game_paused_or_some_shit = 0;
-		if (!is_game_paused_or_some_shit)
-		{
-			core->elapsed_world_time += core->delta_t;
-			core->world_delta_t = core->delta_t * core->world_delta_mult;
-		}
-		else
-		{
-			core->world_delta_t = 0.0f;
-		}
+		core->world_delta_t = core->delta_t * core->world_delta_mult;
+		core->elapsed_world_time += core->world_delta_t;
 	}
 
 	// NOTE(rjf): Begin renderer frame.
@@ -369,15 +378,21 @@ Update(void)
 		START_PERF_TIMER("Update");
 		if (core->is_ingame)
 		{
-			PreMoveUpdatePlayer();
+			if (core->is_in_editor)
+				UpdateEditor();
 
-			AdvanceVelocity(core->component_set->velocity_components, core->component_set->velocity_component_count);
-			UpdateTriggers(core->component_set->trigger_components, core->component_set->trigger_component_count);
+			if (core->world_delta_t != 0.0f)
+			{
+				PreMoveUpdatePlayer();
 
-			PositionCamera();
-			UpdateParallax();
+				AdvanceVelocity(core->component_set->velocity_components, core->component_set->velocity_component_count);
+				UpdateTriggers(core->component_set->trigger_components, core->component_set->trigger_component_count);
 
-			PostMoveUpdatePlayer();
+				TransformInGameCamera();
+				UpdateParallax();
+
+				PostMoveUpdatePlayer();
+			}
 
 			DrawWorld();
 			DrawDebugLines();
