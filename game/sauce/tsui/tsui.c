@@ -2214,6 +2214,7 @@ TsUIStyledWindowBegin(TsUI *ui, i32 style_flags, char *title, v4 rect, i32 flags
         if(window == ui->allowed_window || ui->scrolling_window == window)
         {
             window->target_view_offset.y -= 1.f * ui->cursor_scroll_y;
+            TsPlatformCaptureMousePosition();
 
             if(window->target_view_max.y > 0)
             {
