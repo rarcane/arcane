@@ -281,10 +281,11 @@ internal void RenderBackgroundSprites()
 			// NOTE(tjr): The X source pos is translated to the right depending on the current frame.
 			v2 source_pos = v2(dynamic_sprite->source.x + dynamic_sprite->source.z * animation_comp->current_frame, dynamic_sprite->source.y);
 
-			Ts2dPushTexture(
+			Ts2dPushTintedTexture(
 				core->renderer, dynamic_sprite->texture_atlas,
 				v4(source_pos.x, source_pos.y, dynamic_sprite->source.z - 0.5f, dynamic_sprite->source.w - 0.5f),
-				v4(render_pos.x, render_pos.y, render_size.x, render_size.y));
+				v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
+				(core->is_in_editor && ordered_sprites[i].entity->entity_id == core->selected_entity ? v4(1.0f, 0.8f, 0.8f, 1.0f) : v4(1, 1, 1, 1)));
 		}
 		else
 		{
@@ -300,10 +301,11 @@ internal void RenderBackgroundSprites()
 			render_pos = V2AddV2(render_pos, v2(render_size.x / -2.0f, -render_size.y));
 			render_pos = V2AddV2(render_pos, v2zoom(v2((static_sprite->offset.x + ordered_sprites[i].offset.x) * (ordered_sprites[i].is_flipped ? -1.0f : 1.0f), static_sprite->offset.y + ordered_sprites[i].offset.y)));
 
-			Ts2dPushTexture(
+			Ts2dPushTintedTexture(
 				core->renderer, static_sprite->texture_atlas,
 				v4(static_sprite->source.x, static_sprite->source.y, static_sprite->source.z - 0.5f, static_sprite->source.w - 0.5f),
-				v4(render_pos.x, render_pos.y, render_size.x, render_size.y));
+				v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
+				(core->is_in_editor && ordered_sprites[i].entity->entity_id == core->selected_entity ? v4(1.0f, 0.8f, 0.8f, 1.0f) : v4(1, 1, 1, 1)));
 		}
 	}
 }
@@ -406,10 +408,11 @@ internal void RenderForegroundSprites(SpriteComponent sprite_components[], SubSp
 			// NOTE(tjr): The X source pos is translated to the right depending on the current frame.
 			v2 source_pos = v2(dynamic_sprite->source.x + dynamic_sprite->source.z * animation_comp->current_frame, dynamic_sprite->source.y);
 
-			Ts2dPushTexture(
+			Ts2dPushTintedTexture(
 				core->renderer, dynamic_sprite->texture_atlas,
 				v4(source_pos.x, source_pos.y, dynamic_sprite->source.z - 0.5f, dynamic_sprite->source.w - 0.5f),
-				v4(render_pos.x, render_pos.y, render_size.x, render_size.y));
+				v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
+				(core->is_in_editor && ordered_sprites[i].entity->entity_id == core->selected_entity ? v4(1.0f, 0.8f, 0.8f, 1.0f) : v4(1, 1, 1, 1)));
 		}
 		else
 		{
@@ -425,10 +428,11 @@ internal void RenderForegroundSprites(SpriteComponent sprite_components[], SubSp
 			render_pos = V2AddV2(render_pos, v2(render_size.x / -2.0f, -render_size.y));
 			render_pos = V2AddV2(render_pos, v2zoom(v2((static_sprite->offset.x + ordered_sprites[i].offset.x) * (ordered_sprites[i].is_flipped ? -1.0f : 1.0f), static_sprite->offset.y + ordered_sprites[i].offset.y)));
 
-			Ts2dPushTexture(
+			Ts2dPushTintedTexture(
 				core->renderer, static_sprite->texture_atlas,
 				v4(static_sprite->source.x, static_sprite->source.y, static_sprite->source.z - 0.5f, static_sprite->source.w - 0.5f),
-				v4(render_pos.x, render_pos.y, render_size.x, render_size.y));
+				v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
+				(core->is_in_editor && ordered_sprites[i].entity->entity_id == core->selected_entity ? v4(1.0f, 0.8f, 0.8f, 1.0f) : v4(1, 1, 1, 1)));
 		}
 	}
 }

@@ -178,7 +178,8 @@ typedef enum EntityType
 	ENTITY_storage,
 	ENTITY_resource,
 	ENTITY_scenic,
-	ENTITY_ground
+	ENTITY_ground,
+	ENTITY_MAX
 } EntityType;
 
 typedef struct Entity

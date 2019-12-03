@@ -266,8 +266,6 @@ internal void UpdateParallax()
 
 internal void UpdateEditor()
 {
-	TransformEditorCamera();
-
 	// NOTE(tjr): Render the editor UI
 	{
 		// NOTE(tjr): Drop-down menu
@@ -287,25 +285,7 @@ internal void UpdateEditor()
 			TsUIBeginInputGroup(core->ui);
 			TsUIPushColumn(core->ui, v2(core->render_w / 2.0f - 125.0f, 40.0f), v2(250.0f, 30.0f));
 
-			core->world_delta_mult = TsUISlider(core->ui, "World Time Dilation", core->world_delta_mult, 0.0f, 5.0f);
-
-			TsUIPushPosition(core->ui, v2(25.0f, 10.0f));
-			TsUIPushSize(core->ui, v2(200.0f, 30.0f));
-			if (TsUIButton(core->ui, "resume with dilation"))
-			{
-				core->is_in_editor = 0;
-
-				TsUIPopSize(core->ui);
-				TsUIPopPosition(core->ui);
-				TsUIPopY(core->ui);
-				TsUIPopColumn(core->ui);
-
-				TsUIEndInputGroup(core->ui);
-
-				return;
-			}
-			TsUIPopPosition(core->ui);
-			TsUIPopSize(core->ui);
+			core->world_delta_mult = TsUISlider(core->ui, "World Time Dilation", core->world_delta_mult, 0.0f, 1.0f);
 
 			TsUIPopY(core->ui);
 			TsUIPopColumn(core->ui);
@@ -314,36 +294,147 @@ internal void UpdateEditor()
 
 		// NOTE(tjr): Entity windows
 		{
-			TsUIWindowBegin(core->ui, "Entity List", v4(core->render_w - 310, 220, 300, 500), 0, 0);
+			TsUIWindowBegin(core->ui, "Entity List", v4(core->render_w - 360, core->render_h - 510, 350, 500), 0, 0);
 			{
-				for (int i = 1; i < core->entity_set->entity_count; i++)
+				TsUIPushColumn(core->ui, v2(10, 10), v2(100, 30));
+
+				local_persist b8 is_index_mode = 0;
+
+				TsUIPushRow(core->ui, v2(0, 0), v2(90, 30));
+				TsUILabel(core->ui, "Sort by: ");
+				if (is_index_mode)
 				{
-					TsUIPushRow(core->ui, v2(10, 10), v2(100, 30));
-					TsUIPushY(core->ui, 35 * ((f32)i - 1)); // NOTE(tjr): Temporary layout work-around.
+					TsUIToggler(core->ui, "Index", is_index_mode);
+					TsUIPushX(core->ui, 10);
+					TsUIPushSize(core->ui, v2(120, 30));
+					is_index_mode = !TsUIToggler(core->ui, "Category", !is_index_mode);
+				}
+				else
+				{
+					is_index_mode = TsUIToggler(core->ui, "Index", is_index_mode);
+					TsUIPushX(core->ui, 10);
+					TsUIPushSize(core->ui, v2(120, 30));
+					TsUIToggler(core->ui, "Category", !is_index_mode);
+				}
+				TsUIPopX(core->ui);
+				TsUIPopSize(core->ui);
+				TsUIPopRow(core->ui);
 
-					Entity *entity = &core->entity_set->entities[i];
-					if (entity->entity_id > 0)
+				TsUIDivider(core->ui);
+
+				if (is_index_mode)
+				{
+					// NOTE(tjr): Index view
+					for (int i = 1; i < core->entity_set->entity_count; i++)
 					{
-						if (TsUIDropdown(core->ui, core->entity_set->entities[i].name))
+						TsUIPushRow(core->ui, v2(0, 0), v2(30, 30));
+
 						{
-							TsUILabel(core->ui, "data");
-							TsUILabel(core->ui, "something else lmao");
-							TsUIButton(core->ui, "yeet");
+							char label[100];
+							sprintf(label, "%i", i);
+							TsUILabel(core->ui, label);
 						}
-						TsUIDropdownEnd(core->ui);
-					}
-					else
-					{
-						TsUILabel(core->ui, "- - - - -");
-					}
 
-					TsUIPopY(core->ui);
-					TsUIPopRow(core->ui);
+						Entity *entity = &core->entity_set->entities[i];
+						if (entity->entity_id > 0)
+						{
+							TsUIPushWidth(core->ui, 120);
+							if (TsUIToggler(core->ui, entity->name, core->selected_entity == i))
+							{
+								core->selected_entity = i;
+							}
+							else
+							{
+								if (core->selected_entity == i)
+								{
+									core->selected_entity = 0;
+								}
+							}
+							TsUIPopWidth(core->ui);
+
+							TsUIPopRow(core->ui);
+						}
+						else
+						{
+							TsUIPushSize(core->ui, v2(100, 30));
+							TsUILabel(core->ui, "- - - - -");
+							TsUIPopRow(core->ui);
+							TsUIPopSize(core->ui);
+						}
+
+						TsUIDivider(core->ui);
+					}
+				}
+				else
+				{
+					// NOTE(tjr): Entity category (type) view
+					for (int i = 0; i < ENTITY_MAX; i++)
+					{
+						char label[100];
+						sprintf(label, "%i", i);
+
+						local_persist b32 is_toggled = 0;
+						if (TsUIToggler(core->ui, label, (is_toggled >> i) & 1))
+						{
+							is_toggled |= (1 << i);
+
+							TsUIPushX(core->ui, 20);
+							for (int j = 1; j < core->entity_set->entity_count; j++) // TEMP: Need to sort these before-hand. Will eventually get too inefficient.
+							{
+								Entity *entity = &core->entity_set->entities[j];
+								if (entity->type == i)
+								{
+									TsUIPushX(core->ui, 20);
+									TsUIPushWidth(core->ui, 120);
+									if (TsUIToggler(core->ui, entity->name, core->selected_entity == j))
+									{
+										core->selected_entity = j;
+									}
+									else
+									{
+										if (core->selected_entity == j)
+										{
+											core->selected_entity = 0;
+										}
+									}
+									TsUIPopWidth(core->ui);
+									TsUIPopX(core->ui);
+								}
+							}
+							TsUIPopX(core->ui);
+						}
+						else
+						{
+							is_toggled &= ~(1 << i);
+						}
+					}
+				}
+
+				TsUIPopColumn(core->ui);
+			}
+			TsUIWindowEnd(core->ui);
+
+			char entity_window_title[100];
+			sprintf(entity_window_title, core->selected_entity == 0 ? "Entity Info" : "Entity Info - %s", core->entity_set->entities[core->selected_entity].name);
+			TsUIWindowBegin(core->ui, entity_window_title, v4(core->render_w - 360, 10, 350, 300), 0, 0);
+			{
+				if (core->selected_entity == 0)
+				{
+					//TsUIPushPosition(core->ui, )
+					TsUIPushAutoWidth(core->ui);
+					TsUILabel(core->ui, "No Entity selected.");
+					TsUIPopWidth(core->ui);
+				}
+				else
+				{
+					TsUILabel(core->ui, core->entity_set->entities[core->selected_entity].name);
 				}
 			}
 			TsUIWindowEnd(core->ui);
 		}
 	}
+
+	TransformEditorCamera();
 
 	TsPlatformCaptureKeyboard();
 }

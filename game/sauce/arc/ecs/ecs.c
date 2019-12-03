@@ -30,6 +30,7 @@ internal Entity *NewEntity(char name[], EntityType type)
 
 		core->entity_set->entities[entity_id].entity_id = entity_id;
 		strcpy(core->entity_set->entities[entity_id].name, name);
+		core->entity_set->entities[entity_id].type = type;
 
 		return &core->entity_set->entities[entity_id];
 	}
@@ -39,6 +40,7 @@ internal Entity *NewEntity(char name[], EntityType type)
 
 		core->entity_set->entities[entity_id].entity_id = entity_id;
 		strcpy(core->entity_set->entities[entity_id].name, name);
+		core->entity_set->entities[entity_id].type = type;
 
 		// Determine the next free ID
 		for (int i = 1; i < core->entity_set->entity_count + 1; i++)

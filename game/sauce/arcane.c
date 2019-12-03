@@ -164,14 +164,16 @@ Update(void)
 		// NOTE(tjr): Toggle editor mode
 		if (platform->key_pressed[KEY_f1])
 		{
+			local_persist f32 editor_world_delta_mult = 0.05f;
 			if (core->is_in_editor)
 			{
+				editor_world_delta_mult = core->world_delta_mult;
 				core->world_delta_mult = 1.0f;
 				core->is_in_editor = 0;
 			}
 			else
 			{
-				core->world_delta_mult = 0.0f;
+				core->world_delta_mult = editor_world_delta_mult;
 				core->is_in_editor = 1;
 			}
 		}
@@ -382,7 +384,7 @@ Update(void)
 
 		if (is_time_dilated)
 		{
-			TsUIPushPosition(core->ui, v2(16.0f, 9.0f));
+			TsUIPushPosition(core->ui, v2(10.0f, core->render_h - 70.0f));
 			TsUIPushColumn(core->ui, v2(0.0f, 0.0f), v2(250.0f, 30.0f));
 			TsUILabel(core->ui, "Application-wide time-dilation is in effect");
 			core->delta_mult = TsUISlider(core->ui, "App Time Dilation", core->delta_mult, 0.0f, 1.0f);
@@ -396,9 +398,11 @@ Update(void)
 		START_PERF_TIMER("Update");
 		if (core->is_ingame)
 		{
+			// NOTE(tjr): Update the edtior & it's systems.
 			if (core->is_in_editor)
 				UpdateEditor();
 
+			// NOTE(tjr): Perform movements if the game is not paused.
 			if (core->world_delta_t != 0.0f)
 			{
 				PreMoveUpdatePlayer();
@@ -412,6 +416,7 @@ Update(void)
 				PostMoveUpdatePlayer();
 			}
 
+			// NOTE(tjr): Render the game.
 			DrawWorld();
 			DrawDebugLines();
 			DrawGameUI();

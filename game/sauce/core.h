@@ -64,6 +64,7 @@ struct Core
 
 	// NOTE(tjr): Editor
 	b32 is_in_editor;
+	i32 selected_entity;
 
 	// Temp
 	b32 is_ingame;
