@@ -168,25 +168,13 @@ typedef struct ComponentSet
 #undef Component
 } ComponentSet;
 
-typedef enum EntityType
-{
-	ENTITY_undefined,
-	ENTITY_character,
-	ENTITY_monster,
-	ENTITY_animal,
-	ENTITY_item,
-	ENTITY_storage,
-	ENTITY_resource,
-	ENTITY_scenic,
-	ENTITY_ground,
-	ENTITY_MAX
-} EntityType;
-
+#define ENTITY_FLAG_no_delete (1 << 0)
 typedef struct Entity
 {
 	i32 entity_id;
 	char name[20];
 	EntityType type;
+	b16 flags;
 	void *components[MAX_COMPONENTS];
 	EntityReference *references[MAX_ENTITY_REFERENCES];
 	i32 reference_count;

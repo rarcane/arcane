@@ -18,6 +18,7 @@
 #include "tsarcane/arcane_tsui_callbacks.h"
 #include "arcane.h"
 #include "core.h"
+#include "generated/catchall.h"
 // NOTE(tjr): Game Header Code
 #include "arc/entity/player/action.h"
 #include "arc/sprite/sprite.h"
@@ -29,7 +30,6 @@
 #include "arc/entity/player/player.h"
 #include "arc/entity/player/camera.h"
 #include "arc/ui/ui.h"
-#include "generated/catchall.h"
 
 // NOTE(rjf): Core Implementation Code
 #include "ts2d/ts2d.c"
@@ -39,6 +39,7 @@
 #include "tsui/tsui.c"
 #include "tsarcane/arcane_tsui_callbacks.c"
 #include "tsarcane/arcane_tsfoundation_log_procedure.c"
+#include "generated/catchall.c"
 // NOTE(tjr): Game Implementation Code
 #include "util.c"
 #include "tsarcane/terminalcommands.c"
@@ -52,7 +53,6 @@
 #include "arc/entity/player/player.c"
 #include "arc/entity/player/camera.c"
 #include "arc/ui/ui.c"
-#include "generated/catchall.c"
 
 TS_APP_PROC void
 PermanentLoad(TsPlatform *platform_)

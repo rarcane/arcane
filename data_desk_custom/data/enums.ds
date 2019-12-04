@@ -1,0 +1,12 @@
+enum Entity
+{
+    undefined,
+	character,
+	monster,
+	animal,
+	item,
+	storage,
+	resource,
+	scenic,
+	ground,
+}

@@ -90,6 +90,7 @@ internal void TempInitGameWorld()
 
 	{
 		core->player = NewEntity("Player", ENTITY_character);
+		core->player->flags |= ENTITY_FLAG_no_delete;
 
 		AttachPosition(core->player, v2(0.0f, -100.0f));
 		AttachCollider(core->player, GetRectangleShape(v2(14.0f, 35.0f), v2(0.0f, 0.0f)), COLLIDER_FLAG_player);
@@ -105,14 +106,17 @@ internal void TempInitGameWorld()
 
 	{
 		core->sword = NewEntity("Sword", ENTITY_item);
+		core->sword->flags |= ENTITY_FLAG_no_delete;
 		AttachItem(core->sword, ITEM_flint_sword, 1);
 	}
 
 	{
 		core->backpack = NewEntity("Backpack", ENTITY_storage);
+		core->backpack->flags |= ENTITY_FLAG_no_delete;
 		AttachStorage(core->backpack, 9);
 
 		core->hotbar = NewEntity("Hotbar", ENTITY_storage); // Hotbar should technically be attached to the player entity
+		core->hotbar->flags |= ENTITY_FLAG_no_delete;
 		AttachStorage(core->hotbar, 2);
 
 		StorageComponent *storage = core->backpack->components[COMPONENT_storage];
@@ -296,7 +300,7 @@ internal void UpdateEditor()
 		{
 			TsUIWindowBegin(core->ui, "Entity List", v4(core->render_w - 360, core->render_h - 510, 350, 500), 0, 0);
 			{
-				TsUIPushColumn(core->ui, v2(10, 10), v2(100, 30));
+				TsUIPushColumn(core->ui, v2(10, 10), v2(150, 30));
 
 				local_persist b8 is_index_mode = 0;
 
@@ -370,11 +374,8 @@ internal void UpdateEditor()
 					// NOTE(tjr): Entity category (type) view
 					for (int i = 0; i < ENTITY_MAX; i++)
 					{
-						char label[100];
-						sprintf(label, "%i", i);
-
 						local_persist b32 is_toggled = 0;
-						if (TsUIToggler(core->ui, label, (is_toggled >> i) & 1))
+						if (TsUIToggler(core->ui, GetEntityTypeName(i), (is_toggled >> i) & 1))
 						{
 							is_toggled |= (1 << i);
 
@@ -382,7 +383,7 @@ internal void UpdateEditor()
 							for (int j = 1; j < core->entity_set->entity_count; j++) // TEMP: Need to sort these before-hand. Will eventually get too inefficient.
 							{
 								Entity *entity = &core->entity_set->entities[j];
-								if (entity->type == i)
+								if (entity->entity_id > 0 && entity->type == i)
 								{
 									TsUIPushX(core->ui, 20);
 									TsUIPushWidth(core->ui, 120);
@@ -420,14 +421,37 @@ internal void UpdateEditor()
 			{
 				if (core->selected_entity == 0)
 				{
-					//TsUIPushPosition(core->ui, )
 					TsUIPushAutoWidth(core->ui);
 					TsUILabel(core->ui, "No Entity selected.");
 					TsUIPopWidth(core->ui);
 				}
 				else
 				{
+					Entity *selected_entity = &core->entity_set->entities[core->selected_entity];
+					R_DEV_ASSERT(selected_entity->entity_id > 0, "Invalid entity");
+
+					TsUIPushAutoWidth(core->ui);
+					TsUIPushHeight(core->ui, 30);
+					TsUIPushPosition(core->ui, v2(100, 200));
+					if (!(selected_entity->flags & ENTITY_FLAG_no_delete))
+					{
+						if (TsUIButton(core->ui, "Delete Entity"))
+						{
+							DeleteEntity(selected_entity);
+							core->selected_entity = 0;
+						}
+					}
+					TsUIPopPosition(core->ui);
+					TsUIPopHeight(core->ui);
+
+					TsUIPushColumn(core->ui, v2(0, 0), v2(100, 30));
+
 					TsUILabel(core->ui, core->entity_set->entities[core->selected_entity].name);
+					// ...
+
+					TsUIPopColumn(core->ui);
+
+					TsUIPopWidth(core->ui);
 				}
 			}
 			TsUIWindowEnd(core->ui);
