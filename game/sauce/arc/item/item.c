@@ -46,9 +46,9 @@ internal void ConvertToGroundItem(ItemComponent *item_comp)
 internal void StripItemGroundComponents(ItemComponent *item_comp)
 {
 	Entity *item = &core->entity_set->entities[item_comp->entity_id];
-	RemoveComponent(item, COMPONENT_position);
-	RemoveComponent(item, COMPONENT_sprite);
-	RemoveComponent(item, COMPONENT_velocity);
-	RemoveComponent(item, COMPONENT_physics);
-	RemoveComponent(item, COMPONENT_collider);
+	RemovePositionComponent(item);
+	RemoveSpriteComponent(item);
+	RemoveVelocityComponent(item);
+	RemovePhysicsComponent(item);
+	RemoveColliderComponent(item);
 }

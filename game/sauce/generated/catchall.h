@@ -14,6 +14,9 @@ ENTITY_TYPE_MAX,
 };
 static char *GetEntityTypeTypeName(EntityType type);
 
+#define ENTITY_FLAGS_no_delete (1<<0)
+typedef unsigned int EntityFlags;
+
 #define COLLIDER_FLAGS_ground (1<<0)
 #define COLLIDER_FLAGS_player (1<<1)
 #define COLLIDER_FLAGS_entity (1<<2)
@@ -65,7 +68,7 @@ typedef struct AnimationComponent
 {
 i32 entity_id;
 i32 component_id;
-b8 flags;
+AnimationFlags flags;
 i32 current_frame;
 f32 interval_mult;
 f32 frame_start_time;
@@ -76,7 +79,7 @@ typedef struct ColliderComponent
 i32 entity_id;
 i32 component_id;
 Shape shape;
-b8 flags;
+ColliderFlags flags;
 } ColliderComponent;
 
 typedef struct VelocityComponent

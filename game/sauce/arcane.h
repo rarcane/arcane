@@ -1,15 +1,9 @@
 typedef void (*TriggerCallback)(OverlappedColliderInfo);
 
 typedef struct Entity Entity;
-typedef struct EntityReference
-{
-	Entity *entity;
-	i32 reference_index;
-} EntityReference;
-
 typedef struct OverlappedColliderInfo
 {
-	EntityReference overlapped_entity;
+	Entity *overlapped_entity;
 	// direction or some shit idk?
 } OverlappedColliderInfo;
 

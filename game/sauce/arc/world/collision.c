@@ -668,7 +668,7 @@ internal void UpdateTriggers(TriggerComponent trigger_components[], i32 entity_c
 							{
 								//v2 mtv = {minimum_axis.x * minimumOverlap, minimum_axis.y * minimumOverlap};
 
-								RequestEntity(supposed_entity, &overlap_info.overlapped_entity);
+								overlap_info.overlapped_entity = supposed_entity;
 
 								R_DEV_ASSERT(overlap_count + 1 < MAX_OVERLAPPING_COLLIDERS, "Did not expect this many overlapping colliders.");
 								overlaps[overlap_count++] = overlap_info;
@@ -681,12 +681,13 @@ internal void UpdateTriggers(TriggerComponent trigger_components[], i32 entity_c
 			// Exit trigger testing
 			for (int j = 0; j < trigger_comp->previous_overlaps_count; j++)
 			{
-				R_DEV_ASSERT(trigger_comp->previous_overlaps[j].overlapped_entity.entity, "Previous entity has been deleted. How should this behave?");
+				// NOTE(tjr): In rare circumstances this deleted entity could be replaced over the frame and pass as the previous entity, need to find a way around this somehow?Z
+				R_DEV_ASSERT(trigger_comp->previous_overlaps[j].overlapped_entity->entity_id > 0, "Previous entity has been deleted. How should this behave?");
 
 				b8 does_exit_trigger = 1;
 				for (int k = 0; k < overlap_count; k++)
 				{
-					if (trigger_comp->previous_overlaps[j].overlapped_entity.entity == overlaps[k].overlapped_entity.entity)
+					if (trigger_comp->previous_overlaps[j].overlapped_entity == overlaps[k].overlapped_entity)
 					{
 						does_exit_trigger = 0;
 						break;
@@ -706,9 +707,9 @@ internal void UpdateTriggers(TriggerComponent trigger_components[], i32 entity_c
 				b8 does_exist = 0;
 				for (int k = 0; k < trigger_comp->previous_overlaps_count; k++)
 				{
-					R_DEV_ASSERT(trigger_comp->previous_overlaps[k].overlapped_entity.entity, "Previous entity has been deleted. How should this behave?");
+					R_DEV_ASSERT(trigger_comp->previous_overlaps[k].overlapped_entity->entity_id > 0, "Previous entity has been deleted. How should this behave?");
 
-					if (overlaps[j].overlapped_entity.entity == trigger_comp->previous_overlaps[k].overlapped_entity.entity)
+					if (overlaps[j].overlapped_entity == trigger_comp->previous_overlaps[k].overlapped_entity)
 					{
 						does_exist = 1;
 						break;
@@ -720,11 +721,6 @@ internal void UpdateTriggers(TriggerComponent trigger_components[], i32 entity_c
 					// Notify this trigger that something has entered.
 					(*trigger_comp->enter_trigger_callback)(overlaps[j]);
 				}
-			}
-
-			for (int j = 0; j < trigger_comp->previous_overlaps_count; j++)
-			{
-				FreeEntityReference(&trigger_comp->previous_overlaps[j].overlapped_entity);
 			}
 
 			MemoryCopy(trigger_comp->previous_overlaps, overlaps, sizeof(OverlappedColliderInfo) * MAX_OVERLAPPING_COLLIDERS);

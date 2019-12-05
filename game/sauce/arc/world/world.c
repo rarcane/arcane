@@ -90,7 +90,7 @@ internal void TempInitGameWorld()
 
 	{
 		core->player = NewEntity("Player", ENTITY_TYPE_character);
-		core->player->flags |= ENTITY_FLAG_no_delete;
+		core->player->flags |= ENTITY_FLAGS_no_delete;
 
 		AttachPosition(core->player, v2(0.0f, -100.0f));
 		AttachCollider(core->player, GetRectangleShape(v2(14.0f, 35.0f), v2(0.0f, 0.0f)), COLLIDER_FLAGS_player);
@@ -106,17 +106,17 @@ internal void TempInitGameWorld()
 
 	{
 		core->sword = NewEntity("Sword", ENTITY_TYPE_item);
-		core->sword->flags |= ENTITY_FLAG_no_delete;
+		core->sword->flags |= ENTITY_FLAGS_no_delete;
 		AttachItem(core->sword, ITEM_flint_sword, 1);
 	}
 
 	{
 		core->backpack = NewEntity("Backpack", ENTITY_TYPE_storage);
-		core->backpack->flags |= ENTITY_FLAG_no_delete;
+		core->backpack->flags |= ENTITY_FLAGS_no_delete;
 		AttachStorage(core->backpack, 9);
 
 		core->hotbar = NewEntity("Hotbar", ENTITY_TYPE_storage); // Hotbar should technically be attached to the player entity
-		core->hotbar->flags |= ENTITY_FLAG_no_delete;
+		core->hotbar->flags |= ENTITY_FLAGS_no_delete;
 		AttachStorage(core->hotbar, 2);
 
 		StorageComponent *storage = core->backpack->components[COMPONENT_storage];
@@ -256,207 +256,12 @@ internal void UpdateParallax()
 			PositionComponent *position_comp = entity->components[COMPONENT_position];
 			R_DEV_ASSERT(position_comp, "Parallax must be attached with a position to update.");
 
-			PositionComponent *player_pos = core->player->components[COMPONENT_position];
-
 			// TODO: Need to find a way to centralise the desired_position of the parallax, whilst still maintaining spatial consistency across sprites
-			position_comp->position.x = parallax_comp->desired_position.x + (player_pos->position.x + core->camera_offset.x) * parallax_comp->parallax_amount.x;
-			position_comp->position.y = parallax_comp->desired_position.y + (player_pos->position.y + core->camera_offset.y) * parallax_comp->parallax_amount.y;
+			position_comp->position.x = parallax_comp->desired_position.x + -core->camera_position.x * parallax_comp->parallax_amount.x;
+			position_comp->position.y = parallax_comp->desired_position.y + -core->camera_position.y * parallax_comp->parallax_amount.y;
 
 			// position_comp->position.x = parallax_comp->desired_position.x - (parallax_comp->desired_position.x - player_pos->position.x + core->camera_offset.x) * parallax_comp->parallax_amount.x;
 			// position_comp->position.y = parallax_comp->desired_position.y - (parallax_comp->desired_position.y - player_pos->position.y + core->camera_offset.y) * parallax_comp->parallax_amount.y;
 		}
 	}
-}
-
-internal void UpdateEditor()
-{
-	// NOTE(tjr): Render the editor UI
-	{
-		// NOTE(tjr): Drop-down menu
-		{
-			TsUIPushRow(core->ui, v2(0.0f, 0.0f), v2(100.0f, 30.0f));
-			if (TsUIDropdown(core->ui, "World..."))
-			{
-				TsUIButton(core->ui, "Commit");
-				TsUIButton(core->ui, "Reload");
-			}
-			TsUIDropdownEnd(core->ui);
-			TsUIPopRow(core->ui);
-		}
-
-		// NOTE(tjr): Time dilation
-		{
-			TsUIBeginInputGroup(core->ui);
-			TsUIPushColumn(core->ui, v2(core->render_w / 2.0f - 125.0f, 40.0f), v2(250.0f, 30.0f));
-
-			core->world_delta_mult = TsUISlider(core->ui, "World Time Dilation", core->world_delta_mult, 0.0f, 1.0f);
-
-			TsUIPopY(core->ui);
-			TsUIPopColumn(core->ui);
-			TsUIEndInputGroup(core->ui);
-		}
-
-		// NOTE(tjr): Entity windows
-		{
-			v4 entity_list_window_rect = {core->render_w - 360, core->render_h - 510, 350, 500};
-			TsUIWindowBegin(core->ui, "Entity List", entity_list_window_rect, 0, 0);
-			{
-				TsUIPushColumn(core->ui, v2(10, 10), v2(150, 30));
-
-				local_persist b8 is_index_mode = 0;
-
-				// NOTE(rjf): Sort Controls
-				{
-					TsUIPushWidth(core->ui, 90);
-					TsUILabel(core->ui, "Sort by: ");
-					TsUIPopWidth(core->ui);
-
-					TsUIPushAutoWidth(core->ui);
-					{
-						TsUISameLine(core->ui);
-						if (TsUIToggler(core->ui, "Index", is_index_mode))
-						{
-							is_index_mode = 1;
-						}
-
-						TsUISameLine(core->ui);
-						if (TsUIToggler(core->ui, "Category", !is_index_mode))
-						{
-							is_index_mode = 0;
-						}
-					}
-					TsUIPopWidth(core->ui);
-				}
-
-				TsUIDivider(core->ui);
-
-				if (is_index_mode)
-				{
-					// NOTE(tjr): Index view
-					for (int i = 1; i < core->entity_set->entity_count; i++)
-					{
-						TsUIPushAutoWidth(core->ui);
-
-						TsUIPushWidth(core->ui, 30);
-						{
-							char label[100];
-							sprintf(label, "%i", i);
-							TsUILabel(core->ui, label);
-						}
-						TsUIPopWidth(core->ui);
-
-						Entity *entity = &core->entity_set->entities[i];
-						if (entity->entity_id > 0)
-						{
-							TsUISameLine(core->ui);
-							TsUIPushWidth(core->ui, entity_list_window_rect.width - 80);
-							if (TsUIToggler(core->ui, entity->name, core->selected_entity == i))
-							{
-								core->selected_entity = i;
-							}
-							else
-							{
-								if (core->selected_entity == i)
-								{
-									core->selected_entity = 0;
-								}
-							}
-							TsUIPopWidth(core->ui);
-						}
-						else
-						{
-							TsUISameLine(core->ui);
-							TsUIPushSize(core->ui, v2(100, 30));
-							TsUILabel(core->ui, "- - - - -");
-							TsUIPopSize(core->ui);
-						}
-
-						TsUIPopWidth(core->ui);
-					}
-				}
-				else
-				{
-					TsUIPushWidth(core->ui, entity_list_window_rect.width - 50);
-
-					// NOTE(tjr): Entity category (type) view
-					for (int i = 0; i < ENTITY_TYPE_MAX; i++)
-					{
-						if (TsUICollapsable(core->ui, GetEntityTypeName(i)))
-						{
-							for (int j = 1; j < core->entity_set->entity_count; j++) // TEMP: Need to sort these before-hand. Will eventually get too inefficient.
-							{
-								Entity *entity = &core->entity_set->entities[j];
-								if (entity->entity_id > 0 && entity->type == i)
-								{
-									if (TsUIToggler(core->ui, entity->name, core->selected_entity == j))
-									{
-										core->selected_entity = j;
-									}
-									else
-									{
-										if (core->selected_entity == j)
-										{
-											core->selected_entity = 0;
-										}
-									}
-								}
-							}
-
-							TsUICollapsableEnd(core->ui);
-						}
-					}
-
-					TsUIPopWidth(core->ui);
-				}
-
-				TsUIPopColumn(core->ui);
-			}
-			TsUIWindowEnd(core->ui);
-
-			char entity_window_title[100];
-			sprintf(entity_window_title, core->selected_entity == 0 ? "Entity Info" : "Entity Info - %s", core->entity_set->entities[core->selected_entity].name);
-			TsUIWindowBegin(core->ui, entity_window_title, v4(core->render_w - 360, 10, 350, 300), 0, 0);
-			{
-				if (core->selected_entity == 0)
-				{
-					TsUIPushAutoWidth(core->ui);
-					TsUILabel(core->ui, "No Entity selected.");
-					TsUIPopWidth(core->ui);
-				}
-				else
-				{
-					Entity *selected_entity = &core->entity_set->entities[core->selected_entity];
-					R_DEV_ASSERT(selected_entity->entity_id > 0, "Invalid entity");
-
-					TsUIPushAutoWidth(core->ui);
-					TsUIPushHeight(core->ui, 30);
-					TsUIPushPosition(core->ui, v2(100, 200));
-					if (!(selected_entity->flags & ENTITY_FLAG_no_delete))
-					{
-						if (TsUIButton(core->ui, "Delete Entity"))
-						{
-							DeleteEntity(selected_entity);
-							core->selected_entity = 0;
-						}
-					}
-					TsUIPopPosition(core->ui);
-					TsUIPopHeight(core->ui);
-
-					TsUIPushColumn(core->ui, v2(0, 0), v2(100, 30));
-
-					TsUILabel(core->ui, core->entity_set->entities[core->selected_entity].name);
-					// ...
-
-					TsUIPopColumn(core->ui);
-
-					TsUIPopWidth(core->ui);
-				}
-			}
-			TsUIWindowEnd(core->ui);
-		}
-	}
-
-	TransformEditorCamera();
-
-	TsPlatformCaptureKeyboard();
 }

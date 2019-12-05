@@ -243,8 +243,8 @@ internal void RemoveHeldItem()
 {
 	R_DEV_ASSERT(core->held_item, "No held iem active.");
 
-	RemoveComponent(core->held_item, COMPONENT_position);
-	RemoveComponent(core->held_item, COMPONENT_sprite);
+	RemovePositionComponent(core->held_item);
+	RemoveSpriteComponent(core->held_item);
 	core->held_item = 0;
 	core->active_hotbar_slot = 0;
 }

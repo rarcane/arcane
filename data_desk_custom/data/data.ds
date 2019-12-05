@@ -15,6 +15,11 @@ enum EntityType
 
 /* --- FLAGS --- */
 
+flags EntityFlags
+{
+	no_delete,
+}
+
 flags ColliderFlags
 {
 	ground,
@@ -71,7 +76,7 @@ struct SubSprite
 @Component
 struct Animation
 {
-	flags : b8;
+	flags : AnimationFlags;
 	current_frame : i32;
 	interval_mult : f32;
 	frame_start_time : f32;
@@ -81,7 +86,7 @@ struct Animation
 struct Collider
 {
 	shape : Shape;
-	flags : b8;
+	flags : ColliderFlags;
 }
 
 @Component

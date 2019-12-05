@@ -184,33 +184,112 @@ DataDeskCustomDeclarationCallback(DataDeskDeclaration declaration_info, char *fi
 DATA_DESK_FUNC void
 DataDeskCustomCleanUpCallback(void)
 {
-	FILE *file = global_catchall_header;
-	if (file)
 	{
-		// NOTE(tjr): Generate component enums.
-		fprintf(file, "typedef enum ComponentType\n");
-		fprintf(file, "{\n");
-		fprintf(file, "COMPONENT_INVALID,\n");
-		for (int i = 0; i < component_count; i++)
+		FILE *file = global_catchall_header;
+		if (file)
 		{
-			Component *component = &components[i];
-			fprintf(file, "COMPONENT_%s,\n", component->name_lowercase_with_underscores);
-		}
-		fprintf(file, "COMPONENT_MAX,\n");
-		fprintf(file, "} ComponentType;\n\n");
+			// NOTE(tjr): Generate component enums.
+			fprintf(file, "typedef enum ComponentType\n");
+			fprintf(file, "{\n");
+			fprintf(file, "COMPONENT_INVALID,\n");
+			for (int i = 0; i < component_count; i++)
+			{
+				Component *component = &components[i];
+				fprintf(file, "COMPONENT_%s,\n", component->name_lowercase_with_underscores);
+			}
+			fprintf(file, "COMPONENT_MAX,\n");
+			fprintf(file, "} ComponentType;\n\n");
 
-		// NOTE(tjr): Generate component set.
-		fprintf(file, "typedef struct ComponentSet\n");
-		fprintf(file, "{\n");
-		for (int i = 0; i < component_count; i++)
+			// NOTE(tjr): Generate component set.
+			fprintf(file, "typedef struct ComponentSet\n");
+			fprintf(file, "{\n");
+			for (int i = 0; i < component_count; i++)
+			{
+				Component *component = &components[i];
+
+				fprintf(file, "%sComponent %s_components[MAX_ENTITIES];\n", component->name, component->name_lowercase_with_underscores);
+				fprintf(file, "i32 %s_component_count;\n", component->name_lowercase_with_underscores);
+				fprintf(file, "i32 %s_free_component_id;\n", component->name_lowercase_with_underscores);
+			}
+			fprintf(file, "} ComponentSet;\n\n");
+		}
+	}
+
+	{
+		FILE *file = global_catchall_implementation;
+		if (file)
 		{
-			Component *component = &components[i];
+			for (int i = 0; i < component_count; i++)
+			{
+				Component *component = &components[i];
 
-			fprintf(file, "%sComponent %s_components[MAX_ENTITIES];\n", component->name, component->name_lowercase_with_underscores);
-			fprintf(file, "i32 %s_component_count;\n", component->name_lowercase_with_underscores);
-			fprintf(file, "i32 %s_free_component_id;\n", component->name_lowercase_with_underscores);
+				// NOTE(tjr): Add Component function.
+				{
+					fprintf(file, "internal void Add%sComponent(Entity *entity, void *component_data)\n", component->name);
+					fprintf(file, "{\n");
+					fprintf(file, "    i32 component_id;\n");
+					fprintf(file, "    if (core->component_set->%s_free_component_id == core->component_set->%s_component_count)\n", component->name_lowercase_with_underscores, component->name_lowercase_with_underscores);
+					fprintf(file, "    {\n");
+					fprintf(file, "        component_id = core->component_set->%s_component_count;\n", component->name_lowercase_with_underscores);
+					fprintf(file, "        core->component_set->%s_component_count++;\n", component->name_lowercase_with_underscores);
+					fprintf(file, "        core->component_set->%s_free_component_id = component_id + 1;\n", component->name_lowercase_with_underscores);
+					fprintf(file, "    }\n");
+					fprintf(file, "    else\n");
+					fprintf(file, "    {\n");
+					fprintf(file, "        component_id = core->component_set->%s_free_component_id;\n", component->name_lowercase_with_underscores);
+					fprintf(file, "        for (int i = 1; i < core->component_set->%s_component_count + 1; i++)\n", component->name_lowercase_with_underscores);
+					fprintf(file, "        {\n");
+					fprintf(file, "            if (core->component_set->%s_components[i].component_id == 0)\n", component->name_lowercase_with_underscores);
+					fprintf(file, "            {\n");
+					fprintf(file, "                core->component_set->%s_free_component_id = i;\n", component->name_lowercase_with_underscores);
+					fprintf(file, "                break;\n");
+					fprintf(file, "            }\n");
+					fprintf(file, "        }\n");
+					fprintf(file, "    }\n\n");
+
+					fprintf(file, "    core->component_set->%s_components[component_id] = *((%sComponent*)component_data);\n", component->name_lowercase_with_underscores, component->name);
+					fprintf(file, "    entity->components[COMPONENT_%s] = &core->component_set->%s_components[component_id];\n", component->name_lowercase_with_underscores, component->name_lowercase_with_underscores);
+					fprintf(file, "    core->component_set->%s_components[component_id].entity_id = entity->entity_id;\n", component->name_lowercase_with_underscores);
+					fprintf(file, "    core->component_set->%s_components[component_id].component_id = component_id;\n", component->name_lowercase_with_underscores);
+					fprintf(file, "}\n\n");
+				}
+
+				// NOTE(tjr): Remove Component function.
+				{
+					fprintf(file, "internal void Remove%sComponent(Entity *entity)\n", component->name);
+					fprintf(file, "{\n");
+					fprintf(file, "    %sComponent *component = entity->components[COMPONENT_%s];\n", component->name, component->name_lowercase_with_underscores);
+					fprintf(file, "    R_DEV_ASSERT(component, \"Entity does not a %sComponent attached, so it can't remove it.\");\n\n", component->name);
+
+					fprintf(file, "    i32 deleted_component_id = component->component_id;\n");
+					fprintf(file, "    %sComponent empty_comp = {0};\n", component->name);
+					fprintf(file, "    core->component_set->%s_components[deleted_component_id] = empty_comp;\n", component->name_lowercase_with_underscores);
+					fprintf(file, "    entity->components[COMPONENT_%s] = 0;\n\n", component->name_lowercase_with_underscores);
+
+					fprintf(file, "    if (deleted_component_id < core->component_set->%s_free_component_id)\n", component->name_lowercase_with_underscores);
+					fprintf(file, "        core->component_set->%s_free_component_id = deleted_component_id;\n", component->name_lowercase_with_underscores);
+					fprintf(file, "}\n\n");
+				}
+			}
+
+			// NOTE(tjr): ECS delete entity.
+			fprintf(file, "internal void DeleteEntity(Entity *entity)\n");
+			fprintf(file, "{\n");
+			for (int i = 0; i < component_count; i++)
+			{
+				Component *component = &components[i];
+
+				fprintf(file, "%sComponent *%s_component = entity->components[%i];\n", component->name, component->name_lowercase_with_underscores, i + 1);
+				fprintf(file, "if (%s_component)\n", component->name_lowercase_with_underscores);
+				fprintf(file, "Remove%sComponent(entity);\n", component->name);
+			}
+			fprintf(file, "\ni32 deleted_entity_id = entity->entity_id;\n");
+			fprintf(file, "Entity empty_entity = {0};\n");
+			fprintf(file, "*entity = empty_entity;\n");
+			fprintf(file, "if (deleted_entity_id < core->entity_set->free_entity_id)\n");
+			fprintf(file, "core->entity_set->free_entity_id = deleted_entity_id;\n");
+			fprintf(file, "}\n");
 		}
-		fprintf(file, "} ComponentSet;\n\n");
 	}
 }
 
