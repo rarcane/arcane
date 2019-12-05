@@ -109,7 +109,7 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 
 			if (icon_data->item_comp && icon_data->item_comp->stack_size > 1)
 			{
-				Entity *new_item = NewEntity("Item", ENTITY_item);
+				Entity *new_item = NewEntity("Item", ENTITY_TYPE_item);
 				AttachItem(new_item, icon_data->item_comp->item_type, icon_data->item_comp->stack_size / 2);
 				core->grabbed_inv_item_comp = new_item->components[COMPONENT_item];
 				core->grabbed_inv_item_origin_slot = -1;
@@ -465,7 +465,7 @@ internal void DrawGameUI()
 
 			if (TsUIButton(core->ui, "Add dummy object"))
 			{
-				NewEntity("dummy", ENTITY_undefined);
+				NewEntity("dummy", ENTITY_TYPE_undefined);
 			}
 
 			TsUIPopColumn(core->ui);

@@ -20,82 +20,82 @@ internal void TempInitGameWorld()
 		AttachSprite(tree1, STATIC_SPRITE_pine_tree_1, 2.0f);
 		AttachParallax(tree1, v2(0.25, 0.25), v2(-100.0f, 0.0f)); */
 
-		Entity *tree2 = NewEntity("Tree", ENTITY_scenic);
+		Entity *tree2 = NewEntity("Tree", ENTITY_TYPE_scenic);
 		AttachPosition(tree2, v2(-100.0f, 0.0f));
 		AttachSprite(tree2, STATIC_SPRITE_pine_tree_v1, 2.0f);
 	}
 
 	{
-		Entity *hills3 = NewEntity("Hill", ENTITY_scenic);
+		Entity *hills3 = NewEntity("Hill", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(hills3, v2(-272.0f, 0.0f), STATIC_SPRITE_hills_1_v1, 5.1f, v2(0.3f, 0.1f));
-		Entity *hills1 = NewEntity("Hill", ENTITY_scenic);
+		Entity *hills1 = NewEntity("Hill", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(hills1, v2(-93.0f, 0.0f), STATIC_SPRITE_hills_1_v2, 5.0f, v2(0.3f, 0.1f));
-		Entity *hills2 = NewEntity("Hill", ENTITY_scenic);
+		Entity *hills2 = NewEntity("Hill", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(hills2, v2(93.0f, 0.0f), STATIC_SPRITE_hills_1_v1, 5.1f, v2(0.3f, 0.1f));
-		Entity *hills4 = NewEntity("Hill", ENTITY_scenic);
+		Entity *hills4 = NewEntity("Hill", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(hills4, v2(272.0f, 0.0f), STATIC_SPRITE_hills_1_v2, 5.0f, v2(0.3f, 0.1f));
 
-		/* Entity *canopy4 = NewEntity("Canopy", ENTITY_scenic);
+		/* Entity *canopy4 = NewEntity("Canopy", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(canopy4, v2(-260.0f, -115.0f), STATIC_SPRITE_bg1_canopy_v1, 5.0f, v2(0.2f, 0.1f));
-		Entity *canopy2 = NewEntity("Canopy", ENTITY_scenic);
+		Entity *canopy2 = NewEntity("Canopy", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(canopy2, v2(-89.0f, -115.0f), STATIC_SPRITE_bg1_canopy_v2, 5.1f, v2(0.2f, 0.1f));
-		Entity *canopy1 = NewEntity("Canopy", ENTITY_scenic);
+		Entity *canopy1 = NewEntity("Canopy", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(canopy1, v2(89.0f, -115.0f), STATIC_SPRITE_bg1_canopy_v1, 5.0f, v2(0.2f, 0.1f));
-		Entity *canopy3 = NewEntity("Canopy", ENTITY_scenic);
+		Entity *canopy3 = NewEntity("Canopy", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(canopy3, v2(260.0f, -115.0f), STATIC_SPRITE_bg1_canopy_v2, 5.1f, v2(0.2f, 0.1f)); */
 
-		Entity *bg1_tree_1 = NewEntity("bgtree", ENTITY_scenic);
+		Entity *bg1_tree_1 = NewEntity("bgtree", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(bg1_tree_1, v2(10.0f, 0.0f), STATIC_SPRITE_bg1_pine_tree_v2, 5.2f, v2(0.3f, 0.1f));
-		// Entity *bg1_tree_2 = NewEntity("bgtree", ENTITY_scenic);
+		// Entity *bg1_tree_2 = NewEntity("bgtree", ENTITY_TYPE_scenic);
 		// SetupBackgroundEntity(bg1_tree_2, v2(-35.0f, -5.0f), STATIC_SPRITE_bg1_pine_tree_v1, 5.2f, v2(0.2f, 0.1f));
 
-		Entity *bg2_hills3 = NewEntity("hills", ENTITY_scenic);
+		Entity *bg2_hills3 = NewEntity("hills", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(bg2_hills3, v2(-300.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.1f, v2(0.45f, 0.2f));
-		Entity *bg2_hills2 = NewEntity("hills", ENTITY_scenic);
+		Entity *bg2_hills2 = NewEntity("hills", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(bg2_hills2, v2(-100.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.1f, v2(0.45f, 0.2f));
-		Entity *bg2_hills4 = NewEntity("hills", ENTITY_scenic);
+		Entity *bg2_hills4 = NewEntity("hills", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(bg2_hills4, v2(100.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.0f, v2(0.45f, 0.2f));
-		Entity *bg2_hills1 = NewEntity("hills", ENTITY_scenic);
+		Entity *bg2_hills1 = NewEntity("hills", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(bg2_hills1, v2(300.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.0f, v2(0.45f, 0.2f));
 
-		Entity *bg2_tree_1 = NewEntity("bgtree", ENTITY_scenic);
+		Entity *bg2_tree_1 = NewEntity("bgtree", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(bg2_tree_1, v2(50.0f, -5.0f), STATIC_SPRITE_bg2_pine_tree_v1, 6.5f, v2(0.45f, 0.2f));
 
-		Entity *bg3_hills1 = NewEntity("hills", ENTITY_scenic);
+		Entity *bg3_hills1 = NewEntity("hills", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(bg3_hills1, v2(100.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.6f, 0.3f));
-		Entity *bg3_hills2 = NewEntity("hills", ENTITY_scenic);
+		Entity *bg3_hills2 = NewEntity("hills", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(bg3_hills2, v2(-100.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.6f, 0.3f));
-		Entity *bg3_hills3 = NewEntity("hills", ENTITY_scenic);
+		Entity *bg3_hills3 = NewEntity("hills", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(bg3_hills3, v2(300.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.6f, 0.3f));
-		Entity *bg3_hills4 = NewEntity("hills", ENTITY_scenic);
+		Entity *bg3_hills4 = NewEntity("hills", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(bg3_hills4, v2(-300.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.6f, 0.3f));
 
-		Entity *bg3_tree_1 = NewEntity("bgtree", ENTITY_scenic);
+		Entity *bg3_tree_1 = NewEntity("bgtree", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(bg3_tree_1, v2(-20.0f, -5.0f), STATIC_SPRITE_bg3_pine_tree_v1, 7.5f, v2(0.6f, 0.3f));
 
-		Entity *mid_mountains_1 = NewEntity("Mountains", ENTITY_scenic);
+		Entity *mid_mountains_1 = NewEntity("Mountains", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(mid_mountains_1, v2(0.0f, 0.0f), STATIC_SPRITE_mid_mountains, 8.0f, v2(0.93f, 0.68f));
-		Entity *mid_mountains_2 = NewEntity("Mountains", ENTITY_scenic);
+		Entity *mid_mountains_2 = NewEntity("Mountains", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(mid_mountains_2, v2(-600.0f, 0.0f), STATIC_SPRITE_mid_mountains, 8.0f, v2(0.93f, 0.68f));
-		Entity *mid_mountains_3 = NewEntity("Mountains", ENTITY_scenic);
+		Entity *mid_mountains_3 = NewEntity("Mountains", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(mid_mountains_3, v2(600.0f, 0.0f), STATIC_SPRITE_mid_mountains, 8.0f, v2(0.93f, 0.68f));
 
-		Entity *far_mountains_1 = NewEntity("Mountains", ENTITY_scenic);
+		Entity *far_mountains_1 = NewEntity("Mountains", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(far_mountains_1, v2(0.0f, 0.0f), STATIC_SPRITE_far_mountains, 9.0f, v2(0.95f, 0.7f));
-		Entity *far_mountains_2 = NewEntity("Mountains", ENTITY_scenic);
+		Entity *far_mountains_2 = NewEntity("Mountains", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(far_mountains_2, v2(-600.0f, 0.0f), STATIC_SPRITE_far_mountains, 9.0f, v2(0.95f, 0.7f));
-		Entity *far_mountains_3 = NewEntity("Mountains", ENTITY_scenic);
+		Entity *far_mountains_3 = NewEntity("Mountains", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(far_mountains_3, v2(600.0f, 0.0f), STATIC_SPRITE_far_mountains, 9.0f, v2(0.95f, 0.7f));
 	}
 
 	{
-		core->player = NewEntity("Player", ENTITY_character);
+		core->player = NewEntity("Player", ENTITY_TYPE_character);
 		core->player->flags |= ENTITY_FLAG_no_delete;
 
 		AttachPosition(core->player, v2(0.0f, -100.0f));
-		AttachCollider(core->player, GetRectangleShape(v2(14.0f, 35.0f), v2(0.0f, 0.0f)), COLLIDER_FLAG_player);
+		AttachCollider(core->player, GetRectangleShape(v2(14.0f, 35.0f), v2(0.0f, 0.0f)), COLLIDER_FLAGS_player);
 		AttachPhysics(core->player, 1.0f, 0.0f);
-		AttachVelocity(core->player, v2(0, 0), v2(250.0f, 0.0f), COLLIDER_FLAG_ground);
+		AttachVelocity(core->player, v2(0, 0), v2(250.0f, 0.0f), COLLIDER_FLAGS_ground);
 		AttachMovement(core->player, 100.0f);
 		AttachArcEntity(core->player, ARC_ENTITY_player, ANIMATION_STATE_player_idle, 0.0f);
 
@@ -105,17 +105,17 @@ internal void TempInitGameWorld()
 	}
 
 	{
-		core->sword = NewEntity("Sword", ENTITY_item);
+		core->sword = NewEntity("Sword", ENTITY_TYPE_item);
 		core->sword->flags |= ENTITY_FLAG_no_delete;
 		AttachItem(core->sword, ITEM_flint_sword, 1);
 	}
 
 	{
-		core->backpack = NewEntity("Backpack", ENTITY_storage);
+		core->backpack = NewEntity("Backpack", ENTITY_TYPE_storage);
 		core->backpack->flags |= ENTITY_FLAG_no_delete;
 		AttachStorage(core->backpack, 9);
 
-		core->hotbar = NewEntity("Hotbar", ENTITY_storage); // Hotbar should technically be attached to the player entity
+		core->hotbar = NewEntity("Hotbar", ENTITY_TYPE_storage); // Hotbar should technically be attached to the player entity
 		core->hotbar->flags |= ENTITY_FLAG_no_delete;
 		AttachStorage(core->hotbar, 2);
 
@@ -125,12 +125,12 @@ internal void TempInitGameWorld()
 
 	for (int i = -10; i < 11; i++)
 	{
-		Entity *ground = NewEntity("Ground", ENTITY_ground);
+		Entity *ground = NewEntity("Ground", ENTITY_TYPE_ground);
 		AttachPosition(ground, v2(i * 100.0f, 0.0f));
 		// AttachSprite(ground, STATIC_SPRITE_ground_plains, -1.0f);
 		// AttachCollider(ground, GetRectangleShape(v2(100.0f, 147.0f), v2(0.0f, 147.0f)), COLLIDER_FLAG_ground);
 		AttachSprite(ground, STATIC_SPRITE_ground_forest, -1.0f);
-		AttachCollider(ground, GetRectangleShape(v2(100.0f, 87.0f), v2(0.0f, 87.0f)), COLLIDER_FLAG_ground);
+		AttachCollider(ground, GetRectangleShape(v2(100.0f, 87.0f), v2(0.0f, 87.0f)), COLLIDER_FLAGS_ground);
 		AttachPhysics(ground, 1.0f, 1.0f);
 	}
 }
@@ -298,7 +298,7 @@ internal void UpdateEditor()
 
 		// NOTE(tjr): Entity windows
 		{
-			v4 entity_list_window_rect = { core->render_w - 360, core->render_h - 510, 350, 500 };
+			v4 entity_list_window_rect = {core->render_w - 360, core->render_h - 510, 350, 500};
 			TsUIWindowBegin(core->ui, "Entity List", entity_list_window_rect, 0, 0);
 			{
 				TsUIPushColumn(core->ui, v2(10, 10), v2(150, 30));
@@ -314,13 +314,13 @@ internal void UpdateEditor()
 					TsUIPushAutoWidth(core->ui);
 					{
 						TsUISameLine(core->ui);
-						if(TsUIToggler(core->ui, "Index", is_index_mode))
+						if (TsUIToggler(core->ui, "Index", is_index_mode))
 						{
 							is_index_mode = 1;
 						}
 
 						TsUISameLine(core->ui);
-						if(TsUIToggler(core->ui, "Category", !is_index_mode))
+						if (TsUIToggler(core->ui, "Category", !is_index_mode))
 						{
 							is_index_mode = 0;
 						}
@@ -379,16 +379,16 @@ internal void UpdateEditor()
 					TsUIPushWidth(core->ui, entity_list_window_rect.width - 50);
 
 					// NOTE(tjr): Entity category (type) view
-					for (int i = 0; i < ENTITY_MAX; i++)
+					for (int i = 0; i < ENTITY_TYPE_MAX; i++)
 					{
-						if(TsUICollapsable(core->ui, GetEntityTypeName(i)))
+						if (TsUICollapsable(core->ui, GetEntityTypeName(i)))
 						{
 							for (int j = 1; j < core->entity_set->entity_count; j++) // TEMP: Need to sort these before-hand. Will eventually get too inefficient.
 							{
 								Entity *entity = &core->entity_set->entities[j];
-								if(entity->entity_id > 0 && entity->type == i)
+								if (entity->entity_id > 0 && entity->type == i)
 								{
-									if(TsUIToggler(core->ui, entity->name, core->selected_entity == j))
+									if (TsUIToggler(core->ui, entity->name, core->selected_entity == j))
 									{
 										core->selected_entity = j;
 									}

@@ -185,7 +185,7 @@ internal void FreeEntityReference(EntityReference *reference)
 
 internal void DeleteEntity(Entity *entity)
 {
-	for (int i = 0; i < MAX_COMPONENTS; i++)
+	for (int i = 1; i < COMPONENT_MAX; i++)
 	{
 		switch (i)
 		{
@@ -254,7 +254,7 @@ internal void AttachSprite(Entity *entity, SpriteType sprite_enum, f32 render_la
 	if (IsSpriteDynamic(sprite_enum))
 	{
 		AnimationComponent animation = {
-			.flags = ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat,
+			.flags = ANIMATION_FLAGS_playing | ANIMATION_FLAGS_repeat,
 			.current_frame = 0,
 			.interval_mult = 1.0f,
 			.frame_start_time = core->elapsed_world_time,
@@ -277,7 +277,7 @@ internal void AttachSubSprite(Entity *entity, SpriteData sub_sprites[], i32 sub_
 	{
 		AnimationComponent animation = {
 			.entity_id = entity->entity_id,
-			.flags = ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat,
+			.flags = ANIMATION_FLAGS_playing | ANIMATION_FLAGS_repeat,
 			.current_frame = 0,
 			.interval_mult = 1.0f,
 			.frame_start_time = core->elapsed_world_time,

@@ -2,47 +2,36 @@ static char *GetEntityTypeName(EntityType type)
 {
 switch(type)
 {
-case ENTITY_undefined:
+case ENTITY_TYPE_undefined:
 return "Undefined";
 break;
-case ENTITY_character:
+case ENTITY_TYPE_character:
 return "Character";
 break;
-case ENTITY_monster:
+case ENTITY_TYPE_monster:
 return "Monster";
 break;
-case ENTITY_animal:
+case ENTITY_TYPE_animal:
 return "Animal";
 break;
-case ENTITY_item:
+case ENTITY_TYPE_item:
 return "Item";
 break;
-case ENTITY_storage:
+case ENTITY_TYPE_storage:
 return "Storage";
 break;
-case ENTITY_resource:
+case ENTITY_TYPE_resource:
 return "Resource";
 break;
-case ENTITY_scenic:
+case ENTITY_TYPE_scenic:
 return "Scenic";
 break;
-case ENTITY_ground:
+case ENTITY_TYPE_ground:
 return "Ground";
 break;
 default:
 return "INVALID";
 break;
 }
-}
-
-void PrintFoo(Foo *object)
-{
-
-printf("{ ");
-printf("%i, ", object->integer_value);
-printf("%s, ", object->boolean_value ? "true" : "false");
-printf("%f, ", object->float_value);
-printf("}");
-
 }
 

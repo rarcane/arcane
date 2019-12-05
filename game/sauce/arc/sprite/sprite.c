@@ -133,22 +133,22 @@ internal void UpdateAnimations(AnimationComponent animation_components[], i32 co
 				DynamicSprite *dynamic_sprite = dynamic_sprites[j];
 
 				b8 animation_flags = animation_comp->flags;
-				if (animation_flags & ANIMATION_FLAG_playing) // ((animation_flags & (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat)) == (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat))
+				if (animation_flags & ANIMATION_FLAGS_playing) // ((animation_flags & (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat)) == (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat))
 				{
 					if (core->elapsed_world_time >= animation_comp->frame_start_time + dynamic_sprite->frame_interval * animation_comp->interval_mult)
 					{
 						// Frame is complete
-						if (animation_flags & ANIMATION_FLAG_reversing)
+						if (animation_flags & ANIMATION_FLAGS_reversing)
 						{
 							if (animation_comp->current_frame == 0)
 							{
-								if (animation_flags & ANIMATION_FLAG_repeat)
+								if (animation_flags & ANIMATION_FLAGS_repeat)
 								{
 									animation_comp->current_frame = dynamic_sprite->frames - 1;
 								}
 								else
 								{
-									animation_comp->flags &= ~ANIMATION_FLAG_playing;
+									animation_comp->flags &= ~ANIMATION_FLAGS_playing;
 								}
 							}
 							else
@@ -164,13 +164,13 @@ internal void UpdateAnimations(AnimationComponent animation_components[], i32 co
 							}
 							else
 							{
-								if (animation_flags & ANIMATION_FLAG_repeat)
+								if (animation_flags & ANIMATION_FLAGS_repeat)
 								{
 									animation_comp->current_frame = 0;
 								}
 								else
 								{
-									animation_comp->flags &= ~ANIMATION_FLAG_playing;
+									animation_comp->flags &= ~ANIMATION_FLAGS_playing;
 								}
 							}
 						}

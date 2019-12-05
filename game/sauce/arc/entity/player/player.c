@@ -86,17 +86,17 @@ internal void PreMoveUpdatePlayer()
 
 		if (movement_comp->axis_x == 0)
 		{
-			SetArcEntityAnimationState(arc_entity_comp, ANIMATION_STATE_player_idle, ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat, 0);
+			SetArcEntityAnimationState(arc_entity_comp, ANIMATION_STATE_player_idle, ANIMATION_FLAGS_playing | ANIMATION_FLAGS_repeat, 0);
 		}
 		else
 		{
 			if (is_sprinting)
 			{
-				SetArcEntityAnimationState(arc_entity_comp, ANIMATION_STATE_player_sprinting, ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat, 0);
+				SetArcEntityAnimationState(arc_entity_comp, ANIMATION_STATE_player_sprinting, ANIMATION_FLAGS_playing | ANIMATION_FLAGS_repeat, 0);
 			}
 			else
 			{
-				SetArcEntityAnimationState(arc_entity_comp, ANIMATION_STATE_player_walking, ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat, 0);
+				SetArcEntityAnimationState(arc_entity_comp, ANIMATION_STATE_player_walking, ANIMATION_FLAGS_playing | ANIMATION_FLAGS_repeat, 0);
 			}
 		}
 	}
@@ -117,7 +117,7 @@ internal void PostMoveUpdatePlayer()
 		i32 overlap_count = GetOverlappingCollidersAtPosition(overlapping_colliders,
 															  GetRectangleShape(v2(20.0f, 30.0f), v2(0.0f, 0.0f)),
 															  v2(player_pos->position.x + 20 * (player_sprite->is_flipped ? -1.0f : 1.0f), player_pos->position.y),
-															  COLLIDER_FLAG_item);
+															  COLLIDER_FLAGS_item);
 
 		Entity *closest_item = 0;
 		ItemComponent *closest_item_comp = 0;

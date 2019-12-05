@@ -1,0 +1,150 @@
+/* --- ENUMS --- */
+
+enum EntityType
+{
+    undefined,
+	character,
+	monster,
+	animal,
+	item,
+	storage,
+	resource,
+	scenic,
+	ground,
+}
+
+/* --- FLAGS --- */
+
+flags ColliderFlags
+{
+	ground,
+	player,
+	entity,
+	item,
+	trigger,
+}
+
+flags AnimationFlags
+{
+	playing,
+	reversing,
+	repeat,
+}
+
+/* --- DEFINES --- */
+
+@Define
+MAX_ENTITIES :: 1000;
+@Define
+MAX_OVERLAPPING_COLLIDERS :: 50;
+@Define
+MAX_ENTITY_REFERENCES :: 10;
+@Define
+MAX_SUB_COLLIDERS :: 3;
+@Define
+MAX_STORAGE_SIZE :: 30;
+
+/* --- COMPONENTS --- */
+
+@Component
+struct Position
+{
+	position : v2;
+}
+
+@Component
+struct Sprite
+{
+	sprite_data : SpriteData;
+	is_flipped : b8;
+	is_background_sprite : b8; // Temp solution
+}
+
+@Component
+struct SubSprite
+{
+	sub_sprites : SpriteData[MAX_SUB_SPRITES];
+	sub_sprite_count : i32;
+	is_flipped : b8;
+}
+
+@Component
+struct Animation
+{
+	flags : b8;
+	current_frame : i32;
+	interval_mult : f32;
+	frame_start_time : f32;
+}
+
+@Component
+struct Collider
+{
+	shape : Shape;
+	flags : b8;
+}
+
+@Component
+struct Velocity
+{
+	velocity : v2;
+	ideal_velocity : v2;
+	acceleration : v2; // You'd have this be dynamic depending on the alpha of the ideal/current velocity to have a multi-phased acceleration function.
+	acceleration_mult : v2;
+	previous_friction : f32;
+	collide_against : b8;
+}
+
+@Component
+struct Physics
+{
+	friction_mult : f32;
+	bounce_mult : f32;
+}
+
+@Component
+struct Movement
+{
+	axis_x : f32;
+	move_speed : f32;
+	move_speed_mult : f32;
+}
+
+@Component
+struct ArcEntity
+{
+	entity_type : ArcEntityType;
+	current_general_state : *char;
+	current_animation_state : AnimationStateType;
+}
+
+@Component
+struct Item
+{
+	item_type : ItemType;
+	stack_size : i32;
+}
+
+@Component
+struct Trigger
+{
+	enter_trigger_callback : TriggerCallback;
+	exit_trigger_callback : TriggerCallback;
+	previous_overlaps : OverlappedColliderInfo[MAX_OVERLAPPING_COLLIDERS];
+	previous_overlaps_count : i32;
+	trigger_against : b8;
+}
+
+@Component
+struct Storage
+{
+	storage_size : i32;
+	items : *ItemComponent[MAX_STORAGE_SIZE];
+}
+
+@Component
+struct Parallax
+{
+	parallax_amount : v2;
+	desired_position : v2;
+}

@@ -38,9 +38,9 @@ internal void ConvertToGroundItem(ItemComponent *item_comp)
 
 	AttachPosition(item, v2(player_pos->position.x + 10 * (player_sub_sprite->is_flipped ? -1 : 1), player_pos->position.y - 20));
 	AttachSprite(item, item_data[item_comp->item_type].ground_sprite, 1.0f);
-	AttachVelocity(item, v2(player_sub_sprite->is_flipped ? -50.0f : 50.0f, 0.0f), v2(0, 0), COLLIDER_FLAG_ground);
+	AttachVelocity(item, v2(player_sub_sprite->is_flipped ? -50.0f : 50.0f, 0.0f), v2(0, 0), COLLIDER_FLAGS_ground);
 	AttachPhysics(item, 1.0f, (item_data[item_comp->item_type].flags & ITEM_FLAG_bouncy) ? 0.5f : 0.0f);
-	AttachCollider(item, GetRectangleShape(ground_sprite->source.zw, v2(0.0f, 0.0f)), COLLIDER_FLAG_item);
+	AttachCollider(item, GetRectangleShape(ground_sprite->source.zw, v2(0.0f, 0.0f)), COLLIDER_FLAGS_item);
 }
 
 internal void StripItemGroundComponents(ItemComponent *item_comp)

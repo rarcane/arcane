@@ -7,12 +7,6 @@ typedef struct CollisionInfo CollisionInfo;
 typedef struct ItemComponent ItemComponent;
 typedef struct StorageComponent StorageComponent;
 
-typedef struct EntityReference
-{
-	Entity *entity;
-	i32 reference_index;
-} EntityReference;
-
 typedef struct DebugLine
 {
 	b8 is_valid;

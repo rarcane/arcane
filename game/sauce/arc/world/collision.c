@@ -554,7 +554,7 @@ internal void UpdateTriggers(TriggerComponent trigger_components[], i32 entity_c
 			ColliderComponent *trigger_collider_comp = trigger_entity->components[COMPONENT_collider];
 			PositionComponent *trigger_position_comp = trigger_entity->components[COMPONENT_position];
 			R_DEV_ASSERT(trigger_collider_comp && trigger_position_comp, "Invalid components.");
-			R_DEV_ASSERT(trigger_collider_comp->flags & COLLIDER_FLAG_trigger, "Collider is not set-up as a trigger type.");
+			R_DEV_ASSERT(trigger_collider_comp->flags & COLLIDER_FLAGS_trigger, "Collider is not set-up as a trigger type.");
 
 			OverlappedColliderInfo overlaps[MAX_OVERLAPPING_COLLIDERS] = {0};
 			int overlap_count = 0;

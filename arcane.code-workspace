@@ -33,7 +33,12 @@
 			"item.h": "c",
 			"camera.h": "c",
 			"ui.h": "c",
-			"catchall.h": "c"
+			"catchall.h": "c",
+			"generated_enums.h": "c",
+			"generated_ecs.h": "c",
+			"collision.h": "c",
+			"ecs.h": "c",
+			"old_ecs.h": "c"
 		},
 		"editor.formatOnSave": true,
 		"editor.find.autoFindInSelection": true,

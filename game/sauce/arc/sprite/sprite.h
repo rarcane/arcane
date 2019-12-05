@@ -55,3 +55,11 @@ struct DynamicSprite
 	i32 socket_count;
 };
 global DynamicSprite dynamic_sprite_data[DYNAMIC_SPRITE_MAX - STATIC_SPRITE_MAX - 1] = {0};
+
+typedef struct SpriteData
+{
+	SpriteType sprite_enum;
+	v2 offset;
+	f32 render_layer;
+	v2 scale;
+} SpriteData;
