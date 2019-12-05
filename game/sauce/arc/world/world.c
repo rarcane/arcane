@@ -298,31 +298,35 @@ internal void UpdateEditor()
 
 		// NOTE(tjr): Entity windows
 		{
-			TsUIWindowBegin(core->ui, "Entity List", v4(core->render_w - 360, core->render_h - 510, 350, 500), 0, 0);
+			v4 entity_list_window_rect = { core->render_w - 360, core->render_h - 510, 350, 500 };
+			TsUIWindowBegin(core->ui, "Entity List", entity_list_window_rect, 0, 0);
 			{
 				TsUIPushColumn(core->ui, v2(10, 10), v2(150, 30));
 
 				local_persist b8 is_index_mode = 0;
 
-				TsUIPushRow(core->ui, v2(0, 0), v2(90, 30));
-				TsUILabel(core->ui, "Sort by: ");
-				if (is_index_mode)
+				// NOTE(rjf): Sort Controls
 				{
-					TsUIToggler(core->ui, "Index", is_index_mode);
-					TsUIPushX(core->ui, 10);
-					TsUIPushSize(core->ui, v2(120, 30));
-					is_index_mode = !TsUIToggler(core->ui, "Category", !is_index_mode);
+					TsUIPushWidth(core->ui, 90);
+					TsUILabel(core->ui, "Sort by: ");
+					TsUIPopWidth(core->ui);
+
+					TsUIPushAutoWidth(core->ui);
+					{
+						TsUISameLine(core->ui);
+						if(TsUIToggler(core->ui, "Index", is_index_mode))
+						{
+							is_index_mode = 1;
+						}
+
+						TsUISameLine(core->ui);
+						if(TsUIToggler(core->ui, "Category", !is_index_mode))
+						{
+							is_index_mode = 0;
+						}
+					}
+					TsUIPopWidth(core->ui);
 				}
-				else
-				{
-					is_index_mode = TsUIToggler(core->ui, "Index", is_index_mode);
-					TsUIPushX(core->ui, 10);
-					TsUIPushSize(core->ui, v2(120, 30));
-					TsUIToggler(core->ui, "Category", !is_index_mode);
-				}
-				TsUIPopX(core->ui);
-				TsUIPopSize(core->ui);
-				TsUIPopRow(core->ui);
 
 				TsUIDivider(core->ui);
 
@@ -331,18 +335,21 @@ internal void UpdateEditor()
 					// NOTE(tjr): Index view
 					for (int i = 1; i < core->entity_set->entity_count; i++)
 					{
-						TsUIPushRow(core->ui, v2(0, 0), v2(30, 30));
+						TsUIPushAutoWidth(core->ui);
 
+						TsUIPushWidth(core->ui, 30);
 						{
 							char label[100];
 							sprintf(label, "%i", i);
 							TsUILabel(core->ui, label);
 						}
+						TsUIPopWidth(core->ui);
 
 						Entity *entity = &core->entity_set->entities[i];
 						if (entity->entity_id > 0)
 						{
-							TsUIPushWidth(core->ui, 120);
+							TsUISameLine(core->ui);
+							TsUIPushWidth(core->ui, entity_list_window_rect.width - 80);
 							if (TsUIToggler(core->ui, entity->name, core->selected_entity == i))
 							{
 								core->selected_entity = i;
@@ -355,39 +362,33 @@ internal void UpdateEditor()
 								}
 							}
 							TsUIPopWidth(core->ui);
-
-							TsUIPopRow(core->ui);
 						}
 						else
 						{
+							TsUISameLine(core->ui);
 							TsUIPushSize(core->ui, v2(100, 30));
 							TsUILabel(core->ui, "- - - - -");
-							TsUIPopRow(core->ui);
 							TsUIPopSize(core->ui);
 						}
 
-						TsUIDivider(core->ui);
+						TsUIPopWidth(core->ui);
 					}
 				}
 				else
 				{
+					TsUIPushWidth(core->ui, entity_list_window_rect.width - 50);
+
 					// NOTE(tjr): Entity category (type) view
 					for (int i = 0; i < ENTITY_MAX; i++)
 					{
-						local_persist b32 is_toggled = 0;
-						if (TsUIToggler(core->ui, GetEntityTypeName(i), (is_toggled >> i) & 1))
+						if(TsUICollapsable(core->ui, GetEntityTypeName(i)))
 						{
-							is_toggled |= (1 << i);
-
-							TsUIPushX(core->ui, 20);
 							for (int j = 1; j < core->entity_set->entity_count; j++) // TEMP: Need to sort these before-hand. Will eventually get too inefficient.
 							{
 								Entity *entity = &core->entity_set->entities[j];
-								if (entity->entity_id > 0 && entity->type == i)
+								if(entity->entity_id > 0 && entity->type == i)
 								{
-									TsUIPushX(core->ui, 20);
-									TsUIPushWidth(core->ui, 120);
-									if (TsUIToggler(core->ui, entity->name, core->selected_entity == j))
+									if(TsUIToggler(core->ui, entity->name, core->selected_entity == j))
 									{
 										core->selected_entity = j;
 									}
@@ -398,17 +399,14 @@ internal void UpdateEditor()
 											core->selected_entity = 0;
 										}
 									}
-									TsUIPopWidth(core->ui);
-									TsUIPopX(core->ui);
 								}
 							}
-							TsUIPopX(core->ui);
-						}
-						else
-						{
-							is_toggled &= ~(1 << i);
+
+							TsUICollapsableEnd(core->ui);
 						}
 					}
+
+					TsUIPopWidth(core->ui);
 				}
 
 				TsUIPopColumn(core->ui);

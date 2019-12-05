@@ -24,8 +24,16 @@
 #define TSUI_WIDGET_DEFAULT_HEIGHT 30
 #endif
 
+#ifndef TSUI_COLLAPSABLE_BUMP_SIZE
+#define TSUI_COLLAPSABLE_BUMP_SIZE 30
+#endif
+
 #ifndef TSUI_STACK_MAX
 #define TSUI_STACK_MAX 16
+#endif
+
+#ifndef TSUI_DEFAULT_INTERPOLATION_RATE
+#define TSUI_DEFAULT_INTERPOLATION_RATE 20.f
 #endif
 
 #define TSUI_WINDOW_FLAG_FIXED_POSITION  (1<<0)
@@ -113,6 +121,7 @@ enum TsUIWidgetType
     TSUI_WIDGET_line_edit,
     TSUI_WIDGET_title,
     TSUI_WIDGET_label,
+    TSUI_WIDGET_collapsable,
     TSUI_WIDGET_divider,
     TSUI_WIDGET_canvas,
     TSUI_WIDGET_window_close_button,
@@ -205,6 +214,13 @@ struct TsUIWidget
             f32 view_offset;
         }
         line_edit;
+
+        struct Collapsable
+        {
+            b32 open;
+            f32 open_transition;
+        }
+        collapsable;
         
         struct TileSelect
         {
@@ -322,6 +338,9 @@ struct TsUI
     {
         v2 position;
         v2 size;
+        v2 last_position;
+        v2 last_size;
+        f32 same_line_x_offset;
         b32 calculate_width_with_text;
         b32 calculate_height_with_text;
         v4 text_color;
@@ -331,9 +350,10 @@ struct TsUI
         iv2 input_grid_active_position;
         i32 input_grid_active_direction;
         i32 style_flags;
+        b32 same_line;
     }
     current_auto_layout_state;
-    
+
     // NOTE(rjf): Stacks
     struct
     {
@@ -413,7 +433,7 @@ struct TsUI
         
         u32 active_dropdown_stack_size;
         TsUIWidget *active_dropdown_stack[TSUI_STACK_MAX];
-        
+
         u32 clip_stack_size;
         v4 clip_stack[TSUI_STACK_MAX];
     };
@@ -473,6 +493,7 @@ void  TsUIPushClip               (TsUI *ui, v4 clip);
 void  TsUIPopClip                (TsUI *ui);
 void  TsUIPushInputGridDirection (TsUI *ui, i32 direction);
 void  TsUIPopInputGridDirection  (TsUI *ui);
+void  TsUISameLine               (TsUI *ui);
 
 // NOTE(rjf): Styled widget calls
 b32   TsUIStyledButton                   (TsUI *ui, i32 style_flags, char *text);
@@ -482,6 +503,7 @@ i32   TsUIStyledIntSlider                (TsUI *ui, i32 style_flags, char *text,
 char *TsUIStyledLineEdit                 (TsUI *ui, i32 style_flags, char *text, char *edit_text, u32 edit_text_max);
 void  TsUIStyledTitle                    (TsUI *ui, i32 style_flags, char *text);
 void  TsUIStyledLabel                    (TsUI *ui, i32 style_flags, char *text);
+b32   TsUIStyledCollapsable              (TsUI *ui, i32 style_flags, char *text);
 void  TsUIStyledDivider                  (TsUI *ui, i32 style_flags);
 void  TsUIStyledCanvas                   (TsUI *ui, i32 style_flags, char *text, TsUICanvasUpdateCallback *Update, void *update_user_data, TsUICanvasRenderCallback *Render, void *render_user_data);
 b32   TsUIStyledDropdown                 (TsUI *ui, i32 style_flags, char *text);
@@ -492,9 +514,10 @@ v3    TsUIStyledColorPicker              (TsUI *ui, i32 style_flags, char *text,
 i32   TsUIStyledNotePicker               (TsUI *ui, i32 style_flags, char *text, i32 note);
 b32   TsUIStyledTileSelect               (TsUI *ui, i32 style_flags, char *text, Ts2dTexture *texture, v4 tilemap_source, i32 *tile_select_x0, i32 *tile_select_y0, i32 *tile_select_x1, i32 *tile_select_y1, b32 selection_from_widget);
 
-// NOTE(rjf): Dropdown widget calls
+// NOTE(rjf): Ending widget calls
 void  TsUICloseCurrentDropdownTree       (TsUI *ui);
 void  TsUIDropdownEnd                    (TsUI *ui);
+void  TsUICollapsableEnd                 (TsUI *ui);
 
 // NOTE(rjf): Default style widget calls
 b32   TsUIButton                   (TsUI *ui, char *text)                                      { return TsUIStyledButton   (ui, 0, text);                           }
@@ -504,6 +527,7 @@ i32   TsUIIntSlider                (TsUI *ui, char *text, i32 value, i32 low, i3
 char *TsUILineEdit                 (TsUI *ui, char *text, char *edit_text, u32 edit_text_max)  { return TsUIStyledLineEdit (ui, 0, text, edit_text, edit_text_max); }
 void  TsUITitle                    (TsUI *ui, char *text)                                      {        TsUIStyledTitle    (ui, 0, text);                           }
 void  TsUILabel                    (TsUI *ui, char *text)                                      {        TsUIStyledLabel    (ui, 0, text);                           }
+b32   TsUICollapsable              (TsUI *ui, char *text)                                      { return TsUIStyledCollapsable(ui, 0, text);                         }
 void  TsUIDivider                  (TsUI *ui)                                                  {        TsUIStyledDivider  (ui, 0);                                 }
 void  TsUICanvas                   (TsUI *ui, char *text, TsUICanvasUpdateCallback *Update, void *update_user_data, TsUICanvasRenderCallback *Render, void *render_user_data)
 {
@@ -528,6 +552,7 @@ i32   TsUI##name##IntSlider                (TsUI *ui, char *text, i32 value, i32
 char *TsUI##name##LineEdit                 (TsUI *ui, char *text, char *edit_text, u32 edit_text_max)  { return TsUIStyledLineEdit (ui, style_flags, text, edit_text, edit_text_max); }\
 void  TsUI##name##Title                    (TsUI *ui, char *text)                                      { TsUIStyledTitle    (ui, style_flags, text);                           }\
 void  TsUI##name##Label                    (TsUI *ui, char *text)                                      { TsUIStyledLabel    (ui, style_flags, text);                           }\
+b32   TsUI##name##Collapsable              (TsUI *ui, char *text)                                      { return TsUIStyledCollapsable(ui, style_flags, text);                  }\
 void  TsUI##name##Divider                  (TsUI *ui)                                                  { TsUIStyledDivider  (ui, style_flags);                                 }\
 void  TsUI##name##Canvas                   (TsUI *ui, char *text, TsUICanvasUpdateCallback *Update, void *update_user_data, TsUICanvasRenderCallback *Render, void *render_user_data)\
 {\
