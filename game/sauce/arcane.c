@@ -178,10 +178,6 @@ Update(void)
 			}
 		}
 
-		// NOTE(tjr): Opening / exiting performance window
-		if (platform->key_pressed[KEY_f2])
-			core->performance_view = !core->performance_view;
-
 		{
 			local_persist b8 initiated_click = 0;
 			local_persist b8 has_released = 0;
@@ -398,9 +394,7 @@ Update(void)
 		START_PERF_TIMER("Update");
 		if (core->is_ingame)
 		{
-			// NOTE(tjr): Update the edtior & it's systems.
-			if (core->is_in_editor)
-				UpdateEditor();
+			UpdateEditor();
 
 			// NOTE(tjr): Perform movements if the game is not paused.
 			if (core->world_delta_t != 0.0f)

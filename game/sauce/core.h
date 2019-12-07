@@ -53,7 +53,6 @@ struct Core
 	b32 draw_colliders;
 	b32 draw_velocity;
 	b32 bloom;
-	b32 performance_view;
 	f32 shadow_opacity;
 
 	// NOTE(tjr): Editor

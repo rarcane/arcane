@@ -35,6 +35,249 @@ break;
 }
 }
 
+internal void PrintComponentUI(void *component_data, ComponentType type)
+{
+    switch (type)
+    {
+    case COMPONENT_INVALID :
+    case COMPONENT_MAX :
+        R_BREAK("Invalid component.")
+        break;
+
+    case COMPONENT_position :
+    {
+        PositionComponent *component = (PositionComponent*)component_data;
+        if (TsUICollapsable(core->ui, "Position"))
+        {
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "position: %f, %f", component->position.x, component->position.y); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+
+            TsUICollapsableEnd(core->ui);
+        }
+        break;
+    }
+
+    case COMPONENT_sprite :
+    {
+        SpriteComponent *component = (SpriteComponent*)component_data;
+        if (TsUICollapsable(core->ui, "Sprite"))
+        {
+            // TODO: Don't know how to generate UI print for variable 'sprite_data'
+            component->is_flipped = TsUIToggler(core->ui, "is_flipped", component->is_flipped);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, component->is_background_sprite ? "is_background_sprite: true" : "is_background_sprite: false"); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+
+            TsUICollapsableEnd(core->ui);
+        }
+        break;
+    }
+
+    case COMPONENT_sub_sprite :
+    {
+        SubSpriteComponent *component = (SubSpriteComponent*)component_data;
+        if (TsUICollapsable(core->ui, "SubSprite"))
+        {
+            // TODO: Don't know how to generate UI print for variable 'sub_sprites'
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "sub_sprite_count: %i", component->sub_sprite_count); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, component->is_flipped ? "is_flipped: true" : "is_flipped: false"); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+
+            TsUICollapsableEnd(core->ui);
+        }
+        break;
+    }
+
+    case COMPONENT_animation :
+    {
+        AnimationComponent *component = (AnimationComponent*)component_data;
+        if (TsUICollapsable(core->ui, "Animation"))
+        {
+            // TODO: Don't know how to generate UI print for variable 'flags'
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "current_frame: %i", component->current_frame); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "interval_mult: %f", component->interval_mult); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "frame_start_time: %f", component->frame_start_time); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+
+            TsUICollapsableEnd(core->ui);
+        }
+        break;
+    }
+
+    case COMPONENT_collider :
+    {
+        ColliderComponent *component = (ColliderComponent*)component_data;
+        if (TsUICollapsable(core->ui, "Collider"))
+        {
+            // TODO: Don't know how to generate UI print for variable 'shape'
+            // TODO: Don't know how to generate UI print for variable 'flags'
+
+            TsUICollapsableEnd(core->ui);
+        }
+        break;
+    }
+
+    case COMPONENT_velocity :
+    {
+        VelocityComponent *component = (VelocityComponent*)component_data;
+        if (TsUICollapsable(core->ui, "Velocity"))
+        {
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "velocity: %f, %f", component->velocity.x, component->velocity.y); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "ideal_velocity: %f, %f", component->ideal_velocity.x, component->ideal_velocity.y); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "acceleration: %f, %f", component->acceleration.x, component->acceleration.y); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "acceleration_mult: %f, %f", component->acceleration_mult.x, component->acceleration_mult.y); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "previous_friction: %f", component->previous_friction); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, component->collide_against ? "collide_against: true" : "collide_against: false"); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+
+            TsUICollapsableEnd(core->ui);
+        }
+        break;
+    }
+
+    case COMPONENT_physics :
+    {
+        PhysicsComponent *component = (PhysicsComponent*)component_data;
+        if (TsUICollapsable(core->ui, "Physics"))
+        {
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "friction_mult: %f", component->friction_mult); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "bounce_mult: %f", component->bounce_mult); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+
+            TsUICollapsableEnd(core->ui);
+        }
+        break;
+    }
+
+    case COMPONENT_movement :
+    {
+        MovementComponent *component = (MovementComponent*)component_data;
+        if (TsUICollapsable(core->ui, "Movement"))
+        {
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "axis_x: %f", component->axis_x); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "move_speed: %f", component->move_speed); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "move_speed_mult: %f", component->move_speed_mult); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+
+            TsUICollapsableEnd(core->ui);
+        }
+        break;
+    }
+
+    case COMPONENT_arc_entity :
+    {
+        ArcEntityComponent *component = (ArcEntityComponent*)component_data;
+        if (TsUICollapsable(core->ui, "ArcEntity"))
+        {
+            // TODO: Don't know how to generate UI print for variable 'entity_type'
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "current_general_state: %s", component->current_general_state); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            // TODO: Don't know how to generate UI print for variable 'current_animation_state'
+
+            TsUICollapsableEnd(core->ui);
+        }
+        break;
+    }
+
+    case COMPONENT_item :
+    {
+        ItemComponent *component = (ItemComponent*)component_data;
+        if (TsUICollapsable(core->ui, "Item"))
+        {
+            // TODO: Don't know how to generate UI print for variable 'item_type'
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "stack_size: %i", component->stack_size); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+
+            TsUICollapsableEnd(core->ui);
+        }
+        break;
+    }
+
+    case COMPONENT_trigger :
+    {
+        TriggerComponent *component = (TriggerComponent*)component_data;
+        if (TsUICollapsable(core->ui, "Trigger"))
+        {
+            // TODO: Don't know how to generate UI print for variable 'enter_trigger_callback'
+            // TODO: Don't know how to generate UI print for variable 'exit_trigger_callback'
+            // TODO: Don't know how to generate UI print for variable 'previous_overlaps'
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "previous_overlaps_count: %i", component->previous_overlaps_count); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, component->trigger_against ? "trigger_against: true" : "trigger_against: false"); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+
+            TsUICollapsableEnd(core->ui);
+        }
+        break;
+    }
+
+    case COMPONENT_storage :
+    {
+        StorageComponent *component = (StorageComponent*)component_data;
+        if (TsUICollapsable(core->ui, "Storage"))
+        {
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "storage_size: %i", component->storage_size); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            // TODO: Don't know how to generate UI print for variable 'items'
+
+            TsUICollapsableEnd(core->ui);
+        }
+        break;
+    }
+
+    case COMPONENT_parallax :
+    {
+        ParallaxComponent *component = (ParallaxComponent*)component_data;
+        if (TsUICollapsable(core->ui, "Parallax"))
+        {
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "parallax_amount: %f, %f", component->parallax_amount.x, component->parallax_amount.y); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "desired_position: %f, %f", component->desired_position.x, component->desired_position.y); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+
+            TsUICollapsableEnd(core->ui);
+        }
+        break;
+    }
+
+    }
+}
+
 internal void AddPositionComponent(Entity *entity, void *component_data)
 {
     i32 component_id;
@@ -47,9 +290,9 @@ internal void AddPositionComponent(Entity *entity, void *component_data)
     else
     {
         component_id = core->component_set->position_free_component_id;
-        for (int i = 1; i < core->component_set->position_component_count + 1; i++)
+        for (int i = 0; i < core->component_set->position_component_count + 1; i++)
         {
-            if (core->component_set->position_components[i].component_id == 0)
+            if (core->component_set->position_components[i].entity_id == 0)
             {
                 core->component_set->position_free_component_id = i;
                 break;
@@ -89,9 +332,9 @@ internal void AddSpriteComponent(Entity *entity, void *component_data)
     else
     {
         component_id = core->component_set->sprite_free_component_id;
-        for (int i = 1; i < core->component_set->sprite_component_count + 1; i++)
+        for (int i = 0; i < core->component_set->sprite_component_count + 1; i++)
         {
-            if (core->component_set->sprite_components[i].component_id == 0)
+            if (core->component_set->sprite_components[i].entity_id == 0)
             {
                 core->component_set->sprite_free_component_id = i;
                 break;
@@ -131,9 +374,9 @@ internal void AddSubSpriteComponent(Entity *entity, void *component_data)
     else
     {
         component_id = core->component_set->sub_sprite_free_component_id;
-        for (int i = 1; i < core->component_set->sub_sprite_component_count + 1; i++)
+        for (int i = 0; i < core->component_set->sub_sprite_component_count + 1; i++)
         {
-            if (core->component_set->sub_sprite_components[i].component_id == 0)
+            if (core->component_set->sub_sprite_components[i].entity_id == 0)
             {
                 core->component_set->sub_sprite_free_component_id = i;
                 break;
@@ -173,9 +416,9 @@ internal void AddAnimationComponent(Entity *entity, void *component_data)
     else
     {
         component_id = core->component_set->animation_free_component_id;
-        for (int i = 1; i < core->component_set->animation_component_count + 1; i++)
+        for (int i = 0; i < core->component_set->animation_component_count + 1; i++)
         {
-            if (core->component_set->animation_components[i].component_id == 0)
+            if (core->component_set->animation_components[i].entity_id == 0)
             {
                 core->component_set->animation_free_component_id = i;
                 break;
@@ -215,9 +458,9 @@ internal void AddColliderComponent(Entity *entity, void *component_data)
     else
     {
         component_id = core->component_set->collider_free_component_id;
-        for (int i = 1; i < core->component_set->collider_component_count + 1; i++)
+        for (int i = 0; i < core->component_set->collider_component_count + 1; i++)
         {
-            if (core->component_set->collider_components[i].component_id == 0)
+            if (core->component_set->collider_components[i].entity_id == 0)
             {
                 core->component_set->collider_free_component_id = i;
                 break;
@@ -257,9 +500,9 @@ internal void AddVelocityComponent(Entity *entity, void *component_data)
     else
     {
         component_id = core->component_set->velocity_free_component_id;
-        for (int i = 1; i < core->component_set->velocity_component_count + 1; i++)
+        for (int i = 0; i < core->component_set->velocity_component_count + 1; i++)
         {
-            if (core->component_set->velocity_components[i].component_id == 0)
+            if (core->component_set->velocity_components[i].entity_id == 0)
             {
                 core->component_set->velocity_free_component_id = i;
                 break;
@@ -299,9 +542,9 @@ internal void AddPhysicsComponent(Entity *entity, void *component_data)
     else
     {
         component_id = core->component_set->physics_free_component_id;
-        for (int i = 1; i < core->component_set->physics_component_count + 1; i++)
+        for (int i = 0; i < core->component_set->physics_component_count + 1; i++)
         {
-            if (core->component_set->physics_components[i].component_id == 0)
+            if (core->component_set->physics_components[i].entity_id == 0)
             {
                 core->component_set->physics_free_component_id = i;
                 break;
@@ -341,9 +584,9 @@ internal void AddMovementComponent(Entity *entity, void *component_data)
     else
     {
         component_id = core->component_set->movement_free_component_id;
-        for (int i = 1; i < core->component_set->movement_component_count + 1; i++)
+        for (int i = 0; i < core->component_set->movement_component_count + 1; i++)
         {
-            if (core->component_set->movement_components[i].component_id == 0)
+            if (core->component_set->movement_components[i].entity_id == 0)
             {
                 core->component_set->movement_free_component_id = i;
                 break;
@@ -383,9 +626,9 @@ internal void AddArcEntityComponent(Entity *entity, void *component_data)
     else
     {
         component_id = core->component_set->arc_entity_free_component_id;
-        for (int i = 1; i < core->component_set->arc_entity_component_count + 1; i++)
+        for (int i = 0; i < core->component_set->arc_entity_component_count + 1; i++)
         {
-            if (core->component_set->arc_entity_components[i].component_id == 0)
+            if (core->component_set->arc_entity_components[i].entity_id == 0)
             {
                 core->component_set->arc_entity_free_component_id = i;
                 break;
@@ -425,9 +668,9 @@ internal void AddItemComponent(Entity *entity, void *component_data)
     else
     {
         component_id = core->component_set->item_free_component_id;
-        for (int i = 1; i < core->component_set->item_component_count + 1; i++)
+        for (int i = 0; i < core->component_set->item_component_count + 1; i++)
         {
-            if (core->component_set->item_components[i].component_id == 0)
+            if (core->component_set->item_components[i].entity_id == 0)
             {
                 core->component_set->item_free_component_id = i;
                 break;
@@ -467,9 +710,9 @@ internal void AddTriggerComponent(Entity *entity, void *component_data)
     else
     {
         component_id = core->component_set->trigger_free_component_id;
-        for (int i = 1; i < core->component_set->trigger_component_count + 1; i++)
+        for (int i = 0; i < core->component_set->trigger_component_count + 1; i++)
         {
-            if (core->component_set->trigger_components[i].component_id == 0)
+            if (core->component_set->trigger_components[i].entity_id == 0)
             {
                 core->component_set->trigger_free_component_id = i;
                 break;
@@ -509,9 +752,9 @@ internal void AddStorageComponent(Entity *entity, void *component_data)
     else
     {
         component_id = core->component_set->storage_free_component_id;
-        for (int i = 1; i < core->component_set->storage_component_count + 1; i++)
+        for (int i = 0; i < core->component_set->storage_component_count + 1; i++)
         {
-            if (core->component_set->storage_components[i].component_id == 0)
+            if (core->component_set->storage_components[i].entity_id == 0)
             {
                 core->component_set->storage_free_component_id = i;
                 break;
@@ -551,9 +794,9 @@ internal void AddParallaxComponent(Entity *entity, void *component_data)
     else
     {
         component_id = core->component_set->parallax_free_component_id;
-        for (int i = 1; i < core->component_set->parallax_component_count + 1; i++)
+        for (int i = 0; i < core->component_set->parallax_component_count + 1; i++)
         {
-            if (core->component_set->parallax_components[i].component_id == 0)
+            if (core->component_set->parallax_components[i].entity_id == 0)
             {
                 core->component_set->parallax_free_component_id = i;
                 break;
@@ -583,49 +826,49 @@ internal void RemoveParallaxComponent(Entity *entity)
 
 internal void DeleteEntity(Entity *entity)
 {
-PositionComponent *position_component = entity->components[1];
-if (position_component)
-RemovePositionComponent(entity);
-SpriteComponent *sprite_component = entity->components[2];
-if (sprite_component)
-RemoveSpriteComponent(entity);
-SubSpriteComponent *sub_sprite_component = entity->components[3];
-if (sub_sprite_component)
-RemoveSubSpriteComponent(entity);
-AnimationComponent *animation_component = entity->components[4];
-if (animation_component)
-RemoveAnimationComponent(entity);
-ColliderComponent *collider_component = entity->components[5];
-if (collider_component)
-RemoveColliderComponent(entity);
-VelocityComponent *velocity_component = entity->components[6];
-if (velocity_component)
-RemoveVelocityComponent(entity);
-PhysicsComponent *physics_component = entity->components[7];
-if (physics_component)
-RemovePhysicsComponent(entity);
-MovementComponent *movement_component = entity->components[8];
-if (movement_component)
-RemoveMovementComponent(entity);
-ArcEntityComponent *arc_entity_component = entity->components[9];
-if (arc_entity_component)
-RemoveArcEntityComponent(entity);
-ItemComponent *item_component = entity->components[10];
-if (item_component)
-RemoveItemComponent(entity);
-TriggerComponent *trigger_component = entity->components[11];
-if (trigger_component)
-RemoveTriggerComponent(entity);
-StorageComponent *storage_component = entity->components[12];
-if (storage_component)
-RemoveStorageComponent(entity);
-ParallaxComponent *parallax_component = entity->components[13];
-if (parallax_component)
-RemoveParallaxComponent(entity);
+    PositionComponent *position_component = entity->components[1];
+    if (position_component)
+        RemovePositionComponent(entity);
+    SpriteComponent *sprite_component = entity->components[2];
+    if (sprite_component)
+        RemoveSpriteComponent(entity);
+    SubSpriteComponent *sub_sprite_component = entity->components[3];
+    if (sub_sprite_component)
+        RemoveSubSpriteComponent(entity);
+    AnimationComponent *animation_component = entity->components[4];
+    if (animation_component)
+        RemoveAnimationComponent(entity);
+    ColliderComponent *collider_component = entity->components[5];
+    if (collider_component)
+        RemoveColliderComponent(entity);
+    VelocityComponent *velocity_component = entity->components[6];
+    if (velocity_component)
+        RemoveVelocityComponent(entity);
+    PhysicsComponent *physics_component = entity->components[7];
+    if (physics_component)
+        RemovePhysicsComponent(entity);
+    MovementComponent *movement_component = entity->components[8];
+    if (movement_component)
+        RemoveMovementComponent(entity);
+    ArcEntityComponent *arc_entity_component = entity->components[9];
+    if (arc_entity_component)
+        RemoveArcEntityComponent(entity);
+    ItemComponent *item_component = entity->components[10];
+    if (item_component)
+        RemoveItemComponent(entity);
+    TriggerComponent *trigger_component = entity->components[11];
+    if (trigger_component)
+        RemoveTriggerComponent(entity);
+    StorageComponent *storage_component = entity->components[12];
+    if (storage_component)
+        RemoveStorageComponent(entity);
+    ParallaxComponent *parallax_component = entity->components[13];
+    if (parallax_component)
+        RemoveParallaxComponent(entity);
 
-i32 deleted_entity_id = entity->entity_id;
-Entity empty_entity = {0};
-*entity = empty_entity;
-if (deleted_entity_id < core->entity_set->free_entity_id)
-core->entity_set->free_entity_id = deleted_entity_id;
+    i32 deleted_entity_id = entity->entity_id;
+    Entity empty_entity = {0};
+    *entity = empty_entity;
+    if (deleted_entity_id < core->entity_set->free_entity_id)
+        core->entity_set->free_entity_id = deleted_entity_id;
 }

@@ -417,74 +417,53 @@ internal void DrawGameUI()
 			TsUIPopPosition(core->ui);
 		}
 	}
-
-	// NOTE(tjr): Draw developer UI.
-	if (core->performance_view)
-	{
-		// NOTE(tjr): Display performance data.
-		TsUIWindowBegin(core->ui, "Performance", v4(10, 10, 300, 280), 0, 0);
-		{
-			TsUIPushColumn(core->ui, v2(10, 0), v2(100, 50));
-
-			f32 budget_total = 0.0f;
-			for (int i = 0; i < core->performance_timer_count; i++)
-			{
-				char label[100];
-
-				f32 timer_budget_amount = (core->performance_timers[i].finish_time - core->performance_timers[i].start_time) / core->raw_delta_t * 100.0f;
-				sprintf(label,
-						"%s: %f",
-						core->performance_timers[i].name,
-						timer_budget_amount);
-
-				budget_total += timer_budget_amount;
-
-				TsUILabel(core->ui, label);
-			}
-
-			char label[100];
-			sprintf(label, "Frame Budget Usage: %f", budget_total);
-			TsUILabel(core->ui, label);
-
-			TsUIPopColumn(core->ui);
-		}
-		TsUIWindowEnd(core->ui);
-
-		// NOTE(tjr): Debug random stuff
-		TsUIWindowBegin(core->ui, "Debug", v4(core->render_w - 310, 10, 300, 200), 0, 0);
-		{
-			TsUIPushColumn(core->ui, v2(10, 0), v2(200, 30));
-
-			if (core->player)
-			{
-				AnimationComponent *anim_comp = core->player->components[COMPONENT_animation];
-				char label[100];
-				sprintf(label, "Player animation frame: %i", anim_comp->current_frame);
-				TsUILabel(core->ui, label);
-			}
-
-			if (TsUIButton(core->ui, "Add dummy object"))
-			{
-				NewEntity("dummy", ENTITY_TYPE_undefined);
-			}
-
-			TsUIPopColumn(core->ui);
-		}
-		TsUIWindowEnd(core->ui);
-	}
 }
 
+// NOTE(tjr): Update the edtior & it's systems.
 internal void UpdateEditor()
 {
+	local_persist b8 is_entity_window_open = 0;
+	local_persist b8 is_performance_window_open = 0;
+	local_persist b8 is_debug_window_open = 0;
+
+	local_persist b8 pin_windows = 0;
+
 	// NOTE(tjr): Render the editor UI
+	if (core->is_in_editor)
 	{
-		// NOTE(tjr): Drop-down menu
+		// NOTE(tjr): Drop-down menus
 		{
-			TsUIPushRow(core->ui, v2(0.0f, 0.0f), v2(100.0f, 30.0f));
+			TsUIPushAutoRow(core->ui, v2(0, 0), 30);
 			if (TsUIDropdown(core->ui, "World..."))
 			{
 				TsUIButton(core->ui, "Commit");
 				TsUIButton(core->ui, "Reload");
+			}
+			TsUIDropdownEnd(core->ui);
+			if (TsUIDropdown(core->ui, "Windows..."))
+			{
+				if (TsUIToggler(core->ui, "Entity", is_entity_window_open))
+					is_entity_window_open = 1;
+				else
+					is_entity_window_open = 0;
+
+				if (TsUIToggler(core->ui, "Performance", is_performance_window_open))
+					is_performance_window_open = 1;
+				else
+					is_performance_window_open = 0;
+
+				if (TsUIToggler(core->ui, "Debug", is_debug_window_open))
+					is_debug_window_open = 1;
+				else
+					is_debug_window_open = 0;
+			}
+			TsUIDropdownEnd(core->ui);
+			if (TsUIDropdown(core->ui, "Options..."))
+			{
+				if (TsUIToggler(core->ui, "Pin Windows", pin_windows))
+					pin_windows = 1;
+				else
+					pin_windows = 0;
 			}
 			TsUIDropdownEnd(core->ui);
 			TsUIPopRow(core->ui);
@@ -501,10 +480,61 @@ internal void UpdateEditor()
 			TsUIPopColumn(core->ui);
 			TsUIEndInputGroup(core->ui);
 		}
+	}
 
-		// NOTE(tjr): Entity windows
+	if (core->is_in_editor || pin_windows)
+	{
+		if (is_entity_window_open)
 		{
-			v4 entity_list_window_rect = {core->render_w - 360, core->render_h - 510, 350, 500};
+			// NOTE(tjr): Entity info window.
+			v4 entity_info_window_rect = {core->render_w - 360, 10, 350, 300};
+			TsUIWindowBegin(core->ui, "Entity Info", entity_info_window_rect, 0, 0);
+			{
+				if (core->selected_entity == 0)
+				{
+					TsUIPushAutoWidth(core->ui);
+					TsUILabel(core->ui, "No Entity selected.");
+					TsUIPopWidth(core->ui);
+				}
+				else
+				{
+					Entity *selected_entity = &core->entity_set->entities[core->selected_entity];
+					R_DEV_ASSERT(selected_entity->entity_id > 0, "Invalid entity");
+
+					TsUIPushColumn(core->ui, v2(0, 0), v2(100, 30));
+					TsUIPushWidth(core->ui, entity_info_window_rect.width - 50);
+
+					TsUITitle(core->ui, selected_entity->name);
+
+					for (int i = 1; i < COMPONENT_MAX; i++)
+					{
+						if (selected_entity->components[i])
+						{
+							PrintComponentUI(selected_entity->components[i], i);
+						}
+					}
+					TsUIPopWidth(core->ui);
+					TsUIPopColumn(core->ui);
+
+					TsUIPushAutoWidth(core->ui);
+					TsUIPushHeight(core->ui, 30);
+					TsUIPushPosition(core->ui, v2(100, 200));
+					if (!(selected_entity->flags & ENTITY_FLAGS_no_delete))
+					{
+						if (TsUIButton(core->ui, "Delete Entity"))
+						{
+							DeleteEntity(selected_entity);
+							core->selected_entity = 0;
+						}
+					}
+					TsUIPopPosition(core->ui);
+					TsUIPopHeight(core->ui);
+					TsUIPopWidth(core->ui);
+				}
+			}
+			TsUIWindowEnd(core->ui);
+
+			v4 entity_list_window_rect = {core->render_w - 360, 310, 350, 500};
 			TsUIWindowBegin(core->ui, "Entity List", entity_list_window_rect, 0, 0);
 			{
 				TsUIPushColumn(core->ui, v2(10, 10), v2(150, 30));
@@ -541,8 +571,6 @@ internal void UpdateEditor()
 					// NOTE(tjr): Index view
 					for (int i = 1; i < core->entity_set->entity_count; i++)
 					{
-						TsUIPushAutoWidth(core->ui);
-
 						TsUIPushWidth(core->ui, 30);
 						{
 							char label[100];
@@ -576,8 +604,6 @@ internal void UpdateEditor()
 							TsUILabel(core->ui, "- - - - -");
 							TsUIPopSize(core->ui);
 						}
-
-						TsUIPopWidth(core->ui);
 					}
 				}
 				else
@@ -618,51 +644,62 @@ internal void UpdateEditor()
 				TsUIPopColumn(core->ui);
 			}
 			TsUIWindowEnd(core->ui);
+		}
 
-			char entity_window_title[100];
-			sprintf(entity_window_title, core->selected_entity == 0 ? "Entity Info" : "Entity Info - %s", core->entity_set->entities[core->selected_entity].name);
-			TsUIWindowBegin(core->ui, entity_window_title, v4(core->render_w - 360, 10, 350, 300), 0, 0);
+		if (is_performance_window_open)
+		{
+			// NOTE(tjr): Display performance data.
+			TsUIWindowBegin(core->ui, "Performance", v4(10, 500, 300, 280), 0, 0);
 			{
-				if (core->selected_entity == 0)
+				TsUIPushColumn(core->ui, v2(10, 0), v2(100, 50));
+
+				f32 budget_total = 0.0f;
+				for (int i = 0; i < core->performance_timer_count; i++)
 				{
-					TsUIPushAutoWidth(core->ui);
-					TsUILabel(core->ui, "No Entity selected.");
-					TsUIPopWidth(core->ui);
+					char label[100];
+
+					f32 timer_budget_amount = (core->performance_timers[i].finish_time - core->performance_timers[i].start_time) / core->raw_delta_t * 100.0f;
+					sprintf(label,
+							"%s: %f",
+							core->performance_timers[i].name,
+							timer_budget_amount);
+
+					budget_total += timer_budget_amount;
+
+					TsUILabel(core->ui, label);
 				}
-				else
+
+				char label[100];
+				sprintf(label, "Frame Budget Usage: %f", budget_total);
+				TsUILabel(core->ui, label);
+
+				TsUIPopColumn(core->ui);
+			}
+			TsUIWindowEnd(core->ui);
+		}
+
+		if (is_debug_window_open)
+		{
+			// NOTE(tjr): Debug random stuff
+			TsUIWindowBegin(core->ui, "Debug", v4(310, 500, 300, 200), 0, 0);
+			{
+				TsUIPushColumn(core->ui, v2(10, 0), v2(200, 30));
+
+				if (TsUIButton(core->ui, "Add dummy object"))
 				{
-					Entity *selected_entity = &core->entity_set->entities[core->selected_entity];
-					R_DEV_ASSERT(selected_entity->entity_id > 0, "Invalid entity");
-
-					TsUIPushAutoWidth(core->ui);
-					TsUIPushHeight(core->ui, 30);
-					TsUIPushPosition(core->ui, v2(100, 200));
-					if (!(selected_entity->flags & ENTITY_FLAGS_no_delete))
-					{
-						if (TsUIButton(core->ui, "Delete Entity"))
-						{
-							DeleteEntity(selected_entity);
-							core->selected_entity = 0;
-						}
-					}
-					TsUIPopPosition(core->ui);
-					TsUIPopHeight(core->ui);
-
-					TsUIPushColumn(core->ui, v2(0, 0), v2(100, 30));
-
-					TsUILabel(core->ui, core->entity_set->entities[core->selected_entity].name);
-					// ...
-
-					TsUIPopColumn(core->ui);
-
-					TsUIPopWidth(core->ui);
+					NewEntity("dummy", ENTITY_TYPE_undefined);
 				}
+
+				TsUIPopColumn(core->ui);
 			}
 			TsUIWindowEnd(core->ui);
 		}
 	}
 
-	TransformEditorCamera();
+	if (core->is_in_editor)
+	{
+		TransformEditorCamera();
 
-	TsPlatformCaptureKeyboard();
+		TsPlatformCaptureKeyboard();
+	}
 }

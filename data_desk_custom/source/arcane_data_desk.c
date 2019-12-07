@@ -18,7 +18,7 @@ static Component components[500];
 static FILE *global_catchall_header;
 static FILE *global_catchall_implementation;
 
-static void GeneratePrintCodeForAST(FILE *file, DataDeskASTNode *root, char *access_string);
+static void GeneratePrintUICodeForAST(FILE *file, DataDeskASTNode *root, char *access_string);
 
 DATA_DESK_FUNC void
 DataDeskCustomInitCallback(void)
@@ -48,21 +48,21 @@ DataDeskCustomStructCallback(DataDeskStruct struct_info, char *filename)
 {
 	if (DataDeskNodeHasTag(struct_info.root, "Component"))
 	{
+		if (component_count < sizeof(components) / sizeof(components[0]))
+		{
+			Component component = {
+				struct_info.name,
+				struct_info.name_lowercase_with_underscores,
+				struct_info.name_uppercase_with_underscores,
+				struct_info.name_upper_camel_case,
+				struct_info.name_lower_camel_case,
+				struct_info.root,
+			};
+			components[component_count++] = component;
+		}
+
 		// NOTE(tjr): Generate component struct declaration
 		{
-			if (component_count < sizeof(components) / sizeof(components[0]))
-			{
-				Component component = {
-					struct_info.name,
-					struct_info.name_lowercase_with_underscores,
-					struct_info.name_uppercase_with_underscores,
-					struct_info.name_upper_camel_case,
-					struct_info.name_lower_camel_case,
-					struct_info.root,
-				};
-				components[component_count++] = component;
-			}
-
 			FILE *file = global_catchall_header;
 			if (file)
 			{
@@ -219,6 +219,31 @@ DataDeskCustomCleanUpCallback(void)
 		FILE *file = global_catchall_implementation;
 		if (file)
 		{
+			// NOTE(tjr): Generate Component UI print function.
+			{
+				fprintf(file, "internal void PrintComponentUI(void *component_data, ComponentType type)\n");
+				fprintf(file, "{\n");
+				fprintf(file, "    switch (type)\n");
+				fprintf(file, "    {\n");
+				fprintf(file, "    case COMPONENT_INVALID :\n");
+				fprintf(file, "    case COMPONENT_MAX :\n");
+				fprintf(file, "        R_BREAK(\"Invalid component.\")\n");
+				fprintf(file, "        break;\n\n");
+				for (int i = 0; i < component_count; i++)
+				{
+					Component *component = &components[i];
+
+					fprintf(file, "    case COMPONENT_%s :\n", component->name_lowercase_with_underscores);
+					fprintf(file, "    {\n");
+					fprintf(file, "        %sComponent *component = (%sComponent*)component_data;\n", component->name, component->name);
+					GeneratePrintUICodeForAST(file, component->root, "component->");
+					fprintf(file, "        break;\n");
+					fprintf(file, "    }\n\n");
+				}
+				fprintf(file, "    }\n");
+				fprintf(file, "}\n\n");
+			}
+
 			for (int i = 0; i < component_count; i++)
 			{
 				Component *component = &components[i];
@@ -237,9 +262,9 @@ DataDeskCustomCleanUpCallback(void)
 					fprintf(file, "    else\n");
 					fprintf(file, "    {\n");
 					fprintf(file, "        component_id = core->component_set->%s_free_component_id;\n", component->name_lowercase_with_underscores);
-					fprintf(file, "        for (int i = 1; i < core->component_set->%s_component_count + 1; i++)\n", component->name_lowercase_with_underscores);
+					fprintf(file, "        for (int i = 0; i < core->component_set->%s_component_count + 1; i++)\n", component->name_lowercase_with_underscores);
 					fprintf(file, "        {\n");
-					fprintf(file, "            if (core->component_set->%s_components[i].component_id == 0)\n", component->name_lowercase_with_underscores);
+					fprintf(file, "            if (core->component_set->%s_components[i].entity_id == 0)\n", component->name_lowercase_with_underscores);
 					fprintf(file, "            {\n");
 					fprintf(file, "                core->component_set->%s_free_component_id = i;\n", component->name_lowercase_with_underscores);
 					fprintf(file, "                break;\n");
@@ -279,35 +304,36 @@ DataDeskCustomCleanUpCallback(void)
 			{
 				Component *component = &components[i];
 
-				fprintf(file, "%sComponent *%s_component = entity->components[%i];\n", component->name, component->name_lowercase_with_underscores, i + 1);
-				fprintf(file, "if (%s_component)\n", component->name_lowercase_with_underscores);
-				fprintf(file, "Remove%sComponent(entity);\n", component->name);
+				fprintf(file, "    %sComponent *%s_component = entity->components[%i];\n", component->name, component->name_lowercase_with_underscores, i + 1);
+				fprintf(file, "    if (%s_component)\n", component->name_lowercase_with_underscores);
+				fprintf(file, "        Remove%sComponent(entity);\n", component->name);
 			}
-			fprintf(file, "\ni32 deleted_entity_id = entity->entity_id;\n");
-			fprintf(file, "Entity empty_entity = {0};\n");
-			fprintf(file, "*entity = empty_entity;\n");
-			fprintf(file, "if (deleted_entity_id < core->entity_set->free_entity_id)\n");
-			fprintf(file, "core->entity_set->free_entity_id = deleted_entity_id;\n");
+			fprintf(file, "\n    i32 deleted_entity_id = entity->entity_id;\n");
+			fprintf(file, "    Entity empty_entity = {0};\n");
+			fprintf(file, "    *entity = empty_entity;\n");
+			fprintf(file, "    if (deleted_entity_id < core->entity_set->free_entity_id)\n");
+			fprintf(file, "        core->entity_set->free_entity_id = deleted_entity_id;\n");
 			fprintf(file, "}\n");
 		}
 	}
 }
 
-/* static void
-GeneratePrintCodeForAST(FILE *file, DataDeskASTNode *root, char *access_string)
+static void GeneratePrintUICodeForAST(FILE *file, DataDeskASTNode *root, char *access_string)
 {
-	if (!DataDeskNodeHasTag(root, "DoNotPrint"))
+	if (!DataDeskNodeHasTag(root, "NoPrint"))
 	{
 		switch (root->type)
 		{
 		case DATA_DESK_AST_NODE_TYPE_struct_declaration:
 		{
-			fprintf(file, "printf(\"{ \");\n");
+			fprintf(file, "        if (TsUICollapsable(core->ui, \"%s\"))\n", root->string);
+			fprintf(file, "        {\n");
 			for (DataDeskASTNode *field = root->struct_declaration.first_member; field; field = field->next)
 			{
-				GeneratePrintCodeForAST(file, field, access_string);
+				GeneratePrintUICodeForAST(file, field, access_string);
 			}
-			fprintf(file, "printf(\"}\");\n");
+			fprintf(file, "\n            TsUICollapsableEnd(core->ui);\n");
+			fprintf(file, "        }\n");
 			break;
 		}
 
@@ -318,22 +344,128 @@ GeneratePrintCodeForAST(FILE *file, DataDeskASTNode *root, char *access_string)
 				DataDeskDeclarationIsType(root, "i16") || DataDeskDeclarationIsType(root, "u16") ||
 				DataDeskDeclarationIsType(root, "i8") || DataDeskDeclarationIsType(root, "u8"))
 			{
-				fprintf(file, "printf(\"%%i, \", %s%s);\n", access_string, root->string);
+				DataDeskASTNode *editable_tag = DataDeskGetNodeTag(root, "Editable");
+				if (editable_tag)
+				{
+					DataDeskASTNode *param1 = DataDeskGetTagParameter(editable_tag, 0);
+					DataDeskASTNode *param2 = DataDeskGetTagParameter(editable_tag, 1);
+
+					fprintf(file, "            ");
+					fprintf(file, "%s%s = TsUIIntSlider(core->ui, \"%s\", %s%s, %s, %s);\n",
+							access_string, root->string,
+							root->string,
+							access_string, root->string,
+							param1->string,
+							param2->string);
+				}
+				else
+				{
+					fprintf(file, "            ");
+					fprintf(file, "TsUIPushAutoWidth(core->ui);\n");
+					fprintf(file, "            ");
+					fprintf(file, "{ char label[100]; ");
+					fprintf(file, "sprintf(label, \"%s: %%i\", %s%s); ", root->string, access_string, root->string);
+					fprintf(file, "TsUILabel(core->ui, label); }\n");
+					fprintf(file, "            ");
+					fprintf(file, "TsUIPopWidth(core->ui);\n");
+				}
 			}
 			else if (DataDeskDeclarationIsType(root, "float") || DataDeskDeclarationIsType(root, "f32") ||
 					 DataDeskDeclarationIsType(root, "f64"))
 			{
-				fprintf(file, "printf(\"%%f, \", %s%s);\n", access_string, root->string);
+				DataDeskASTNode *editable_tag = DataDeskGetNodeTag(root, "Editable");
+				if (editable_tag)
+				{
+					DataDeskASTNode *param1 = DataDeskGetTagParameter(editable_tag, 0);
+					DataDeskASTNode *param2 = DataDeskGetTagParameter(editable_tag, 1);
+
+					fprintf(file, "            ");
+					fprintf(file, "%s%s = TsUISlider(core->ui, \"%s\", %s%s, %s, %s);\n",
+							access_string, root->string,
+							root->string,
+							access_string, root->string,
+							param1->string,
+							param2->string);
+				}
+				else
+				{
+					fprintf(file, "            ");
+					fprintf(file, "TsUIPushAutoWidth(core->ui);\n");
+					fprintf(file, "            ");
+					fprintf(file, "{ char label[100]; ");
+					fprintf(file, "sprintf(label, \"%s: %%f\", %s%s); ", root->string, access_string, root->string);
+					fprintf(file, "TsUILabel(core->ui, label); }\n");
+					fprintf(file, "            ");
+					fprintf(file, "TsUIPopWidth(core->ui);\n");
+				}
 			}
 			else if (DataDeskDeclarationIsType(root, "b32") || DataDeskDeclarationIsType(root, "b16") ||
 					 DataDeskDeclarationIsType(root, "b8"))
 			{
-				fprintf(file, "printf(\"%%s, \", %s%s ? \"true\" : \"false\");\n", access_string, root->string);
+				DataDeskASTNode *editable_tag = DataDeskGetNodeTag(root, "Editable");
+				if (editable_tag)
+				{
+					fprintf(file, "            ");
+					fprintf(file, "%s%s = TsUIToggler(core->ui, \"%s\", %s%s);\n",
+							access_string, root->string,
+							root->string,
+							access_string, root->string);
+				}
+				else
+				{
+					fprintf(file, "            ");
+					fprintf(file, "TsUIPushAutoWidth(core->ui);\n");
+					fprintf(file, "            ");
+					fprintf(file, "{ char label[100]; ");
+					fprintf(file, "sprintf(label, %s%s ? \"%s: true\" : \"%s: false\"); ", access_string, root->string, root->string, root->string);
+					fprintf(file, "TsUILabel(core->ui, label); }\n");
+					fprintf(file, "            ");
+					fprintf(file, "TsUIPopWidth(core->ui);\n");
+				}
+			}
+			else if (DataDeskDeclarationIsType(root, "v2"))
+			{
+				/* DataDeskASTNode *editable_tag = DataDeskGetNodeTag(root, "Editable");
+				if (editable_tag)
+				{
+					DataDeskASTNode *param1 = DataDeskGetTagParameter(editable_tag, 0);
+					DataDeskASTNode *param2 = DataDeskGetTagParameter(editable_tag, 1);
+
+					fprintf(file, "            ");
+					fprintf(file, "%s%s = TsUISlider(core->ui, \"%s\", %s%s, %s, %s);\n",
+							access_string, root->string,
+							root->string,
+							access_string, root->string,
+							param1->string,
+							param2->string);
+				} */
+
+				fprintf(file, "            ");
+				fprintf(file, "TsUIPushAutoWidth(core->ui);\n");
+				fprintf(file, "            ");
+				fprintf(file, "{ char label[100]; ");
+				fprintf(file, "sprintf(label, \"%s: %%f, %%f\", %s%s.x, %s%s.y); ", root->string, access_string, root->string, access_string, root->string);
+				fprintf(file, "TsUILabel(core->ui, label); }\n");
+				fprintf(file, "            ");
+				fprintf(file, "TsUIPopWidth(core->ui);\n");
 			}
 			else if (DataDeskDeclarationIsType(root, "*char"))
 			{
-				fprintf(file, "printf(\"%%s, \", %s%s);\n", access_string, root->string);
+				fprintf(file, "            ");
+				fprintf(file, "TsUIPushAutoWidth(core->ui);\n");
+				fprintf(file, "            ");
+				fprintf(file, "{ char label[100]; ");
+				fprintf(file, "sprintf(label, \"%s: %%s\", %s%s); ", root->string, access_string, root->string);
+				fprintf(file, "TsUILabel(core->ui, label); }\n");
+				fprintf(file, "            ");
+				fprintf(file, "TsUIPopWidth(core->ui);\n");
 			}
+			else
+			{
+				fprintf(file, "            ");
+				fprintf(file, "// TODO: Don't know how to generate UI print for variable '%s'\n", root->string);
+			}
+
 			break;
 		}
 
@@ -341,4 +473,4 @@ GeneratePrintCodeForAST(FILE *file, DataDeskASTNode *root, char *access_string)
 			break;
 		}
 	}
-} */
+}

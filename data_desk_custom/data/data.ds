@@ -61,6 +61,7 @@ struct Position
 struct Sprite
 {
 	sprite_data : SpriteData;
+	@Editable
 	is_flipped : b8;
 	is_background_sprite : b8; // Temp solution
 }
