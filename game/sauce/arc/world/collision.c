@@ -67,7 +67,7 @@ internal v2 ProjectVerticesOntoAxis(v2 vertices[], int vertex_count, v2 axis, v2
 // NOTE(tjr): Get the colliders that are overlapping with the provided shape. Returns a count of the amount.
 internal i32 GetOverlappingCollidersAtPosition(ColliderComponent *in_overlapping_colliders[], Shape shape, v2 position, b8 overlap_with)
 {
-	PushDebugShape(shape, position, v3(1.0f, 0.0f, 0.0f), 2.5f);
+	PushDebugShapeForDuration(shape, position, v3(1.0f, 0.0f, 0.0f), 2.5f);
 
 	int overlap_count = 0;
 	for (int i = 0; i < core->component_set->collider_component_count; i++) // TODO: Extract this out into spatial hashes

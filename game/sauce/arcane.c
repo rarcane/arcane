@@ -394,6 +394,11 @@ Update(void)
 		START_PERF_TIMER("Update");
 		if (core->is_ingame)
 		{
+			/* v2 world_mouse_pos = GetMousePositionInWorldSpace();
+			Log("%f %f", world_mouse_pos.x, world_mouse_pos.y);
+			PushDebugLine(v2(world_mouse_pos.x - 10.0f, world_mouse_pos.y), v2(world_mouse_pos.x + 10.0f, world_mouse_pos.y), v3(1, 0, 0));
+			PushDebugLine(v2(world_mouse_pos.x, world_mouse_pos.y - 10.0f), v2(world_mouse_pos.x, world_mouse_pos.y + 10.0f), v3(1, 0, 0)); */
+
 			DrawEditorUI();
 			if (core->is_in_editor)
 				TransformEditorCamera();
@@ -415,8 +420,8 @@ Update(void)
 			UpdateParallax();
 
 			DrawWorld();
-			DrawDebugLines();
 			DrawGameUI();
+			DrawDebugLines();
 		}
 		else
 		{
@@ -467,23 +472,66 @@ Update(void)
 	}
 }
 
-internal void test_enter(OverlappedColliderInfo overlap)
+internal v2 GetMousePositionInWorldSpace()
 {
-	Log("entered");
+	return v2(platform->mouse_x / core->camera_zoom - core->camera_position.x - GetZeroWorldPosition().x, platform->mouse_y / core->camera_zoom - core->camera_position.y - GetZeroWorldPosition().y);
 }
 
-internal void test_exit(OverlappedColliderInfo overlap)
+// NOTE(tjr): Determine if the mouse position is overlapping a shape within world-space. Shape must be AABB for now.
+internal b8 IsMouseOverlappingWorldShape(Shape shape, v2 shape_world_pos)
 {
-	Log("exited");
+	v2 mouse_pos = GetMousePositionInWorldSpace();
+	if (mouse_pos.x > shape.vertices[0].x + shape_world_pos.x && mouse_pos.x <= shape.vertices[1].x + shape_world_pos.x &&
+		mouse_pos.y > shape.vertices[0].y + shape_world_pos.y && mouse_pos.y <= shape.vertices[2].y + shape_world_pos.y)
+		return 1;
+	else
+		return 0;
 }
 
-internal void PushDebugLine(v2 p1, v2 p2, v3 colour, f32 lifetime)
+internal void PushDebugLine(v2 p1, v2 p2, v3 colour)
 {
 	DebugLine debug_line = {
 		1,
 		p1,
 		p2,
 		colour,
+		0,
+		0.0f,
+		0.0f,
+	};
+
+	if (core->debug_line_count == core->free_debug_line_index)
+	{
+		core->debug_lines[core->debug_line_count++] = debug_line;
+		core->free_debug_line_index++;
+	}
+	else
+	{
+		core->debug_lines[core->free_debug_line_index] = debug_line;
+
+		b8 found_free_index = 0;
+		for (int i = 0; i < core->debug_line_count + 1; i++)
+		{
+			if (!core->debug_lines[i].is_valid)
+			{
+				core->free_debug_line_index = i;
+				found_free_index = 1;
+				break;
+			}
+		}
+
+		R_DEV_ASSERT(found_free_index, "Couldn't find a spare index.");
+	}
+}
+
+internal void PushDebugLineForDuration(v2 p1, v2 p2, v3 colour, f32 lifetime)
+{
+	DebugLine debug_line = {
+		1,
+		p1,
+		p2,
+		colour,
+		1,
 		lifetime,
 		core->elapsed_world_time,
 	};
@@ -512,7 +560,7 @@ internal void PushDebugLine(v2 p1, v2 p2, v3 colour, f32 lifetime)
 	}
 }
 
-internal void PushDebugShape(Shape shape, v2 position, v3 colour, f32 lifetime)
+internal void PushDebugShape(Shape shape, v2 position, v3 colour)
 {
 	for (int i = 0; i < shape.vertex_count; i++)
 	{
@@ -523,8 +571,23 @@ internal void PushDebugShape(Shape shape, v2 position, v3 colour, f32 lifetime)
 
 		PushDebugLine(p1,
 					  p2,
-					  colour,
-					  lifetime);
+					  colour);
+	}
+}
+
+internal void PushDebugShapeForDuration(Shape shape, v2 position, v3 colour, f32 lifetime)
+{
+	for (int i = 0; i < shape.vertex_count; i++)
+	{
+		int secondPoint = (i == shape.vertex_count - 1 ? 0 : i + 1);
+
+		v2 p1 = V2AddV2(position, v2(shape.vertices[i].x, shape.vertices[i].y));
+		v2 p2 = V2AddV2(position, v2(shape.vertices[secondPoint].x, shape.vertices[secondPoint].y));
+
+		PushDebugLineForDuration(p1,
+								 p2,
+								 colour,
+								 lifetime);
 	}
 }
 
@@ -534,24 +597,35 @@ internal void DrawDebugLines()
 	{
 		DebugLine *debug_line = &core->debug_lines[i];
 
+		if (debug_line->is_valid && debug_line->has_duration && debug_line->start_time + debug_line->lifetime <= core->elapsed_world_time)
+		{
+			DebugLine empty_debug_line = {0};
+			core->debug_lines[i] = empty_debug_line;
+
+			if (i < core->free_debug_line_index)
+				core->free_debug_line_index = i;
+		}
+
 		if (debug_line->is_valid)
 		{
-			if (debug_line->start_time + debug_line->lifetime <= core->elapsed_world_time)
+			f32 alpha;
+			if (debug_line->has_duration)
+				alpha = ((debug_line->start_time + debug_line->lifetime) - core->elapsed_world_time) / debug_line->lifetime;
+			else
+				alpha = 1.0f;
+
+			Ts2dPushLine(core->renderer,
+						 v4(debug_line->colour.r, debug_line->colour.g, debug_line->colour.b, alpha),
+						 v2view(debug_line->p1),
+						 v2view(debug_line->p2));
+
+			if (!debug_line->has_duration)
 			{
 				DebugLine empty_debug_line = {0};
 				core->debug_lines[i] = empty_debug_line;
 
 				if (i < core->free_debug_line_index)
 					core->free_debug_line_index = i;
-			}
-			else
-			{
-				f32 alpha = ((debug_line->start_time + debug_line->lifetime) - core->elapsed_world_time) / debug_line->lifetime;
-
-				Ts2dPushLine(core->renderer,
-							 v4(debug_line->colour.r, debug_line->colour.g, debug_line->colour.b, alpha),
-							 v2view(debug_line->p1),
-							 v2view(debug_line->p2));
 			}
 		}
 	}

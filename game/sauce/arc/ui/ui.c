@@ -425,32 +425,133 @@ internal void DrawGameUI()
 		StaticSprite *y_arrow = GetStaticSprite(STATIC_SPRITE_y_axis_arrow_icon);
 		StaticSprite *middle = GetStaticSprite(STATIC_SPRITE_middle_axis_icon);
 
+		b8 entity_has_position = 0;
+		v2 position = {0};
 		PositionComponent *position_comp = core->entity_set->entities[core->selected_entity].components[COMPONENT_position];
-		if (position_comp)
+		ParallaxComponent *parallax_comp = core->entity_set->entities[core->selected_entity].components[COMPONENT_parallax];
+		if (parallax_comp)
 		{
-			v2 x_arrow_pos = v2view(v2(position_comp->position.x - 4.0f, position_comp->position.y - 3.5f));
+			position = parallax_comp->desired_position;
+			entity_has_position = 1;
+		}
+		else if (position_comp)
+		{
+			position = position_comp->position;
+			entity_has_position = 1;
+		}
+
+		if (entity_has_position)
+		{
+			Shape x_arrow_bounds = GetRectangleShape(v2(32.5f, 7.0f), v2(19.75f, 3.5f));
+			Shape y_arrow_bounds = GetRectangleShape(v2(7.0f, 32.5f), v2(0.0f, -3.5f));
+			Shape middle_bounds = GetRectangleShape(v2(7.0f, 7.0f), v2(0.0f, 3.5f));
+
+			f32 x_arrow_tint = 1.0f;
+			f32 y_arrow_tint = 1.0f;
+			f32 middle_tint = 1.0f;
+			local_persist b8 is_holding_x_arrow = 0;
+			local_persist b8 is_holding_y_arrow = 0;
+			local_persist b8 is_holding_middle = 0;
+			local_persist v2 grab_offset = {0.0f, 0.0f};
+
+			if (core->left_mouse_released)
+			{
+				is_holding_x_arrow = 0;
+				is_holding_y_arrow = 0;
+				is_holding_middle = 0;
+				x_arrow_tint = 1.0f;
+				y_arrow_tint = 1.0f;
+				middle_tint = 1.0f;
+			}
+
+			if (is_holding_x_arrow)
+			{
+				x_arrow_tint = 1.5f;
+
+				position.x = GetMousePositionInWorldSpace().x + grab_offset.x;
+			}
+			else if (is_holding_y_arrow)
+			{
+				y_arrow_tint = 1.5f;
+
+				position.y = GetMousePositionInWorldSpace().y + grab_offset.y;
+			}
+			else if (is_holding_middle)
+			{
+				middle_tint = 1.5f;
+
+				position = V2AddV2(GetMousePositionInWorldSpace(), grab_offset);
+			}
+			else
+			{
+				if (IsMouseOverlappingWorldShape(x_arrow_bounds, position))
+				{
+					x_arrow_tint = 1.25f;
+
+					if (platform->left_mouse_pressed)
+					{
+						is_holding_x_arrow = 1;
+
+						grab_offset = V2SubtractV2(position, GetMousePositionInWorldSpace());
+					}
+				}
+				else if (IsMouseOverlappingWorldShape(y_arrow_bounds, position))
+				{
+					y_arrow_tint = 1.25f;
+
+					if (platform->left_mouse_pressed)
+					{
+						is_holding_y_arrow = 1;
+
+						grab_offset = V2SubtractV2(position, GetMousePositionInWorldSpace());
+					}
+				}
+				else if (IsMouseOverlappingWorldShape(middle_bounds, position))
+				{
+					middle_tint = 1.25f;
+
+					if (platform->left_mouse_pressed)
+					{
+						is_holding_middle = 1;
+
+						grab_offset = V2SubtractV2(position, GetMousePositionInWorldSpace());
+					}
+				}
+			}
+
+			if (parallax_comp)
+			{
+				parallax_comp->desired_position = position;
+			}
+			else if (position_comp)
+			{
+				position_comp->position = position;
+			}
+
+			v2 x_arrow_pos = v2view(v2(position.x - 4.0f, position.y - 3.5f));
 			v2 x_arrow_size = v2zoom(v2(40.0f, 7.0f));
-
-			v2 y_arrow_pos = v2view(v2(position_comp->position.x - 3.5f, position_comp->position.y - 36.0f));
+			v2 y_arrow_pos = v2view(v2(position.x - 3.5f, position.y - 36.0f));
 			v2 y_arrow_size = v2zoom(v2(7.0f, 40.0f));
-
-			v2 middle_pos = v2view(v2(position_comp->position.x - 3.5f, position_comp->position.y - 3.5f));
+			v2 middle_pos = v2view(v2(position.x - 3.5f, position.y - 3.5f));
 			v2 middle_size = v2zoom(v2(7.0f, 7.0f));
 
-			Ts2dPushTexture(core->renderer,
-							x_arrow->texture_atlas,
-							x_arrow->source,
-							v4(x_arrow_pos.x, x_arrow_pos.y, x_arrow_size.x, x_arrow_size.y));
+			Ts2dPushTintedTexture(core->renderer,
+								  x_arrow->texture_atlas,
+								  x_arrow->source,
+								  v4(x_arrow_pos.x, x_arrow_pos.y, x_arrow_size.x, x_arrow_size.y),
+								  v4(1.0f * x_arrow_tint, 1.0f * x_arrow_tint, 1.0f * x_arrow_tint, 1.0f));
 
-			Ts2dPushTexture(core->renderer,
-							y_arrow->texture_atlas,
-							y_arrow->source,
-							v4(y_arrow_pos.x, y_arrow_pos.y, y_arrow_size.x, y_arrow_size.y));
+			Ts2dPushTintedTexture(core->renderer,
+								  y_arrow->texture_atlas,
+								  y_arrow->source,
+								  v4(y_arrow_pos.x, y_arrow_pos.y, y_arrow_size.x, y_arrow_size.y),
+								  v4(1.0f * y_arrow_tint, 1.0f * y_arrow_tint, 1.0f * y_arrow_tint, 1.0f));
 
-			Ts2dPushTexture(core->renderer,
-							middle->texture_atlas,
-							middle->source,
-							v4(middle_pos.x, middle_pos.y, middle_size.x, middle_size.y));
+			Ts2dPushTintedTexture(core->renderer,
+								  middle->texture_atlas,
+								  middle->source,
+								  v4(middle_pos.x, middle_pos.y, middle_size.x, middle_size.y),
+								  v4(1.0f * middle_tint, 1.0f * middle_tint, 1.0f * middle_tint, 1.0f));
 		}
 	}
 }

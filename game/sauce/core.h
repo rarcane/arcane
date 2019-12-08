@@ -13,6 +13,7 @@ typedef struct DebugLine
 	v2 p1;
 	v2 p2;
 	v3 colour;
+	b8 has_duration;
 	f32 lifetime;
 	f32 start_time;
 } DebugLine;
