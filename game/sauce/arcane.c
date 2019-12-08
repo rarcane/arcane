@@ -394,7 +394,9 @@ Update(void)
 		START_PERF_TIMER("Update");
 		if (core->is_ingame)
 		{
-			UpdateEditor();
+			DrawEditorUI();
+			if (core->is_in_editor)
+				TransformEditorCamera();
 
 			// NOTE(tjr): Perform movements if the game is not paused.
 			if (core->world_delta_t != 0.0f)
@@ -404,13 +406,14 @@ Update(void)
 				AdvanceVelocity(core->component_set->velocity_components, core->component_set->velocity_component_count);
 				UpdateTriggers(core->component_set->trigger_components, core->component_set->trigger_component_count);
 
-				TransformInGameCamera();
-				UpdateParallax();
+				if (!core->is_in_editor)
+					TransformInGameCamera();
 
 				PostMoveUpdatePlayer();
 			}
 
-			// NOTE(tjr): Render the game.
+			UpdateParallax();
+
 			DrawWorld();
 			DrawDebugLines();
 			DrawGameUI();

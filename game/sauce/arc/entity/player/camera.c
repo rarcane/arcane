@@ -27,14 +27,13 @@ static void TransformEditorCamera()
 	{
 		core->camera_position.y -= 600.0f * transform_mult / core->camera_zoom * core->delta_t;
 	}
+
+	TsPlatformCaptureKeyboard();
 }
 
 static void TransformInGameCamera()
 {
-	if (!core->is_in_editor && core->player)
-	{
-		PositionComponent *position_comp = core->player->components[COMPONENT_position];
-		core->camera_zoom = DEFAULT_CAMERA_ZOOM;
-		core->camera_position = V2AddV2(v2(core->camera_offset.x, core->camera_offset.y + DEFAULT_CAMERA_OFFSET_Y), V2MultiplyF32(position_comp->position, -1.0f));
-	}
+	PositionComponent *position_comp = core->player->components[COMPONENT_position];
+	core->camera_zoom = DEFAULT_CAMERA_ZOOM;
+	core->camera_position = V2AddV2(v2(core->camera_offset.x, core->camera_offset.y + DEFAULT_CAMERA_OFFSET_Y), V2MultiplyF32(position_comp->position, -1.0f));
 }

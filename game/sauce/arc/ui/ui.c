@@ -417,72 +417,106 @@ internal void DrawGameUI()
 			TsUIPopPosition(core->ui);
 		}
 	}
+
+	// NOTE(tjr): Move arrows for editor.
+	if (core->is_in_editor && core->selected_entity > 0)
+	{
+		StaticSprite *x_arrow = GetStaticSprite(STATIC_SPRITE_x_axis_arrow_icon);
+		StaticSprite *y_arrow = GetStaticSprite(STATIC_SPRITE_y_axis_arrow_icon);
+		StaticSprite *middle = GetStaticSprite(STATIC_SPRITE_middle_axis_icon);
+
+		PositionComponent *position_comp = core->entity_set->entities[core->selected_entity].components[COMPONENT_position];
+		if (position_comp)
+		{
+			v2 x_arrow_pos = v2view(v2(position_comp->position.x - 4.0f, position_comp->position.y - 3.5f));
+			v2 x_arrow_size = v2zoom(v2(40.0f, 7.0f));
+
+			v2 y_arrow_pos = v2view(v2(position_comp->position.x - 3.5f, position_comp->position.y - 36.0f));
+			v2 y_arrow_size = v2zoom(v2(7.0f, 40.0f));
+
+			v2 middle_pos = v2view(v2(position_comp->position.x - 3.5f, position_comp->position.y - 3.5f));
+			v2 middle_size = v2zoom(v2(7.0f, 7.0f));
+
+			Ts2dPushTexture(core->renderer,
+							x_arrow->texture_atlas,
+							x_arrow->source,
+							v4(x_arrow_pos.x, x_arrow_pos.y, x_arrow_size.x, x_arrow_size.y));
+
+			Ts2dPushTexture(core->renderer,
+							y_arrow->texture_atlas,
+							y_arrow->source,
+							v4(y_arrow_pos.x, y_arrow_pos.y, y_arrow_size.x, y_arrow_size.y));
+
+			Ts2dPushTexture(core->renderer,
+							middle->texture_atlas,
+							middle->source,
+							v4(middle_pos.x, middle_pos.y, middle_size.x, middle_size.y));
+		}
+	}
 }
 
-// NOTE(tjr): Update the edtior & it's systems.
-internal void UpdateEditor()
+internal void DrawEditorUI()
 {
-	local_persist b8 is_entity_window_open = 0;
+	local_persist b8 is_entity_window_open = 1;
 	local_persist b8 is_performance_window_open = 0;
 	local_persist b8 is_debug_window_open = 0;
 
 	local_persist b8 pin_windows = 0;
 
-	// NOTE(tjr): Render the editor UI
+	// NOTE(tjr): Drop-down menus
 	if (core->is_in_editor)
 	{
-		// NOTE(tjr): Drop-down menus
+		TsUIPushAutoRow(core->ui, v2(0, 0), 30);
+		if (TsUIDropdown(core->ui, "World..."))
 		{
-			TsUIPushAutoRow(core->ui, v2(0, 0), 30);
-			if (TsUIDropdown(core->ui, "World..."))
-			{
-				TsUIButton(core->ui, "Commit");
-				TsUIButton(core->ui, "Reload");
-			}
-			TsUIDropdownEnd(core->ui);
-			if (TsUIDropdown(core->ui, "Windows..."))
-			{
-				if (TsUIToggler(core->ui, "Entity", is_entity_window_open))
-					is_entity_window_open = 1;
-				else
-					is_entity_window_open = 0;
-
-				if (TsUIToggler(core->ui, "Performance", is_performance_window_open))
-					is_performance_window_open = 1;
-				else
-					is_performance_window_open = 0;
-
-				if (TsUIToggler(core->ui, "Debug", is_debug_window_open))
-					is_debug_window_open = 1;
-				else
-					is_debug_window_open = 0;
-			}
-			TsUIDropdownEnd(core->ui);
-			if (TsUIDropdown(core->ui, "Options..."))
-			{
-				if (TsUIToggler(core->ui, "Pin Windows", pin_windows))
-					pin_windows = 1;
-				else
-					pin_windows = 0;
-			}
-			TsUIDropdownEnd(core->ui);
-			TsUIPopRow(core->ui);
+			TsUIButton(core->ui, "Commit");
+			TsUIButton(core->ui, "Reload");
 		}
-
-		// NOTE(tjr): Time dilation
+		TsUIDropdownEnd(core->ui);
+		if (TsUIDropdown(core->ui, "Windows..."))
 		{
-			TsUIBeginInputGroup(core->ui);
-			TsUIPushColumn(core->ui, v2(core->render_w / 2.0f - 125.0f, 40.0f), v2(250.0f, 30.0f));
+			if (TsUIToggler(core->ui, "Entity", is_entity_window_open))
+				is_entity_window_open = 1;
+			else
+				is_entity_window_open = 0;
 
-			core->world_delta_mult = TsUISlider(core->ui, "World Time Dilation", core->world_delta_mult, 0.0f, 1.0f);
+			if (TsUIToggler(core->ui, "Performance", is_performance_window_open))
+				is_performance_window_open = 1;
+			else
+				is_performance_window_open = 0;
 
-			TsUIPopY(core->ui);
-			TsUIPopColumn(core->ui);
-			TsUIEndInputGroup(core->ui);
+			if (TsUIToggler(core->ui, "Debug", is_debug_window_open))
+				is_debug_window_open = 1;
+			else
+				is_debug_window_open = 0;
 		}
+		TsUIDropdownEnd(core->ui);
+		if (TsUIDropdown(core->ui, "Options..."))
+		{
+			if (TsUIToggler(core->ui, "Pin Windows", pin_windows))
+				pin_windows = 1;
+			else
+				pin_windows = 0;
+		}
+		TsUIDropdownEnd(core->ui);
+		TsUIPopRow(core->ui);
 	}
 
-	if (core->is_in_editor || pin_windows)
+	// NOTE(tjr): Time dilation
+	if (core->is_in_editor)
+	{
+		TsUIBeginInputGroup(core->ui);
+		TsUIPushColumn(core->ui, v2(core->render_w / 2.0f - 125.0f, 40.0f), v2(250.0f, 30.0f));
+
+		core->world_delta_mult = TsUISlider(core->ui, "World Time Dilation", core->world_delta_mult, 0.0f, 1.0f);
+
+		TsUIPopY(core->ui);
+		TsUIPopColumn(core->ui);
+		TsUIEndInputGroup(core->ui);
+	}
+
+	// NOTE(tjr): Draw windows.
+	if (pin_windows || core->is_in_editor)
 	{
 		if (is_entity_window_open)
 		{
@@ -694,12 +728,5 @@ internal void UpdateEditor()
 			}
 			TsUIWindowEnd(core->ui);
 		}
-	}
-
-	if (core->is_in_editor)
-	{
-		TransformEditorCamera();
-
-		TsPlatformCaptureKeyboard();
 	}
 }
