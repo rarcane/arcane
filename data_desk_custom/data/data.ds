@@ -36,6 +36,11 @@ flags AnimationFlags
 	repeat,
 }
 
+flags ParticleEmitterFlags
+{
+	repeat,
+}
+
 /* --- DEFINES --- */
 
 @Define
@@ -48,6 +53,8 @@ MAX_ENTITY_REFERENCES :: 10;
 MAX_SUB_COLLIDERS :: 3;
 @Define
 MAX_STORAGE_SIZE :: 30;
+@Define
+MAX_PARTICLE_AMOUNT :: 300;
 
 /* --- COMPONENTS --- */
 
@@ -153,4 +160,17 @@ struct Parallax
 {
 	parallax_amount : v2;
 	desired_position : v2;
+}
+
+@Component
+struct ParticleEmitter
+{
+	life_time : f32;
+	start_time : f32;
+	flags : ParticleEmitterFlags;
+	particles : Particle[MAX_PARTICLE_AMOUNT]; // Need to put this somewhere else?
+	particle_count : i32;
+	free_particle_index : i32;
+	begin_callback : EmitterBeginCallback;
+	finish_callback : EmitterFinishCallback;
 }

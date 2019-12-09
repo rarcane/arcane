@@ -23,6 +23,7 @@
 #include "arc/sprite/sprite.h"
 #include "arc/entity/arc_entity.h"
 #include "arc/item/item.h"
+#include "arc/world/particle.h"
 #include "generated/catchall.h"
 #include "arc/ecs/ecs.h"
 #include "arc/world/world.h"
@@ -45,6 +46,7 @@
 #include "arc/entity/player/action.c"
 #include "arc/sprite/sprite.c"
 #include "arc/entity/arc_entity.c"
+#include "arc/world/particle.c"
 #include "generated/catchall.c"
 #include "arc/ecs/ecs.c"
 #include "arc/item/item.c"
@@ -403,7 +405,7 @@ Update(void)
 			if (core->is_in_editor)
 				TransformEditorCamera();
 
-			// NOTE(tjr): Perform movements if the game is not paused.
+			// NOTE(tjr): Perform if the game is not paused.
 			if (core->world_delta_t != 0.0f)
 			{
 				PreMoveUpdatePlayer();
@@ -420,6 +422,7 @@ Update(void)
 			UpdateParallax();
 
 			DrawWorld();
+			UpdateParticleEmitters();
 			DrawGameUI();
 			DrawDebugLines();
 		}

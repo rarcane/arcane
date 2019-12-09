@@ -17,4 +17,3 @@ typedef struct EntitySet
 internal Entity *NewEntity(char *name, EntityType type);
 // internal void AddComponent(Entity *entity, ComponentType component_type, void *component);
 // internal void RemoveComponent(Entity *entity, ComponentType component_type);
-// internal void DeleteEntity(Entity *entity);

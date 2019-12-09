@@ -275,6 +275,33 @@ internal void PrintComponentUI(void *component_data, ComponentType type)
         break;
     }
 
+    case COMPONENT_particle_emitter :
+    {
+        ParticleEmitterComponent *component = (ParticleEmitterComponent*)component_data;
+        if (TsUICollapsable(core->ui, "ParticleEmitter"))
+        {
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "life_time: %f", component->life_time); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "start_time: %f", component->start_time); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            // TODO: Don't know how to generate UI print for variable 'flags'
+            // TODO: Don't know how to generate UI print for variable 'particles'
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "particle_count: %i", component->particle_count); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "free_particle_index: %i", component->free_particle_index); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            // TODO: Don't know how to generate UI print for variable 'begin_callback'
+            // TODO: Don't know how to generate UI print for variable 'finish_callback'
+
+            TsUICollapsableEnd(core->ui);
+        }
+        break;
+    }
+
     }
 }
 
@@ -824,6 +851,48 @@ internal void RemoveParallaxComponent(Entity *entity)
         core->component_set->parallax_free_component_id = deleted_component_id;
 }
 
+internal void AddParticleEmitterComponent(Entity *entity, void *component_data)
+{
+    i32 component_id;
+    if (core->component_set->particle_emitter_free_component_id == core->component_set->particle_emitter_component_count)
+    {
+        component_id = core->component_set->particle_emitter_component_count;
+        core->component_set->particle_emitter_component_count++;
+        core->component_set->particle_emitter_free_component_id = component_id + 1;
+    }
+    else
+    {
+        component_id = core->component_set->particle_emitter_free_component_id;
+        for (int i = 0; i < core->component_set->particle_emitter_component_count + 1; i++)
+        {
+            if (core->component_set->particle_emitter_components[i].entity_id == 0)
+            {
+                core->component_set->particle_emitter_free_component_id = i;
+                break;
+            }
+        }
+    }
+
+    core->component_set->particle_emitter_components[component_id] = *((ParticleEmitterComponent*)component_data);
+    entity->components[COMPONENT_particle_emitter] = &core->component_set->particle_emitter_components[component_id];
+    core->component_set->particle_emitter_components[component_id].entity_id = entity->entity_id;
+    core->component_set->particle_emitter_components[component_id].component_id = component_id;
+}
+
+internal void RemoveParticleEmitterComponent(Entity *entity)
+{
+    ParticleEmitterComponent *component = entity->components[COMPONENT_particle_emitter];
+    R_DEV_ASSERT(component, "Entity does not a ParticleEmitterComponent attached, so it can't remove it.");
+
+    i32 deleted_component_id = component->component_id;
+    ParticleEmitterComponent empty_comp = {0};
+    core->component_set->particle_emitter_components[deleted_component_id] = empty_comp;
+    entity->components[COMPONENT_particle_emitter] = 0;
+
+    if (deleted_component_id < core->component_set->particle_emitter_free_component_id)
+        core->component_set->particle_emitter_free_component_id = deleted_component_id;
+}
+
 internal void DeleteEntity(Entity *entity)
 {
     PositionComponent *position_component = entity->components[1];
@@ -865,6 +934,9 @@ internal void DeleteEntity(Entity *entity)
     ParallaxComponent *parallax_component = entity->components[13];
     if (parallax_component)
         RemoveParallaxComponent(entity);
+    ParticleEmitterComponent *particle_emitter_component = entity->components[14];
+    if (particle_emitter_component)
+        RemoveParticleEmitterComponent(entity);
 
     i32 deleted_entity_id = entity->entity_id;
     Entity empty_entity = {0};

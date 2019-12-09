@@ -1,0 +1,112 @@
+internal void UpdateParticleEmitters()
+{
+	for (int i = 0; i < core->component_set->particle_emitter_component_count; i++)
+	{
+		ParticleEmitterComponent *emitter_comp = &core->component_set->particle_emitter_components[i];
+		if (emitter_comp->entity_id > 0)
+		{
+			Entity *entity = &core->entity_set->entities[emitter_comp->entity_id];
+			PositionComponent *position_comp = entity->components[COMPONENT_position];
+			R_DEV_ASSERT(position_comp, "Emitter must have position attached.");
+
+			if (core->elapsed_world_time >= emitter_comp->start_time + emitter_comp->life_time)
+			{
+				if (emitter_comp->flags & PARTICLE_EMITTER_FLAGS_repeat)
+				{
+					emitter_comp->start_time = core->elapsed_world_time;
+					emitter_comp->begin_callback(emitter_comp);
+				}
+				else
+				{
+					R_TODO; // Delete emitter
+				}
+
+				if (emitter_comp->finish_callback)
+					emitter_comp->finish_callback(emitter_comp);
+			}
+
+			// NOTE(tjr): Update particles
+			for (int j = 0; j < emitter_comp->particle_count; j++)
+			{
+				Particle *particle = &emitter_comp->particles[j];
+
+				if (particle->is_valid)
+				{
+					if (core->elapsed_world_time >= particle->spawn_time + particle->life_time)
+						DeleteParticle(emitter_comp, j);
+					else
+					{
+						f32 life_alpha = core->elapsed_world_time / (particle->spawn_time + particle->life_time);
+						particle->colour.alpha = 1.0f; // - life_alpha; // BUG: Over time every particle's alpha gets weak af??
+
+						particle->position.x += particle->velocity.x * core->world_delta_t;
+						particle->position.y += particle->velocity.y * core->world_delta_t;
+
+						v2 particle_position = v2view(V2AddV2(position_comp->position, particle->position));
+
+						Ts2dPushFilledRect(core->renderer,
+										   particle->colour,
+										   v4(particle_position.x,
+											  particle_position.y,
+											  core->camera_zoom,
+											  core->camera_zoom));
+					}
+				}
+			}
+		}
+	}
+}
+
+internal void NewParticle(ParticleEmitterComponent *emitter, f32 life_time, v2 initial_pos, v2 velocity, v3 colour)
+{
+	R_DEV_ASSERT(emitter->particle_count < MAX_PARTICLE_AMOUNT - 1, "Woah there bucko.");
+
+	i32 index;
+	if (emitter->particle_count == emitter->free_particle_index)
+	{
+		index = emitter->particle_count;
+		emitter->particle_count++;
+		emitter->free_particle_index++;
+	}
+	else
+	{
+		index = emitter->free_particle_index;
+		for (int i = 0; i < emitter->particle_count; i++)
+		{
+			if (!emitter->particles[i].is_valid)
+			{
+				emitter->free_particle_index = i;
+				break;
+			}
+		}
+	}
+
+	emitter->particles[index].is_valid = 1;
+	emitter->particles[index].life_time = life_time;
+	emitter->particles[index].spawn_time = core->elapsed_world_time;
+	emitter->particles[index].position = initial_pos;
+	emitter->particles[index].velocity = velocity;
+	emitter->particles[index].colour = v4(colour.r, colour.g, colour.b, 1.0f);
+}
+
+internal void DeleteParticle(ParticleEmitterComponent *emitter, i32 particle_index)
+{
+	Particle empty_particle = {0};
+	emitter->particles[particle_index] = empty_particle;
+
+	if (particle_index < emitter->free_particle_index)
+		emitter->free_particle_index = particle_index;
+}
+
+internal void GeneratePineParticles(ParticleEmitterComponent *emitter)
+{
+	for (int i = 0; i < 6; i++)
+	{
+		v3 colour = {36.0f / 255.0f, 117.0f / 255.0f, 90.0f / 255.0f};
+		NewParticle(emitter,
+					RandomF32(5.0, 10.0f),
+					v2(RandomF32(-50.0f, 50.0f), -80.0f - RandomF32(0.0f, 150.0f)),
+					v2(RandomF32(-10.0f, 10.0f), RandomF32(8.0f, 15.0f)),
+					colour);
+	}
+}

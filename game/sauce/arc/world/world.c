@@ -23,6 +23,7 @@ internal void TempInitGameWorld()
 		Entity *tree2 = NewEntity("Tree", ENTITY_TYPE_scenic);
 		AttachPosition(tree2, v2(-100.0f, 0.0f));
 		AttachSprite(tree2, STATIC_SPRITE_pine_tree_v1, 2.0f);
+		AttachLoopedParticleEmitter(tree2, 0.5f, GeneratePineParticles);
 	}
 
 	{

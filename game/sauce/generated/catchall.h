@@ -29,6 +29,9 @@ typedef unsigned int ColliderFlags;
 #define ANIMATION_FLAGS_repeat (1<<2)
 typedef unsigned int AnimationFlags;
 
+#define PARTICLE_EMITTER_FLAGS_repeat (1<<0)
+typedef unsigned int ParticleEmitterFlags;
+
 #define MAX_ENTITIES 1000
 
 #define MAX_OVERLAPPING_COLLIDERS 50
@@ -38,6 +41,8 @@ typedef unsigned int AnimationFlags;
 #define MAX_SUB_COLLIDERS 3
 
 #define MAX_STORAGE_SIZE 30
+
+#define MAX_PARTICLE_AMOUNT 300
 
 typedef struct PositionComponent
 {
@@ -155,6 +160,20 @@ v2 parallax_amount;
 v2 desired_position;
 } ParallaxComponent;
 
+typedef struct ParticleEmitterComponent
+{
+i32 entity_id;
+i32 component_id;
+f32 life_time;
+f32 start_time;
+ParticleEmitterFlags flags;
+Particle particles[MAX_PARTICLE_AMOUNT];
+i32 particle_count;
+i32 free_particle_index;
+EmitterBeginCallback begin_callback;
+EmitterFinishCallback finish_callback;
+} ParticleEmitterComponent;
+
 typedef enum ComponentType
 {
 COMPONENT_INVALID,
@@ -171,6 +190,7 @@ COMPONENT_item,
 COMPONENT_trigger,
 COMPONENT_storage,
 COMPONENT_parallax,
+COMPONENT_particle_emitter,
 COMPONENT_MAX,
 } ComponentType;
 
@@ -215,5 +235,8 @@ i32 storage_free_component_id;
 ParallaxComponent parallax_components[MAX_ENTITIES];
 i32 parallax_component_count;
 i32 parallax_free_component_id;
+ParticleEmitterComponent particle_emitter_components[MAX_ENTITIES];
+i32 particle_emitter_component_count;
+i32 particle_emitter_free_component_id;
 } ComponentSet;
 

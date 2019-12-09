@@ -206,6 +206,32 @@ internal void AttachParallax(Entity *entity, v2 parallax_amount, v2 desired_posi
 	AddParallaxComponent(entity, &parallax);
 }
 
+internal void AttachParticleEmitter(Entity *entity, f32 length, EmitterBeginCallback begin_callback, EmitterFinishCallback finish_callback)
+{
+	ParticleEmitterComponent emitter = {
+		.life_time = length,
+		.start_time = core->elapsed_world_time,
+		.begin_callback = begin_callback,
+		.finish_callback = finish_callback,
+	};
+	AddParticleEmitterComponent(entity, &emitter);
+
+	emitter.begin_callback(entity->components[COMPONENT_particle_emitter]);
+}
+
+internal void AttachLoopedParticleEmitter(Entity *entity, f32 length, EmitterBeginCallback begin_callback)
+{
+	ParticleEmitterComponent emitter = {
+		.life_time = length,
+		.start_time = core->elapsed_world_time,
+		.flags = PARTICLE_EMITTER_FLAGS_repeat,
+		.begin_callback = begin_callback,
+	};
+	AddParticleEmitterComponent(entity, &emitter);
+
+	emitter.begin_callback(entity->components[COMPONENT_particle_emitter]);
+}
+
 // TODO: Think of a more elegant solution to this whole background/foreground problem?
 // NOTE(tjr): Attaches a position, parallax, and sprite component (marked as background for the backdrop rendering).
 internal void SetupBackgroundEntity(Entity *entity, v2 desired_position, SpriteType sprite_type, f32 render_layer, v2 parallax_amount)
