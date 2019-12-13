@@ -1,6 +1,6 @@
 /* --- ENUMS --- */
 
-enum EntityType
+EntityType :: enum
 {
     undefined,
 	character,
@@ -15,12 +15,12 @@ enum EntityType
 
 /* --- FLAGS --- */
 
-flags EntityFlags
+EntityFlags :: flags
 {
 	no_delete,
 }
 
-flags ColliderFlags
+ColliderFlags :: flags
 {
 	ground,
 	player,
@@ -29,14 +29,14 @@ flags ColliderFlags
 	trigger,
 }
 
-flags AnimationFlags
+AnimationFlags :: flags
 {
 	playing,
 	reversing,
 	repeat,
 }
 
-flags ParticleEmitterFlags
+ParticleEmitterFlags :: flags
 {
 	repeat,
 }
@@ -59,13 +59,13 @@ MAX_PARTICLE_AMOUNT :: 300;
 /* --- COMPONENTS --- */
 
 @Component
-struct Position
+Position :: struct
 {
 	position : v2;
 }
 
 @Component
-struct Sprite
+Sprite :: struct
 {
 	sprite_data : SpriteData;
 	@Editable
@@ -74,7 +74,7 @@ struct Sprite
 }
 
 @Component
-struct SubSprite
+SubSprite :: struct
 {
 	sub_sprites : SpriteData[MAX_SUB_SPRITES];
 	sub_sprite_count : i32;
@@ -82,7 +82,7 @@ struct SubSprite
 }
 
 @Component
-struct Animation
+Animation :: struct
 {
 	flags : AnimationFlags;
 	current_frame : i32;
@@ -91,14 +91,14 @@ struct Animation
 }
 
 @Component
-struct Collider
+Collider :: struct
 {
 	shape : Shape;
 	flags : ColliderFlags;
 }
 
 @Component
-struct Velocity
+Velocity :: struct
 {
 	velocity : v2;
 	ideal_velocity : v2;
@@ -109,14 +109,14 @@ struct Velocity
 }
 
 @Component
-struct Physics
+Physics :: struct
 {
 	friction_mult : f32;
 	bounce_mult : f32;
 }
 
 @Component
-struct Movement
+Movement :: struct
 {
 	axis_x : f32;
 	move_speed : f32;
@@ -124,7 +124,7 @@ struct Movement
 }
 
 @Component
-struct ArcEntity
+ArcEntity :: struct
 {
 	entity_type : ArcEntityType;
 	current_general_state : *char;
@@ -132,14 +132,14 @@ struct ArcEntity
 }
 
 @Component
-struct Item
+Item :: struct
 {
 	item_type : ItemType;
 	stack_size : i32;
 }
 
 @Component
-struct Trigger
+Trigger :: struct
 {
 	enter_trigger_callback : TriggerCallback;
 	exit_trigger_callback : TriggerCallback;
@@ -149,21 +149,21 @@ struct Trigger
 }
 
 @Component
-struct Storage
+Storage :: struct
 {
 	storage_size : i32;
 	items : *ItemComponent[MAX_STORAGE_SIZE];
 }
 
 @Component
-struct Parallax
+Parallax :: struct
 {
 	parallax_amount : v2;
 	desired_position : v2;
 }
 
 @Component
-struct ParticleEmitter
+ParticleEmitter :: struct
 {
 	life_time : f32;
 	start_time : f32;

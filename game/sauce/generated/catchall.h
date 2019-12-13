@@ -32,18 +32,18 @@ typedef unsigned int AnimationFlags;
 #define PARTICLE_EMITTER_FLAGS_repeat (1<<0)
 typedef unsigned int ParticleEmitterFlags;
 
-#define MAX_ENTITIES 1000
-
-#define MAX_OVERLAPPING_COLLIDERS 50
-
-#define MAX_ENTITY_REFERENCES 10
-
-#define MAX_SUB_COLLIDERS 3
-
-#define MAX_STORAGE_SIZE 30
-
-#define MAX_PARTICLE_AMOUNT 300
-
+// @Define 
+#define MAX_ENTITIES (1000)
+// @Define 
+#define MAX_OVERLAPPING_COLLIDERS (50)
+// @Define 
+#define MAX_ENTITY_REFERENCES (10)
+// @Define 
+#define MAX_SUB_COLLIDERS (3)
+// @Define 
+#define MAX_STORAGE_SIZE (30)
+// @Define 
+#define MAX_PARTICLE_AMOUNT (300)
 typedef struct PositionComponent
 {
 i32 entity_id;
@@ -56,6 +56,7 @@ typedef struct SpriteComponent
 i32 entity_id;
 i32 component_id;
 SpriteData sprite_data;
+// @Editable 
 b8 is_flipped;
 b8 is_background_sprite;
 } SpriteComponent;
