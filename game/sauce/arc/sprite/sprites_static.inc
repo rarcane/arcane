@@ -11,23 +11,22 @@ StaticSprite(flint_sword_ground, "item/flint_sword_ground", v4(0.0f, 0.0f, 24.0f
 StaticSprite(shia, "item/shia", v4(0, 0, 800, 1200), v2(0, 0))
 
 // Background
-StaticSprite(far_mountains, "scenic/mountains", v4(0.0f, 0.0f, 600.0f, 160.0f), v2(0.0f, 50.0f))
-StaticSprite(mid_mountains, "scenic/mountains", v4(0.0f, 160.0f, 600.0f, 90.0f), v2(0.0f, 55.0f))
+StaticSprite(far_mountains, "scenic/mountains", v4(0.0f, 0.0f, 600.0f, 160.0f), v2(0.0f, 40.0f))
+StaticSprite(mid_mountains, "scenic/mountains", v4(0.0f, 160.0f, 600.0f, 90.0f), v2(0.0f, 45.0f))
 
 // Forest
 StaticSprite(ground_forest, "scenic/forest_ground", v4(0.0f, 0.0f, 100.0f, 90.0f), v2(0.0f, 87.0f))
-StaticSprite(pine_tree_v1, "scenic/trees/pine_tree", v4(0.0f, 0.0f, 150.0f, 260.0f), v2(0.0f, 0.0f))
-StaticSprite(hills_1_v1, "scenic/background/bg1_hills", v4(0.0f, 0.0f, 200.0f, 35.0f), v2(0.0f, 25.0f))
-StaticSprite(hills_1_v2, "scenic/background/bg1_hills", v4(0.0f, 35.0f, 200.0f, 35.0f), v2(0.0f, 25.0f))
-StaticSprite(bg2_hills_v1, "scenic/background/bg2_hills", v4(0.0f, 0.0f, 200.0f, 40.0f), v2(0.0f, 30.0f))
-StaticSprite(bg2_hills_v2, "scenic/background/bg2_hills", v4(0.0f, 40.0f, 200.0f, 40.0f), v2(0.0f, 30.0f))
-StaticSprite(bg3_hills_v1, "scenic/background/bg3_hills", v4(0.0f, 0.0f, 200.0f, 40.0f), v2(0.0f, 30.0f))
+StaticSprite(pine_tree_v1, "scenic/trees/pine_tree", v4(0.0f, 0.0f, 90.0f, 170.0f), v2(0.0f, 0.0f))
+StaticSprite(hills_1_v1, "scenic/background/bg1_hills", v4(0.0f, 0.0f, 200.0f, 35.0f), v2(0.0f, 28.0f))
+StaticSprite(hills_1_v2, "scenic/background/bg1_hills", v4(0.0f, 35.0f, 200.0f, 35.0f), v2(0.0f, 28.0f))
+StaticSprite(bg2_hills_v1, "scenic/background/bg2_hills", v4(0.0f, 0.0f, 200.0f, 40.0f), v2(0.0f, 34.0f))
+StaticSprite(bg2_hills_v2, "scenic/background/bg2_hills", v4(0.0f, 40.0f, 200.0f, 40.0f), v2(0.0f, 34.0f))
+StaticSprite(bg3_hills_v1, "scenic/background/bg3_hills", v4(0.0f, 0.0f, 200.0f, 40.0f), v2(0.0f, 35.0f))
 
-StaticSprite(bg1_pine_tree_v1, "scenic/background/bg1_pine_tree", v4(0.0f, 0.0f, 120.0f, 220.0f), v2(0.0f, 0.0f))
-StaticSprite(bg1_pine_tree_v2, "scenic/background/bg1_pine_tree", v4(120.0f, 0.0f, 120.0f, 220.0f), v2(0.0f, 0.0f))
+StaticSprite(bg1_pine_tree_v1, "scenic/background/bg1_pine_tree", v4(0.0f, 0.0f, 90.0f, 170.0f), v2(0.0f, 0.0f))
 
-StaticSprite(bg2_pine_tree_v1, "scenic/background/bg2_pine_tree", v4(0.0f, 0.0f, 120.0f, 200.0f), v2(0.0f, 0.0f))
-StaticSprite(bg3_pine_tree_v1, "scenic/background/bg3_pine_tree", v4(0.0f, 0.0f, 80.0f, 160.0f), v2(0.0f, 0.0f))
+StaticSprite(bg2_pine_tree_v1, "scenic/background/bg2_pine_tree", v4(0.0f, 0.0f, 40.0f, 110.0f), v2(0.0f, 0.0f))
+StaticSprite(bg3_pine_tree_v1, "scenic/background/bg3_pine_tree", v4(0.0f, 0.0f, 100.0f, 60.0f), v2(0.0f, 0.0f))
 
 // Icons
 StaticSprite(y_axis_arrow_icon, "icon/axis_icons", v4(0.0f, 0.0f, 7.0f, 40.0f), v2(0.0f, 0.0f))

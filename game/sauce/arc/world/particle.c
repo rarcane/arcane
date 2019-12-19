@@ -100,12 +100,12 @@ internal void DeleteParticle(ParticleEmitterComponent *emitter, i32 particle_ind
 
 internal void GeneratePineParticles(ParticleEmitterComponent *emitter)
 {
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 3; i++)
 	{
-		v3 colour = {36.0f / 255.0f, 117.0f / 255.0f, 90.0f / 255.0f};
+		v3 colour = {27.0f / 255.0f, 77.0f / 255.0f, 80.0f / 255.0f};
 		NewParticle(emitter,
 					RandomF32(5.0, 10.0f),
-					v2(RandomF32(-50.0f, 50.0f), -80.0f - RandomF32(0.0f, 150.0f)),
+					v2(RandomF32(-20.0f, 20.0f), -30.0f - RandomF32(0.0f, 130.0f)),
 					v2(RandomF32(-10.0f, 10.0f), RandomF32(8.0f, 15.0f)),
 					colour);
 	}

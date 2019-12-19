@@ -22,115 +22,113 @@ DATA_DESK_FUNC void
 DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 {
 	FILE *file = global_catchall_header;
-	
-	if(DataDeskNodeHasTag(root, "Component"))
+
+	if (DataDeskNodeHasTag(root, "Component"))
 	{
 		components[component_count++] = root;
 	}
 	else
 	{
-		switch(root->type)
+		switch (root->type)
 		{
-			default:
-			{
-				DataDeskFWriteGraphAsC(file, root, 0);
-				break;
-			}
+		default:
+		{
+			DataDeskFWriteGraphAsC(file, root, 0);
+			break;
+		}
 
-			case DATA_DESK_NODE_TYPE_enum_declaration:
-			{
+		case DATA_DESK_NODE_TYPE_enum_declaration:
+		{
 
-				// MOTE(tjr): Generate styled enum.
-				{
-					FILE *file = global_catchall_header;
-					if (file)
-					{
-						fprintf(file, "typedef enum %s %s;\n", root->name, root->name);
-						//DataDeskFWriteEnumAsC(global_catchall_header, enum_info);
-						fprintf(file, "enum %s\n", root->name);
-						fprintf(file, "{\n");
-						for (DataDeskNode *field = root->enum_declaration.first_constant; field; field = field->next)
-						{
-							fprintf(file, "%s_%s,\n", root->name_uppercase_with_underscores, field->string);
-						}
-						fprintf(file, "%s_MAX,\n", root->name_uppercase_with_underscores);
-						fprintf(file, "};\n");
-
-						fprintf(file, "static char *Get%sTypeName(%s type);\n\n", root->name, root->name);
-					}
-				}
-
-				// NOTE(tjr): Generate enum print function implementation.
-				{
-					FILE *file = global_catchall_implementation;
-					if (file)
-					{
-						fprintf(file, "static char *Get%sName(%s type)\n", root->name, root->name);
-						fprintf(file, "{\n");
-						fprintf(file, "switch(type)\n");
-						fprintf(file, "{\n");
-						for (DataDeskNode *field = root->enum_declaration.first_constant; field; field = field->next)
-						{
-							fprintf(file, "case %s_%s:\n", root->name_uppercase_with_underscores, field->string);
-							fprintf(file, "return \"");
-
-							// NOTE(tjr): Make enum name look pretty.
-							int string_length = 0;
-							for (; field->string[string_length]; ++string_length)
-								;
-							for (int i = 0; i < string_length && field->string[i]; ++i)
-							{
-								if (field->string[i] != '_')
-								{
-									if (i == 0)
-									{
-										fprintf(file, "%c", DataDeskCharToUpper(field->string[i]));
-									}
-									else
-									{
-										fprintf(file, "%c", field->string[i]);
-										if (field->string[i + 1] == '_')
-										{
-											fprintf(file, " ");
-											fprintf(file, "%c", DataDeskCharToUpper(field->string[i + 2]));
-											i = i + 2;
-										}
-									}
-								}
-							}
-
-							fprintf(file, "\";\n");
-							fprintf(file, "break;\n");
-						}
-						fprintf(file, "default:\n");
-						fprintf(file, "return \"INVALID\";\n");
-						fprintf(file, "break;\n");
-						fprintf(file, "}\n");
-						fprintf(file, "}\n\n");
-					}
-				}
-
-				break;
-			}
-
-			case DATA_DESK_NODE_TYPE_flags_declaration:
+			// MOTE(tjr): Generate styled enum.
 			{
 				FILE *file = global_catchall_header;
 				if (file)
 				{
-					int count = 0;
-					for (DataDeskNode *field = root->flags_declaration.first_flag; field; field = field->next)
+					fprintf(file, "typedef enum %s %s;\n", root->name, root->name);
+					//DataDeskFWriteEnumAsC(global_catchall_header, enum_info);
+					fprintf(file, "enum %s\n", root->name);
+					fprintf(file, "{\n");
+					for (DataDeskNode *field = root->enum_declaration.first_constant; field; field = field->next)
 					{
-						fprintf(file, "#define %s_%s (1<<%i)\n", root->name_uppercase_with_underscores, field->string, count);
-						count++;
+						fprintf(file, "%s_%s,\n", root->name_uppercase_with_underscores, field->string);
 					}
-					fprintf(file, "typedef unsigned int %s;\n\n", root->name);
+					fprintf(file, "%s_MAX,\n", root->name_uppercase_with_underscores);
+					fprintf(file, "};\n");
+
+					fprintf(file, "static char *Get%sTypeName(%s type);\n\n", root->name, root->name);
 				}
-				break;
 			}
 
+			// NOTE(tjr): Generate enum print function implementation.
+			{
+				FILE *file = global_catchall_implementation;
+				if (file)
+				{
+					fprintf(file, "static char *Get%sName(%s type)\n", root->name, root->name);
+					fprintf(file, "{\n");
+					fprintf(file, "switch(type)\n");
+					fprintf(file, "{\n");
+					for (DataDeskNode *field = root->enum_declaration.first_constant; field; field = field->next)
+					{
+						fprintf(file, "case %s_%s:\n", root->name_uppercase_with_underscores, field->string);
+						fprintf(file, "return \"");
+
+						// NOTE(tjr): Make enum name look pretty.
+						int string_length = 0;
+						for (; field->string[string_length]; ++string_length)
+							;
+						for (int i = 0; i < string_length && field->string[i]; ++i)
+						{
+							if (field->string[i] != '_')
+							{
+								if (i == 0)
+								{
+									fprintf(file, "%c", DataDeskCharToUpper(field->string[i]));
+								}
+								else
+								{
+									fprintf(file, "%c", field->string[i]);
+									if (field->string[i + 1] == '_')
+									{
+										fprintf(file, " ");
+										fprintf(file, "%c", DataDeskCharToUpper(field->string[i + 2]));
+										i = i + 2;
+									}
+								}
+							}
+						}
+
+						fprintf(file, "\";\n");
+						fprintf(file, "break;\n");
+					}
+					fprintf(file, "default:\n");
+					fprintf(file, "return \"INVALID\";\n");
+					fprintf(file, "break;\n");
+					fprintf(file, "}\n");
+					fprintf(file, "}\n\n");
+				}
+			}
+
+			break;
 		}
-		
+
+		case DATA_DESK_NODE_TYPE_flags_declaration:
+		{
+			FILE *file = global_catchall_header;
+			if (file)
+			{
+				int count = 0;
+				for (DataDeskNode *field = root->flags_declaration.first_flag; field; field = field->next)
+				{
+					fprintf(file, "#define %s_%s (1<<%i)\n", root->name_uppercase_with_underscores, field->string, count);
+					count++;
+				}
+				fprintf(file, "typedef unsigned int %s;\n\n", root->name);
+			}
+			break;
+		}
+		}
 	}
 }
 
@@ -300,11 +298,10 @@ static void GeneratePrintUICodeForAST(FILE *file, DataDeskNode *root, char *acce
 static void
 GenerateComponentCode(void)
 {
-
 	// NOTE(tjr): Generate component struct declarations
 	{
 		FILE *file = global_catchall_header;
-		for(int i = 0; i < component_count; ++i)
+		for (int i = 0; i < component_count; ++i)
 		{
 			DataDeskNode *root = components[i];
 			fprintf(file, "typedef struct %sComponent\n", root->name);
@@ -312,14 +309,14 @@ GenerateComponentCode(void)
 			fprintf(file, "i32 entity_id;\n");
 			fprintf(file, "i32 component_id;\n");
 
-			for(DataDeskNode *member = root->struct_declaration.first_member; member; member = member->next)
+			for (DataDeskNode *member = root->struct_declaration.first_member; member; member = member->next)
 			{
 				DataDeskFWriteGraphAsC(file, member, 0);
 				fprintf(file, ";\n");
 			}
 
 			fprintf(file, "} %sComponent;\n\n", root->name);
-		}		
+		}
 	}
 
 	// NOTE(rjf): Generate component enums
