@@ -134,6 +134,21 @@ internal void TempInitGameWorld()
 		AttachCollider(ground, GetRectangleShape(v2(100.0f, 87.0f), v2(0.0f, 87.0f)), COLLIDER_FLAGS_ground);
 		AttachPhysics(ground, 1.0f, 1.0f);
 	}
+
+	for (int i = 0; i < 10; i++)
+	{
+		Entity *cloud = NewEntity("Cloud", ENTITY_TYPE_scenic);
+		SetupBackgroundEntity(cloud,
+							  v2(-200.0f + i * 50.0f, RandomF32(-55.0f, -70.0f)),
+							  STATIC_SPRITE_cloud_v1 + RandomI32(0, 5),
+							  RandomI32(0, 3) != 0 ? 8.5f : 9.5f,
+							  v2(0.95f, 0.7f));
+
+		SpriteComponent *sprite_comp = cloud->components[COMPONENT_sprite];
+		sprite_comp->sprite_data.tint = v4(1.0f, 1.0f, 1.0f, 1.0f);
+
+		core->clouds[core->cloud_count++] = cloud;
+	}
 }
 
 internal void DrawWorld()
@@ -263,6 +278,21 @@ internal void UpdateParallax()
 
 			// position_comp->position.x = parallax_comp->desired_position.x - (parallax_comp->desired_position.x - player_pos->position.x + core->camera_offset.x) * parallax_comp->parallax_amount.x;
 			// position_comp->position.y = parallax_comp->desired_position.y - (parallax_comp->desired_position.y - player_pos->position.y + core->camera_offset.y) * parallax_comp->parallax_amount.y;
+		}
+	}
+}
+
+internal void UpdateClouds()
+{
+	for (int i = 0; i < core->cloud_count; i++)
+	{
+		Entity *cloud = core->clouds[i];
+		if (cloud)
+		{
+			ParallaxComponent *cloud_parallax = cloud->components[COMPONENT_parallax];
+			cloud_parallax->desired_position.x += core->world_delta_t * 0.5f;
+
+			// check for destruction at bounds
 		}
 	}
 }

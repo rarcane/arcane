@@ -193,6 +193,7 @@ internal void RenderBackgroundSprites()
 		f32 render_layer;
 		v2 scale;
 		b8 is_flipped;
+		v4 tint;
 		PositionComponent *position_comp;
 		AnimationComponent *animation_comp;
 	} SpriteRenderable;
@@ -214,6 +215,7 @@ internal void RenderBackgroundSprites()
 				sprite_component->sprite_data.render_layer,
 				sprite_component->sprite_data.scale,
 				sprite_component->is_flipped,
+				sprite_component->sprite_data.tint,
 				entity->components[COMPONENT_position],
 				entity->components[COMPONENT_animation],
 			};
@@ -238,6 +240,7 @@ internal void RenderBackgroundSprites()
 					sub_sprite_component->sub_sprites[j].render_layer,
 					sub_sprite_component->sub_sprites[j].scale,
 					sub_sprite_component->is_flipped,
+					sub_sprite_component->sub_sprites[j].tint,
 					entity->components[COMPONENT_position],
 					entity->components[COMPONENT_animation],
 				};
@@ -285,7 +288,7 @@ internal void RenderBackgroundSprites()
 				core->renderer, dynamic_sprite->texture_atlas,
 				v4(source_pos.x, source_pos.y, dynamic_sprite->source.z - 0.5f, dynamic_sprite->source.w - 0.5f),
 				v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-				(core->is_in_editor && ordered_sprites[i].entity->entity_id == core->selected_entity ? v4(1.0f, 0.8f, 0.8f, 1.0f) : v4(1, 1, 1, 1)));
+				(core->is_in_editor && ordered_sprites[i].entity->entity_id == core->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
 		}
 		else
 		{
@@ -305,7 +308,7 @@ internal void RenderBackgroundSprites()
 				core->renderer, static_sprite->texture_atlas,
 				v4(static_sprite->source.x, static_sprite->source.y, static_sprite->source.z - 0.5f, static_sprite->source.w - 0.5f),
 				v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-				(core->is_in_editor && ordered_sprites[i].entity->entity_id == core->selected_entity ? v4(1.0f, 0.8f, 0.8f, 1.0f) : v4(1, 1, 1, 1)));
+				(core->is_in_editor && ordered_sprites[i].entity->entity_id == core->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
 		}
 	}
 }
@@ -320,6 +323,7 @@ internal void RenderForegroundSprites(SpriteComponent sprite_components[], SubSp
 		f32 render_layer;
 		v2 scale;
 		b8 is_flipped;
+		v4 tint;
 		PositionComponent *position_comp;
 		AnimationComponent *animation_comp;
 	} SpriteRenderable;
@@ -341,6 +345,7 @@ internal void RenderForegroundSprites(SpriteComponent sprite_components[], SubSp
 				sprite_component->sprite_data.render_layer,
 				sprite_component->sprite_data.scale,
 				sprite_component->is_flipped,
+				sprite_component->sprite_data.tint,
 				entity->components[COMPONENT_position],
 				entity->components[COMPONENT_animation],
 			};
@@ -365,6 +370,7 @@ internal void RenderForegroundSprites(SpriteComponent sprite_components[], SubSp
 					sub_sprite_component->sub_sprites[j].render_layer,
 					sub_sprite_component->sub_sprites[j].scale,
 					sub_sprite_component->is_flipped,
+					sub_sprite_component->sub_sprites[j].tint,
 					entity->components[COMPONENT_position],
 					entity->components[COMPONENT_animation],
 				};
@@ -412,7 +418,7 @@ internal void RenderForegroundSprites(SpriteComponent sprite_components[], SubSp
 				core->renderer, dynamic_sprite->texture_atlas,
 				v4(source_pos.x, source_pos.y, dynamic_sprite->source.z - 0.5f, dynamic_sprite->source.w - 0.5f),
 				v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-				(core->is_in_editor && ordered_sprites[i].entity->entity_id == core->selected_entity ? v4(1.0f, 0.8f, 0.8f, 1.0f) : v4(1, 1, 1, 1)));
+				(core->is_in_editor && ordered_sprites[i].entity->entity_id == core->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
 		}
 		else
 		{
@@ -432,7 +438,7 @@ internal void RenderForegroundSprites(SpriteComponent sprite_components[], SubSp
 				core->renderer, static_sprite->texture_atlas,
 				v4(static_sprite->source.x, static_sprite->source.y, static_sprite->source.z - 0.5f, static_sprite->source.w - 0.5f),
 				v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-				(core->is_in_editor && ordered_sprites[i].entity->entity_id == core->selected_entity ? v4(1.0f, 0.8f, 0.8f, 1.0f) : v4(1, 1, 1, 1)));
+				(core->is_in_editor && ordered_sprites[i].entity->entity_id == core->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
 		}
 	}
 }

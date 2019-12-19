@@ -60,6 +60,7 @@ internal void AttachSprite(Entity *entity, SpriteType sprite_enum, f32 render_la
 			v2(0, 0),
 			render_layer,
 			v2(1.0f, 1.0f),
+			v4(1.0f, 1.0f, 1.0f, 1.0f),
 		},
 		.is_flipped = 0,
 	};
@@ -160,6 +161,7 @@ internal void AttachArcEntity(Entity *entity, ArcEntityType entity_type, Animati
 			sub_sprites[i].sprite_enum = arc_entity_animation_state_data[idle_anim].dynamic_sprites[i];
 			sub_sprites[i].render_layer = base_render_layer;
 			sub_sprites[i].scale = v2(1.0f, 1.0f);
+			sub_sprites[i].tint = v4(1.0f, 1.0f, 1.0f, 1.0f);
 		}
 
 		AttachSubSprite(entity, sub_sprites, arc_entity_animation_state_data[idle_anim].dynamic_sprite_count);
@@ -247,7 +249,7 @@ internal void SetupBackgroundEntity(Entity *entity, v2 desired_position, SpriteT
 			v2(0, 0),
 			render_layer,
 			v2(1.0f, 1.0f),
-		},
+			v4(1.0f, 1.0f, 1.0f, 1.0f)},
 		.is_background_sprite = 1,
 	};
 	AddSpriteComponent(entity, &sprite);

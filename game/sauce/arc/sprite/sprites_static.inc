@@ -14,6 +14,13 @@ StaticSprite(shia, "item/shia", v4(0, 0, 800, 1200), v2(0, 0))
 StaticSprite(far_mountains, "scenic/mountains", v4(0.0f, 0.0f, 600.0f, 160.0f), v2(0.0f, 40.0f))
 StaticSprite(mid_mountains, "scenic/mountains", v4(0.0f, 160.0f, 600.0f, 90.0f), v2(0.0f, 45.0f))
 
+StaticSprite(cloud_v1, "scenic/clouds", v4(0.0f, 0.0f, 80.0f, 25.0f), v2(0.0f, 0.0f))
+StaticSprite(cloud_v2, "scenic/clouds", v4(80.0f, 0.0f, 80.0f, 25.0f), v2(0.0f, 0.0f))
+StaticSprite(cloud_v3, "scenic/clouds", v4(160.0f, 0.0f, 80.0f, 25.0f), v2(0.0f, 0.0f))
+StaticSprite(cloud_v4, "scenic/clouds", v4(0.0f, 25.0f, 80.0f, 25.0f), v2(0.0f, 0.0f))
+StaticSprite(cloud_v5, "scenic/clouds", v4(80.0f, 25.0f, 80.0f, 25.0f), v2(0.0f, 0.0f))
+StaticSprite(cloud_v6, "scenic/clouds", v4(160.0f, 25.0f, 80.0f, 25.0f), v2(0.0f, 0.0f))
+
 // Forest
 StaticSprite(ground_forest, "scenic/forest_ground", v4(0.0f, 0.0f, 100.0f, 90.0f), v2(0.0f, 87.0f))
 StaticSprite(pine_tree_v1, "scenic/trees/pine_tree", v4(0.0f, 0.0f, 90.0f, 170.0f), v2(0.0f, 0.0f))

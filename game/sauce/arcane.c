@@ -419,6 +419,7 @@ Update(void)
 				PostMoveUpdatePlayer();
 			}
 
+			UpdateClouds();
 			UpdateParallax();
 
 			DrawWorld();

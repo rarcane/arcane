@@ -1,4 +1,5 @@
 #define MAX_DEBUG_LINES 100
+#define MAX_CLOUDS 50
 
 typedef struct Entity Entity;
 typedef struct EntitySet EntitySet;
@@ -62,6 +63,11 @@ struct Core
 
 	// Temp
 	b32 is_ingame;
+
+	// NOTE(tjr): World stuff
+	Entity *clouds[MAX_CLOUDS];
+	i32 cloud_count;
+	i32 cloud_free_index;
 
 	// NOTE(rjf): Render size data.
 	union {

@@ -62,4 +62,5 @@ typedef struct SpriteData
 	v2 offset;
 	f32 render_layer;
 	v2 scale;
+	v4 tint;
 } SpriteData;
