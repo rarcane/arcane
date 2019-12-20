@@ -146,7 +146,9 @@ static void GeneratePrintUICodeForAST(FILE *file, DataDeskNode *root, char *acce
 		{
 		case DATA_DESK_NODE_TYPE_struct_declaration:
 		{
-			fprintf(file, "        if (TsUICollapsable(core->ui, \"%s\"))\n", root->string);
+			fprintf(file, "        char title[100];\n");
+			fprintf(file, "        sprintf(title, \"%s #%%i\", component->component_id);\n", root->string);
+			fprintf(file, "        if (TsUICollapsable(core->ui, title))");
 			fprintf(file, "        {\n");
 			for (DataDeskNode *field = root->struct_declaration.first_member; field; field = field->next)
 			{
@@ -393,20 +395,21 @@ GenerateComponentCode(void)
 					fprintf(file, "    else\n");
 					fprintf(file, "    {\n");
 					fprintf(file, "        component_id = core->component_set->%s_free_component_id;\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "        for (int i = 0; i < core->component_set->%s_component_count + 1; i++)\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "        {\n");
-					fprintf(file, "            if (core->component_set->%s_components[i].entity_id == 0)\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "            {\n");
-					fprintf(file, "                core->component_set->%s_free_component_id = i;\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "                break;\n");
-					fprintf(file, "            }\n");
-					fprintf(file, "        }\n");
 					fprintf(file, "    }\n\n");
 
 					fprintf(file, "    core->component_set->%s_components[component_id] = *((%sComponent*)component_data);\n", components[i]->name_lowercase_with_underscores, components[i]->name);
 					fprintf(file, "    entity->components[COMPONENT_%s] = &core->component_set->%s_components[component_id];\n", components[i]->name_lowercase_with_underscores, components[i]->name_lowercase_with_underscores);
 					fprintf(file, "    core->component_set->%s_components[component_id].entity_id = entity->entity_id;\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "    core->component_set->%s_components[component_id].component_id = component_id;\n", components[i]->name_lowercase_with_underscores);
+					fprintf(file, "    core->component_set->%s_components[component_id].component_id = component_id;\n\n", components[i]->name_lowercase_with_underscores);
+
+					fprintf(file, "    for (int i = 0; i < core->component_set->%s_component_count + 1; i++)\n", components[i]->name_lowercase_with_underscores);
+					fprintf(file, "    {\n");
+					fprintf(file, "        if (core->component_set->%s_components[i].entity_id == 0)\n", components[i]->name_lowercase_with_underscores);
+					fprintf(file, "        {\n");
+					fprintf(file, "            core->component_set->%s_free_component_id = i;\n", components[i]->name_lowercase_with_underscores);
+					fprintf(file, "            break;\n");
+					fprintf(file, "        }\n");
+					fprintf(file, "    }\n");
 					fprintf(file, "}\n\n");
 				}
 

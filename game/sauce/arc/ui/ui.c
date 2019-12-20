@@ -639,7 +639,11 @@ internal void DrawEditorUI()
 					TsUIPushColumn(core->ui, v2(0, 0), v2(100, 30));
 					TsUIPushWidth(core->ui, entity_info_window_rect.width - 50);
 
-					TsUITitle(core->ui, selected_entity->name);
+					{
+						char label[100];
+						sprintf(label, "%s #%i", selected_entity->name, selected_entity->entity_id);
+						TsUITitle(core->ui, label);
+					}
 
 					for (int i = 1; i < COMPONENT_MAX; i++)
 					{
@@ -820,10 +824,9 @@ internal void DrawEditorUI()
 			{
 				TsUIPushColumn(core->ui, v2(10, 0), v2(200, 30));
 
-				if (TsUIButton(core->ui, "Add dummy object"))
-				{
-					NewEntity("dummy", ENTITY_TYPE_undefined);
-				}
+				char label[100];
+				sprintf(label, "Camera Pos: %f, %f", core->camera_position.x, core->camera_position.y);
+				TsUILabel(core->ui, label);
 
 				TsUIPopColumn(core->ui);
 			}

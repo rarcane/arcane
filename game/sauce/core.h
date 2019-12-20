@@ -67,7 +67,6 @@ struct Core
 	// NOTE(tjr): World stuff
 	Entity *clouds[MAX_CLOUDS];
 	i32 cloud_count;
-	i32 cloud_free_index;
 
 	// NOTE(rjf): Render size data.
 	union {

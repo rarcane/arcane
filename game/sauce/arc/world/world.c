@@ -63,16 +63,16 @@ internal void TempInitGameWorld()
 		SetupBackgroundEntity(bg2_tree_1, v2(50.0f, 0.0f), STATIC_SPRITE_bg2_pine_tree_v1, 6.5f, v2(0.6f, 0.2f));
 
 		Entity *bg3_hills1 = NewEntity("hills", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(bg3_hills1, v2(100.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.8f, 0.3f));
+		SetupBackgroundEntity(bg3_hills1, v2(100.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.75f, 0.3f));
 		Entity *bg3_hills2 = NewEntity("hills", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(bg3_hills2, v2(-100.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.8f, 0.3f));
+		SetupBackgroundEntity(bg3_hills2, v2(-100.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.75f, 0.3f));
 		Entity *bg3_hills3 = NewEntity("hills", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(bg3_hills3, v2(300.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.8f, 0.3f));
+		SetupBackgroundEntity(bg3_hills3, v2(300.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.75f, 0.3f));
 		Entity *bg3_hills4 = NewEntity("hills", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(bg3_hills4, v2(-300.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.8f, 0.3f));
+		SetupBackgroundEntity(bg3_hills4, v2(-300.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.75f, 0.3f));
 
 		Entity *bg3_tree_1 = NewEntity("bgtree", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(bg3_tree_1, v2(80.0f, 0.0f), STATIC_SPRITE_bg3_pine_tree_v1, 7.5f, v2(0.8f, 0.3f));
+		SetupBackgroundEntity(bg3_tree_1, v2(80.0f, 0.0f), STATIC_SPRITE_bg3_pine_tree_v1, 7.5f, v2(0.75f, 0.3f));
 
 		Entity *mid_mountains_1 = NewEntity("Mountains", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(mid_mountains_1, v2(0.0f, 0.0f), STATIC_SPRITE_mid_mountains, 8.0f, v2(0.93f, 0.68f));
@@ -135,17 +135,17 @@ internal void TempInitGameWorld()
 		AttachPhysics(ground, 1.0f, 1.0f);
 	}
 
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 12; i++)
 	{
 		Entity *cloud = NewEntity("Cloud", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(cloud,
-							  v2(-200.0f + i * 50.0f, RandomF32(-55.0f, -70.0f)),
+							  v2(-300.0f + i * 50.0f, RandomF32(-52.0f, -65.0f)),
 							  STATIC_SPRITE_cloud_v1 + RandomI32(0, 5),
-							  RandomI32(0, 3) != 0 ? 8.5f : 9.5f,
+							  RandomI32(0, 2) != 0 ? 8.5f : 9.5f,
 							  v2(0.95f, 0.7f));
 
 		SpriteComponent *sprite_comp = cloud->components[COMPONENT_sprite];
-		sprite_comp->sprite_data.tint = v4(1.0f, 1.0f, 1.0f, 1.0f);
+		sprite_comp->sprite_data.tint = v4u(0.5f);
 
 		core->clouds[core->cloud_count++] = cloud;
 	}
@@ -290,9 +290,27 @@ internal void UpdateClouds()
 		if (cloud)
 		{
 			ParallaxComponent *cloud_parallax = cloud->components[COMPONENT_parallax];
-			cloud_parallax->desired_position.x += core->world_delta_t * 0.5f;
+			PositionComponent *cloud_pos = cloud->components[COMPONENT_position];
+			cloud_parallax->desired_position.x += core->world_delta_t * 1.0f;
 
-			// check for destruction at bounds
+			f32 bound = (-core->camera_position.x + 300.0f) / cloud_parallax->parallax_amount.x; // Temp fix
+
+			if (-core->camera_position.x + cloud_parallax->desired_position.x >= bound)
+			{
+				DeleteEntity(cloud);
+				core->clouds[i] = 0;
+
+				Entity *new_cloud = NewEntity("Cloud", ENTITY_TYPE_scenic);
+				SetupBackgroundEntity(new_cloud,
+									  v2(-300.0f, RandomF32(-55.0f, -70.0f)),
+									  STATIC_SPRITE_cloud_v1 + RandomI32(0, 5),
+									  RandomI32(0, 3) != 0 ? 8.5f : 9.5f,
+									  v2(0.95f, 0.7f));
+				SpriteComponent *sprite_comp = new_cloud->components[COMPONENT_sprite];
+				sprite_comp->sprite_data.tint = v4u(0.5f);
+
+				core->clouds[i] = new_cloud;
+			}
 		}
 	}
 }
