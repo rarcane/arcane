@@ -36,8 +36,7 @@ internal void UpdateParticleEmitters()
 						DeleteParticle(emitter_comp, j);
 					else
 					{
-						f32 life_alpha = core->elapsed_world_time / (particle->spawn_time + particle->life_time);
-						particle->colour.alpha = 1.0f; // - life_alpha; // BUG: Over time every particle's alpha gets weak af??
+						f32 life_alpha = 1.0f - (core->elapsed_world_time - particle->spawn_time) / particle->life_time;
 
 						particle->position.x += particle->velocity.x * core->world_delta_t;
 						particle->position.y += particle->velocity.y * core->world_delta_t;
@@ -45,7 +44,7 @@ internal void UpdateParticleEmitters()
 						v2 particle_position = v2view(V2AddV2(position_comp->position, particle->position));
 
 						Ts2dPushFilledRect(core->renderer,
-										   particle->colour,
+										   V4MultiplyF32(particle->colour, life_alpha),
 										   v4(particle_position.x,
 											  particle_position.y,
 											  core->camera_zoom,
@@ -57,7 +56,7 @@ internal void UpdateParticleEmitters()
 	}
 }
 
-internal void NewParticle(ParticleEmitterComponent *emitter, f32 life_time, v2 initial_pos, v2 velocity, v3 colour)
+internal void NewParticle(ParticleEmitterComponent *emitter, f32 life_time, v2 initial_pos, v2 velocity, v4 colour)
 {
 	R_DEV_ASSERT(emitter->particle_count < MAX_PARTICLE_AMOUNT - 1, "Woah there bucko.");
 
@@ -86,7 +85,7 @@ internal void NewParticle(ParticleEmitterComponent *emitter, f32 life_time, v2 i
 	emitter->particles[index].spawn_time = core->elapsed_world_time;
 	emitter->particles[index].position = initial_pos;
 	emitter->particles[index].velocity = velocity;
-	emitter->particles[index].colour = v4(colour.r, colour.g, colour.b, 1.0f);
+	emitter->particles[index].colour = colour;
 }
 
 internal void DeleteParticle(ParticleEmitterComponent *emitter, i32 particle_index)
@@ -102,11 +101,16 @@ internal void GeneratePineParticles(ParticleEmitterComponent *emitter)
 {
 	for (int i = 0; i < 3; i++)
 	{
-		v3 colour = {27.0f / 255.0f, 77.0f / 255.0f, 80.0f / 255.0f};
+		v4 colour = {27.0f / 255.0f, 77.0f / 255.0f, 80.0f / 255.0f, 1.0f};
 		NewParticle(emitter,
 					RandomF32(5.0, 10.0f),
 					v2(RandomF32(-20.0f, 20.0f), -30.0f - RandomF32(0.0f, 130.0f)),
-					v2(RandomF32(-10.0f, 10.0f), RandomF32(8.0f, 15.0f)),
+					v2(RandomF32(-7.0f, 7.0f), RandomF32(6.0f, 12.0f)),
 					colour);
 	}
+}
+
+internal void GenerateTestParticle(ParticleEmitterComponent *emitter)
+{
+	NewParticle(emitter, 5.0f, v2(0.0f, 0.0f), v2(0.0f, -10.0f), v4u(1.0f));
 }
