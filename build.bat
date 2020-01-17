@@ -96,9 +96,11 @@ rem  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rem                             Copy Resources
 rem  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 echo --- Copying resources to build.
-if exist game\build\res @RD /S /Q game\build\res
-mkdir game\build\res
-robocopy game\res game\build\res /E > NUL
+rem if exist game\build\res @RD /S /Q game\build\res
+rem mkdir game\build\res
+rem robocopy game\res game\build\res /E > NUL
+start /b /wait "" "xcopy" game\res game\build\res\ /y /s /e /q
+
 
 
 
