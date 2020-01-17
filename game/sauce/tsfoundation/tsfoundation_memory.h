@@ -54,7 +54,7 @@ MemoryArenaAllocateAligned(MemoryArena *arena, u32 size, u32 alignment)
     {
         alignment = arena->minimum_alignment;
     }
-
+    
     if(arena->memory_alloc_pos + size <= arena->memory_size)
     {
         memory = (void *)((char *)arena->memory + arena->memory_alloc_pos);
@@ -131,6 +131,32 @@ MemoryArenaAllocateCStringCopy(MemoryArena *arena, char *str)
     MemoryCopy(str_copy, str, str_length);
     str_copy[str_length] = 0;
     return str_copy;
+}
+
+internal b32
+MemoryArenaWrite(MemoryArena *arena, void *source, u32 size)
+{
+    b32 success = 0;
+    if(arena->memory_left >= size)
+    {
+        void *destination = MemoryArenaAllocate(arena, size);
+        MemoryCopy(destination, source, size);
+        success = 1;
+    }
+    return success;
+}
+
+internal b32
+MemoryArenaRead(MemoryArena *arena, void *destination, u32 size)
+{
+    b32 success = 0;
+    if(arena->memory_left >= size)
+    {
+        void *source = MemoryArenaAllocate(arena, size);
+        MemoryCopy(destination, source, size);
+        success = 1;
+    }
+    return success;
 }
 
 typedef struct MemoryPoolChunk MemoryPoolChunk;

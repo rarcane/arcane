@@ -39,6 +39,7 @@
 #define TSUI_WINDOW_FLAG_FIXED_POSITION  (1<<0)
 #define TSUI_WINDOW_FLAG_NO_TITLE_BAR    (1<<1)
 #define TSUI_WINDOW_FLAG_NO_BRING_TO_TOP (1<<2)
+#define TSUI_WINDOW_FLAG_NO_SCROLL       (1<<3)
 #define TSUI_WINDOW_TOP ((TsUIWindow *)0xffffffffffffffff)
 
 typedef struct TsUI TsUI;
@@ -214,7 +215,7 @@ struct TsUIWidget
             f32 view_offset;
         }
         line_edit;
-
+        
         struct Collapsable
         {
             b32 open;
@@ -267,11 +268,13 @@ struct TsUIWidget
     };
 };
 
+#include "generated/generated_stack_definitions.h"
+
 typedef struct TsUI TsUI;
 struct TsUI
 {
     
-    // NOTE(rjf): Frame data
+    //~ NOTE(rjf): Frame data
     f32 render_width;
     f32 render_height;
     TsUIID hot;
@@ -302,7 +305,7 @@ struct TsUI
     b32 mouse_mode;
     f32 delta_t;
     MemoryArena *widget_arena;
-
+    
     f32 caret_x_offset;
     f32 scroll_bar_grab_offset;
     TsUIGetTextWidthCallback *GetTextWidth;
@@ -318,13 +321,13 @@ struct TsUI
     TsUIHoverSoundCallback *HoverSound;
     void *hover_sound_user_data;
     
-    // NOTE(rjf): Widget data
+    //~ NOTE(rjf): Widget data
     u32 widget_count;
     u32 last_frame_widget_count;
     TsUIWidget widgets[TSUI_WIDGET_MAX];
     u32 widget_id_counters[TSUI_WIDGET_MAX];
     
-    // NOTE(rjf): Input grid
+    //~ NOTE(rjf): Input grid
 #define TSUI_INPUT_GRID_MAX 256
     TsUIID input_grid[TSUI_INPUT_GRID_MAX][TSUI_INPUT_GRID_MAX];
     iv2 input_grid_selected_cell;
@@ -333,7 +336,8 @@ struct TsUI
     b32 input_grid_selected_group_active;
     b32 input_grid_group_active;
     
-    // NOTE(rjf): Auto-layout and coloring information
+#if 0
+    //~ NOTE(rjf): Auto-layout and coloring information
     struct
     {
         v2 position;
@@ -353,92 +357,12 @@ struct TsUI
         b32 same_line;
     }
     current_auto_layout_state;
-
-    // NOTE(rjf): Stacks
-    struct
-    {
-        u32 x_position_stack_size;
-        struct
-        {
-            f32 x;
-        }
-        x_position_stack[TSUI_STACK_MAX];
-        
-        u32 y_position_stack_size;
-        struct
-        {
-            f32 y;
-        }
-        y_position_stack[TSUI_STACK_MAX];
-        
-        u32 width_stack_size;
-        struct
-        {
-            f32 width;
-            b32 calculate_width_with_text;
-        }
-        width_stack[TSUI_STACK_MAX];
-        
-        u32 height_stack_size;
-        struct
-        {
-            f32 height;
-            b32 calculate_height_with_text;
-        }
-        height_stack[TSUI_STACK_MAX];
-        
-        u32 text_color_stack_size;
-        struct
-        {
-            v4 color;
-        }
-        text_color_stack[TSUI_STACK_MAX];
-        
-        u32 text_scale_stack_size;
-        struct
-        {
-            f32 scale;
-        }
-        text_scale_stack[TSUI_STACK_MAX];
-        
-        u32 group_mode_stack_size;
-        struct
-        {
-            b32 is_column;
-        }
-        group_mode_stack[TSUI_STACK_MAX];
-        
-        u32 open_dropdown_stack_size;
-        struct
-        {
-            TsUIID widget_id;
-            f32 open_transition;
-        }
-        open_dropdown_stack[TSUI_STACK_MAX];
-        
-        u32 input_grid_state_stack_size;
-        struct
-        {
-            iv2 input_grid_position;
-            i32 direction;
-        }
-        input_grid_state_stack[TSUI_STACK_MAX];
-        
-        u32 style_flags_stack_size;
-        struct
-        {
-            i32 flags;
-        }
-        style_flags_stack[TSUI_STACK_MAX];
-        
-        u32 active_dropdown_stack_size;
-        TsUIWidget *active_dropdown_stack[TSUI_STACK_MAX];
-
-        u32 clip_stack_size;
-        v4 clip_stack[TSUI_STACK_MAX];
-    };
+#endif
     
-    // NOTE(rjf): Window data
+    //~ NOTE(rjf): Declarations for state
+#include "generated/generated_stack_declarations.h"
+    
+    //~ NOTE(rjf): Window data
     u32 window_count;
     TsUIWindow windows[TSUI_WINDOW_MAX];
     TsUIWindow *active_window;
@@ -446,9 +370,6 @@ struct TsUI
     u32 window_order[TSUI_WINDOW_MAX];
     TsUIWindow *dragging_window;
     TsUIWindow *scrolling_window;
-    
-    // NOTE(rjf): Dropdown data
-    TsUIWidget *active_dropdown;
 };
 
 // NOTE(rjf): Main calls
@@ -477,8 +398,6 @@ void  TsUIPushTextScale          (TsUI *ui, f32 scale);
 void  TsUIPopTextScale           (TsUI *ui);
 void  TsUIPushStyleFlags         (TsUI *ui, i32 style_flags);
 void  TsUIPopStyleFlags          (TsUI *ui);
-void  TsUIPushGroupMode          (TsUI *ui, b32 is_column);
-void  TsUIPopGroupMode           (TsUI *ui);
 void  TsUIPushPosition           (TsUI *ui, v2 pos);
 void  TsUIPopPosition            (TsUI *ui);
 void  TsUIPushSize               (TsUI *ui, v2 size);
@@ -556,7 +475,7 @@ b32   TsUI##name##Collapsable              (TsUI *ui, char *text)               
 void  TsUI##name##Divider                  (TsUI *ui)                                                  { TsUIStyledDivider  (ui, style_flags);                                 }\
 void  TsUI##name##Canvas                   (TsUI *ui, char *text, TsUICanvasUpdateCallback *Update, void *update_user_data, TsUICanvasRenderCallback *Render, void *render_user_data)\
 {\
-    TsUIStyledCanvas(ui, style_flags, text, Update, update_user_data, Render, render_user_data);\
+TsUIStyledCanvas(ui, style_flags, text, Update, update_user_data, Render, render_user_data);\
 }\
 b32   TsUI##name##Dropdown                 (TsUI *ui, char *text)                                      { return TsUIStyledDropdown (ui, style_flags, text);                           }\
 b32   TsUI##name##WindowCloseButton        (TsUI *ui)                                                  { return TsUIStyledWindowCloseButton(ui, style_flags);                         }\
@@ -565,11 +484,13 @@ v3    TsUI##name##ColorPicker              (TsUI *ui, char *text, v3 color)     
 i32   TsUI##name##NotePicker               (TsUI *ui, char *text, i32 note)                            { return TsUIStyledNotePicker(ui, style_flags, text, note);                    }\
 b32   TsUI##name##TileSelect               (TsUI *ui, char *text, Ts2dTexture *texture, v4 tilemap_source, i32 *tile_select_x0, i32 *tile_select_y0, i32 *tile_select_x1, i32 *tile_select_y1, b32 selection_from_widget)\
 {\
-    return TsUIStyledTileSelect(ui, style_flags, text, texture, tilemap_source, tile_select_x0, tile_select_y0, tile_select_x1, tile_select_y1, selection_from_widget);\
+return TsUIStyledTileSelect(ui, style_flags, text, texture, tilemap_source, tile_select_x0, tile_select_y0, tile_select_x1, tile_select_y1, selection_from_widget);\
 }\
 
 #include TSUI_STYLE_CALLS_FILE
 #undef TsUIStyleCall
 #endif
+
+#include "generated/generated_stack_procedures.h"
 
 #endif // TSUI_H_INCLUDED

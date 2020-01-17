@@ -161,11 +161,24 @@ typedef union M4
 }
 M4;
 
+typedef union M3
+{
+    struct
+    {
+        V3 row1;
+        V3 row2;
+        V3 row3;
+    };
+    f32 elements[3][3];
+}
+M3;
+
 typedef IV2  iv2;
 typedef V2   v2;
 typedef V3   v3;
 typedef V4   v4;
-typedef M4 m4;
+typedef M3   m3;
+typedef M4   m4;
 
 internal f32
 RandomF32(f32 low, f32 high)
@@ -182,9 +195,9 @@ RandomI32(i32 low, i32 high)
 #define ClampFunc(name, type)                  \
 type Clamp##name(type a, type low, type high)  \
 {                                              \
-    if(a < low)  a = low;                      \
-    if(a > high) a = high;                     \
-    return a;                                  \
+if(a < low)  a = low;                      \
+if(a > high) a = high;                     \
+return a;                                  \
 }
 ClampFunc(F32, f32)
 ClampFunc(I32, i32)
@@ -259,15 +272,15 @@ V4InitUniform(f32 x)
 #define IV2IV2OpFunc(name, op)                        \
 internal IV2 IV2##name##IV2(IV2 a, IV2 b)             \
 {                                                     \
-    IV2 result = {a.x op b.x, a.y op b.y};            \
-    return result;                                    \
+IV2 result = {a.x op b.x, a.y op b.y};            \
+return result;                                    \
 }
 
 #define IV2I32OpFunc(name, op)                        \
 internal IV2 IV2##name##I32(IV2 a, i32 v)             \
 {                                                     \
-    IV2 result = {a.x op v, a.y op v};                \
-    return result;                                    \
+IV2 result = {a.x op v, a.y op v};                \
+return result;                                    \
 }
 
 IV2IV2OpFunc(Add, +)
@@ -285,15 +298,15 @@ IV2I32OpFunc(Divide, /)
 #define V2V2OpFunc(name, op)                         \
 internal V2 V2##name##V2(V2 a, V2 b)                 \
 {                                                    \
-        V2 result = {a.x op b.x, a.y op b.y};        \
-        return result;                               \
+V2 result = {a.x op b.x, a.y op b.y};        \
+return result;                               \
 }
 
 #define V2F32OpFunc(name, op)                        \
 internal V2 V2##name##F32(V2 a, f32 v)               \
 {                                                    \
-        V2 result = {a.x op v, a.y op v};            \
-        return result;                               \
+V2 result = {a.x op v, a.y op v};            \
+return result;                               \
 }
 
 V2V2OpFunc (Add, +)
@@ -311,14 +324,14 @@ V2F32OpFunc(Divide, /)
 #define V3V3OpFunc(name, op)                                 \
 internal V3 V3##name##V3(V3 a, V3 b)                         \
 {                                                            \
-        V3 result = {a.x op b.x, a.y op b.y, a.z op b.z};    \
-        return result;                                       \
+V3 result = {a.x op b.x, a.y op b.y, a.z op b.z};    \
+return result;                                       \
 }
 #define V3F32OpFunc(name, op)                                \
 internal V3 V3##name##F32(V3 a, f32 v)                       \
 {                                                            \
-        V3 result = {a.x op v, a.y op v, a.z op v};          \
-        return result;                                       \
+V3 result = {a.x op v, a.y op v, a.z op v};          \
+return result;                                       \
 }
 
 V3V3OpFunc (Add, +)
@@ -336,14 +349,14 @@ V3F32OpFunc(Divide, /)
 #define V4V4OpFunc(name, op)                                            \
 internal V4 V4##name##V4(V4 a, V4 b)                                    \
 {                                                                       \
-        V4 result = {a.x op b.x, a.y op b.y, a.z op b.z, a.w op b.w};   \
-        return result;                                                  \
+V4 result = {a.x op b.x, a.y op b.y, a.z op b.z, a.w op b.w};   \
+return result;                                                  \
 }
 #define V4F32OpFunc(name, op)                                           \
 internal V4 V4##name##F32(V4 a, f32 v)                                  \
 {                                                                       \
-        V4 result = {a.x op v, a.y op v, a.z op v, a.w op v};           \
-        return result;                                                  \
+V4 result = {a.x op v, a.y op v, a.z op v, a.w op v};           \
+return result;                                                  \
 }
 
 V4V4OpFunc (Add, +)
@@ -438,6 +451,20 @@ MinimumInV3(v3 vec)
     return min_val;
 }
 
+internal m3
+M3InitD(f32 diagonal)
+{
+    m3 m =
+    {
+        {
+            { diagonal                },
+            { 0.f, diagonal           },
+            { 0.f, 0.f, diagonal      },
+        }
+    };
+    return m;
+}
+
 internal m4
 M4InitD(f32 diagonal)
 {
@@ -504,6 +531,51 @@ V4MultiplyM4(v4 v, m4 m)
                               v.elements[2]*m.elements[2][i] +
                               v.elements[3]*m.elements[3][i]);
     }
+    
+    return result;
+}
+
+internal m3
+M3MultiplyM3(m3 a, m3 b)
+{
+    m3 c = {0};
+    
+    for(int j = 0; j < 3; ++j)
+    {
+        for(int i = 0; i < 3; ++i)
+        {
+            c.elements[i][j] = (a.elements[0][j]*b.elements[i][0] +
+                                a.elements[1][j]*b.elements[i][1] +
+                                a.elements[2][j]*b.elements[i][2]);
+        }
+    }
+    
+    return c;
+}
+
+internal m3
+M3Rotate(f32 angle, v3 axis)
+{   
+    m3 result = M3InitD(1.f);
+    
+    f32 axis_length = V3Length(axis);
+    axis.x /= axis_length;
+    axis.y /= axis_length;
+    axis.z /= axis_length;
+    
+    f32 sin_theta = Sin(DegreesToRadians(angle));
+    f32 cos_theta = Cos(DegreesToRadians(angle));
+    f32 cos_value = 1.f - cos_theta;
+    
+    result.elements[0][0] = (axis.x * axis.x * cos_value) + cos_theta;
+    result.elements[0][1] = (axis.x * axis.y * cos_value) + (axis.z * sin_theta);
+    result.elements[0][2] = (axis.x * axis.z * cos_value) - (axis.y * sin_theta);
+    result.elements[1][0] = (axis.y * axis.x * cos_value) - (axis.z * sin_theta);
+    result.elements[1][1] = (axis.y * axis.y * cos_value) + cos_theta;
+    result.elements[1][2] = (axis.y * axis.z * cos_value) + (axis.x * sin_theta);
+    result.elements[2][0] = (axis.z * axis.x * cos_value) + (axis.y * sin_theta);
+    result.elements[2][1] = (axis.z * axis.y * cos_value) - (axis.x * sin_theta);
+    result.elements[2][2] = (axis.z * axis.z * cos_value) + cos_theta;
     
     return result;
 }
@@ -675,6 +747,33 @@ M4RemoveRotation(m4 mat)
     return mat;
 }
 
+internal m4
+M4Rotate(f32 angle, v3 axis)
+{   
+    m4 result = M4InitD(1.f);
+    
+    f32 axis_length = V3Length(axis);
+    axis.x /= axis_length;
+    axis.y /= axis_length;
+    axis.z /= axis_length;
+    
+    f32 sin_theta = Sin(DegreesToRadians(angle));
+    f32 cos_theta = Cos(DegreesToRadians(angle));
+    f32 cos_value = 1.f - cos_theta;
+    
+    result.elements[0][0] = (axis.x * axis.x * cos_value) + cos_theta;
+    result.elements[0][1] = (axis.x * axis.y * cos_value) + (axis.z * sin_theta);
+    result.elements[0][2] = (axis.x * axis.z * cos_value) - (axis.y * sin_theta);
+    result.elements[1][0] = (axis.y * axis.x * cos_value) - (axis.z * sin_theta);
+    result.elements[1][1] = (axis.y * axis.y * cos_value) + cos_theta;
+    result.elements[1][2] = (axis.y * axis.z * cos_value) + (axis.x * sin_theta);
+    result.elements[2][0] = (axis.z * axis.x * cos_value) + (axis.y * sin_theta);
+    result.elements[2][1] = (axis.z * axis.y * cos_value) - (axis.x * sin_theta);
+    result.elements[2][2] = (axis.z * axis.z * cos_value) + cos_theta;
+    
+    return result;
+}
+
 internal v3
 RGBToHSV(v3 rgb)
 {
@@ -747,6 +846,21 @@ HSVToRGB(v3 hsv)
     return rgb;
 }
 
+/*c
+t = 2 * abs((time() / 4) % 1 - 0.5)
+
+plot_xaxis('t', -0.25, 1.25)
+plot_yaxis('v', -0.25, 1.25)
+
+plot_title('Linear')
+v = t
+plot(x, [[t],[v]], v)
+
+plot_title('Smooth')
+v = (4/9)*t^6 - (17/9)*t^4 + (22/9)*t^2
+plot((4/9)*x^6 - (17/9)*x^4 + (22/9)*x^2, [[t],[v]], v)
+*/
+
 internal f32
 InterpolateLinear(f32 t)
 {
@@ -807,7 +921,8 @@ V4HasPoint(v4 v, v2 p)
 internal v2
 V4Center(v4 v)
 {
-    v2 result = {
+    v2 result =
+    {
         v.x + v.width/2,
         v.y + v.height/2,
     };

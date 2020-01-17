@@ -65,7 +65,6 @@ _ts2d__global_opengl_shaders[] = {
 "",
 "#version 330 core\n"
 "\n"
-"\n"
 "in vec2 frag_uv;\n"
 "out vec4 color;\n"
 "uniform sampler2D tex;\n"
@@ -79,7 +78,6 @@ _ts2d__global_opengl_shaders[] = {
 "        discard;\n"
 "    }\n"
 "}\n"
-"\n"
 "",
 },
 {
@@ -143,7 +141,6 @@ _ts2d__global_opengl_shaders[] = {
 1,
 "#version 330 core\n"
 "\n"
-"\n"
 "out vec2 frag_uv;\n"
 "out vec2 frag_position;\n"
 "uniform vec4 destination;\n"
@@ -166,7 +163,6 @@ _ts2d__global_opengl_shaders[] = {
 "    gl_Position = screen_position;\n"
 "    frag_uv = vert_position.xy;\n"
 "}\n"
-"\n"
 "",
 "#version 330 core\n"
 "\n"
@@ -462,6 +458,9 @@ _ts2d__global_opengl_shaders[] = {
 "in vec2 vert_uv;\n"
 "in vec3 vert_normal;\n"
 "\n"
+"out vec3 frag_position;\n"
+"out vec3 frag_normal;\n"
+"\n"
 "uniform mat3 model_transform;\n"
 "uniform mat4 view_projection;\n"
 "\n"
@@ -471,14 +470,38 @@ _ts2d__global_opengl_shaders[] = {
 "    vec4 world_space_position = vec4(vertex_position.x, vertex_position.y, vertex_position.z, 1);\n"
 "    vec4 clip_space_position = view_projection * world_space_position;\n"
 "    gl_Position = clip_space_position;\n"
+"    frag_position = vertex_position;\n"
+"    frag_normal = model_transform * vert_normal;\n"
 "}\n"
 "",
 "#version 330 core\n"
 "\n"
+"\n"
+"in vec3 frag_position;\n"
+"in vec3 frag_normal;\n"
+"\n"
 "out vec4 color;\n"
+"\n"
+"uniform vec3 shadow_vector;\n"
+"\n"
 "void main()\n"
 "{\n"
-"    color = vec4(1, 0, 0, 1);\n"
+"	// NOTE(rjf): Calculate diffuse lighting.\n"
+"	float diffuse_factor = 1;\n"
+"	{\n"
+"		diffuse_factor = dot(shadow_vector, frag_normal);\n"
+"		diffuse_factor *= diffuse_factor;\n"
+"		if(diffuse_factor < 0.5)\n"
+"		{\n"
+"			diffuse_factor = 0.5;\n"
+"		}\n"
+"		else\n"
+"		{\n"
+"			diffuse_factor = 1;\n"
+"		}\n"
+"	}\n"
+"\n"
+"    color = vec4(diffuse_factor, diffuse_factor, diffuse_factor, 1);\n"
 "}\n"
 "",
 },

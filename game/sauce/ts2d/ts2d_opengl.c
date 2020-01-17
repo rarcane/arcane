@@ -152,8 +152,8 @@ Ts2dSubModelInit(Ts2d *renderer, Ts2dVertexDataFormat format, int vertex_count, 
         {
             sub_model.index_count = index_count;
             glGenBuffers(1, &sub_model.index_buffer);
-            glBindBuffer(GL_ARRAY_BUFFER, sub_model.index_buffer);
-            glBufferData(GL_ARRAY_BUFFER, index_count * sizeof(int), index_data, GL_STATIC_DRAW);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sub_model.index_buffer);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_count * sizeof(index_data[0]), index_data, GL_STATIC_DRAW);
         }
 
         sub_model.material = material;
@@ -161,6 +161,12 @@ Ts2dSubModelInit(Ts2d *renderer, Ts2dVertexDataFormat format, int vertex_count, 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     return sub_model;
+}
+
+Ts2dSubModel
+Ts2dSubModelInitSimple(Ts2d *renderer, Ts2dVertexDataFormat format, int vertex_count, f32 *vertex_data, Ts2dMaterial *material)
+{
+    return Ts2dSubModelInit(renderer, format, vertex_count, vertex_data, 0, 0, material);
 }
 
 Ts2dModel
@@ -237,7 +243,7 @@ struct Ts2dModelRequestData
     Ts2dModel *model;
     b32 transform_with_skeleton;
     Ts2dSkeleton skeleton;
-    float transform[3][3];
+    m3 transform;
     float pixel_scale;
 };
 
@@ -248,22 +254,22 @@ Ts2dInitOpenGLShaderFromData(char *shader_name,
                              char *vertex, char *fragment)
 {
     Log("[Ts2d] Building shader \"%s\".", shader_name);
-    
+
     GLuint program = 0;
     GLuint vertex_shader = 0;
     GLuint fragment_shader = 0;
-    
+
     int info_log_length = 0;
     GLint result = GL_FALSE;
     GLint code_length = 0;
-    
+
     // NOTE(rjf): Compile and attach vertex shader
     {
         vertex_shader = glCreateShader(GL_VERTEX_SHADER);
         code_length = (GLint)CalculateCStringLength(vertex);
         glShaderSource(vertex_shader, 1, &vertex, &code_length);
         glCompileShader(vertex_shader);
-        
+
         // NOTE(rjf): Get vertex shader errors
         {
             glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &result);
@@ -284,14 +290,14 @@ Ts2dInitOpenGLShaderFromData(char *shader_name,
             }
         }
     }
-    
+
     // NOTE(rjf): Compile and attach fragment shader
     {
         fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
         code_length = (GLint)CalculateCStringLength(fragment);
         glShaderSource(fragment_shader, 1, &fragment, &code_length);
         glCompileShader(fragment_shader);
-        
+
         // NOTE(rjf): Get fragment shader errors
         {
             glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &result);
@@ -312,11 +318,11 @@ Ts2dInitOpenGLShaderFromData(char *shader_name,
             }
         }
     }
-    
+
     program = glCreateProgram();
     glAttachShader(program, vertex_shader);
     glAttachShader(program, fragment_shader);
-    
+
     // NOTE(rjf): Specify shader inputs
     {
         for(int i = 0; i < input_count; ++i)
@@ -324,7 +330,7 @@ Ts2dInitOpenGLShaderFromData(char *shader_name,
             glBindAttribLocation(program, inputs[i].index, inputs[i].name);
         }
     }
-    
+
     // NOTE(rjf): Specify shader outputs
     {
         for(int i = 0; i < output_count; ++i)
@@ -332,16 +338,16 @@ Ts2dInitOpenGLShaderFromData(char *shader_name,
             glBindFragDataLocation(program, outputs[i].index, outputs[i].name);
         }
     }
-    
+
     // NOTE(rjf): Link shaders
     {
         glLinkProgram(program);
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
     }
-    
+
     glValidateProgram(program);
-    
+
     return program;
 }
 
@@ -357,7 +363,7 @@ Ts2dOpenGLFBOInit(unsigned int width, unsigned int height, i32 flags)
     {
         GLenum colors[4] = {0};
         unsigned int color_count = 0;
-        
+
         for(int i = 0; i < sizeof(fbo.color_textures)/sizeof(fbo.color_textures[0]); ++i)
         {
             if(flags & (TS2D_OPENGL_FBO_COLOR_OUT_0 << i))
@@ -391,7 +397,7 @@ Ts2dOpenGLFBOInit(unsigned int width, unsigned int height, i32 flags)
                 colors[color_count++] = GL_COLOR_ATTACHMENT0+i;
             }
         }
-        
+
         if(flags & TS2D_OPENGL_FBO_DEPTH_OUT)
         {
             glGenTextures(1, &fbo.depth_texture);
@@ -401,7 +407,7 @@ Ts2dOpenGLFBOInit(unsigned int width, unsigned int height, i32 flags)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, fbo.depth_texture, 0);
         }
-        
+
         if(color_count)
         {
             glDrawBuffers(color_count, colors);
@@ -492,31 +498,30 @@ _Ts2dOpenGLFBORender(Ts2d *renderer, GLuint shader, Ts2dOpenGLFBO *fbo, v4 sourc
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        
+
         v2 scale =
         {
             dest.width  / source.width,
             dest.height / source.height,
         };
-        
+
         dest.x      = +(2 * dest.x / renderer->render_width  - 1 );
         dest.y      = -(2 * dest.y / renderer->render_height - 1 );
         dest.width  = +(2 * dest.width / renderer->render_width  );
         dest.height = -(2 * dest.height / renderer->render_height);
-        
+
         glUniform4f(glGetUniformLocation(shader, "destination"), dest.x, dest.y, dest.width, dest.height);
-        glUniform2f(glGetUniformLocation(shader, "uv_offset"), source.x, source.height - source.y);
+        glUniform2f(glGetUniformLocation(shader, "uv_offset"), source.x, source.height + source.y);
         glUniform2f(glGetUniformLocation(shader, "uv_range"), source.width, -source.height);
         glUniform2f(glGetUniformLocation(shader, "scale"), scale.x, scale.y);
         glUniform1f(glGetUniformLocation(shader, "opacity"), 1.f);
         glUniform1i(glGetUniformLocation(shader, "tex"), 0);
         glUniform2f(glGetUniformLocation(shader, "tex_resolution"), (f32)fbo->w, (f32)fbo->h);
-        
+
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
     glBindVertexArray(0);
 }
-
 
 void
 Ts2dOpenGLFBORender(Ts2d *renderer, Ts2dOpenGLFBO *fbo, v4 source, v4 dest)
@@ -538,40 +543,40 @@ Ts2dOpenGLBlurredFBORender(Ts2d *renderer, GLuint texture, f32 width, f32 height
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        
+
         glUniform1i(glGetUniformLocation(shader, "tex"), 0);
         glUniform2f(glGetUniformLocation(shader, "tex_resolution"), width - 1.f, height - 1.f);
         glUniform1i(glGetUniformLocation(shader, "radius"), radius);
         glUniform1i(glGetUniformLocation(shader, "vertical"), !!vertical);
         glUniform4f(glGetUniformLocation(shader, "clip"), clip.x, clip.y, clip.width, clip.height);
-        
+
         local_persist const i32 kernel_size = 128;
         i32 kernel_midpoint = kernel_size / 2;
         i32 kernel_lower_bound = kernel_midpoint - radius;
         i32 kernel_upper_bound = kernel_midpoint + radius;
-        
+
         f32 vec4_buffer_because_glsl_sucks[4] = {0};
         i32 vec4_counter_because_glsl_sucks = 0;
-        
+
         char kernel_uniform_str_1_digit_index_because_glsl_sucks[32] = "kernel[x]";
         char kernel_uniform_str_2_digit_index_because_glsl_sucks[32] = "kernel[xx]";
-        
+
         for(i32 i = kernel_lower_bound;
             i >= 0 &&
             i <= kernel_upper_bound &&
             i <= kernel_size;
             ++i)
         {
-            
+
             f32 x = (f32)(kernel_midpoint - i);
-            
+
             vec4_buffer_because_glsl_sucks[vec4_counter_because_glsl_sucks++] =
                 (TS2D_ONE_OVER_SQUARE_ROOT_OF_TWO_PIf / standard_deviation) *
                 powf(TS2D_EULERS_NUMBERf, -(x * x) / (2 * standard_deviation * standard_deviation));
-            
+
             char *kernel_uniform_str = 0;
             i32 kernel_vec4_index_because_glsl_sucks = i / 4;
-            
+
             if(kernel_vec4_index_because_glsl_sucks < 10)
             {
                 kernel_uniform_str = kernel_uniform_str_1_digit_index_because_glsl_sucks;
@@ -582,7 +587,7 @@ Ts2dOpenGLBlurredFBORender(Ts2d *renderer, GLuint texture, f32 width, f32 height
                 kernel_uniform_str = kernel_uniform_str_2_digit_index_because_glsl_sucks;
                 snprintf(kernel_uniform_str + 7, 4, "%i]", kernel_vec4_index_because_glsl_sucks);
             }
-            
+
             if(kernel_uniform_str)
             {
                 if(vec4_counter_because_glsl_sucks >= 4)
@@ -596,7 +601,7 @@ Ts2dOpenGLBlurredFBORender(Ts2d *renderer, GLuint texture, f32 width, f32 height
                 }
             }
         }
-        
+
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
     glBindVertexArray(0);
@@ -615,14 +620,14 @@ void
 Ts2dInit(Ts2d *renderer, MemoryArena *arena)
 {
     Ts2dLoadAllOpenGLProcedures(renderer);
-    
+
     glDisable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_DEPTH_TEST);
-    
+
     glGenVertexArrays(1, &renderer->all_purpose_vao);
-    
+
     // NOTE(rjf): Initialize instance type data
     {
 #define Ts2dInstanceType(name, size_per_instance, max) \
@@ -641,7 +646,7 @@ Ts2dInit(Ts2d *renderer, MemoryArena *arena)
         }
 #include "ts2d_opengl_instance_type_list.inc"
     }
-    
+
     // NOTE(rjf): Instance instanced float attribute data for each instance type.
     {
         // NOTE(rjf): Lines
@@ -653,7 +658,7 @@ Ts2dInit(Ts2d *renderer, MemoryArena *arena)
             _Ts2dSetOpenGLInstancedFloatAttributeData(2, renderer->line.instance_data_stride, 4, 4);
             glBindVertexArray(0);
         }
-        
+
         // NOTE(rjf): Rects
         {
             glBindVertexArray(renderer->rect.vao);
@@ -662,7 +667,7 @@ Ts2dInit(Ts2d *renderer, MemoryArena *arena)
             _Ts2dSetOpenGLInstancedFloatAttributeData(1, renderer->rect.instance_data_stride, 4, 4);
             glBindVertexArray(0);
         }
-        
+
         // NOTE(rjf): Filled Rects
         {
             glBindVertexArray(renderer->filled_rect.vao);
@@ -674,7 +679,7 @@ Ts2dInit(Ts2d *renderer, MemoryArena *arena)
             _Ts2dSetOpenGLInstancedFloatAttributeData(4, renderer->filled_rect.instance_data_stride, 4, 16);
             glBindVertexArray(0);
         }
-        
+
         // NOTE(rjf): Textures
         {
             glBindVertexArray(renderer->texture.vao);
@@ -684,7 +689,7 @@ Ts2dInit(Ts2d *renderer, MemoryArena *arena)
             _Ts2dSetOpenGLInstancedFloatAttributeData(2, renderer->texture.instance_data_stride, 4, 8);
             glBindVertexArray(0);
         }
-        
+
         // NOTE(rjf): World Tiles
         {
             glBindVertexArray(renderer->world_tile.vao);
@@ -697,7 +702,7 @@ Ts2dInit(Ts2d *renderer, MemoryArena *arena)
             glVertexAttribDivisor(2, 1);
             glBindVertexArray(0);
         }
-        
+
         // NOTE(rjf): Text Chars
         {
             glBindVertexArray(renderer->text_char.vao);
@@ -708,7 +713,7 @@ Ts2dInit(Ts2d *renderer, MemoryArena *arena)
             _Ts2dSetOpenGLInstancedFloatAttributeData(3, renderer->text_char.instance_data_stride, 4, 12);
             glBindVertexArray(0);
         }
-        
+
         // NOTE(rjf): Reflective Rects
         {
             glBindVertexArray(renderer->reflective_rect.vao);
@@ -718,9 +723,9 @@ Ts2dInit(Ts2d *renderer, MemoryArena *arena)
             _Ts2dSetOpenGLInstancedFloatAttributeData(2, renderer->reflective_rect.instance_data_stride, 4, 8);
             glBindVertexArray(0);
         }
-        
+
     }
-    
+
     // NOTE(rjf): Load shaders
     {
         renderer->shaders = MemoryArenaAllocate(arena, sizeof(renderer->shaders[0])*TS2D_OPENGL_SHADER_MAX);
@@ -736,13 +741,13 @@ Ts2dInit(Ts2d *renderer, MemoryArena *arena)
                 _ts2d__global_opengl_shaders[i].frag);
         }
     }
-    
+
     // NOTE(rjf): Initialize request data
     {
         renderer->request_memory_max = TS2D_MAX_REQUEST_MEMORY;
         renderer->request_memory = MemoryArenaAllocate(arena, renderer->request_memory_max);
     }
-    
+
     // NOTE(rjf): Initialize FBO data
     {
         renderer->active_fbo = 0;
@@ -757,12 +762,12 @@ Ts2dInit(Ts2d *renderer, MemoryArena *arena)
         renderer->half_screen_size_scratch_fbo_1_8u.w = 0;
         renderer->half_screen_size_scratch_fbo_2_8u.w = 0;
     }
-    
+
     // NOTE(rjf): Initialize default font.
     {
         renderer->default_font = 0;
     }
-    
+
     renderer->current_time = 0.f;
 }
 
@@ -770,7 +775,7 @@ void
 Ts2dBeginFrame(Ts2d *renderer, Ts2dBeginFrameInfo *begin_info)
 {
     renderer->current_clip = v4(0, 0, renderer->render_width, renderer->render_height);
-    
+
     // NOTE(rjf): Load data from info struct
     {
         renderer->render_width   = begin_info->render_width;
@@ -778,24 +783,24 @@ Ts2dBeginFrame(Ts2d *renderer, Ts2dBeginFrameInfo *begin_info)
         renderer->delta_t        = begin_info->delta_t;
         renderer->flags          = begin_info->flags;
     }
-    
+
     renderer->current_time += renderer->delta_t;
-    
+
     // NOTE(rjf): Initialize clip stack
     {
         renderer->clip_stack_size = 0;
         renderer->clip_stack_max = sizeof(renderer->clip_stack) / sizeof(renderer->clip_stack[0]);
     }
-    
+
 #define Ts2dInstanceType(name, size_per_instance, max) renderer->name.instance_data_alloc_pos = 0;
 #include "ts2d_opengl_instance_type_list.inc"
     renderer->light_count = 0;
-    
+
     renderer->active_request.type = TS2D_REQUEST_null;
     renderer->first_request = 0;
     renderer->last_request = 0;
     renderer->request_memory_alloc_position = 0;
-    
+
     Ts2dOpenGLFBOForceSize(&renderer->pre_lighting_fbo_8u,
                            (unsigned int)begin_info->render_width, (unsigned int)begin_info->render_height,
                            TS2D_OPENGL_FBO_COLOR_OUT_0);
@@ -819,20 +824,129 @@ Ts2dBeginFrame(Ts2d *renderer, Ts2dBeginFrameInfo *begin_info)
                            TS2D_OPENGL_FBO_COLOR_OUT_0);
     Ts2dOpenGLFBOForceSize(&renderer->half_screen_size_scratch_fbo_2_8u, (unsigned int)begin_info->render_width/2, (unsigned int)begin_info->render_height/2,
                            TS2D_OPENGL_FBO_COLOR_OUT_0);
+    Ts2dOpenGLFBOForceSize(&renderer->model_sprite_fbo, 2048, 2048, TS2D_OPENGL_FBO_COLOR_OUT_0 | TS2D_OPENGL_FBO_DEPTH_OUT);
+}
+
+typedef struct Rect2DQuadTree Rect2DQuadTree;
+struct Rect2DQuadTree
+{
+    i16 number_of_children_allocated;
+};
+
+internal v4
+Rect2DQuadTreeAllocate(Rect2DQuadTree *tree, u32 tree_max_nodes, v2 tree_size, v2 size)
+{
+    v4 result = {0};
+
+    Rect2DQuadTree *node = tree;
+    v2 node_position = {0};
+    v2 node_size = tree_size;
+
+    Rect2DQuadTree *node_to_allocate = 0;
+    v2 node_to_allocate_position = {0};
+    v2 node_to_allocate_size = {0};
+
+    for(; node && node->number_of_children_allocated < 4;)
+    {
+        u32 node_index = (u32)(node - tree);
+
+        if(node->number_of_children_allocated == 0 &&
+           node_size.x >= size.x && node_size.y >= size.y)
+        {
+            node_to_allocate = node;
+            node_to_allocate_position = node_position;
+            node_to_allocate_size = node_size;
+        }
+
+        u32 child_index[4] =
+        {
+            node_index*4 + 1,
+            node_index*4 + 2,
+            node_index*4 + 3,
+            node_index*4 + 4,
+        };
+
+        Rect2DQuadTree *children[4] =
+        {
+            (child_index[0] < tree_max_nodes) ? (tree + child_index[0]) : 0,
+            (child_index[1] < tree_max_nodes) ? (tree + child_index[1]) : 0,
+            (child_index[2] < tree_max_nodes) ? (tree + child_index[2]) : 0,
+            (child_index[3] < tree_max_nodes) ? (tree + child_index[3]) : 0,
+        };
+
+        v2 next_node_position = node_position;
+        v2 next_node_size = { node_size.x/2, node_size.y/2 };
+        Rect2DQuadTree *next_node = 0;
+        if(next_node_size.x >= size.x && next_node_size.y >= size.y)
+        {
+            for(int i = 0; i < ArrayCount(children); ++i)
+            {
+                if(children[i] &&
+                   ((children[i]->number_of_children_allocated < 4 && next_node_size.x/2 >= size.x && next_node_size.y/2 >= size.y) ||
+                     children[i]->number_of_children_allocated == 0))
+                {
+                    next_node = children[i];
+                    next_node_position.x = next_node_position.x + next_node_size.x * FMod(i * node_size.x, next_node_size.x);
+                    next_node_position.y = next_node_position.y + next_node_size.y * (int)((i * node_size.x) / node_size.x);
+                    break;
+                }
+            }
+        }
+
+        if(next_node)
+        {
+            node = next_node;
+            node_position = next_node_position;
+            node_size = next_node_size;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    if(node_to_allocate)
+    {
+        // NOTE(rjf): Allocate node.
+        {
+            ++node_to_allocate->number_of_children_allocated;
+            result.x = node_to_allocate_position.x;
+            result.y = node_to_allocate_position.y;
+            result.width = size.x;
+            result.height = size.y;
+        }
+
+        // NOTE(rjf): Increment all parents information of child allocations.
+        {
+            u32 node_to_allocate_index = (u32)(node_to_allocate - tree);
+            for(int i = (int)node_to_allocate_index/4; i >= 0; i /= 4)
+            {
+                ++tree[i].number_of_children_allocated;
+                if(i == 0)
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    return result;
 }
 
 void
 Ts2dEndFrame(Ts2d *renderer)
 {
     Ts2dInternalFinishActiveRequest(renderer);
-    
+
+    Rect2DQuadTree model_sprite_fbo_quad_tree[1025] = {0};
+
     Ts2dOpenGLFBOBind(renderer, 0);
     glDisable(GL_SCISSOR_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_SCISSOR_TEST);
     glViewport(0, 0, (GLsizei)renderer->render_width, (GLsizei)renderer->render_height);
     glScissor(0, 0, (GLint)renderer->render_width, (GLint)renderer->render_height);
-    
+
     Ts2dOpenGLFBOClear(renderer, &renderer->pre_lighting_fbo_8u);
     Ts2dOpenGLFBOClear(renderer, &renderer->post_lighting_fbo_16f);
     Ts2dOpenGLFBOClear(renderer, &renderer->pre_composite_fbo_8u);
@@ -842,16 +956,17 @@ Ts2dEndFrame(Ts2d *renderer)
     Ts2dOpenGLFBOClear(renderer, &renderer->half_screen_size_scratch_fbo_1_8u);
     Ts2dOpenGLFBOClear(renderer, &renderer->half_screen_size_scratch_fbo_2_8u);
     Ts2dOpenGLFBOClear(renderer, &renderer->world_reflection_fbo_8u);
-    
+    Ts2dOpenGLFBOClear(renderer, &renderer->model_sprite_fbo);
+
     v4 active_clip = { 0, 0, renderer->render_width, renderer->render_height };
-    
+
     Ts2dOpenGLFBOBind(renderer, &renderer->pre_composite_fbo_8u);
-    
+
     Ts2dOpenGLFBO *foreground_rendering_fbo = &renderer->screen_size_scratch_fbo_1_8u;
     Ts2dOpenGLFBO *background_rendering_fbo = &renderer->screen_size_scratch_fbo_2_8u;
-    
+
     b32 world_rendering_enabled = 0;
-    
+
     for(Ts2dRequest *request = renderer->first_request; request; request = request->next)
     {
         switch(request->type)
@@ -864,7 +979,7 @@ Ts2dEndFrame(Ts2d *renderer)
                 active_clip = clip;
                 break;
             }
-            
+
             case TS2D_REQUEST_begin_world:
             {
                 Ts2dOpenGLFBOClear(renderer, foreground_rendering_fbo);
@@ -872,7 +987,7 @@ Ts2dEndFrame(Ts2d *renderer)
                 world_rendering_enabled = 1;
                 break;
             }
-            
+
             case TS2D_REQUEST_end_world:
             {
                 // NOTE(rjf): Generate shadow buffer from foreground.
@@ -898,13 +1013,13 @@ Ts2dEndFrame(Ts2d *renderer)
                     glBindVertexArray(0);
                     glUseProgram(0);
                     Ts2dOpenGLFBOBind(renderer, 0);
-                    
+
                     // NOTE(rjf): Blur shadow buffer.
                     if(renderer->flags & TS2D_BLUR_SHADOWS)
                     {
                         f32 blur_stdev = 1.f;
                         i32 blur_radius = 16;
-                        
+
                         Ts2dOpenGLFBOBind(renderer, &renderer->half_screen_size_scratch_fbo_2_8u);
                         Ts2dOpenGLBlurredFBORender(renderer, renderer->half_screen_size_scratch_fbo_1_8u.color_textures[0],
                                                    renderer->render_width/2, renderer->render_height/2,
@@ -917,7 +1032,7 @@ Ts2dEndFrame(Ts2d *renderer)
                         Ts2dOpenGLFBOBind(renderer, 0);
                     }
                 }
-                
+
                 // NOTE(rjf): Composite background.
                 {
                     Ts2dOpenGLFBOBind(renderer, &renderer->post_lighting_fbo_16f);
@@ -938,7 +1053,7 @@ Ts2dEndFrame(Ts2d *renderer)
                     glBindVertexArray(0);
                     glUseProgram(0);
                 }
-                
+
                 // NOTE(rjf): World composite/lighting pass.
                 {
                     Ts2dOpenGLFBOBind(renderer, &renderer->post_lighting_fbo_16f);
@@ -953,7 +1068,7 @@ Ts2dEndFrame(Ts2d *renderer)
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                        
+
                         glUniform1i(glGetUniformLocation(shader, "shadow_texture"), 2);
                         glActiveTexture(GL_TEXTURE2);
                         glBindTexture(GL_TEXTURE_2D, renderer->half_screen_size_scratch_fbo_1_8u.color_textures[0]);
@@ -961,24 +1076,26 @@ Ts2dEndFrame(Ts2d *renderer)
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                        
+
                         glUniform1f(glGetUniformLocation(shader, "brightness"), renderer->brightness);
                         glUniform1f(glGetUniformLocation(shader, "shadow_opacity"), renderer->shadow_opacity);
-                        
+
                         // NOTE(rjf): Upload light information
                         {
-                            v2 camera = {
+                            v2 camera =
+                            {
                                 renderer->camera_pos.x,
                                 renderer->camera_pos.y,
                             };
-                            
-                            v4 screen_rect = {
+
+                            v4 screen_rect =
+                            {
                                 camera.x,
                                 camera.y,
                                 renderer->render_width,
                                 renderer->render_height,
                             };
-                            
+
                             char light_pos_uniform_str_1_digit[32]       = "lights[x].position";
                             char light_pos_uniform_str_2_digit[32]       = "lights[xx].position";
                             char light_color_uniform_str_1_digit[32]     = "lights[x].color";
@@ -987,23 +1104,24 @@ Ts2dEndFrame(Ts2d *renderer)
                             char light_radius_uniform_str_2_digit[32]    = "lights[xx].radius";
                             char light_intensity_uniform_str_1_digit[32] = "lights[x].intensity";
                             char light_intensity_uniform_str_2_digit[32] = "lights[xx].intensity";
-                            
+
                             char *light_pos_uniform_str = 0;
                             char *light_color_uniform_str = 0;
                             char *light_radius_uniform_str = 0;
                             char *light_intensity_uniform_str = 0;
-                            
+
                             int number_of_lights_that_were_sent_to_shader = 0;
-                            
+
                             for(u32 i = 0; i < renderer->light_count && i < 16; ++i)
                             {
-                                v4 light_rect = {
+                                v4 light_rect =
+                                {
                                     renderer->lights[i].position.x - renderer->lights[i].radius,
                                     renderer->lights[i].position.y - renderer->lights[i].radius,
                                     renderer->lights[i].radius * 2,
                                     renderer->lights[i].radius * 2,
                                 };
-                                
+
                                 if(V4sIntersect(screen_rect, light_rect))
                                 {
                                     if(number_of_lights_that_were_sent_to_shader < 10)
@@ -1012,7 +1130,7 @@ Ts2dEndFrame(Ts2d *renderer)
                                         light_color_uniform_str = light_color_uniform_str_1_digit;
                                         light_radius_uniform_str = light_radius_uniform_str_1_digit;
                                         light_intensity_uniform_str = light_intensity_uniform_str_1_digit;
-                                        
+
                                         light_pos_uniform_str[7] = '0' + (i32)number_of_lights_that_were_sent_to_shader;
                                         light_color_uniform_str[7] = '0' + (i32)number_of_lights_that_were_sent_to_shader;
                                         light_radius_uniform_str[7] = '0' + (i32)number_of_lights_that_were_sent_to_shader;
@@ -1024,12 +1142,12 @@ Ts2dEndFrame(Ts2d *renderer)
                                         light_color_uniform_str = light_color_uniform_str_2_digit;
                                         light_radius_uniform_str = light_radius_uniform_str_2_digit;
                                         light_intensity_uniform_str = light_intensity_uniform_str_2_digit;
-                                        
+
                                         light_pos_uniform_str[7] = '1';
                                         light_color_uniform_str[7] = '1';
                                         light_radius_uniform_str[7] = '1';
                                         light_intensity_uniform_str[7] = '1';
-                                        
+
                                         light_pos_uniform_str[8] = '0' + ((i32)number_of_lights_that_were_sent_to_shader - 10);
                                         light_color_uniform_str[8] = '0' + ((i32)number_of_lights_that_were_sent_to_shader - 10);
                                         light_radius_uniform_str[8] = '0' + ((i32)number_of_lights_that_were_sent_to_shader - 10);
@@ -1039,7 +1157,7 @@ Ts2dEndFrame(Ts2d *renderer)
                                     {
                                         AssertStatement("NOTE(rjf): We did not plan for this many lights to be sent to to the shader" == 0);
                                     }
-                                    
+
                                     glUniform2f(glGetUniformLocation(shader, light_pos_uniform_str),
                                                 renderer->camera_zoom *
                                                 (renderer->lights[i].position.x - camera.x) -
@@ -1055,22 +1173,22 @@ Ts2dEndFrame(Ts2d *renderer)
                                                 renderer->camera_zoom * renderer->lights[i].radius);
                                     glUniform1f(glGetUniformLocation(shader, light_intensity_uniform_str),
                                                 renderer->lights[i].intensity);
-                                    
+
                                     ++number_of_lights_that_were_sent_to_shader;
                                 }
                             }
-                            
+
                             glUniform1i(glGetUniformLocation(shader, "light_count"),
                                         number_of_lights_that_were_sent_to_shader);
                         }
-                        
+
                         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
                     }
                     glBindVertexArray(0);
                     glUseProgram(0);
                     Ts2dOpenGLFBOBind(renderer, 0);
                 }
-                
+
                 // NOTE(rjf): Composite world to main framebuffer with tone-mapping and post-processing pass.
                 {
                     Ts2dOpenGLFBOBind(renderer, &renderer->pre_composite_fbo_8u);
@@ -1092,7 +1210,7 @@ Ts2dEndFrame(Ts2d *renderer)
                     glUseProgram(0);
                     Ts2dOpenGLFBOBind(renderer, 0);
                 }
-                
+
                 // NOTE(rjf): Apply reflections.
                 {
                     Ts2dOpenGLFBOClear(renderer, &renderer->screen_size_scratch_fbo_3_8u);
@@ -1108,7 +1226,7 @@ Ts2dEndFrame(Ts2d *renderer)
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                         glUniform1i(glGetUniformLocation(shader, "tex"), 0);
-                        
+
                         glActiveTexture(GL_TEXTURE1);
                         glBindTexture(GL_TEXTURE_2D, renderer->world_reflection_fbo_8u.color_textures[0]);
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1116,7 +1234,7 @@ Ts2dEndFrame(Ts2d *renderer)
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                         glUniform1i(glGetUniformLocation(shader, "reflection_color_tex"), 1);
-                        
+
                         glActiveTexture(GL_TEXTURE2);
                         glBindTexture(GL_TEXTURE_2D, renderer->world_reflection_fbo_8u.color_textures[1]);
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1124,12 +1242,12 @@ Ts2dEndFrame(Ts2d *renderer)
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                         glUniform1i(glGetUniformLocation(shader, "reflection_data_tex"), 2);
-                        
+
                         glUniform2f(glGetUniformLocation(shader, "render_resolution"), renderer->render_width,
                                     renderer->render_height);
-                        
+
                         glUniform1f(glGetUniformLocation(shader, "wave_position"), renderer->current_time*8.f);
-                        
+
                         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
                     }
                     glBindVertexArray(0);
@@ -1139,12 +1257,12 @@ Ts2dEndFrame(Ts2d *renderer)
                                         v4(0, 0, renderer->render_width, renderer->render_height),
                                         v4(0, 0, renderer->render_width, renderer->render_height));
                 }
-                
+
                 // NOTE(rjf): Apply bloom.
                 if(renderer->flags & TS2D_BLOOM)
                 {
                     Ts2dOpenGLFBOClear(renderer, &renderer->half_screen_size_scratch_fbo_1_8u);
-                    
+
                     // NOTE(rjf): Do bloom filter pass.
                     {
                         Ts2dOpenGLFBOBind(renderer, &renderer->half_screen_size_scratch_fbo_1_8u);
@@ -1159,7 +1277,7 @@ Ts2dEndFrame(Ts2d *renderer)
                             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                             glUniform1i(glGetUniformLocation(shader, "tex"), 0);
-                            
+
                             glActiveTexture(GL_TEXTURE1);
                             glBindTexture(GL_TEXTURE_2D, foreground_rendering_fbo->color_textures[0]);
                             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1167,19 +1285,19 @@ Ts2dEndFrame(Ts2d *renderer)
                             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                             glUniform1i(glGetUniformLocation(shader, "foreground_tex"), 1);
-                            
+
                             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
                         }
                         glBindVertexArray(0);
                         glUseProgram(0);
                         Ts2dOpenGLFBOBind(renderer, 0);
                     }
-                    
+
                     // NOTE(rjf): Blur bloom.
                     {
                         f32 blur_stdev = 3.f;
                         i32 blur_radius = 32;
-                        
+
                         Ts2dOpenGLFBOBind(renderer, &renderer->half_screen_size_scratch_fbo_2_8u);
                         Ts2dOpenGLBlurredFBORender(renderer, renderer->half_screen_size_scratch_fbo_1_8u.color_textures[0],
                                                    renderer->render_width/2, renderer->render_height/2,
@@ -1191,7 +1309,7 @@ Ts2dEndFrame(Ts2d *renderer)
                                                    1, blur_stdev, blur_radius, v4(0, 0, renderer->render_width/2, renderer->render_height/2));
                         Ts2dOpenGLFBOBind(renderer, 0);
                     }
-                    
+
                     // NOTE(rjf): Additively apply bloom to pre composite framebuffer.
                     {
                         Ts2dOpenGLFBOBind(renderer, &renderer->pre_composite_fbo_8u);
@@ -1201,27 +1319,27 @@ Ts2dEndFrame(Ts2d *renderer)
                                             v4(0, 0, renderer->render_width, renderer->render_height));
                         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
                     }
-                    
+
                 }
-                
+
                 Ts2dOpenGLFBOBind(renderer, &renderer->pre_composite_fbo_8u);
                 world_rendering_enabled = 0;
-                
+
                 break;
             }
-            
+
             case TS2D_REQUEST_begin_background:
             {
                 Ts2dOpenGLFBOBind(renderer, background_rendering_fbo);
                 break;
             }
-            
+
             case TS2D_REQUEST_end_background:
             {
                 Ts2dOpenGLFBOBind(renderer, &renderer->pre_composite_fbo_8u);
                 break;
             }
-            
+
             case TS2D_REQUEST_line:
             {
                 // NOTE(rjf): Upload data
@@ -1243,7 +1361,7 @@ Ts2dEndFrame(Ts2d *renderer)
                 glBindVertexArray(0);
                 break;
             }
-            
+
             case TS2D_REQUEST_rect:
             {
                 // NOTE(rjf): Upload data
@@ -1265,7 +1383,7 @@ Ts2dEndFrame(Ts2d *renderer)
                 glBindVertexArray(0);
                 break;
             }
-            
+
             case TS2D_REQUEST_filled_rect:
             {
                 // NOTE(rjf): Upload data
@@ -1287,20 +1405,20 @@ Ts2dEndFrame(Ts2d *renderer)
                 glBindVertexArray(0);
                 break;
             }
-            
+
             case TS2D_REQUEST_texture:
             {
                 Ts2dTextureRequestData *texture_data = request->data;
                 b32 additive = request->flags & TS2D_ADDITIVE_BLEND;
                 Ts2dTexture *texture = texture_data->texture;
-                
+
                 if(texture)
                 {
                     if(additive)
                     {
                         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE);
                     }
-                    
+
                     // NOTE(rjf): Upload data
                     {
                         glBindBuffer(GL_ARRAY_BUFFER, renderer->texture.instance_buffer);
@@ -1322,7 +1440,7 @@ Ts2dEndFrame(Ts2d *renderer)
                         glUniform2f(glGetUniformLocation(shader, "tex_resolution"), (f32)texture->width, (f32)texture->height);
                         glUniform2f(glGetUniformLocation(shader, "render_resolution"),
                                     renderer->render_width, renderer->render_height);
-                        
+
                         GLint first = 0;
                         GLsizei count = 4;
                         GLsizei instance_count = request->instance_data_size / renderer->texture.instance_data_stride;
@@ -1333,7 +1451,7 @@ Ts2dEndFrame(Ts2d *renderer)
                     {
                         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
                     }
-                    
+
                     if(world_rendering_enabled)
                     {
                         Ts2dOpenGLFBO *last_fbo = renderer->active_fbo;
@@ -1353,7 +1471,7 @@ Ts2dEndFrame(Ts2d *renderer)
                             glUniform2f(glGetUniformLocation(shader, "tex_resolution"), (f32)texture->width, (f32)texture->height);
                             glUniform2f(glGetUniformLocation(shader, "render_resolution"),
                                         renderer->render_width, renderer->render_height);
-                            
+
                             GLint first = 0;
                             GLsizei count = 4;
                             GLsizei instance_count = request->instance_data_size / renderer->texture.instance_data_stride;
@@ -1363,20 +1481,20 @@ Ts2dEndFrame(Ts2d *renderer)
                         glBlendEquation(GL_FUNC_ADD);
                         Ts2dOpenGLFBOBind(renderer, last_fbo);
                     }
-                    
+
                 }
-                
+
                 break;
             }
-            
+
             case TS2D_REQUEST_world_tile:
             {
                 Ts2dTexture *texture = ((Ts2dTextureRequestData *)request->data)->texture;
-                
+
                 Ts2dOpenGLFBOClear(renderer, &renderer->world_tile_fbo_8u);
                 Ts2dOpenGLFBO *last_fbo = renderer->active_fbo;
                 Ts2dOpenGLFBOBind(renderer, &renderer->world_tile_fbo_8u);
-                
+
                 // NOTE(rjf): Upload data
                 {
                     glBindBuffer(GL_ARRAY_BUFFER, renderer->world_tile.instance_buffer);
@@ -1384,7 +1502,7 @@ Ts2dEndFrame(Ts2d *renderer)
                                     renderer->world_tile.instance_data + request->instance_data_offset);
                     glBindBuffer(GL_ARRAY_BUFFER, 0);
                 }
-                
+
                 GLuint shader = renderer->shaders[TS2D_OPENGL_SHADER_world_tile];
                 glBindVertexArray(renderer->world_tile.vao);
                 glUseProgram(shader);
@@ -1405,22 +1523,22 @@ Ts2dEndFrame(Ts2d *renderer)
                     glDrawArraysInstanced(GL_TRIANGLE_STRIP, first, count, instance_count);
                 }
                 glBindVertexArray(0);
-                
+
                 Ts2dOpenGLFBOBind(renderer, last_fbo);
-                
+
                 v2 tile_texture_offset =
                 {
                     renderer->camera_zoom * (-FMod(renderer->camera_pos.x, 32.f) - 32.f),
                     renderer->camera_zoom * (-FMod(renderer->camera_pos.y, 32.f) - 32.f),
                 };
-                
+
                 v4 tile_fbo_source =
                 {
                     0, 0,
                     (f32)renderer->world_tile_fbo_8u.w,
-                    (f32)renderer->world_tile_fbo_8u.h, 
+                    (f32)renderer->world_tile_fbo_8u.h,
                 };
-                
+
                 v4 tile_fbo_destination =
                 {
                     tile_texture_offset.x -
@@ -1431,9 +1549,9 @@ Ts2dEndFrame(Ts2d *renderer)
                     renderer->camera_zoom * renderer->world_tile_fbo_8u.w * 2.f,
                     renderer->camera_zoom * renderer->world_tile_fbo_8u.h * 2.f
                 };
-                
+
                 Ts2dOpenGLFBORender(renderer, &renderer->world_tile_fbo_8u, tile_fbo_source, tile_fbo_destination);
-                
+
                 // NOTE(rjf): Write tiles into reflection buffer
                 if(world_rendering_enabled)
                 {
@@ -1447,7 +1565,7 @@ Ts2dEndFrame(Ts2d *renderer)
                 }
                 break;
             }
-            
+
             case TS2D_REQUEST_text:
             {
                 Ts2dTextureRequestData *text_data = request->data;
@@ -1479,11 +1597,11 @@ Ts2dEndFrame(Ts2d *renderer)
                 glBindVertexArray(0);
                 break;
             }
-            
+
             case TS2D_REQUEST_blur_rectangle:
             {
                 Ts2dOpenGLFBO *last_active_fbo = renderer->active_fbo;
-                
+
                 // NOTE(rjf): Blit current buffer to blur texture
                 {
                     glBindFramebuffer(GL_READ_FRAMEBUFFER, renderer->pre_composite_fbo_8u.fbo);
@@ -1492,7 +1610,7 @@ Ts2dEndFrame(Ts2d *renderer)
                                       0, 0, (int)renderer->render_width, (int)renderer->render_height,
                                       GL_COLOR_BUFFER_BIT, GL_NEAREST);
                 }
-                
+
                 Ts2dBlurRequestData *blur = request->data;
                 v4 clip = blur->clip;
                 glScissor((GLint)clip.x, (GLint)(renderer->render_height - clip.y - clip.height),
@@ -1521,17 +1639,17 @@ Ts2dEndFrame(Ts2d *renderer)
                                   GL_COLOR_BUFFER_BIT, GL_NEAREST);
                 glScissor((GLint)active_clip.x, (GLint)(renderer->render_height - active_clip.y - active_clip.height),
                           (GLint)active_clip.width, (GLint)active_clip.height);
-                
+
                 Ts2dOpenGLFBOBind(renderer, last_active_fbo);
-                
+
                 break;
             }
-            
+
             case TS2D_REQUEST_reflective_rect:
             {
                 Ts2dOpenGLFBO *last_fbo = renderer->active_fbo;
                 Ts2dOpenGLFBOBind(renderer, &renderer->world_reflection_fbo_8u);
-                
+
                 // NOTE(rjf): Upload data
                 {
                     glBindBuffer(GL_ARRAY_BUFFER, renderer->reflective_rect.instance_buffer);
@@ -1556,121 +1674,119 @@ Ts2dEndFrame(Ts2d *renderer)
             case TS2D_REQUEST_model:
             {
                 Ts2dModelRequestData *model_data = request->data;
-                // v2 position = model_data->position;
-                // v2 size = model_data->size;
+                v2 position = model_data->position;
+                v2 size = model_data->size;
                 Ts2dModel *model = model_data->model;
                 b32 transform_with_skeleton = model_data->transform_with_skeleton;
                 // Ts2dSkeleton skeleton = model_data->skeleton;
-                float transform[3][3];
-                MemoryCopy(transform, model_data->transform, sizeof(transform));
+                m3 transform = model_data->transform;
                 float pixel_scale = model_data->pixel_scale;
 
                 m4 view = M4LookAt(v3(10, 0, 0), v3(0, 0, 0), v3(0, 1, 0));
-                m4 projection = M4Orthographic(-10.f, 10.f, -10.f, 10.f, 0.1f, 1000.f);
+                m4 projection = M4Orthographic(-3.f, 3.f, -3.f, 3.f, 0.1f, 1000.f);
                 m4 view_projection = M4MultiplyM4(projection, view);
+
+                Ts2dOpenGLFBO *fbo = &renderer->model_sprite_fbo;
+                v4 offscreen_texture_rect = Rect2DQuadTreeAllocate(model_sprite_fbo_quad_tree,
+                                                                   sizeof(model_sprite_fbo_quad_tree),
+                                                                   v2((f32)fbo->w, (f32)fbo->h),
+                                                                   v2(size.x/pixel_scale, size.y/pixel_scale));
+
+                Ts2dOpenGLFBO *last_active_fbo = renderer->active_fbo;
+                Ts2dOpenGLFBOBind(renderer, fbo);
+                glViewport((GLint)(offscreen_texture_rect.x),
+                           (GLint)(offscreen_texture_rect.y),
+                           (GLint)(offscreen_texture_rect.width),
+                           (GLint)(offscreen_texture_rect.height));
 
                 // NOTE(rjf): Render model to off-screen texture as sprite.
                 {
+                    glEnable(GL_DEPTH_TEST);
                     GLuint shader = renderer->shaders[TS2D_OPENGL_SHADER_model_sprite];
                     glUseProgram(shader);
 
                     glUniformMatrix3fv(glGetUniformLocation(shader, "model_transform"),
-                                       1, GL_FALSE, &transform[0][0]);
+                                       1, GL_FALSE, &transform.elements[0][0]);
                     glUniformMatrix4fv(glGetUniformLocation(shader, "view_projection"),
                                        1, GL_FALSE, &view_projection.elements[0][0]);
+
+                    v3 shadow_vector =
+                    {
+                        -renderer->shadow_vector.x,
+                        0,
+                        renderer->shadow_vector.y,
+                    };
+
+                    shadow_vector = V3Normalize(shadow_vector);
+
+                    glUniform3f(glGetUniformLocation(shader, "shadow_vector"),
+                                shadow_vector.x, shadow_vector.y, shadow_vector.z);
 
                     for(int i = 0; i < model->sub_model_count; ++i)
                     {
                         Ts2dSubModel *sub_model = model->sub_models + i;
                         glBindVertexArray(sub_model->vao);
-                        GLsizei count = sub_model->vertex_count;
-                        glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0);
+                        glBindBuffer(GL_ARRAY_BUFFER, sub_model->vertex_buffer);
+
+                        int bytes_per_vertex = Ts2dGetBytesPerVertexWithFormat(sub_model->vertex_format);
+                        int offset = 0;
+
+                        // NOTE(rjf): Position
+                        {
+                            glEnableVertexAttribArray(0);
+                            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, bytes_per_vertex, (void *)(sizeof(float)*offset));
+                            offset += 3;
+                        }
+
+                        // NOTE(rjf): UV
+                        {
+                            glEnableVertexAttribArray(1);
+                            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, bytes_per_vertex, (void *)(sizeof(float)*offset));
+                            offset += 2;
+                        }
+
+                        // NOTE(rjf): Normal
+                        {
+                            glEnableVertexAttribArray(2);
+                            glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, bytes_per_vertex, (void *)(sizeof(float)*offset));
+                            offset += 3;
+                        }
+
+                        if(sub_model->index_buffer)
+                        {
+                            GLsizei count = sub_model->index_count;
+                            glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0);
+                        }
+                        else
+                        {
+                            GLsizei count = sub_model->vertex_count;
+                            glDrawArrays(GL_TRIANGLES, 0, count);
+                        }
                     }
                     glBindVertexArray(0);
                     glUseProgram(0);
+                    glDisable(GL_DEPTH_TEST);
                 }
 
-#if 0
-                if(texture)
+                Ts2dOpenGLFBOBind(renderer, last_active_fbo);
+
+                // NOTE(rjf): Render off-screen sprite texture as sprite.
                 {
-                    if(additive)
-                    {
-                        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE);
-                    }
-                    
-                    // NOTE(rjf): Upload data
-                    {
-                        glBindBuffer(GL_ARRAY_BUFFER, renderer->texture.instance_buffer);
-                        glBufferSubData(GL_ARRAY_BUFFER, 0, request->instance_data_size,
-                                        renderer->texture.instance_data + request->instance_data_offset);
-                        glBindBuffer(GL_ARRAY_BUFFER, 0);
-                    }
-                    GLuint shader = renderer->shaders[TS2D_OPENGL_SHADER_texture];
-                    glUseProgram(shader);
-                    glBindVertexArray(renderer->texture.vao);
-                    {
-                        glActiveTexture(GL_TEXTURE0);
-                        glBindTexture(GL_TEXTURE_2D, texture->id);
-                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                        glUniform1i(glGetUniformLocation(shader, "tex"), 0);
-                        glUniform2f(glGetUniformLocation(shader, "tex_resolution"), (f32)texture->width, (f32)texture->height);
-                        glUniform2f(glGetUniformLocation(shader, "render_resolution"),
-                                    renderer->render_width, renderer->render_height);
-                        
-                        GLint first = 0;
-                        GLsizei count = 4;
-                        GLsizei instance_count = request->instance_data_size / renderer->texture.instance_data_stride;
-                        glDrawArraysInstanced(GL_TRIANGLE_STRIP, first, count, instance_count);
-                    }
-                    glBindVertexArray(0);
-                    if(additive)
-                    {
-                        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-                    }
-                    
+                    Ts2dOpenGLFBORender(renderer, fbo, offscreen_texture_rect, v4(position.x, position.y, size.x, size.y));
+
                     if(world_rendering_enabled)
                     {
-                        Ts2dOpenGLFBO *last_fbo = renderer->active_fbo;
-                        Ts2dOpenGLFBOBind(renderer, &renderer->world_reflection_fbo_8u);
-                        GLuint shader = renderer->shaders[TS2D_OPENGL_SHADER_texture_reflection];
-                        glUseProgram(shader);
-                        glBindVertexArray(renderer->texture.vao);
-                        glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-                        {
-                            glActiveTexture(GL_TEXTURE0);
-                            glBindTexture(GL_TEXTURE_2D, texture->id);
-                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                            glUniform1i(glGetUniformLocation(shader, "tex"), 0);
-                            glUniform2f(glGetUniformLocation(shader, "tex_resolution"), (f32)texture->width, (f32)texture->height);
-                            glUniform2f(glGetUniformLocation(shader, "render_resolution"),
-                                        renderer->render_width, renderer->render_height);
-                            
-                            GLint first = 0;
-                            GLsizei count = 4;
-                            GLsizei instance_count = request->instance_data_size / renderer->texture.instance_data_stride;
-                            glDrawArraysInstanced(GL_TRIANGLE_STRIP, first, count, instance_count);
-                        }
-                        glBindVertexArray(0);
-                        glBlendEquation(GL_FUNC_ADD);
-                        Ts2dOpenGLFBOBind(renderer, last_fbo);
+                        // TODO
                     }
-                    
                 }
-#endif
-                
+
                 break;
             }
-            
+
             default: break;
         }
     }
-    
+
     // NOTE(rjf): Blit main FBO to the default framebuffer.
     {
         glDisable(GL_SCISSOR_TEST);
@@ -1681,7 +1797,7 @@ Ts2dEndFrame(Ts2d *renderer)
                           GL_COLOR_BUFFER_BIT, GL_NEAREST);
         glEnable(GL_SCISSOR_TEST);
     }
-    
+
     GLenum error = glGetError();
     if(error)
     {
@@ -1891,8 +2007,8 @@ _Ts2dPushTintedTextureWithFlags(Ts2d *renderer, Ts2dTexture *texture, i32 flags,
     {
         HardAssert(renderer->texture.instance_data_alloc_pos + renderer->texture.instance_data_stride <= renderer->texture.instance_data_max);
         Ts2dRequestType request_type = TS2D_REQUEST_texture;
-        
-        if(renderer->active_request.type != request_type || 
+
+        if(renderer->active_request.type != request_type ||
            renderer->active_request.flags != flags ||
            ((Ts2dTextureRequestData *)renderer->active_request.data)->texture != texture)
         {
@@ -1909,25 +2025,25 @@ _Ts2dPushTintedTextureWithFlags(Ts2d *renderer, Ts2dTexture *texture, i32 flags,
         {
             renderer->active_request.instance_data_size += renderer->texture.instance_data_stride;
         }
-        
+
         if(flags & TS2D_FLIP_HORIZONTAL)
         {
             source.x += source.width;
             source.width *= -1;
         }
-        
+
         if(flags & TS2D_FLIP_VERTICAL)
         {
             source.y += source.height;
             source.height *= -1;
         }
-        
+
         v2 scale =
         {
             destination.width / source.width,
             destination.height / source.height,
         };
-        
+
         GLubyte *data = (renderer->texture.instance_data + renderer->texture.instance_data_alloc_pos);
         ((f32 *)data)[0] = source.x;
         ((f32 *)data)[1] = source.y;
@@ -1976,7 +2092,7 @@ _Ts2dPushWorldTile(Ts2d *renderer, Ts2dTexture *texture, iv2 source, iv2 positio
     {
         HardAssert(renderer->world_tile.instance_data_alloc_pos + renderer->world_tile.instance_data_stride <= renderer->world_tile.instance_data_max);
         Ts2dRequestType request_type = TS2D_REQUEST_world_tile;
-        
+
         if(renderer->active_request.type != request_type ||
            ((Ts2dTextureRequestData *)renderer->active_request.data)->texture != texture)
         {
@@ -1993,7 +2109,7 @@ _Ts2dPushWorldTile(Ts2d *renderer, Ts2dTexture *texture, iv2 source, iv2 positio
         {
             renderer->active_request.instance_data_size += renderer->world_tile.instance_data_stride;
         }
-        
+
         GLubyte *data = (renderer->world_tile.instance_data + renderer->world_tile.instance_data_alloc_pos);
         ((u8 *)data)[0] = (u8)source.x;
         ((u8 *)data)[1] = (u8)source.y;
@@ -2009,11 +2125,11 @@ _Ts2dPushTextWithBoldnessAndSoftnessN(Ts2d *renderer, Ts2dFont *font, i32 flags,
                                       TS2D_DEBUG_EXTRA_PARAMS)
 {
     f32 text_width = 0;
-    
+
     if(font && font->texture.id)
     {
         v2 char_pos = position;
-        
+
         if(flags & TS2D_TEXT_ALIGN_CENTER_X)
         {
             f32 text_width = Ts2dFontGetTextWidth(font, text);
@@ -2024,21 +2140,21 @@ _Ts2dPushTextWithBoldnessAndSoftnessN(Ts2d *renderer, Ts2dFont *font, i32 flags,
             f32 text_width = Ts2dFontGetTextWidth(font, text);
             char_pos.x -= (text_width) * font_scale;
         }
-        
+
         if(flags & TS2D_TEXT_ALIGN_CENTER_Y)
         {
             char_pos.y -= (font->line_height / 2) * font_scale;
         }
-        
+
         for(u32 c = 0; text[c] && c < n; ++c)
         {
             Ts2dFontGlyph *glyph = 0;
-            
+
             if((u32)text[c] >= font->glyph_lower_bound_character && (u32)text[c] < font->glyph_lower_bound_character + font->glyph_count)
             {
                 glyph = font->glyphs + (u32)text[c] - font->glyph_lower_bound_character;
             }
-            
+
             if(glyph)
             {
                 f32 x_advance = (glyph->x_advance) * font_scale;
@@ -2046,7 +2162,7 @@ _Ts2dPushTextWithBoldnessAndSoftnessN(Ts2d *renderer, Ts2dFont *font, i32 flags,
                 {
                     HardAssert(renderer->text_char.instance_data_alloc_pos + renderer->text_char.instance_data_stride <= renderer->text_char.instance_data_max);
                     Ts2dRequestType request_type = TS2D_REQUEST_text;
-                    
+
                     if(renderer->active_request.type != request_type ||
                        ((Ts2dTextureRequestData *)renderer->active_request.data)->texture != &font->texture)
                     {
@@ -2063,33 +2179,35 @@ _Ts2dPushTextWithBoldnessAndSoftnessN(Ts2d *renderer, Ts2dFont *font, i32 flags,
                     {
                         renderer->active_request.instance_data_size += renderer->text_char.instance_data_stride;
                     }
-                    
+
                     f32 char_x = (f32)glyph->x;
                     f32 char_y = (f32)glyph->y;
                     f32 char_w = (f32)glyph->width;
                     f32 char_h = (f32)glyph->height;
                     f32 x_offset = glyph->x_offset * font_scale;
                     f32 y_offset = glyph->y_offset * font_scale;
-                    
-                    v4 source = {
+
+                    v4 source =
+                    {
                         char_x,
                         char_y,
                         char_w,
                         char_h,
                     };
-                    
-                    v4 destination = {
+
+                    v4 destination =
+                    {
                         char_pos.x + x_offset,
                         char_pos.y + y_offset,
                         char_w * font_scale,
                         char_h * font_scale,
                     };
-                    
+
                     destination.x      = +(2 * destination.x      / renderer->render_width  - 1);
                     destination.y      = -(2 * destination.y      / renderer->render_height - 1);
                     destination.width  = +(2 * destination.width  / renderer->render_width     );
                     destination.height = -(2 * destination.height / renderer->render_height    );
-                    
+
                     GLubyte *data = (renderer->text_char.instance_data + renderer->text_char.instance_data_alloc_pos);
                     ((f32 *)data)[0]  = source.x;
                     ((f32 *)data)[1]  = source.y;
@@ -2107,7 +2225,7 @@ _Ts2dPushTextWithBoldnessAndSoftnessN(Ts2d *renderer, Ts2dFont *font, i32 flags,
                     ((f32 *)data)[13] = softness;
                     ((f32 *)data)[14] = 0;
                     ((f32 *)data)[15] = 0;
-                    
+
                     renderer->text_char.instance_data_alloc_pos += renderer->text_char.instance_data_stride;
                 }
                 char_pos.x += x_advance;
@@ -2115,7 +2233,7 @@ _Ts2dPushTextWithBoldnessAndSoftnessN(Ts2d *renderer, Ts2dFont *font, i32 flags,
             }
         }
     }
-    
+
     return text_width;
 }
 
@@ -2159,7 +2277,7 @@ _Ts2dPushWorldBegin(Ts2d *renderer, Ts2dWorldInfo *info TS2D_DEBUG_EXTRA_PARAMS)
     Ts2dRequestType request_type = TS2D_REQUEST_begin_world;
     renderer->active_request.type = request_type;
     TS2D_LOAD_REQUEST_DEBUG_DATA;
-    
+
     // NOTE(rjf): Load data from info struct.
     {
         renderer->flags          |= info->flags;
@@ -2204,7 +2322,7 @@ void
 _Ts2dPushReflectiveRect(Ts2d *renderer, v4 rect, v4 color, f32 distortion, f32 distortion_time_factor TS2D_DEBUG_EXTRA_PARAMS)
 {
     _Ts2dPushFilledRect(renderer, color, rect TS2D_DEBUG_EXTRA_ARGS);
-    
+
     HardAssert(renderer->reflective_rect.instance_data_alloc_pos + renderer->reflective_rect.instance_data_stride <= renderer->reflective_rect.instance_data_max);
     Ts2dRequestType request_type = TS2D_REQUEST_reflective_rect;
     if(renderer->active_request.type != request_type)
@@ -2220,7 +2338,7 @@ _Ts2dPushReflectiveRect(Ts2d *renderer, v4 rect, v4 color, f32 distortion, f32 d
     {
         renderer->active_request.instance_data_size += renderer->reflective_rect.instance_data_stride;
     }
-    
+
     GLubyte *data = (renderer->reflective_rect.instance_data + renderer->reflective_rect.instance_data_alloc_pos);
     ((f32 *)data)[0] = +(2 * rect.x      / renderer->render_width  - 1);
     ((f32 *)data)[1] = -(2 * rect.y      / renderer->render_height - 1);
@@ -2238,7 +2356,7 @@ _Ts2dPushReflectiveRect(Ts2d *renderer, v4 rect, v4 color, f32 distortion, f32 d
 }
 
 void
-_Ts2dPushModel(Ts2d *renderer, Ts2dModel *model, v2 position, v2 size, float transform[3][3], float pixel_scale TS2D_DEBUG_EXTRA_PARAMS)
+_Ts2dPushModel(Ts2d *renderer, Ts2dModel *model, v2 position, v2 size, m3 transform, float pixel_scale TS2D_DEBUG_EXTRA_PARAMS)
 {
     Ts2dRequestType request_type = TS2D_REQUEST_model;
     Ts2dInternalFinishActiveRequest(renderer);
@@ -2246,19 +2364,19 @@ _Ts2dPushModel(Ts2d *renderer, Ts2dModel *model, v2 position, v2 size, float tra
     renderer->active_request.instance_data_offset = 0;
     renderer->active_request.instance_data_size = 0;
     renderer->active_request.flags = 0;
-    Ts2dModelRequestData *request_data = _Ts2dAllocateRequestMemory(renderer, sizeof(*request_data)); 
+    Ts2dModelRequestData *request_data = _Ts2dAllocateRequestMemory(renderer, sizeof(*request_data));
     request_data->position = position;
     request_data->size = size;
     request_data->model = model;
     request_data->transform_with_skeleton = 0;
-    MemoryCopy(request_data->transform, transform, sizeof(transform));
+    request_data->transform = transform;
     request_data->pixel_scale = pixel_scale;
     renderer->active_request.data = request_data;
     TS2D_LOAD_REQUEST_DEBUG_DATA;
 }
 
 void
-_Ts2dPushModelWithSkeleton(Ts2d *renderer, Ts2dModel *model, Ts2dSkeleton *skeleton, v2 position, v2 size, float transform[3][3], float pixel_scale TS2D_DEBUG_EXTRA_PARAMS)
+_Ts2dPushModelWithSkeleton(Ts2d *renderer, Ts2dModel *model, Ts2dSkeleton *skeleton, v2 position, v2 size, m3 transform, float pixel_scale TS2D_DEBUG_EXTRA_PARAMS)
 {
     Ts2dRequestType request_type = TS2D_REQUEST_model;
     Ts2dInternalFinishActiveRequest(renderer);
@@ -2266,13 +2384,13 @@ _Ts2dPushModelWithSkeleton(Ts2d *renderer, Ts2dModel *model, Ts2dSkeleton *skele
     renderer->active_request.instance_data_offset = 0;
     renderer->active_request.instance_data_size = 0;
     renderer->active_request.flags = 0;
-    Ts2dModelRequestData *request_data = _Ts2dAllocateRequestMemory(renderer, sizeof(*request_data)); 
+    Ts2dModelRequestData *request_data = _Ts2dAllocateRequestMemory(renderer, sizeof(*request_data));
     request_data->position = position;
     request_data->size = size;
     request_data->model = model;
     request_data->transform_with_skeleton = 1;
     MemoryCopy(&request_data->skeleton, skeleton, sizeof(*skeleton));
-    MemoryCopy(request_data->transform, transform, sizeof(transform));
+    request_data->transform = transform;
     request_data->pixel_scale = pixel_scale;
     renderer->active_request.data = request_data;
     TS2D_LOAD_REQUEST_DEBUG_DATA;

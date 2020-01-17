@@ -62,8 +62,8 @@ Ts2dMaterial  Ts2dMaterialInit                            (Ts2d *renderer, Ts2dT
 Ts2dMaterial  Ts2dMaterialInitSimple                      (Ts2d *renderer, v3 color);
 void          Ts2dMaterialCleanUp                         (Ts2d *renderer, Ts2dMaterial *material);
 Ts2dSubModel  Ts2dSubModelInit                            (Ts2d *renderer, Ts2dVertexDataFormat format, int vertex_count, f32 *vertex_data, int index_count, i32 *index_data, Ts2dMaterial *material);
+Ts2dSubModel  Ts2dSubModelInitSimple                      (Ts2d *renderer, Ts2dVertexDataFormat format, int vertex_count, f32 *vertex_data, Ts2dMaterial *material);
 Ts2dModel     Ts2dModelInit                               (Ts2d *renderer, int sub_model_count, Ts2dSubModel *sub_models);
-Ts2dModel     Ts2dModelInitSimple                         (Ts2d *renderer, Ts2dVertexDataFormat format, int vertex_count, f32 *vertex_data, int index_count, i32 *index_data, Ts2dTexture *albedo);
 void          Ts2dSubModelCleanUp                         (Ts2d *renderer, Ts2dSubModel *sub_model);
 void          Ts2dModelCleanUp                            (Ts2d *renderer, Ts2dModel *model);
 Ts2dFont      Ts2dFontInit                                (Ts2d *renderer, Ts2dTextureFormat format, int texture_width, int texture_height, void *texture_data, int size, int line_height, u32 glyph_count, Ts2dFontGlyph *glyphs, u32 glyph_lower_bound_character);
@@ -94,8 +94,8 @@ f32           _Ts2dPushTextWithBoldnessAndSoftnessN       (Ts2d *renderer, Ts2dF
 f32           _Ts2dPushTextN                              (Ts2d *renderer, Ts2dFont *font, i32 flags, v4 color, v2 position, f32 font_scale, char *text, u32 n TS2D_DEBUG_EXTRA_PARAMS);
 void          _Ts2dPushPointLight                         (Ts2d *renderer, v2 position, v3 color, f32 radius, f32 intensity TS2D_DEBUG_EXTRA_PARAMS);
 void          _Ts2dPushReflectiveRect                     (Ts2d *renderer, v4 rect, v4 color, f32 distortion, f32 distortion_time_factor TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushModel                              (Ts2d *renderer, Ts2dModel *model, v2 position, v2 size, float transform[3][3], float pixel_scale TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushModelWithSkeleton                  (Ts2d *renderer, Ts2dModel *model, Ts2dSkeleton *skeleton, v2 position, v2 size, float transform[3][3], float pixel_scale TS2D_DEBUG_EXTRA_PARAMS);
+void          _Ts2dPushModel                              (Ts2d *renderer, Ts2dModel *model, v2 position, v2 size, m3 transform, float pixel_scale TS2D_DEBUG_EXTRA_PARAMS);
+void          _Ts2dPushModelWithSkeleton                  (Ts2d *renderer, Ts2dModel *model, Ts2dSkeleton *skeleton, v2 position, v2 size, m3 transform, float pixel_scale TS2D_DEBUG_EXTRA_PARAMS);
 
 #if TS2D_DEBUG
 #define Ts2dPushWorldBegin(...)                     _Ts2dPushWorldBegin(__VA_ARGS__, __FILE__, __LINE__)
@@ -164,12 +164,12 @@ struct Ts2dBeginFrameInfo
     f32 render_width;
     f32 render_height;
     f32 delta_t;
-    int flags;
+    i32 flags;
 };
 
 struct Ts2dWorldInfo
 {
-    int flags;
+    i32 flags;
     f32 shadow_opacity;
     v2 shadow_vector;
     v2 camera_pos;
@@ -259,7 +259,7 @@ struct Ts2dSkeleton
 };
 
 #ifndef TS2D_MAX_REQUEST_MEMORY
-#define TS2D_MAX_REQUEST_MEMORY 65536
+#define TS2D_MAX_REQUEST_MEMORY Megabytes(4)
 #endif
 
 #ifndef TS2D_MAX_LINES
@@ -311,11 +311,11 @@ struct Ts2dSkeleton
 #define TS2D_COMMON_DATA            \
 struct                              \
 {                                   \
-    Ts2dRequest active_request;     \
-    Ts2dRequest *first_request;     \
-    Ts2dRequest *last_request;      \
-    f32         current_time;       \
-    Ts2dFont    *default_font;      \
+Ts2dRequest active_request;     \
+Ts2dRequest *first_request;     \
+Ts2dRequest *last_request;      \
+f32         current_time;       \
+Ts2dFont    *default_font;      \
 }
 
 #if TS2D_BACKEND == TS2D_OPENGL
