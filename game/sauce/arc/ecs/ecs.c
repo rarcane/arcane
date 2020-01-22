@@ -1,42 +1,40 @@
-internal void InitialiseECS()
+internal Entity *NewEntity(char name[], EntityType type, ChunkData *chunk)
 {
-	core->entity_set->entity_count = 1;
-	core->entity_set->free_entity_id = core->entity_set->entity_count;
-}
-
-internal Entity *NewEntity(char name[], EntityType type)
-{
-	if (core->entity_set->free_entity_id == core->entity_set->entity_count) // Entity ID is caught up
+	if (chunk->free_entity_id == chunk->entity_count) // Entity ID is caught up
 	{
-		i32 entity_id = core->entity_set->entity_count;
-		core->entity_set->entity_count++;
-		core->entity_set->free_entity_id = core->entity_set->entity_count;
+		i32 entity_id = chunk->entity_count;
+		chunk->entity_count++;
+		chunk->free_entity_id = chunk->entity_count;
 
-		core->entity_set->entities[entity_id].entity_id = entity_id;
-		strcpy(core->entity_set->entities[entity_id].name, name);
-		core->entity_set->entities[entity_id].type = type;
+		chunk->entities[entity_id].entity_id = entity_id;
+		strcpy(chunk->entities[entity_id].name, name);
+		chunk->entities[entity_id].type = type;
 
-		return &core->entity_set->entities[entity_id];
+		chunk->entities[entity_id].active_chunk = chunk;
+
+		return &chunk->entities[entity_id];
 	}
 	else // Avalable entity ID isn't the latest count
 	{
-		i32 entity_id = core->entity_set->free_entity_id;
+		i32 entity_id = chunk->free_entity_id;
 
-		core->entity_set->entities[entity_id].entity_id = entity_id;
-		strcpy(core->entity_set->entities[entity_id].name, name);
-		core->entity_set->entities[entity_id].type = type;
+		chunk->entities[entity_id].entity_id = entity_id;
+		strcpy(chunk->entities[entity_id].name, name);
+		chunk->entities[entity_id].type = type;
+
+		chunk->entities[entity_id].active_chunk = chunk;
 
 		// Determine the next free ID
-		for (int i = 1; i < core->entity_set->entity_count + 1; i++)
+		for (int i = 1; i < chunk->entity_count + 1; i++)
 		{
-			if (core->entity_set->entities[i].entity_id == 0)
+			if (chunk->entities[i].entity_id == 0)
 			{
-				core->entity_set->free_entity_id = i;
+				chunk->free_entity_id = i;
 				break;
 			}
 		}
 
-		return &core->entity_set->entities[entity_id];
+		return &chunk->entities[entity_id];
 	}
 }
 
@@ -72,7 +70,7 @@ internal void AttachSprite(Entity *entity, SpriteType sprite_enum, f32 render_la
 			.flags = ANIMATION_FLAGS_playing | ANIMATION_FLAGS_repeat,
 			.current_frame = 0,
 			.interval_mult = 1.0f,
-			.frame_start_time = core->elapsed_world_time,
+			.frame_start_time = core->world_data->elapsed_world_time,
 		};
 		AddAnimationComponent(entity, &animation);
 	}
@@ -91,11 +89,10 @@ internal void AttachSubSprite(Entity *entity, SpriteData sub_sprites[], i32 sub_
 	if (IsSpriteDynamic(sub_sprites[0].sprite_enum))
 	{
 		AnimationComponent animation = {
-			.entity_id = entity->entity_id,
 			.flags = ANIMATION_FLAGS_playing | ANIMATION_FLAGS_repeat,
 			.current_frame = 0,
 			.interval_mult = 1.0f,
-			.frame_start_time = core->elapsed_world_time,
+			.frame_start_time = core->world_data->elapsed_world_time,
 		};
 		AddAnimationComponent(entity, &animation);
 	}
@@ -212,7 +209,7 @@ internal void AttachParticleEmitter(Entity *entity, f32 length, EmitterBeginCall
 {
 	ParticleEmitterComponent emitter = {
 		.life_time = length,
-		.start_time = core->elapsed_world_time,
+		.start_time = core->world_data->elapsed_world_time,
 		.begin_callback = begin_callback,
 		.finish_callback = finish_callback,
 	};
@@ -225,7 +222,7 @@ internal void AttachLoopedParticleEmitter(Entity *entity, f32 length, EmitterBeg
 {
 	ParticleEmitterComponent emitter = {
 		.life_time = length,
-		.start_time = core->elapsed_world_time,
+		.start_time = core->world_data->elapsed_world_time,
 		.flags = PARTICLE_EMITTER_FLAGS_repeat,
 		.begin_callback = begin_callback,
 	};

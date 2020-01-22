@@ -20,7 +20,7 @@ internal void InitialiseItemData(){
 internal void AddItemToStorage(ItemComponent *item_comp, StorageComponent *storage_comp, i32 storage_slot)
 {
 	R_DEV_ASSERT(item_comp && storage_comp, "Invalid components.");
-	R_DEV_ASSERT(item_comp->entity_id > 0 && storage_comp->entity_id > 0, "Invalid components.");
+	R_DEV_ASSERT(item_comp->parent_entity && storage_comp->parent_entity, "Invalid components.");
 	R_DEV_ASSERT(storage_slot < storage_comp->storage_size, "Out of range storage slot.");
 
 	R_DEV_ASSERT(!storage_comp->items[storage_slot], "There's already something in this slot.");
@@ -29,7 +29,7 @@ internal void AddItemToStorage(ItemComponent *item_comp, StorageComponent *stora
 
 internal void ConvertToGroundItem(ItemComponent *item_comp)
 {
-	Entity *item = &core->entity_set->entities[item_comp->entity_id];
+	Entity *item = item_comp->parent_entity;
 
 	PositionComponent *player_pos = core->player->components[COMPONENT_position];
 	SubSpriteComponent *player_sub_sprite = core->player->components[COMPONENT_sub_sprite];
@@ -45,7 +45,7 @@ internal void ConvertToGroundItem(ItemComponent *item_comp)
 
 internal void StripItemGroundComponents(ItemComponent *item_comp)
 {
-	Entity *item = &core->entity_set->entities[item_comp->entity_id];
+	Entity *item = item_comp->parent_entity;
 	RemovePositionComponent(item);
 	RemoveSpriteComponent(item);
 	RemoveVelocityComponent(item);

@@ -8,10 +8,11 @@
 typedef struct CollisionInfo CollisionInfo;
 
 internal void GetRectVerticies(v2 vertices[], v2 size, v2 offset);
+internal i32 GetSerparatingAxes(v2 in_separating_axes[], Shape shape1, Shape shape2);
 internal Shape GetRectangleShape(v2 size, v2 offset);
 internal Shape GetSlopeShape(v2 size);
 internal CollisionInfo DoEntitiesCollide(Entity *instigator, Entity *supposed, v2 extrapolated_instigator_pos);
-internal void RenderColliders(ColliderComponent collider_components[], i32 entity_count);
+internal void RenderColliders();
 
 struct CollisionInfo
 {

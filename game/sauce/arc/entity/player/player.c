@@ -125,7 +125,7 @@ internal void PostMoveUpdatePlayer()
 		{
 			// TODO: find the closest one
 
-			closest_item = &core->entity_set->entities[overlapping_colliders[0]->entity_id];
+			closest_item = overlapping_colliders[0]->parent_entity;
 			closest_item_comp = closest_item->components[COMPONENT_item];
 			R_DEV_ASSERT(closest_item_comp, "Collider entity does not have an item component attached?");
 		}
@@ -209,7 +209,7 @@ internal void PostMoveUpdatePlayer()
 						}
 
 						ItemComponent *new_held_item_comp = hotbar_storage->items[i];
-						Entity *new_held_item = &core->entity_set->entities[hotbar_storage->items[i]->entity_id];
+						Entity *new_held_item = hotbar_storage->items[i]->parent_entity;
 
 						AttachPosition(new_held_item, v2(0.0f, 0.0f));
 						AttachSprite(new_held_item, item_data[new_held_item_comp->item_type].icon_sprite, -0.025f);

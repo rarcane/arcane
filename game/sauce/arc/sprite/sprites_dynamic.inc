@@ -14,7 +14,7 @@ DynamicSprite(
 	v4(0.0f, 192.0f, 64.0f, 64.0f), 
 	v2(0.0f, 0.0f), 
 	4, 
-	0.1f
+	0.15f
 )
 DynamicSprite(
 	player_idle_arm, 
@@ -22,7 +22,7 @@ DynamicSprite(
 	v4(0.0f, 256.0f, 64.0f, 64.0f), 
 	v2(0.0f, 0.0f), 
 	4, 
-	0.1f
+	0.15f
 )
 
 DynamicSprite(

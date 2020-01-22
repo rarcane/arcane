@@ -2,11 +2,13 @@
 #define MAX_CLOUDS 50
 
 typedef struct Entity Entity;
-typedef struct EntitySet EntitySet;
-typedef struct ComponentSet ComponentSet;
+//typedef struct EntitySet EntitySet;
+//typedef struct ComponentSet ComponentSet;
 typedef struct CollisionInfo CollisionInfo;
 typedef struct ItemComponent ItemComponent;
 typedef struct StorageComponent StorageComponent;
+
+typedef struct WorldData WorldData;
 
 typedef struct DebugLine
 {
@@ -33,8 +35,8 @@ struct Core
 	float camera_zoom;
 	v2 camera_offset;
 
-	EntitySet *entity_set;
-	ComponentSet *component_set;
+	//EntitySet *entity_set;
+	//ComponentSet *component_set;
 
 	// NOTE(tjr): Temp entity stores
 	Entity *player;
@@ -59,14 +61,16 @@ struct Core
 
 	// NOTE(tjr): Editor
 	b32 is_in_editor;
-	i32 selected_entity;
+	Entity *selected_entity;
 
 	// Temp
 	b32 is_ingame;
-
-	// NOTE(tjr): World stuff
 	Entity *clouds[MAX_CLOUDS];
 	i32 cloud_count;
+
+	// NOTE(tjr): World stuff
+	MemoryArena world_arena; // TODO: Associate this with save loading/unloading
+	WorldData *world_data;
 
 	// NOTE(rjf): Render size data.
 	union {
@@ -94,8 +98,7 @@ struct Core
 	f32 raw_delta_t;
 	f32 delta_mult;
 	f32 delta_t;
-	// NOTE(tjr): World time data. TODO: Extract to world data.
-	f32 elapsed_world_time;
+	// NOTE(tjr): World time data.
 	f32 world_delta_mult;
 	f32 world_delta_t;
 
@@ -108,8 +111,3 @@ struct Core
 	i32 free_debug_line_index;
 };
 global Core *core = 0;
-
-internal f32 GetCurrentWorldTime()
-{
-	return core->elapsed_world_time;
-}

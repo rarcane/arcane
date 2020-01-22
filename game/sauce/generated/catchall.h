@@ -1,3 +1,17 @@
+// @Define 
+#define MAX_ENTITIES (128)
+// @Define 
+#define MAX_OVERLAPPING_COLLIDERS (50)
+// @Define 
+#define MAX_ENTITY_REFERENCES (10)
+// @Define 
+#define MAX_SUB_COLLIDERS (3)
+// @Define 
+#define MAX_STORAGE_SIZE (30)
+// @Define 
+#define MAX_PARTICLE_AMOUNT (300)
+// @Define 
+#define MAX_WORLD_CHUNKS (10)
 typedef enum EntityType EntityType;
 enum EntityType
 {
@@ -32,28 +46,20 @@ typedef unsigned int AnimationFlags;
 #define PARTICLE_EMITTER_FLAGS_repeat (1<<0)
 typedef unsigned int ParticleEmitterFlags;
 
-// @Define 
-#define MAX_ENTITIES (1000)
-// @Define 
-#define MAX_OVERLAPPING_COLLIDERS (50)
-// @Define 
-#define MAX_ENTITY_REFERENCES (10)
-// @Define 
-#define MAX_SUB_COLLIDERS (3)
-// @Define 
-#define MAX_STORAGE_SIZE (30)
-// @Define 
-#define MAX_PARTICLE_AMOUNT (300)
+typedef struct Entity Entity;
+
+typedef struct ChunkData ChunkData;
+
 typedef struct PositionComponent
 {
-i32 entity_id;
+Entity *parent_entity;
 i32 component_id;
 v2 position;
 } PositionComponent;
 
 typedef struct SpriteComponent
 {
-i32 entity_id;
+Entity *parent_entity;
 i32 component_id;
 SpriteData sprite_data;
 // @Editable 
@@ -63,7 +69,7 @@ b8 is_background_sprite;
 
 typedef struct SubSpriteComponent
 {
-i32 entity_id;
+Entity *parent_entity;
 i32 component_id;
 SpriteData sub_sprites[MAX_SUB_SPRITES];
 i32 sub_sprite_count;
@@ -72,7 +78,7 @@ b8 is_flipped;
 
 typedef struct AnimationComponent
 {
-i32 entity_id;
+Entity *parent_entity;
 i32 component_id;
 AnimationFlags flags;
 i32 current_frame;
@@ -82,7 +88,7 @@ f32 frame_start_time;
 
 typedef struct ColliderComponent
 {
-i32 entity_id;
+Entity *parent_entity;
 i32 component_id;
 Shape shape;
 ColliderFlags flags;
@@ -90,7 +96,7 @@ ColliderFlags flags;
 
 typedef struct VelocityComponent
 {
-i32 entity_id;
+Entity *parent_entity;
 i32 component_id;
 v2 velocity;
 v2 ideal_velocity;
@@ -102,7 +108,7 @@ b8 collide_against;
 
 typedef struct PhysicsComponent
 {
-i32 entity_id;
+Entity *parent_entity;
 i32 component_id;
 f32 friction_mult;
 f32 bounce_mult;
@@ -110,7 +116,7 @@ f32 bounce_mult;
 
 typedef struct MovementComponent
 {
-i32 entity_id;
+Entity *parent_entity;
 i32 component_id;
 f32 axis_x;
 f32 move_speed;
@@ -119,7 +125,7 @@ f32 move_speed_mult;
 
 typedef struct ArcEntityComponent
 {
-i32 entity_id;
+Entity *parent_entity;
 i32 component_id;
 ArcEntityType entity_type;
 char *current_general_state;
@@ -128,7 +134,7 @@ AnimationStateType current_animation_state;
 
 typedef struct ItemComponent
 {
-i32 entity_id;
+Entity *parent_entity;
 i32 component_id;
 ItemType item_type;
 i32 stack_size;
@@ -136,7 +142,7 @@ i32 stack_size;
 
 typedef struct TriggerComponent
 {
-i32 entity_id;
+Entity *parent_entity;
 i32 component_id;
 TriggerCallback enter_trigger_callback;
 TriggerCallback exit_trigger_callback;
@@ -147,7 +153,7 @@ b8 trigger_against;
 
 typedef struct StorageComponent
 {
-i32 entity_id;
+Entity *parent_entity;
 i32 component_id;
 i32 storage_size;
 ItemComponent *items[MAX_STORAGE_SIZE];
@@ -155,7 +161,7 @@ ItemComponent *items[MAX_STORAGE_SIZE];
 
 typedef struct ParallaxComponent
 {
-i32 entity_id;
+Entity *parent_entity;
 i32 component_id;
 v2 parallax_amount;
 v2 desired_position;
@@ -163,7 +169,7 @@ v2 desired_position;
 
 typedef struct ParticleEmitterComponent
 {
-i32 entity_id;
+Entity *parent_entity;
 i32 component_id;
 f32 life_time;
 f32 start_time;
@@ -240,4 +246,33 @@ ParticleEmitterComponent particle_emitter_components[MAX_ENTITIES];
 i32 particle_emitter_component_count;
 i32 particle_emitter_free_component_id;
 } ComponentSet;
+
+// @GenerateComponentList 
+typedef struct Entity Entity;
+struct Entity
+{
+i32 entity_id;
+char name[20];
+EntityType type;
+EntityFlags flags;
+void *components[COMPONENT_MAX];
+ChunkData *active_chunk;
+};
+
+typedef struct ChunkData ChunkData;
+struct ChunkData
+{
+Entity entities[MAX_ENTITIES];
+i32 entity_count;
+i32 free_entity_id;
+ComponentSet component_set;
+};
+
+typedef struct WorldData WorldData;
+struct WorldData
+{
+f32 elapsed_world_time;
+ChunkData **chunks;
+ChunkData floating_chunk;
+};
 

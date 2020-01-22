@@ -31,7 +31,7 @@ internal void SetArcEntityAnimationState(ArcEntityComponent *arc_entity_comp, An
 {
 	if (hard_reset || arc_entity_comp->current_animation_state != new_animation_state)
 	{
-		Entity *entity = &core->entity_set->entities[arc_entity_comp->entity_id];
+		Entity *entity = arc_entity_comp->parent_entity;
 		SpriteComponent *sprite_comp = entity->components[COMPONENT_sprite];
 		SubSpriteComponent *sub_sprite_comp = entity->components[COMPONENT_sub_sprite];
 		AnimationComponent *animation_comp = entity->components[COMPONENT_animation];

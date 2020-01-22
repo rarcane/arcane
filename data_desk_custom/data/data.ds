@@ -1,3 +1,20 @@
+/* --- DEFINES --- */
+
+@Define
+MAX_ENTITIES :: 128;
+@Define
+MAX_OVERLAPPING_COLLIDERS :: 50;
+@Define
+MAX_ENTITY_REFERENCES :: 10;
+@Define
+MAX_SUB_COLLIDERS :: 3;
+@Define
+MAX_STORAGE_SIZE :: 30;
+@Define
+MAX_PARTICLE_AMOUNT :: 300;
+@Define
+MAX_WORLD_CHUNKS :: 10;
+
 /* --- ENUMS --- */
 
 EntityType :: enum
@@ -41,22 +58,10 @@ ParticleEmitterFlags :: flags
 	repeat,
 }
 
-/* --- DEFINES --- */
+/* --- ECS --- */
 
-@Define
-MAX_ENTITIES :: 1000;
-@Define
-MAX_OVERLAPPING_COLLIDERS :: 50;
-@Define
-MAX_ENTITY_REFERENCES :: 10;
-@Define
-MAX_SUB_COLLIDERS :: 3;
-@Define
-MAX_STORAGE_SIZE :: 30;
-@Define
-MAX_PARTICLE_AMOUNT :: 300;
-
-/* --- COMPONENTS --- */
+@ForwardDeclare(Entity)
+ForwardEntity :: _;
 
 @Component
 Position :: struct
@@ -173,4 +178,35 @@ ParticleEmitter :: struct
 	free_particle_index : i32;
 	begin_callback : EmitterBeginCallback;
 	finish_callback : EmitterFinishCallback;
+}
+
+@ForwardDeclare(ChunkData)
+ForwardChunk :: _;
+
+@GenerateComponentList // Tag is used to generate all of the component data.
+Entity :: struct
+{
+	entity_id : i32;
+	name : char[20];
+	type : EntityType;
+	flags : EntityFlags;
+	components : *void[COMPONENT_MAX];
+	active_chunk : *ChunkData;
+}
+
+/* --- WORLD DATA --- */
+
+ChunkData :: struct
+{
+	entities : Entity[MAX_ENTITIES];
+	entity_count : i32;
+	free_entity_id : i32;
+	component_set : ComponentSet;
+}
+
+WorldData :: struct
+{
+	elapsed_world_time : f32;
+	chunks : **ChunkData;
+	floating_chunk : ChunkData;
 }

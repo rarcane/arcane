@@ -10,11 +10,9 @@ internal b8 IsSpriteDynamic(SpriteType sprite_enum);
 internal StaticSprite *GetStaticSprite(SpriteType static_sprite_enum);
 internal DynamicSprite *GetDynamicSprite(SpriteType dynamic_sprite_enum);
 
-typedef struct AnimationComponent AnimationComponent;
-internal void UpdateAnimations(AnimationComponent animation_components[], i32 count);
-typedef struct SpriteComponent SpriteComponent;
-typedef struct SubSpriteComponent SubSpriteComponent;
-internal void RenderForegroundSprites(SpriteComponent sprite_components[], SubSpriteComponent sub_sprite_components[], i32 sprite_count, i32 sub_sprite_count);
+internal void UpdateAnimations();
+internal void RenderForegroundSprites();
+internal void RenderBackgroundSprites();
 
 enum SpriteType
 {

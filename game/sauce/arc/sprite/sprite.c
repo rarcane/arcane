@@ -99,83 +99,90 @@ internal SpriteData *GetSubSpriteByType(SubSpriteComponent *sub_sprite_comp, Spr
 	return 0;
 }
 
-internal void UpdateAnimations(AnimationComponent animation_components[], i32 count)
+internal void UpdateAnimations()
 {
-	for (int i = 0; i < count; i++)
+	ChunkData *chunks[512];
+	i32 chunk_count = GetChunksInView(chunks);
+
+	for (int i = 0; i < chunk_count; i++)
 	{
-		AnimationComponent *animation_comp = &animation_components[i];
-		if (animation_comp->entity_id > 0) // Valid entity
+		ChunkData *chunk = chunks[i];
+		for (int j = 0; j < chunk->component_set.animation_component_count; j++)
 		{
-			Entity *entity = &core->entity_set->entities[animation_comp->entity_id];
-			SpriteComponent *sprite_comp = entity->components[COMPONENT_sprite];
-			SubSpriteComponent *sub_sprite_comp = entity->components[COMPONENT_sub_sprite];
+			AnimationComponent *animation_comp = &chunk->component_set.animation_components[j];
+			if (animation_comp->parent_entity)
+			{
+				Entity *entity = animation_comp->parent_entity;
+				SpriteComponent *sprite_comp = entity->components[COMPONENT_sprite];
+				SubSpriteComponent *sub_sprite_comp = entity->components[COMPONENT_sub_sprite];
 
-			DynamicSprite *dynamic_sprites[MAX_SUB_SPRITES] = {0};
-			i32 dynamic_sprite_count = 0;
-			if (sprite_comp)
-			{
-				dynamic_sprites[dynamic_sprite_count++] = GetDynamicSprite(sprite_comp->sprite_data.sprite_enum);
-			}
-			else if (sub_sprite_comp)
-			{
-				for (int j = 0; j < sub_sprite_comp->sub_sprite_count; j++)
+				DynamicSprite *dynamic_sprites[MAX_SUB_SPRITES] = {0};
+				i32 dynamic_sprite_count = 0;
+				if (sprite_comp)
 				{
-					dynamic_sprites[dynamic_sprite_count++] = GetDynamicSprite(sub_sprite_comp->sub_sprites[j].sprite_enum);
+					dynamic_sprites[dynamic_sprite_count++] = GetDynamicSprite(sprite_comp->sprite_data.sprite_enum);
 				}
-			}
-			else
-			{
-				R_BREAK("No valid sprite component attached.");
-			}
-
-			for (int j = 0; j < dynamic_sprite_count; j++)
-			{
-				DynamicSprite *dynamic_sprite = dynamic_sprites[j];
-
-				b8 animation_flags = animation_comp->flags;
-				if (animation_flags & ANIMATION_FLAGS_playing) // ((animation_flags & (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat)) == (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat))
+				else if (sub_sprite_comp)
 				{
-					if (core->elapsed_world_time >= animation_comp->frame_start_time + dynamic_sprite->frame_interval * animation_comp->interval_mult)
+					for (int k = 0; k < sub_sprite_comp->sub_sprite_count; k++)
 					{
-						// Frame is complete
-						if (animation_flags & ANIMATION_FLAGS_reversing)
-						{
-							if (animation_comp->current_frame == 0)
-							{
-								if (animation_flags & ANIMATION_FLAGS_repeat)
-								{
-									animation_comp->current_frame = dynamic_sprite->frames - 1;
-								}
-								else
-								{
-									animation_comp->flags &= ~ANIMATION_FLAGS_playing;
-								}
-							}
-							else
-							{
-								animation_comp->current_frame--;
-							}
-						}
-						else
-						{
-							if (animation_comp->current_frame < dynamic_sprite->frames - 1)
-							{
-								animation_comp->current_frame++;
-							}
-							else
-							{
-								if (animation_flags & ANIMATION_FLAGS_repeat)
-								{
-									animation_comp->current_frame = 0;
-								}
-								else
-								{
-									animation_comp->flags &= ~ANIMATION_FLAGS_playing;
-								}
-							}
-						}
+						dynamic_sprites[dynamic_sprite_count++] = GetDynamicSprite(sub_sprite_comp->sub_sprites[k].sprite_enum);
+					}
+				}
+				else
+				{
+					R_BREAK("No valid sprite component attached.");
+				}
 
-						animation_comp->frame_start_time = core->elapsed_world_time;
+				for (int k = 0; k < dynamic_sprite_count; k++)
+				{
+					DynamicSprite *dynamic_sprite = dynamic_sprites[k];
+
+					b8 animation_flags = animation_comp->flags;
+					if (animation_flags & ANIMATION_FLAGS_playing) // ((animation_flags & (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat)) == (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat))
+					{
+						if (core->world_data->elapsed_world_time >= animation_comp->frame_start_time + dynamic_sprite->frame_interval * animation_comp->interval_mult)
+						{
+							// Frame is complete
+							if (animation_flags & ANIMATION_FLAGS_reversing)
+							{
+								if (animation_comp->current_frame == 0)
+								{
+									if (animation_flags & ANIMATION_FLAGS_repeat)
+									{
+										animation_comp->current_frame = dynamic_sprite->frames - 1;
+									}
+									else
+									{
+										animation_comp->flags &= ~ANIMATION_FLAGS_playing;
+									}
+								}
+								else
+								{
+									animation_comp->current_frame--;
+								}
+							}
+							else
+							{
+								if (animation_comp->current_frame < dynamic_sprite->frames - 1)
+								{
+									animation_comp->current_frame++;
+								}
+								else
+								{
+									if (animation_flags & ANIMATION_FLAGS_repeat)
+									{
+										animation_comp->current_frame = 0;
+									}
+									else
+									{
+										animation_comp->flags &= ~ANIMATION_FLAGS_playing;
+									}
+								}
+							}
+
+							animation_comp->frame_start_time = core->world_data->elapsed_world_time;
+						}
 					}
 				}
 			}
@@ -201,51 +208,69 @@ internal void RenderBackgroundSprites()
 	SpriteRenderable ordered_sprites[MAX_ENTITIES * MAX_SUB_SPRITES] = {0};
 	i32 ordered_sprite_count = 0;
 
-	for (int i = 0; i < core->component_set->sprite_component_count; i++)
 	{
-		SpriteComponent *sprite_component = &core->component_set->sprite_components[i];
-		if (sprite_component->entity_id > 0 && sprite_component->is_background_sprite) // Validate entity & check if it's a background sprite
+		ChunkData *chunks[512];
+		i32 chunk_count = GetChunksInView(chunks);
+		for (int i = 0; i < chunk_count; i++)
 		{
-			Entity *entity = &core->entity_set->entities[sprite_component->entity_id];
+			ChunkData *chunk = chunks[i];
 
-			SpriteRenderable sprite_renderable = {
-				entity,
-				sprite_component->sprite_data.sprite_enum,
-				sprite_component->sprite_data.offset,
-				sprite_component->sprite_data.render_layer,
-				sprite_component->sprite_data.scale,
-				sprite_component->is_flipped,
-				sprite_component->sprite_data.tint,
-				entity->components[COMPONENT_position],
-				entity->components[COMPONENT_animation],
-			};
+			for (int j = 0; j < chunk->component_set.sprite_component_count; j++)
+			{
+				SpriteComponent *sprite_component = &chunk->component_set.sprite_components[j];
+				if (sprite_component->parent_entity->entity_id > 0 && sprite_component->is_background_sprite) // Validate entity & check if it's a background sprite
+				{
+					Entity *entity = sprite_component->parent_entity;
 
-			ordered_sprites[ordered_sprite_count++] = sprite_renderable;
+					SpriteRenderable sprite_renderable = {
+						entity,
+						sprite_component->sprite_data.sprite_enum,
+						sprite_component->sprite_data.offset,
+						sprite_component->sprite_data.render_layer,
+						sprite_component->sprite_data.scale,
+						sprite_component->is_flipped,
+						sprite_component->sprite_data.tint,
+						entity->components[COMPONENT_position],
+						entity->components[COMPONENT_animation],
+					};
+
+					ordered_sprites[ordered_sprite_count++] = sprite_renderable;
+				}
+			}
 		}
 	}
 
-	for (int i = 0; i < core->component_set->sub_sprite_component_count; i++)
 	{
-		SubSpriteComponent *sub_sprite_component = &core->component_set->sub_sprite_components[i];
-		if (sub_sprite_component->entity_id > 0) // Validate entity
+		ChunkData *chunks[512];
+		i32 chunk_count = GetChunksInView(chunks);
+		for (int i = 0; i < chunk_count; i++)
 		{
-			Entity *entity = &core->entity_set->entities[sub_sprite_component->entity_id];
+			ChunkData *chunk = chunks[i];
 
-			for (int j = 0; j < sub_sprite_component->sub_sprite_count; j++)
+			for (int j = 0; j < chunk->component_set.sub_sprite_component_count; j++)
 			{
-				SpriteRenderable sprite_renderable = {
-					entity,
-					sub_sprite_component->sub_sprites[j].sprite_enum,
-					sub_sprite_component->sub_sprites[j].offset,
-					sub_sprite_component->sub_sprites[j].render_layer,
-					sub_sprite_component->sub_sprites[j].scale,
-					sub_sprite_component->is_flipped,
-					sub_sprite_component->sub_sprites[j].tint,
-					entity->components[COMPONENT_position],
-					entity->components[COMPONENT_animation],
-				};
+				SubSpriteComponent *sub_sprite_component = &chunk->component_set.sub_sprite_components[j];
+				if (sub_sprite_component->parent_entity->entity_id > 0) // Validate entity
+				{
+					Entity *entity = sub_sprite_component->parent_entity;
 
-				ordered_sprites[ordered_sprite_count++] = sprite_renderable;
+					for (int j = 0; j < sub_sprite_component->sub_sprite_count; j++)
+					{
+						SpriteRenderable sprite_renderable = {
+							entity,
+							sub_sprite_component->sub_sprites[j].sprite_enum,
+							sub_sprite_component->sub_sprites[j].offset,
+							sub_sprite_component->sub_sprites[j].render_layer,
+							sub_sprite_component->sub_sprites[j].scale,
+							sub_sprite_component->is_flipped,
+							sub_sprite_component->sub_sprites[j].tint,
+							entity->components[COMPONENT_position],
+							entity->components[COMPONENT_animation],
+						};
+
+						ordered_sprites[ordered_sprite_count++] = sprite_renderable;
+					}
+				}
 			}
 		}
 	}
@@ -288,7 +313,7 @@ internal void RenderBackgroundSprites()
 				core->renderer, dynamic_sprite->texture_atlas,
 				v4(source_pos.x, source_pos.y, dynamic_sprite->source.z - 0.5f, dynamic_sprite->source.w - 0.5f),
 				v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-				(core->is_in_editor && ordered_sprites[i].entity->entity_id == core->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
+				(core->is_in_editor && ordered_sprites[i].entity == core->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
 		}
 		else
 		{
@@ -308,12 +333,12 @@ internal void RenderBackgroundSprites()
 				core->renderer, static_sprite->texture_atlas,
 				v4(static_sprite->source.x, static_sprite->source.y, static_sprite->source.z - 0.5f, static_sprite->source.w - 0.5f),
 				v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-				(core->is_in_editor && ordered_sprites[i].entity->entity_id == core->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
+				(core->is_in_editor && ordered_sprites[i].entity == core->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
 		}
 	}
 }
 
-internal void RenderForegroundSprites(SpriteComponent sprite_components[], SubSpriteComponent sub_sprite_components[], i32 sprite_count, i32 sub_sprite_count)
+internal void RenderForegroundSprites()
 {
 	typedef struct SpriteRenderable
 	{
@@ -331,51 +356,69 @@ internal void RenderForegroundSprites(SpriteComponent sprite_components[], SubSp
 	SpriteRenderable ordered_sprites[MAX_ENTITIES * MAX_SUB_SPRITES] = {0};
 	i32 ordered_sprite_count = 0;
 
-	for (int i = 0; i < sprite_count; i++)
 	{
-		SpriteComponent *sprite_component = &sprite_components[i];
-		if (sprite_component->entity_id > 0 && !sprite_component->is_background_sprite) // Validate entity & check if it's a foreground sprite
+		ChunkData *chunks[512];
+		i32 chunk_count = GetChunksInView(chunks);
+		for (int i = 0; i < chunk_count; i++)
 		{
-			Entity *entity = &core->entity_set->entities[sprite_component->entity_id];
+			ChunkData *chunk = chunks[i];
 
-			SpriteRenderable sprite_renderable = {
-				entity,
-				sprite_component->sprite_data.sprite_enum,
-				sprite_component->sprite_data.offset,
-				sprite_component->sprite_data.render_layer,
-				sprite_component->sprite_data.scale,
-				sprite_component->is_flipped,
-				sprite_component->sprite_data.tint,
-				entity->components[COMPONENT_position],
-				entity->components[COMPONENT_animation],
-			};
+			for (int j = 0; j < chunk->component_set.sprite_component_count; j++)
+			{
+				SpriteComponent *sprite_component = &chunk->component_set.sprite_components[j];
+				if (sprite_component->parent_entity->entity_id > 0 && !sprite_component->is_background_sprite) // Validate entity & check if it's a foreground sprite
+				{
+					Entity *entity = sprite_component->parent_entity;
 
-			ordered_sprites[ordered_sprite_count++] = sprite_renderable;
+					SpriteRenderable sprite_renderable = {
+						entity,
+						sprite_component->sprite_data.sprite_enum,
+						sprite_component->sprite_data.offset,
+						sprite_component->sprite_data.render_layer,
+						sprite_component->sprite_data.scale,
+						sprite_component->is_flipped,
+						sprite_component->sprite_data.tint,
+						entity->components[COMPONENT_position],
+						entity->components[COMPONENT_animation],
+					};
+
+					ordered_sprites[ordered_sprite_count++] = sprite_renderable;
+				}
+			}
 		}
 	}
 
-	for (int i = 0; i < sub_sprite_count; i++)
 	{
-		SubSpriteComponent *sub_sprite_component = &sub_sprite_components[i];
-		if (sub_sprite_component->entity_id > 0) // Validate entity
+		ChunkData *chunks[512];
+		i32 chunk_count = GetChunksInView(chunks);
+		for (int i = 0; i < chunk_count; i++)
 		{
-			Entity *entity = &core->entity_set->entities[sub_sprite_component->entity_id];
+			ChunkData *chunk = chunks[i];
 
-			for (int j = 0; j < sub_sprite_component->sub_sprite_count; j++)
+			for (int j = 0; j < chunk->component_set.sub_sprite_component_count; j++)
 			{
-				SpriteRenderable sprite_renderable = {
-					entity,
-					sub_sprite_component->sub_sprites[j].sprite_enum,
-					sub_sprite_component->sub_sprites[j].offset,
-					sub_sprite_component->sub_sprites[j].render_layer,
-					sub_sprite_component->sub_sprites[j].scale,
-					sub_sprite_component->is_flipped,
-					sub_sprite_component->sub_sprites[j].tint,
-					entity->components[COMPONENT_position],
-					entity->components[COMPONENT_animation],
-				};
+				SubSpriteComponent *sub_sprite_component = &chunk->component_set.sub_sprite_components[j];
+				if (sub_sprite_component->parent_entity->entity_id > 0) // Validate entity
+				{
+					Entity *entity = sub_sprite_component->parent_entity;
 
-				ordered_sprites[ordered_sprite_count++] = sprite_renderable;
+					for (int j = 0; j < sub_sprite_component->sub_sprite_count; j++)
+					{
+						SpriteRenderable sprite_renderable = {
+							entity,
+							sub_sprite_component->sub_sprites[j].sprite_enum,
+							sub_sprite_component->sub_sprites[j].offset,
+							sub_sprite_component->sub_sprites[j].render_layer,
+							sub_sprite_component->sub_sprites[j].scale,
+							sub_sprite_component->is_flipped,
+							sub_sprite_component->sub_sprites[j].tint,
+							entity->components[COMPONENT_position],
+							entity->components[COMPONENT_animation],
+						};
+
+						ordered_sprites[ordered_sprite_count++] = sprite_renderable;
+					}
+				}
 			}
 		}
 	}
@@ -418,7 +461,7 @@ internal void RenderForegroundSprites(SpriteComponent sprite_components[], SubSp
 				core->renderer, dynamic_sprite->texture_atlas,
 				v4(source_pos.x, source_pos.y, dynamic_sprite->source.z - 0.5f, dynamic_sprite->source.w - 0.5f),
 				v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-				(core->is_in_editor && ordered_sprites[i].entity->entity_id == core->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
+				(core->is_in_editor && ordered_sprites[i].entity == core->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
 		}
 		else
 		{
@@ -438,7 +481,7 @@ internal void RenderForegroundSprites(SpriteComponent sprite_components[], SubSp
 				core->renderer, static_sprite->texture_atlas,
 				v4(static_sprite->source.x, static_sprite->source.y, static_sprite->source.z - 0.5f, static_sprite->source.w - 0.5f),
 				v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-				(core->is_in_editor && ordered_sprites[i].entity->entity_id == core->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
+				(core->is_in_editor && ordered_sprites[i].entity == core->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
 		}
 	}
 }

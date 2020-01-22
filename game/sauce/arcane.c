@@ -67,6 +67,10 @@ PermanentLoad(TsPlatform *platform_)
 	{
 		core->permanent_arena = &platform->permanent_arena;
 		core->frame_arena = &platform->scratch_arena;
+
+		u32 world_storage_size = Megabytes(1024);
+		void *world_storage = VirtualAlloc(0, world_storage_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+		core->world_arena = MemoryArenaInit(world_storage, world_storage_size);
 	}
 
 	// NOTE(rjf): Initialize core systems.
@@ -126,9 +130,27 @@ PermanentLoad(TsPlatform *platform_)
 			InitialiseSpriteData();
 			InitialiseItemData();
 
-			core->entity_set = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(*core->entity_set));
-			core->component_set = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(*core->component_set));
-			InitialiseECS();
+			core->world_data = MemoryArenaAllocateAndZero(&core->world_arena, sizeof(WorldData));
+
+			core->world_data->chunks = MemoryArenaAllocate(&core->world_arena, sizeof(ChunkData *) * MAX_WORLD_CHUNKS);
+			for (int i = 0; i < MAX_WORLD_CHUNKS; i++)
+			{
+				core->world_data->chunks[i] = MemoryArenaAllocateAndZero(&core->world_arena, sizeof(ChunkData) * MAX_WORLD_CHUNKS);
+				R_DEV_ASSERT(core->world_data->chunks[i], "Out of mem bruv");
+			}
+
+			Log("Remaining: %i", core->world_arena.memory_left);
+
+			for (int i = 0; i < MAX_WORLD_CHUNKS; i++)
+			{
+				for (int j = 0; j < MAX_WORLD_CHUNKS; j++)
+				{
+					core->world_data->chunks[i][j].entity_count = 1;
+					core->world_data->chunks[i][j].free_entity_id = 1;
+				}
+			}
+
+			//InitialiseECS();
 
 			core->camera_zoom = DEFAULT_CAMERA_ZOOM;
 			core->shadow_opacity = 0.0f;
@@ -285,7 +307,7 @@ Update(void)
 		core->delta_t = core->raw_delta_t * core->delta_mult;
 
 		core->world_delta_t = core->delta_t * core->world_delta_mult;
-		core->elapsed_world_time += core->world_delta_t;
+		core->world_data->elapsed_world_time += core->world_delta_t;
 	}
 
 	// NOTE(rjf): Begin renderer frame.
@@ -410,8 +432,8 @@ Update(void)
 			{
 				PreMoveUpdatePlayer();
 
-				AdvanceVelocity(core->component_set->velocity_components, core->component_set->velocity_component_count);
-				UpdateTriggers(core->component_set->trigger_components, core->component_set->trigger_component_count);
+				AdvanceVelocity();
+				UpdateTriggers();
 
 				if (!core->is_in_editor)
 					TransformInGameCamera();
@@ -537,7 +559,7 @@ internal void PushDebugLineForDuration(v2 p1, v2 p2, v3 colour, f32 lifetime)
 		colour,
 		1,
 		lifetime,
-		core->elapsed_world_time,
+		core->world_data->elapsed_world_time,
 	};
 
 	if (core->debug_line_count == core->free_debug_line_index)
@@ -601,7 +623,7 @@ internal void DrawDebugLines()
 	{
 		DebugLine *debug_line = &core->debug_lines[i];
 
-		if (debug_line->is_valid && debug_line->has_duration && debug_line->start_time + debug_line->lifetime <= core->elapsed_world_time)
+		if (debug_line->is_valid && debug_line->has_duration && debug_line->start_time + debug_line->lifetime <= core->world_data->elapsed_world_time)
 		{
 			DebugLine empty_debug_line = {0};
 			core->debug_lines[i] = empty_debug_line;
@@ -614,7 +636,7 @@ internal void DrawDebugLines()
 		{
 			f32 alpha;
 			if (debug_line->has_duration)
-				alpha = ((debug_line->start_time + debug_line->lifetime) - core->elapsed_world_time) / debug_line->lifetime;
+				alpha = ((debug_line->start_time + debug_line->lifetime) - core->world_data->elapsed_world_time) / debug_line->lifetime;
 			else
 				alpha = 1.0f;
 
