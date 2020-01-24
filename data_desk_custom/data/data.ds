@@ -1,7 +1,9 @@
 /* --- DEFINES --- */
 
 @Define
-MAX_ENTITIES :: 128;
+MAX_ENTITIES_PER_CHUNK :: 128;
+@Define
+MAX_ACTIVE_ENTITIES :: 1024;
 @Define
 MAX_OVERLAPPING_COLLIDERS :: 50;
 @Define
@@ -13,7 +15,9 @@ MAX_STORAGE_SIZE :: 30;
 @Define
 MAX_PARTICLE_AMOUNT :: 300;
 @Define
-MAX_WORLD_CHUNKS :: 10;
+MAX_WORLD_CHUNKS :: 128;
+@Define
+CHUNK_SIZE :: 200;
 
 /* --- ENUMS --- */
 
@@ -198,15 +202,23 @@ Entity :: struct
 
 ChunkData :: struct
 {
-	entities : Entity[MAX_ENTITIES];
+	is_valid : b8;
+	entity_ids : i32[MAX_ENTITIES_PER_CHUNK];
 	entity_count : i32;
-	free_entity_id : i32;
-	component_set : ComponentSet;
+	x_index : i32;
+	y_index : i32;
 }
 
 WorldData :: struct
 {
 	elapsed_world_time : f32;
-	chunks : **ChunkData;
+	
+	active_chunks : ChunkData[MAX_WORLD_CHUNKS];
+	active_chunk_count : i32;
 	floating_chunk : ChunkData;
+	
+	entities : Entity[MAX_ACTIVE_ENTITIES];
+	entity_count : i32;
+	free_entity_index : i32;
+	entity_components : ComponentSet;
 }

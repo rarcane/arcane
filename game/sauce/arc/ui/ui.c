@@ -109,7 +109,7 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 
 			if (icon_data->item_comp && icon_data->item_comp->stack_size > 1)
 			{
-				Entity *new_item = NewEntity("Item", ENTITY_TYPE_item, &core->world_data->floating_chunk);
+				Entity *new_item = NewEntity("Item", ENTITY_TYPE_item);
 				AttachItem(new_item, icon_data->item_comp->item_type, icon_data->item_comp->stack_size / 2);
 				core->grabbed_inv_item_comp = new_item->components[COMPONENT_item];
 				core->grabbed_inv_item_origin_slot = -1;
@@ -626,7 +626,7 @@ internal void DrawEditorUI()
 			{
 				TsUIPushColumn(core->ui, v2(10, 10), v2(100, 30));
 
-				if (core->selected_entity)
+				if (!core->selected_entity)
 				{
 					TsUIPushAutoWidth(core->ui);
 					TsUILabel(core->ui, "No Entity selected.");
@@ -700,51 +700,43 @@ internal void DrawEditorUI()
 
 				TsUIDivider(core->ui);
 
-				if (is_index_mode) // TODO: support for floating chunk
+				if (is_index_mode)
 				{
-					ChunkData *chunks[512];
-					i32 chunk_count = GetChunksInView(chunks);
-
-					for (int i = 0; i < chunk_count; i++)
+					// NOTE(tjr): Index view
+					for (int i = 1; i < core->world_data->entity_count; i++)
 					{
-						ChunkData *chunk = chunks[i];
-
-						// NOTE(tjr): Index view
-						for (int i = 1; i < chunk->entity_count; i++)
+						TsUIPushWidth(core->ui, 30);
 						{
-							TsUIPushWidth(core->ui, 30);
-							{
-								char label[100];
-								sprintf(label, "%i", i);
-								TsUILabel(core->ui, label);
-							}
-							TsUIPopWidth(core->ui);
+							char label[100];
+							sprintf(label, "%i", i);
+							TsUILabel(core->ui, label);
+						}
+						TsUIPopWidth(core->ui);
 
-							Entity *entity = &chunk->entities[i];
-							if (entity->entity_id > 0)
+						Entity *entity = &core->world_data->entities[i];
+						if (entity->entity_id > 0)
+						{
+							TsUISameLine(core->ui);
+							TsUIPushWidth(core->ui, entity_list_window_rect.width - 80);
+							if (TsUIToggler(core->ui, entity->name, (core->selected_entity ? core->selected_entity->entity_id == i : 0)))
 							{
-								TsUISameLine(core->ui);
-								TsUIPushWidth(core->ui, entity_list_window_rect.width - 80);
-								if (TsUIToggler(core->ui, entity->name, (core->selected_entity ? core->selected_entity->entity_id == i : 0)))
-								{
-									core->selected_entity = entity;
-								}
-								else
-								{
-									if (core->selected_entity->entity_id == i)
-									{
-										core->selected_entity = 0;
-									}
-								}
-								TsUIPopWidth(core->ui);
+								core->selected_entity = entity;
 							}
 							else
 							{
-								TsUISameLine(core->ui);
-								TsUIPushSize(core->ui, v2(100, 30));
-								TsUILabel(core->ui, "- - - - -");
-								TsUIPopSize(core->ui);
+								if (core->selected_entity->entity_id == i)
+								{
+									core->selected_entity = 0;
+								}
 							}
+							TsUIPopWidth(core->ui);
+						}
+						else
+						{
+							TsUISameLine(core->ui);
+							TsUIPushSize(core->ui, v2(100, 30));
+							TsUILabel(core->ui, "- - - - -");
+							TsUIPopSize(core->ui);
 						}
 					}
 				}
@@ -757,28 +749,21 @@ internal void DrawEditorUI()
 					{
 						if (TsUICollapsable(core->ui, GetEntityTypeName(i)))
 						{
-							ChunkData *chunks[512];
-							i32 chunk_count = GetChunksInView(chunks);
-
-							for (int i = 0; i < chunk_count; i++)
+							for (int j = 1; j < core->world_data->entity_count; j++) // TEMP: Need to sort these before-hand. Will eventually get too inefficient.
 							{
-								ChunkData *chunk = chunks[i];
-
-								for (int j = 1; j < chunk->entity_count; j++) // TEMP: Need to sort these before-hand. Will eventually get too inefficient.
+								Entity *entity = &core->world_data->entities[j];
+								if (entity->entity_id > 0 && entity->type == i)
 								{
-									Entity *entity = &chunk->entities[j];
-									if (entity->entity_id > 0 && entity->type == i)
+									if (TsUIToggler(core->ui, entity->name, (core->selected_entity ? core->selected_entity->entity_id == j : 0)))
 									{
-										if (TsUIToggler(core->ui, entity->name, (core->selected_entity ? core->selected_entity->entity_id == j : 0)))
+										core->selected_entity = entity;
+									}
+									else
+									{
+										if (core->selected_entity &&
+											core->selected_entity->entity_id == j)
 										{
-											core->selected_entity = entity;
-										}
-										else
-										{
-											if (core->selected_entity->entity_id == j)
-											{
-												core->selected_entity = 0;
-											}
+											core->selected_entity = 0;
 										}
 									}
 								}
@@ -803,7 +788,7 @@ internal void DrawEditorUI()
 			{
 				TsUIPushColumn(core->ui, v2(10, 0), v2(100, 50));
 
-				f32 budget_total = 0.0f;
+				f32 budget_total = 0.0f; // NOTE(tjr): Not actual amount, need to calculate this more accurately. Need to create some sort of "Unnaccounted" measurement
 				for (int i = 0; i < core->performance_timer_count; i++)
 				{
 					char label[100];

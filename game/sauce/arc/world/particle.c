@@ -1,61 +1,54 @@
 internal void UpdateParticleEmitters()
 {
-	ChunkData *chunks[512];
-	i32 chunk_count = GetChunksInView(chunks);
-	for (int i = 0; i < chunk_count; i++)
+	for (int i = 0; i < core->world_data->entity_components.particle_emitter_component_count; i++)
 	{
-		ChunkData *chunk = chunks[i];
-
-		for (int i = 0; i < chunk->component_set.particle_emitter_component_count; i++)
+		ParticleEmitterComponent *emitter_comp = &core->world_data->entity_components.particle_emitter_components[i];
+		if (emitter_comp->parent_entity->entity_id > 0)
 		{
-			ParticleEmitterComponent *emitter_comp = &chunk->component_set.particle_emitter_components[i];
-			if (emitter_comp->parent_entity->entity_id > 0)
+			Entity *entity = emitter_comp->parent_entity;
+			PositionComponent *position_comp = entity->components[COMPONENT_position];
+			R_DEV_ASSERT(position_comp, "Emitter must have position attached.");
+
+			if (core->world_data->elapsed_world_time >= emitter_comp->start_time + emitter_comp->life_time)
 			{
-				Entity *entity = emitter_comp->parent_entity;
-				PositionComponent *position_comp = entity->components[COMPONENT_position];
-				R_DEV_ASSERT(position_comp, "Emitter must have position attached.");
-
-				if (core->world_data->elapsed_world_time >= emitter_comp->start_time + emitter_comp->life_time)
+				if (emitter_comp->flags & PARTICLE_EMITTER_FLAGS_repeat)
 				{
-					if (emitter_comp->flags & PARTICLE_EMITTER_FLAGS_repeat)
-					{
-						emitter_comp->start_time = core->world_data->elapsed_world_time;
-						emitter_comp->begin_callback(emitter_comp);
-					}
-					else
-					{
-						R_TODO; // Delete emitter
-					}
-
-					if (emitter_comp->finish_callback)
-						emitter_comp->finish_callback(emitter_comp);
+					emitter_comp->start_time = core->world_data->elapsed_world_time;
+					emitter_comp->begin_callback(emitter_comp);
+				}
+				else
+				{
+					R_TODO; // Delete emitter
 				}
 
-				// NOTE(tjr): Update particles
-				for (int j = 0; j < emitter_comp->particle_count; j++)
+				if (emitter_comp->finish_callback)
+					emitter_comp->finish_callback(emitter_comp);
+			}
+
+			// NOTE(tjr): Update particles
+			for (int j = 0; j < emitter_comp->particle_count; j++)
+			{
+				Particle *particle = &emitter_comp->particles[j];
+
+				if (particle->is_valid)
 				{
-					Particle *particle = &emitter_comp->particles[j];
-
-					if (particle->is_valid)
+					if (core->world_data->elapsed_world_time >= particle->spawn_time + particle->life_time)
+						DeleteParticle(emitter_comp, j);
+					else
 					{
-						if (core->world_data->elapsed_world_time >= particle->spawn_time + particle->life_time)
-							DeleteParticle(emitter_comp, j);
-						else
-						{
-							f32 life_alpha = 1.0f - (core->world_data->elapsed_world_time - particle->spawn_time) / particle->life_time;
+						f32 life_alpha = 1.0f - (core->world_data->elapsed_world_time - particle->spawn_time) / particle->life_time;
 
-							particle->position.x += particle->velocity.x * core->world_delta_t;
-							particle->position.y += particle->velocity.y * core->world_delta_t;
+						particle->position.x += particle->velocity.x * core->world_delta_t;
+						particle->position.y += particle->velocity.y * core->world_delta_t;
 
-							v2 particle_position = v2view(V2AddV2(position_comp->position, particle->position));
+						v2 particle_position = v2view(V2AddV2(position_comp->position, particle->position));
 
-							Ts2dPushFilledRect(core->renderer,
-											   V4MultiplyF32(particle->colour, life_alpha),
-											   v4(particle_position.x,
-												  particle_position.y,
-												  core->camera_zoom,
-												  core->camera_zoom));
-						}
+						Ts2dPushFilledRect(core->renderer,
+										   V4MultiplyF32(particle->colour, life_alpha),
+										   v4(particle_position.x,
+											  particle_position.y,
+											  core->camera_zoom,
+											  core->camera_zoom));
 					}
 				}
 			}

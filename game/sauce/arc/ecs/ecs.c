@@ -1,40 +1,42 @@
-internal Entity *NewEntity(char name[], EntityType type, ChunkData *chunk)
+internal void InitialiseECS()
 {
-	if (chunk->free_entity_id == chunk->entity_count) // Entity ID is caught up
+	core->world_data->entity_count = 1;
+	core->world_data->free_entity_index = 1;
+}
+
+internal Entity *NewEntity(char name[], EntityType type)
+{
+	if (core->world_data->free_entity_index == core->world_data->entity_count) // Entity ID is caught up
 	{
-		i32 entity_id = chunk->entity_count;
-		chunk->entity_count++;
-		chunk->free_entity_id = chunk->entity_count;
+		i32 entity_id = core->world_data->entity_count;
+		core->world_data->entity_count++;
+		core->world_data->free_entity_index = core->world_data->entity_count;
 
-		chunk->entities[entity_id].entity_id = entity_id;
-		strcpy(chunk->entities[entity_id].name, name);
-		chunk->entities[entity_id].type = type;
+		core->world_data->entities[entity_id].entity_id = entity_id;
+		strcpy(core->world_data->entities[entity_id].name, name);
+		core->world_data->entities[entity_id].type = type;
 
-		chunk->entities[entity_id].active_chunk = chunk;
-
-		return &chunk->entities[entity_id];
+		return &core->world_data->entities[entity_id];
 	}
 	else // Avalable entity ID isn't the latest count
 	{
-		i32 entity_id = chunk->free_entity_id;
+		i32 entity_id = core->world_data->free_entity_index;
 
-		chunk->entities[entity_id].entity_id = entity_id;
-		strcpy(chunk->entities[entity_id].name, name);
-		chunk->entities[entity_id].type = type;
-
-		chunk->entities[entity_id].active_chunk = chunk;
+		core->world_data->entities[entity_id].entity_id = entity_id;
+		strcpy(core->world_data->entities[entity_id].name, name);
+		core->world_data->entities[entity_id].type = type;
 
 		// Determine the next free ID
-		for (int i = 1; i < chunk->entity_count + 1; i++)
+		for (int i = 1; i < core->world_data->entity_count + 1; i++)
 		{
-			if (chunk->entities[i].entity_id == 0)
+			if (core->world_data->entities[i].entity_id == 0)
 			{
-				chunk->free_entity_id = i;
+				core->world_data->free_entity_index = i;
 				break;
 			}
 		}
 
-		return &chunk->entities[entity_id];
+		return &core->world_data->entities[entity_id];
 	}
 }
 

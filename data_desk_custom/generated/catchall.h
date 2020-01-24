@@ -1,5 +1,7 @@
 // @Define 
-#define MAX_ENTITIES (128)
+#define MAX_ENTITIES_PER_CHUNK (128)
+// @Define 
+#define MAX_ACTIVE_ENTITIES (1024)
 // @Define 
 #define MAX_OVERLAPPING_COLLIDERS (50)
 // @Define 
@@ -11,7 +13,9 @@
 // @Define 
 #define MAX_PARTICLE_AMOUNT (300)
 // @Define 
-#define MAX_WORLD_CHUNKS (10)
+#define MAX_WORLD_CHUNKS (128)
+// @Define 
+#define CHUNK_SIZE (200)
 typedef enum EntityType EntityType;
 enum EntityType
 {
@@ -203,46 +207,46 @@ COMPONENT_MAX,
 
 typedef struct ComponentSet
 {
-PositionComponent position_components[MAX_ENTITIES];
+PositionComponent position_components[MAX_ACTIVE_ENTITIES];
 i32 position_component_count;
 i32 position_free_component_id;
-SpriteComponent sprite_components[MAX_ENTITIES];
+SpriteComponent sprite_components[MAX_ACTIVE_ENTITIES];
 i32 sprite_component_count;
 i32 sprite_free_component_id;
-SubSpriteComponent sub_sprite_components[MAX_ENTITIES];
+SubSpriteComponent sub_sprite_components[MAX_ACTIVE_ENTITIES];
 i32 sub_sprite_component_count;
 i32 sub_sprite_free_component_id;
-AnimationComponent animation_components[MAX_ENTITIES];
+AnimationComponent animation_components[MAX_ACTIVE_ENTITIES];
 i32 animation_component_count;
 i32 animation_free_component_id;
-ColliderComponent collider_components[MAX_ENTITIES];
+ColliderComponent collider_components[MAX_ACTIVE_ENTITIES];
 i32 collider_component_count;
 i32 collider_free_component_id;
-VelocityComponent velocity_components[MAX_ENTITIES];
+VelocityComponent velocity_components[MAX_ACTIVE_ENTITIES];
 i32 velocity_component_count;
 i32 velocity_free_component_id;
-PhysicsComponent physics_components[MAX_ENTITIES];
+PhysicsComponent physics_components[MAX_ACTIVE_ENTITIES];
 i32 physics_component_count;
 i32 physics_free_component_id;
-MovementComponent movement_components[MAX_ENTITIES];
+MovementComponent movement_components[MAX_ACTIVE_ENTITIES];
 i32 movement_component_count;
 i32 movement_free_component_id;
-ArcEntityComponent arc_entity_components[MAX_ENTITIES];
+ArcEntityComponent arc_entity_components[MAX_ACTIVE_ENTITIES];
 i32 arc_entity_component_count;
 i32 arc_entity_free_component_id;
-ItemComponent item_components[MAX_ENTITIES];
+ItemComponent item_components[MAX_ACTIVE_ENTITIES];
 i32 item_component_count;
 i32 item_free_component_id;
-TriggerComponent trigger_components[MAX_ENTITIES];
+TriggerComponent trigger_components[MAX_ACTIVE_ENTITIES];
 i32 trigger_component_count;
 i32 trigger_free_component_id;
-StorageComponent storage_components[MAX_ENTITIES];
+StorageComponent storage_components[MAX_ACTIVE_ENTITIES];
 i32 storage_component_count;
 i32 storage_free_component_id;
-ParallaxComponent parallax_components[MAX_ENTITIES];
+ParallaxComponent parallax_components[MAX_ACTIVE_ENTITIES];
 i32 parallax_component_count;
 i32 parallax_free_component_id;
-ParticleEmitterComponent particle_emitter_components[MAX_ENTITIES];
+ParticleEmitterComponent particle_emitter_components[MAX_ACTIVE_ENTITIES];
 i32 particle_emitter_component_count;
 i32 particle_emitter_free_component_id;
 } ComponentSet;
@@ -262,17 +266,23 @@ ChunkData *active_chunk;
 typedef struct ChunkData ChunkData;
 struct ChunkData
 {
-Entity entities[MAX_ENTITIES];
+b8 is_valid;
+i32 entity_ids[MAX_ENTITIES_PER_CHUNK];
 i32 entity_count;
-i32 free_entity_id;
-ComponentSet component_set;
+i32 x_index;
+i32 y_index;
 };
 
 typedef struct WorldData WorldData;
 struct WorldData
 {
 f32 elapsed_world_time;
-ChunkData **chunks;
+ChunkData active_chunks[MAX_WORLD_CHUNKS];
+i32 active_chunk_count;
 ChunkData floating_chunk;
+Entity entities[MAX_ACTIVE_ENTITIES];
+i32 entity_count;
+i32 free_entity_index;
+ComponentSet entity_components;
 };
 

@@ -131,26 +131,9 @@ PermanentLoad(TsPlatform *platform_)
 			InitialiseItemData();
 
 			core->world_data = MemoryArenaAllocateAndZero(&core->world_arena, sizeof(WorldData));
+			core->world_data->floating_chunk.is_valid = 1;
 
-			core->world_data->chunks = MemoryArenaAllocate(&core->world_arena, sizeof(ChunkData *) * MAX_WORLD_CHUNKS);
-			for (int i = 0; i < MAX_WORLD_CHUNKS; i++)
-			{
-				core->world_data->chunks[i] = MemoryArenaAllocateAndZero(&core->world_arena, sizeof(ChunkData) * MAX_WORLD_CHUNKS);
-				R_DEV_ASSERT(core->world_data->chunks[i], "Out of mem bruv");
-			}
-
-			Log("Remaining: %i", core->world_arena.memory_left);
-
-			for (int i = 0; i < MAX_WORLD_CHUNKS; i++)
-			{
-				for (int j = 0; j < MAX_WORLD_CHUNKS; j++)
-				{
-					core->world_data->chunks[i][j].entity_count = 1;
-					core->world_data->chunks[i][j].free_entity_id = 1;
-				}
-			}
-
-			//InitialiseECS();
+			InitialiseECS();
 
 			core->camera_zoom = DEFAULT_CAMERA_ZOOM;
 			core->shadow_opacity = 0.0f;
@@ -415,7 +398,6 @@ Update(void)
 
 	// NOTE(rjf): Update.
 	{
-		START_PERF_TIMER("Update");
 		if (core->is_ingame)
 		{
 			/* v2 world_mouse_pos = GetMousePositionInWorldSpace();
@@ -427,11 +409,16 @@ Update(void)
 			if (core->is_in_editor)
 				TransformEditorCamera();
 
+			core->performance_timer_count = 0;
+
+			START_PERF_TIMER("Update");
+
 			// NOTE(tjr): Perform if the game is not paused.
 			if (core->world_delta_t != 0.0f)
 			{
 				PreMoveUpdatePlayer();
 
+				UpdateChunks();
 				AdvanceVelocity();
 				UpdateTriggers();
 
@@ -448,6 +435,8 @@ Update(void)
 			UpdateParticleEmitters();
 			DrawGameUI();
 			DrawDebugLines();
+
+			END_PERF_TIMER;
 		}
 		else
 		{
@@ -468,16 +457,11 @@ Update(void)
 			TsUIPopColumn(core->ui);
 			TsUIEndInputGroup(core->ui);
 		}
-		END_PERF_TIMER;
 	}
-
-	core->performance_timer_count = 0;
 
 	// NOTE(rjf): End UI frame.
 	{
-		START_PERF_TIMER("UI Rendering");
 		TsUIEndFrame(core->ui);
-		END_PERF_TIMER;
 	}
 
 	TsDevTerminalRender(core->dev_terminal);
@@ -492,9 +476,7 @@ Update(void)
 
 	// NOTE(rjf): Update assets.
 	{
-		START_PERF_TIMER("Asset Update");
 		TsAssetsUpdate(core->assets);
-		END_PERF_TIMER;
 	}
 }
 

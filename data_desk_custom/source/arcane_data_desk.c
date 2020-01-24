@@ -354,7 +354,7 @@ GenerateComponentCode(void)
 		fprintf(file, "{\n");
 		for (int i = 0; i < component_count; i++)
 		{
-			fprintf(file, "%sComponent %s_components[MAX_ENTITIES];\n", components[i]->name, components[i]->name_lowercase_with_underscores);
+			fprintf(file, "%sComponent %s_components[MAX_ACTIVE_ENTITIES];\n", components[i]->name, components[i]->name_lowercase_with_underscores);
 			fprintf(file, "i32 %s_component_count;\n", components[i]->name_lowercase_with_underscores);
 			fprintf(file, "i32 %s_free_component_id;\n", components[i]->name_lowercase_with_underscores);
 		}
@@ -396,27 +396,27 @@ GenerateComponentCode(void)
 					fprintf(file, "internal void Add%sComponent(Entity *entity, void *component_data)\n", components[i]->name);
 					fprintf(file, "{\n");
 					fprintf(file, "    i32 component_id;\n");
-					fprintf(file, "    if (entity->active_chunk->component_set.%s_free_component_id == entity->active_chunk->component_set.%s_component_count)\n", components[i]->name_lowercase_with_underscores, components[i]->name_lowercase_with_underscores);
+					fprintf(file, "    if (core->world_data->entity_components.%s_free_component_id == core->world_data->entity_components.%s_component_count)\n", components[i]->name_lowercase_with_underscores, components[i]->name_lowercase_with_underscores);
 					fprintf(file, "    {\n");
-					fprintf(file, "        component_id = entity->active_chunk->component_set.%s_component_count;\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "        entity->active_chunk->component_set.%s_component_count++;\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "        entity->active_chunk->component_set.%s_free_component_id = component_id + 1;\n", components[i]->name_lowercase_with_underscores);
+					fprintf(file, "        component_id = core->world_data->entity_components.%s_component_count;\n", components[i]->name_lowercase_with_underscores);
+					fprintf(file, "        core->world_data->entity_components.%s_component_count++;\n", components[i]->name_lowercase_with_underscores);
+					fprintf(file, "        core->world_data->entity_components.%s_free_component_id = component_id + 1;\n", components[i]->name_lowercase_with_underscores);
 					fprintf(file, "    }\n");
 					fprintf(file, "    else\n");
 					fprintf(file, "    {\n");
-					fprintf(file, "        component_id = entity->active_chunk->component_set.%s_free_component_id;\n", components[i]->name_lowercase_with_underscores);
+					fprintf(file, "        component_id = core->world_data->entity_components.%s_free_component_id;\n", components[i]->name_lowercase_with_underscores);
 					fprintf(file, "    }\n\n");
 
-					fprintf(file, "    entity->active_chunk->component_set.%s_components[component_id] = *((%sComponent*)component_data);\n", components[i]->name_lowercase_with_underscores, components[i]->name);
-					fprintf(file, "    entity->components[COMPONENT_%s] = &entity->active_chunk->component_set.%s_components[component_id];\n", components[i]->name_lowercase_with_underscores, components[i]->name_lowercase_with_underscores);
-					fprintf(file, "    entity->active_chunk->component_set.%s_components[component_id].parent_entity = entity;\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "    entity->active_chunk->component_set.%s_components[component_id].component_id = component_id;\n\n", components[i]->name_lowercase_with_underscores);
+					fprintf(file, "    core->world_data->entity_components.%s_components[component_id] = *((%sComponent*)component_data);\n", components[i]->name_lowercase_with_underscores, components[i]->name);
+					fprintf(file, "    entity->components[COMPONENT_%s] = &core->world_data->entity_components.%s_components[component_id];\n", components[i]->name_lowercase_with_underscores, components[i]->name_lowercase_with_underscores);
+					fprintf(file, "    core->world_data->entity_components.%s_components[component_id].parent_entity = entity;\n", components[i]->name_lowercase_with_underscores);
+					fprintf(file, "    core->world_data->entity_components.%s_components[component_id].component_id = component_id;\n\n", components[i]->name_lowercase_with_underscores);
 
-					fprintf(file, "    for (int i = 0; i < entity->active_chunk->component_set.%s_component_count + 1; i++)\n", components[i]->name_lowercase_with_underscores);
+					fprintf(file, "    for (int i = 0; i < core->world_data->entity_components.%s_component_count + 1; i++)\n", components[i]->name_lowercase_with_underscores);
 					fprintf(file, "    {\n");
-					fprintf(file, "        if (!entity->active_chunk->component_set.%s_components[i].parent_entity)\n", components[i]->name_lowercase_with_underscores);
+					fprintf(file, "        if (!core->world_data->entity_components.%s_components[i].parent_entity)\n", components[i]->name_lowercase_with_underscores);
 					fprintf(file, "        {\n");
-					fprintf(file, "            entity->active_chunk->component_set.%s_free_component_id = i;\n", components[i]->name_lowercase_with_underscores);
+					fprintf(file, "            core->world_data->entity_components.%s_free_component_id = i;\n", components[i]->name_lowercase_with_underscores);
 					fprintf(file, "            break;\n");
 					fprintf(file, "        }\n");
 					fprintf(file, "    }\n");
@@ -432,11 +432,11 @@ GenerateComponentCode(void)
 
 					fprintf(file, "    i32 deleted_component_id = component->component_id;\n");
 					fprintf(file, "    %sComponent empty_comp = {0};\n", components[i]->name);
-					fprintf(file, "    entity->active_chunk->component_set.%s_components[deleted_component_id] = empty_comp;\n", components[i]->name_lowercase_with_underscores);
+					fprintf(file, "    core->world_data->entity_components.%s_components[deleted_component_id] = empty_comp;\n", components[i]->name_lowercase_with_underscores);
 					fprintf(file, "    entity->components[COMPONENT_%s] = 0;\n\n", components[i]->name_lowercase_with_underscores);
 
-					fprintf(file, "    if (deleted_component_id < entity->active_chunk->component_set.%s_free_component_id)\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "        entity->active_chunk->component_set.%s_free_component_id = deleted_component_id;\n", components[i]->name_lowercase_with_underscores);
+					fprintf(file, "    if (deleted_component_id < core->world_data->entity_components.%s_free_component_id)\n", components[i]->name_lowercase_with_underscores);
+					fprintf(file, "        core->world_data->entity_components.%s_free_component_id = deleted_component_id;\n", components[i]->name_lowercase_with_underscores);
 					fprintf(file, "}\n\n");
 				}
 			}
@@ -450,12 +450,12 @@ GenerateComponentCode(void)
 				fprintf(file, "    if (%s_component)\n", components[i]->name_lowercase_with_underscores);
 				fprintf(file, "        Remove%sComponent(entity);\n", components[i]->name);
 			}
-			fprintf(file, "\n    ChunkData *deleted_entity_active_chunk = entity->active_chunk;\n");
-			fprintf(file, "    i32 deleted_entity_id = entity->entity_id;\n");
+
+			fprintf(file, "\n    i32 deleted_entity_id = entity->entity_id;\n");
 			fprintf(file, "    Entity empty_entity = {0};\n");
 			fprintf(file, "    *entity = empty_entity;\n");
-			fprintf(file, "    if (deleted_entity_id < deleted_entity_active_chunk->free_entity_id)\n");
-			fprintf(file, "        deleted_entity_active_chunk->free_entity_id = deleted_entity_id;\n");
+			fprintf(file, "    if (deleted_entity_id < core->world_data->free_entity_index)\n");
+			fprintf(file, "        core->world_data->free_entity_index = deleted_entity_id;\n");
 			fprintf(file, "}\n");
 		}
 	}

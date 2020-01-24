@@ -322,27 +322,27 @@ internal void PrintComponentUI(void *component_data, ComponentType type)
 internal void AddPositionComponent(Entity *entity, void *component_data)
 {
     i32 component_id;
-    if (entity->active_chunk->component_set.position_free_component_id == entity->active_chunk->component_set.position_component_count)
+    if (core->world_data->entity_components.position_free_component_id == core->world_data->entity_components.position_component_count)
     {
-        component_id = entity->active_chunk->component_set.position_component_count;
-        entity->active_chunk->component_set.position_component_count++;
-        entity->active_chunk->component_set.position_free_component_id = component_id + 1;
+        component_id = core->world_data->entity_components.position_component_count;
+        core->world_data->entity_components.position_component_count++;
+        core->world_data->entity_components.position_free_component_id = component_id + 1;
     }
     else
     {
-        component_id = entity->active_chunk->component_set.position_free_component_id;
+        component_id = core->world_data->entity_components.position_free_component_id;
     }
 
-    entity->active_chunk->component_set.position_components[component_id] = *((PositionComponent*)component_data);
-    entity->components[COMPONENT_position] = &entity->active_chunk->component_set.position_components[component_id];
-    entity->active_chunk->component_set.position_components[component_id].parent_entity = entity;
-    entity->active_chunk->component_set.position_components[component_id].component_id = component_id;
+    core->world_data->entity_components.position_components[component_id] = *((PositionComponent*)component_data);
+    entity->components[COMPONENT_position] = &core->world_data->entity_components.position_components[component_id];
+    core->world_data->entity_components.position_components[component_id].parent_entity = entity;
+    core->world_data->entity_components.position_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < entity->active_chunk->component_set.position_component_count + 1; i++)
+    for (int i = 0; i < core->world_data->entity_components.position_component_count + 1; i++)
     {
-        if (!entity->active_chunk->component_set.position_components[i].parent_entity)
+        if (!core->world_data->entity_components.position_components[i].parent_entity)
         {
-            entity->active_chunk->component_set.position_free_component_id = i;
+            core->world_data->entity_components.position_free_component_id = i;
             break;
         }
     }
@@ -355,37 +355,37 @@ internal void RemovePositionComponent(Entity *entity)
 
     i32 deleted_component_id = component->component_id;
     PositionComponent empty_comp = {0};
-    entity->active_chunk->component_set.position_components[deleted_component_id] = empty_comp;
+    core->world_data->entity_components.position_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_position] = 0;
 
-    if (deleted_component_id < entity->active_chunk->component_set.position_free_component_id)
-        entity->active_chunk->component_set.position_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.position_free_component_id)
+        core->world_data->entity_components.position_free_component_id = deleted_component_id;
 }
 
 internal void AddSpriteComponent(Entity *entity, void *component_data)
 {
     i32 component_id;
-    if (entity->active_chunk->component_set.sprite_free_component_id == entity->active_chunk->component_set.sprite_component_count)
+    if (core->world_data->entity_components.sprite_free_component_id == core->world_data->entity_components.sprite_component_count)
     {
-        component_id = entity->active_chunk->component_set.sprite_component_count;
-        entity->active_chunk->component_set.sprite_component_count++;
-        entity->active_chunk->component_set.sprite_free_component_id = component_id + 1;
+        component_id = core->world_data->entity_components.sprite_component_count;
+        core->world_data->entity_components.sprite_component_count++;
+        core->world_data->entity_components.sprite_free_component_id = component_id + 1;
     }
     else
     {
-        component_id = entity->active_chunk->component_set.sprite_free_component_id;
+        component_id = core->world_data->entity_components.sprite_free_component_id;
     }
 
-    entity->active_chunk->component_set.sprite_components[component_id] = *((SpriteComponent*)component_data);
-    entity->components[COMPONENT_sprite] = &entity->active_chunk->component_set.sprite_components[component_id];
-    entity->active_chunk->component_set.sprite_components[component_id].parent_entity = entity;
-    entity->active_chunk->component_set.sprite_components[component_id].component_id = component_id;
+    core->world_data->entity_components.sprite_components[component_id] = *((SpriteComponent*)component_data);
+    entity->components[COMPONENT_sprite] = &core->world_data->entity_components.sprite_components[component_id];
+    core->world_data->entity_components.sprite_components[component_id].parent_entity = entity;
+    core->world_data->entity_components.sprite_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < entity->active_chunk->component_set.sprite_component_count + 1; i++)
+    for (int i = 0; i < core->world_data->entity_components.sprite_component_count + 1; i++)
     {
-        if (!entity->active_chunk->component_set.sprite_components[i].parent_entity)
+        if (!core->world_data->entity_components.sprite_components[i].parent_entity)
         {
-            entity->active_chunk->component_set.sprite_free_component_id = i;
+            core->world_data->entity_components.sprite_free_component_id = i;
             break;
         }
     }
@@ -398,37 +398,37 @@ internal void RemoveSpriteComponent(Entity *entity)
 
     i32 deleted_component_id = component->component_id;
     SpriteComponent empty_comp = {0};
-    entity->active_chunk->component_set.sprite_components[deleted_component_id] = empty_comp;
+    core->world_data->entity_components.sprite_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_sprite] = 0;
 
-    if (deleted_component_id < entity->active_chunk->component_set.sprite_free_component_id)
-        entity->active_chunk->component_set.sprite_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.sprite_free_component_id)
+        core->world_data->entity_components.sprite_free_component_id = deleted_component_id;
 }
 
 internal void AddSubSpriteComponent(Entity *entity, void *component_data)
 {
     i32 component_id;
-    if (entity->active_chunk->component_set.sub_sprite_free_component_id == entity->active_chunk->component_set.sub_sprite_component_count)
+    if (core->world_data->entity_components.sub_sprite_free_component_id == core->world_data->entity_components.sub_sprite_component_count)
     {
-        component_id = entity->active_chunk->component_set.sub_sprite_component_count;
-        entity->active_chunk->component_set.sub_sprite_component_count++;
-        entity->active_chunk->component_set.sub_sprite_free_component_id = component_id + 1;
+        component_id = core->world_data->entity_components.sub_sprite_component_count;
+        core->world_data->entity_components.sub_sprite_component_count++;
+        core->world_data->entity_components.sub_sprite_free_component_id = component_id + 1;
     }
     else
     {
-        component_id = entity->active_chunk->component_set.sub_sprite_free_component_id;
+        component_id = core->world_data->entity_components.sub_sprite_free_component_id;
     }
 
-    entity->active_chunk->component_set.sub_sprite_components[component_id] = *((SubSpriteComponent*)component_data);
-    entity->components[COMPONENT_sub_sprite] = &entity->active_chunk->component_set.sub_sprite_components[component_id];
-    entity->active_chunk->component_set.sub_sprite_components[component_id].parent_entity = entity;
-    entity->active_chunk->component_set.sub_sprite_components[component_id].component_id = component_id;
+    core->world_data->entity_components.sub_sprite_components[component_id] = *((SubSpriteComponent*)component_data);
+    entity->components[COMPONENT_sub_sprite] = &core->world_data->entity_components.sub_sprite_components[component_id];
+    core->world_data->entity_components.sub_sprite_components[component_id].parent_entity = entity;
+    core->world_data->entity_components.sub_sprite_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < entity->active_chunk->component_set.sub_sprite_component_count + 1; i++)
+    for (int i = 0; i < core->world_data->entity_components.sub_sprite_component_count + 1; i++)
     {
-        if (!entity->active_chunk->component_set.sub_sprite_components[i].parent_entity)
+        if (!core->world_data->entity_components.sub_sprite_components[i].parent_entity)
         {
-            entity->active_chunk->component_set.sub_sprite_free_component_id = i;
+            core->world_data->entity_components.sub_sprite_free_component_id = i;
             break;
         }
     }
@@ -441,37 +441,37 @@ internal void RemoveSubSpriteComponent(Entity *entity)
 
     i32 deleted_component_id = component->component_id;
     SubSpriteComponent empty_comp = {0};
-    entity->active_chunk->component_set.sub_sprite_components[deleted_component_id] = empty_comp;
+    core->world_data->entity_components.sub_sprite_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_sub_sprite] = 0;
 
-    if (deleted_component_id < entity->active_chunk->component_set.sub_sprite_free_component_id)
-        entity->active_chunk->component_set.sub_sprite_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.sub_sprite_free_component_id)
+        core->world_data->entity_components.sub_sprite_free_component_id = deleted_component_id;
 }
 
 internal void AddAnimationComponent(Entity *entity, void *component_data)
 {
     i32 component_id;
-    if (entity->active_chunk->component_set.animation_free_component_id == entity->active_chunk->component_set.animation_component_count)
+    if (core->world_data->entity_components.animation_free_component_id == core->world_data->entity_components.animation_component_count)
     {
-        component_id = entity->active_chunk->component_set.animation_component_count;
-        entity->active_chunk->component_set.animation_component_count++;
-        entity->active_chunk->component_set.animation_free_component_id = component_id + 1;
+        component_id = core->world_data->entity_components.animation_component_count;
+        core->world_data->entity_components.animation_component_count++;
+        core->world_data->entity_components.animation_free_component_id = component_id + 1;
     }
     else
     {
-        component_id = entity->active_chunk->component_set.animation_free_component_id;
+        component_id = core->world_data->entity_components.animation_free_component_id;
     }
 
-    entity->active_chunk->component_set.animation_components[component_id] = *((AnimationComponent*)component_data);
-    entity->components[COMPONENT_animation] = &entity->active_chunk->component_set.animation_components[component_id];
-    entity->active_chunk->component_set.animation_components[component_id].parent_entity = entity;
-    entity->active_chunk->component_set.animation_components[component_id].component_id = component_id;
+    core->world_data->entity_components.animation_components[component_id] = *((AnimationComponent*)component_data);
+    entity->components[COMPONENT_animation] = &core->world_data->entity_components.animation_components[component_id];
+    core->world_data->entity_components.animation_components[component_id].parent_entity = entity;
+    core->world_data->entity_components.animation_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < entity->active_chunk->component_set.animation_component_count + 1; i++)
+    for (int i = 0; i < core->world_data->entity_components.animation_component_count + 1; i++)
     {
-        if (!entity->active_chunk->component_set.animation_components[i].parent_entity)
+        if (!core->world_data->entity_components.animation_components[i].parent_entity)
         {
-            entity->active_chunk->component_set.animation_free_component_id = i;
+            core->world_data->entity_components.animation_free_component_id = i;
             break;
         }
     }
@@ -484,37 +484,37 @@ internal void RemoveAnimationComponent(Entity *entity)
 
     i32 deleted_component_id = component->component_id;
     AnimationComponent empty_comp = {0};
-    entity->active_chunk->component_set.animation_components[deleted_component_id] = empty_comp;
+    core->world_data->entity_components.animation_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_animation] = 0;
 
-    if (deleted_component_id < entity->active_chunk->component_set.animation_free_component_id)
-        entity->active_chunk->component_set.animation_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.animation_free_component_id)
+        core->world_data->entity_components.animation_free_component_id = deleted_component_id;
 }
 
 internal void AddColliderComponent(Entity *entity, void *component_data)
 {
     i32 component_id;
-    if (entity->active_chunk->component_set.collider_free_component_id == entity->active_chunk->component_set.collider_component_count)
+    if (core->world_data->entity_components.collider_free_component_id == core->world_data->entity_components.collider_component_count)
     {
-        component_id = entity->active_chunk->component_set.collider_component_count;
-        entity->active_chunk->component_set.collider_component_count++;
-        entity->active_chunk->component_set.collider_free_component_id = component_id + 1;
+        component_id = core->world_data->entity_components.collider_component_count;
+        core->world_data->entity_components.collider_component_count++;
+        core->world_data->entity_components.collider_free_component_id = component_id + 1;
     }
     else
     {
-        component_id = entity->active_chunk->component_set.collider_free_component_id;
+        component_id = core->world_data->entity_components.collider_free_component_id;
     }
 
-    entity->active_chunk->component_set.collider_components[component_id] = *((ColliderComponent*)component_data);
-    entity->components[COMPONENT_collider] = &entity->active_chunk->component_set.collider_components[component_id];
-    entity->active_chunk->component_set.collider_components[component_id].parent_entity = entity;
-    entity->active_chunk->component_set.collider_components[component_id].component_id = component_id;
+    core->world_data->entity_components.collider_components[component_id] = *((ColliderComponent*)component_data);
+    entity->components[COMPONENT_collider] = &core->world_data->entity_components.collider_components[component_id];
+    core->world_data->entity_components.collider_components[component_id].parent_entity = entity;
+    core->world_data->entity_components.collider_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < entity->active_chunk->component_set.collider_component_count + 1; i++)
+    for (int i = 0; i < core->world_data->entity_components.collider_component_count + 1; i++)
     {
-        if (!entity->active_chunk->component_set.collider_components[i].parent_entity)
+        if (!core->world_data->entity_components.collider_components[i].parent_entity)
         {
-            entity->active_chunk->component_set.collider_free_component_id = i;
+            core->world_data->entity_components.collider_free_component_id = i;
             break;
         }
     }
@@ -527,37 +527,37 @@ internal void RemoveColliderComponent(Entity *entity)
 
     i32 deleted_component_id = component->component_id;
     ColliderComponent empty_comp = {0};
-    entity->active_chunk->component_set.collider_components[deleted_component_id] = empty_comp;
+    core->world_data->entity_components.collider_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_collider] = 0;
 
-    if (deleted_component_id < entity->active_chunk->component_set.collider_free_component_id)
-        entity->active_chunk->component_set.collider_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.collider_free_component_id)
+        core->world_data->entity_components.collider_free_component_id = deleted_component_id;
 }
 
 internal void AddVelocityComponent(Entity *entity, void *component_data)
 {
     i32 component_id;
-    if (entity->active_chunk->component_set.velocity_free_component_id == entity->active_chunk->component_set.velocity_component_count)
+    if (core->world_data->entity_components.velocity_free_component_id == core->world_data->entity_components.velocity_component_count)
     {
-        component_id = entity->active_chunk->component_set.velocity_component_count;
-        entity->active_chunk->component_set.velocity_component_count++;
-        entity->active_chunk->component_set.velocity_free_component_id = component_id + 1;
+        component_id = core->world_data->entity_components.velocity_component_count;
+        core->world_data->entity_components.velocity_component_count++;
+        core->world_data->entity_components.velocity_free_component_id = component_id + 1;
     }
     else
     {
-        component_id = entity->active_chunk->component_set.velocity_free_component_id;
+        component_id = core->world_data->entity_components.velocity_free_component_id;
     }
 
-    entity->active_chunk->component_set.velocity_components[component_id] = *((VelocityComponent*)component_data);
-    entity->components[COMPONENT_velocity] = &entity->active_chunk->component_set.velocity_components[component_id];
-    entity->active_chunk->component_set.velocity_components[component_id].parent_entity = entity;
-    entity->active_chunk->component_set.velocity_components[component_id].component_id = component_id;
+    core->world_data->entity_components.velocity_components[component_id] = *((VelocityComponent*)component_data);
+    entity->components[COMPONENT_velocity] = &core->world_data->entity_components.velocity_components[component_id];
+    core->world_data->entity_components.velocity_components[component_id].parent_entity = entity;
+    core->world_data->entity_components.velocity_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < entity->active_chunk->component_set.velocity_component_count + 1; i++)
+    for (int i = 0; i < core->world_data->entity_components.velocity_component_count + 1; i++)
     {
-        if (!entity->active_chunk->component_set.velocity_components[i].parent_entity)
+        if (!core->world_data->entity_components.velocity_components[i].parent_entity)
         {
-            entity->active_chunk->component_set.velocity_free_component_id = i;
+            core->world_data->entity_components.velocity_free_component_id = i;
             break;
         }
     }
@@ -570,37 +570,37 @@ internal void RemoveVelocityComponent(Entity *entity)
 
     i32 deleted_component_id = component->component_id;
     VelocityComponent empty_comp = {0};
-    entity->active_chunk->component_set.velocity_components[deleted_component_id] = empty_comp;
+    core->world_data->entity_components.velocity_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_velocity] = 0;
 
-    if (deleted_component_id < entity->active_chunk->component_set.velocity_free_component_id)
-        entity->active_chunk->component_set.velocity_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.velocity_free_component_id)
+        core->world_data->entity_components.velocity_free_component_id = deleted_component_id;
 }
 
 internal void AddPhysicsComponent(Entity *entity, void *component_data)
 {
     i32 component_id;
-    if (entity->active_chunk->component_set.physics_free_component_id == entity->active_chunk->component_set.physics_component_count)
+    if (core->world_data->entity_components.physics_free_component_id == core->world_data->entity_components.physics_component_count)
     {
-        component_id = entity->active_chunk->component_set.physics_component_count;
-        entity->active_chunk->component_set.physics_component_count++;
-        entity->active_chunk->component_set.physics_free_component_id = component_id + 1;
+        component_id = core->world_data->entity_components.physics_component_count;
+        core->world_data->entity_components.physics_component_count++;
+        core->world_data->entity_components.physics_free_component_id = component_id + 1;
     }
     else
     {
-        component_id = entity->active_chunk->component_set.physics_free_component_id;
+        component_id = core->world_data->entity_components.physics_free_component_id;
     }
 
-    entity->active_chunk->component_set.physics_components[component_id] = *((PhysicsComponent*)component_data);
-    entity->components[COMPONENT_physics] = &entity->active_chunk->component_set.physics_components[component_id];
-    entity->active_chunk->component_set.physics_components[component_id].parent_entity = entity;
-    entity->active_chunk->component_set.physics_components[component_id].component_id = component_id;
+    core->world_data->entity_components.physics_components[component_id] = *((PhysicsComponent*)component_data);
+    entity->components[COMPONENT_physics] = &core->world_data->entity_components.physics_components[component_id];
+    core->world_data->entity_components.physics_components[component_id].parent_entity = entity;
+    core->world_data->entity_components.physics_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < entity->active_chunk->component_set.physics_component_count + 1; i++)
+    for (int i = 0; i < core->world_data->entity_components.physics_component_count + 1; i++)
     {
-        if (!entity->active_chunk->component_set.physics_components[i].parent_entity)
+        if (!core->world_data->entity_components.physics_components[i].parent_entity)
         {
-            entity->active_chunk->component_set.physics_free_component_id = i;
+            core->world_data->entity_components.physics_free_component_id = i;
             break;
         }
     }
@@ -613,37 +613,37 @@ internal void RemovePhysicsComponent(Entity *entity)
 
     i32 deleted_component_id = component->component_id;
     PhysicsComponent empty_comp = {0};
-    entity->active_chunk->component_set.physics_components[deleted_component_id] = empty_comp;
+    core->world_data->entity_components.physics_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_physics] = 0;
 
-    if (deleted_component_id < entity->active_chunk->component_set.physics_free_component_id)
-        entity->active_chunk->component_set.physics_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.physics_free_component_id)
+        core->world_data->entity_components.physics_free_component_id = deleted_component_id;
 }
 
 internal void AddMovementComponent(Entity *entity, void *component_data)
 {
     i32 component_id;
-    if (entity->active_chunk->component_set.movement_free_component_id == entity->active_chunk->component_set.movement_component_count)
+    if (core->world_data->entity_components.movement_free_component_id == core->world_data->entity_components.movement_component_count)
     {
-        component_id = entity->active_chunk->component_set.movement_component_count;
-        entity->active_chunk->component_set.movement_component_count++;
-        entity->active_chunk->component_set.movement_free_component_id = component_id + 1;
+        component_id = core->world_data->entity_components.movement_component_count;
+        core->world_data->entity_components.movement_component_count++;
+        core->world_data->entity_components.movement_free_component_id = component_id + 1;
     }
     else
     {
-        component_id = entity->active_chunk->component_set.movement_free_component_id;
+        component_id = core->world_data->entity_components.movement_free_component_id;
     }
 
-    entity->active_chunk->component_set.movement_components[component_id] = *((MovementComponent*)component_data);
-    entity->components[COMPONENT_movement] = &entity->active_chunk->component_set.movement_components[component_id];
-    entity->active_chunk->component_set.movement_components[component_id].parent_entity = entity;
-    entity->active_chunk->component_set.movement_components[component_id].component_id = component_id;
+    core->world_data->entity_components.movement_components[component_id] = *((MovementComponent*)component_data);
+    entity->components[COMPONENT_movement] = &core->world_data->entity_components.movement_components[component_id];
+    core->world_data->entity_components.movement_components[component_id].parent_entity = entity;
+    core->world_data->entity_components.movement_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < entity->active_chunk->component_set.movement_component_count + 1; i++)
+    for (int i = 0; i < core->world_data->entity_components.movement_component_count + 1; i++)
     {
-        if (!entity->active_chunk->component_set.movement_components[i].parent_entity)
+        if (!core->world_data->entity_components.movement_components[i].parent_entity)
         {
-            entity->active_chunk->component_set.movement_free_component_id = i;
+            core->world_data->entity_components.movement_free_component_id = i;
             break;
         }
     }
@@ -656,37 +656,37 @@ internal void RemoveMovementComponent(Entity *entity)
 
     i32 deleted_component_id = component->component_id;
     MovementComponent empty_comp = {0};
-    entity->active_chunk->component_set.movement_components[deleted_component_id] = empty_comp;
+    core->world_data->entity_components.movement_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_movement] = 0;
 
-    if (deleted_component_id < entity->active_chunk->component_set.movement_free_component_id)
-        entity->active_chunk->component_set.movement_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.movement_free_component_id)
+        core->world_data->entity_components.movement_free_component_id = deleted_component_id;
 }
 
 internal void AddArcEntityComponent(Entity *entity, void *component_data)
 {
     i32 component_id;
-    if (entity->active_chunk->component_set.arc_entity_free_component_id == entity->active_chunk->component_set.arc_entity_component_count)
+    if (core->world_data->entity_components.arc_entity_free_component_id == core->world_data->entity_components.arc_entity_component_count)
     {
-        component_id = entity->active_chunk->component_set.arc_entity_component_count;
-        entity->active_chunk->component_set.arc_entity_component_count++;
-        entity->active_chunk->component_set.arc_entity_free_component_id = component_id + 1;
+        component_id = core->world_data->entity_components.arc_entity_component_count;
+        core->world_data->entity_components.arc_entity_component_count++;
+        core->world_data->entity_components.arc_entity_free_component_id = component_id + 1;
     }
     else
     {
-        component_id = entity->active_chunk->component_set.arc_entity_free_component_id;
+        component_id = core->world_data->entity_components.arc_entity_free_component_id;
     }
 
-    entity->active_chunk->component_set.arc_entity_components[component_id] = *((ArcEntityComponent*)component_data);
-    entity->components[COMPONENT_arc_entity] = &entity->active_chunk->component_set.arc_entity_components[component_id];
-    entity->active_chunk->component_set.arc_entity_components[component_id].parent_entity = entity;
-    entity->active_chunk->component_set.arc_entity_components[component_id].component_id = component_id;
+    core->world_data->entity_components.arc_entity_components[component_id] = *((ArcEntityComponent*)component_data);
+    entity->components[COMPONENT_arc_entity] = &core->world_data->entity_components.arc_entity_components[component_id];
+    core->world_data->entity_components.arc_entity_components[component_id].parent_entity = entity;
+    core->world_data->entity_components.arc_entity_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < entity->active_chunk->component_set.arc_entity_component_count + 1; i++)
+    for (int i = 0; i < core->world_data->entity_components.arc_entity_component_count + 1; i++)
     {
-        if (!entity->active_chunk->component_set.arc_entity_components[i].parent_entity)
+        if (!core->world_data->entity_components.arc_entity_components[i].parent_entity)
         {
-            entity->active_chunk->component_set.arc_entity_free_component_id = i;
+            core->world_data->entity_components.arc_entity_free_component_id = i;
             break;
         }
     }
@@ -699,37 +699,37 @@ internal void RemoveArcEntityComponent(Entity *entity)
 
     i32 deleted_component_id = component->component_id;
     ArcEntityComponent empty_comp = {0};
-    entity->active_chunk->component_set.arc_entity_components[deleted_component_id] = empty_comp;
+    core->world_data->entity_components.arc_entity_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_arc_entity] = 0;
 
-    if (deleted_component_id < entity->active_chunk->component_set.arc_entity_free_component_id)
-        entity->active_chunk->component_set.arc_entity_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.arc_entity_free_component_id)
+        core->world_data->entity_components.arc_entity_free_component_id = deleted_component_id;
 }
 
 internal void AddItemComponent(Entity *entity, void *component_data)
 {
     i32 component_id;
-    if (entity->active_chunk->component_set.item_free_component_id == entity->active_chunk->component_set.item_component_count)
+    if (core->world_data->entity_components.item_free_component_id == core->world_data->entity_components.item_component_count)
     {
-        component_id = entity->active_chunk->component_set.item_component_count;
-        entity->active_chunk->component_set.item_component_count++;
-        entity->active_chunk->component_set.item_free_component_id = component_id + 1;
+        component_id = core->world_data->entity_components.item_component_count;
+        core->world_data->entity_components.item_component_count++;
+        core->world_data->entity_components.item_free_component_id = component_id + 1;
     }
     else
     {
-        component_id = entity->active_chunk->component_set.item_free_component_id;
+        component_id = core->world_data->entity_components.item_free_component_id;
     }
 
-    entity->active_chunk->component_set.item_components[component_id] = *((ItemComponent*)component_data);
-    entity->components[COMPONENT_item] = &entity->active_chunk->component_set.item_components[component_id];
-    entity->active_chunk->component_set.item_components[component_id].parent_entity = entity;
-    entity->active_chunk->component_set.item_components[component_id].component_id = component_id;
+    core->world_data->entity_components.item_components[component_id] = *((ItemComponent*)component_data);
+    entity->components[COMPONENT_item] = &core->world_data->entity_components.item_components[component_id];
+    core->world_data->entity_components.item_components[component_id].parent_entity = entity;
+    core->world_data->entity_components.item_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < entity->active_chunk->component_set.item_component_count + 1; i++)
+    for (int i = 0; i < core->world_data->entity_components.item_component_count + 1; i++)
     {
-        if (!entity->active_chunk->component_set.item_components[i].parent_entity)
+        if (!core->world_data->entity_components.item_components[i].parent_entity)
         {
-            entity->active_chunk->component_set.item_free_component_id = i;
+            core->world_data->entity_components.item_free_component_id = i;
             break;
         }
     }
@@ -742,37 +742,37 @@ internal void RemoveItemComponent(Entity *entity)
 
     i32 deleted_component_id = component->component_id;
     ItemComponent empty_comp = {0};
-    entity->active_chunk->component_set.item_components[deleted_component_id] = empty_comp;
+    core->world_data->entity_components.item_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_item] = 0;
 
-    if (deleted_component_id < entity->active_chunk->component_set.item_free_component_id)
-        entity->active_chunk->component_set.item_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.item_free_component_id)
+        core->world_data->entity_components.item_free_component_id = deleted_component_id;
 }
 
 internal void AddTriggerComponent(Entity *entity, void *component_data)
 {
     i32 component_id;
-    if (entity->active_chunk->component_set.trigger_free_component_id == entity->active_chunk->component_set.trigger_component_count)
+    if (core->world_data->entity_components.trigger_free_component_id == core->world_data->entity_components.trigger_component_count)
     {
-        component_id = entity->active_chunk->component_set.trigger_component_count;
-        entity->active_chunk->component_set.trigger_component_count++;
-        entity->active_chunk->component_set.trigger_free_component_id = component_id + 1;
+        component_id = core->world_data->entity_components.trigger_component_count;
+        core->world_data->entity_components.trigger_component_count++;
+        core->world_data->entity_components.trigger_free_component_id = component_id + 1;
     }
     else
     {
-        component_id = entity->active_chunk->component_set.trigger_free_component_id;
+        component_id = core->world_data->entity_components.trigger_free_component_id;
     }
 
-    entity->active_chunk->component_set.trigger_components[component_id] = *((TriggerComponent*)component_data);
-    entity->components[COMPONENT_trigger] = &entity->active_chunk->component_set.trigger_components[component_id];
-    entity->active_chunk->component_set.trigger_components[component_id].parent_entity = entity;
-    entity->active_chunk->component_set.trigger_components[component_id].component_id = component_id;
+    core->world_data->entity_components.trigger_components[component_id] = *((TriggerComponent*)component_data);
+    entity->components[COMPONENT_trigger] = &core->world_data->entity_components.trigger_components[component_id];
+    core->world_data->entity_components.trigger_components[component_id].parent_entity = entity;
+    core->world_data->entity_components.trigger_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < entity->active_chunk->component_set.trigger_component_count + 1; i++)
+    for (int i = 0; i < core->world_data->entity_components.trigger_component_count + 1; i++)
     {
-        if (!entity->active_chunk->component_set.trigger_components[i].parent_entity)
+        if (!core->world_data->entity_components.trigger_components[i].parent_entity)
         {
-            entity->active_chunk->component_set.trigger_free_component_id = i;
+            core->world_data->entity_components.trigger_free_component_id = i;
             break;
         }
     }
@@ -785,37 +785,37 @@ internal void RemoveTriggerComponent(Entity *entity)
 
     i32 deleted_component_id = component->component_id;
     TriggerComponent empty_comp = {0};
-    entity->active_chunk->component_set.trigger_components[deleted_component_id] = empty_comp;
+    core->world_data->entity_components.trigger_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_trigger] = 0;
 
-    if (deleted_component_id < entity->active_chunk->component_set.trigger_free_component_id)
-        entity->active_chunk->component_set.trigger_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.trigger_free_component_id)
+        core->world_data->entity_components.trigger_free_component_id = deleted_component_id;
 }
 
 internal void AddStorageComponent(Entity *entity, void *component_data)
 {
     i32 component_id;
-    if (entity->active_chunk->component_set.storage_free_component_id == entity->active_chunk->component_set.storage_component_count)
+    if (core->world_data->entity_components.storage_free_component_id == core->world_data->entity_components.storage_component_count)
     {
-        component_id = entity->active_chunk->component_set.storage_component_count;
-        entity->active_chunk->component_set.storage_component_count++;
-        entity->active_chunk->component_set.storage_free_component_id = component_id + 1;
+        component_id = core->world_data->entity_components.storage_component_count;
+        core->world_data->entity_components.storage_component_count++;
+        core->world_data->entity_components.storage_free_component_id = component_id + 1;
     }
     else
     {
-        component_id = entity->active_chunk->component_set.storage_free_component_id;
+        component_id = core->world_data->entity_components.storage_free_component_id;
     }
 
-    entity->active_chunk->component_set.storage_components[component_id] = *((StorageComponent*)component_data);
-    entity->components[COMPONENT_storage] = &entity->active_chunk->component_set.storage_components[component_id];
-    entity->active_chunk->component_set.storage_components[component_id].parent_entity = entity;
-    entity->active_chunk->component_set.storage_components[component_id].component_id = component_id;
+    core->world_data->entity_components.storage_components[component_id] = *((StorageComponent*)component_data);
+    entity->components[COMPONENT_storage] = &core->world_data->entity_components.storage_components[component_id];
+    core->world_data->entity_components.storage_components[component_id].parent_entity = entity;
+    core->world_data->entity_components.storage_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < entity->active_chunk->component_set.storage_component_count + 1; i++)
+    for (int i = 0; i < core->world_data->entity_components.storage_component_count + 1; i++)
     {
-        if (!entity->active_chunk->component_set.storage_components[i].parent_entity)
+        if (!core->world_data->entity_components.storage_components[i].parent_entity)
         {
-            entity->active_chunk->component_set.storage_free_component_id = i;
+            core->world_data->entity_components.storage_free_component_id = i;
             break;
         }
     }
@@ -828,37 +828,37 @@ internal void RemoveStorageComponent(Entity *entity)
 
     i32 deleted_component_id = component->component_id;
     StorageComponent empty_comp = {0};
-    entity->active_chunk->component_set.storage_components[deleted_component_id] = empty_comp;
+    core->world_data->entity_components.storage_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_storage] = 0;
 
-    if (deleted_component_id < entity->active_chunk->component_set.storage_free_component_id)
-        entity->active_chunk->component_set.storage_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.storage_free_component_id)
+        core->world_data->entity_components.storage_free_component_id = deleted_component_id;
 }
 
 internal void AddParallaxComponent(Entity *entity, void *component_data)
 {
     i32 component_id;
-    if (entity->active_chunk->component_set.parallax_free_component_id == entity->active_chunk->component_set.parallax_component_count)
+    if (core->world_data->entity_components.parallax_free_component_id == core->world_data->entity_components.parallax_component_count)
     {
-        component_id = entity->active_chunk->component_set.parallax_component_count;
-        entity->active_chunk->component_set.parallax_component_count++;
-        entity->active_chunk->component_set.parallax_free_component_id = component_id + 1;
+        component_id = core->world_data->entity_components.parallax_component_count;
+        core->world_data->entity_components.parallax_component_count++;
+        core->world_data->entity_components.parallax_free_component_id = component_id + 1;
     }
     else
     {
-        component_id = entity->active_chunk->component_set.parallax_free_component_id;
+        component_id = core->world_data->entity_components.parallax_free_component_id;
     }
 
-    entity->active_chunk->component_set.parallax_components[component_id] = *((ParallaxComponent*)component_data);
-    entity->components[COMPONENT_parallax] = &entity->active_chunk->component_set.parallax_components[component_id];
-    entity->active_chunk->component_set.parallax_components[component_id].parent_entity = entity;
-    entity->active_chunk->component_set.parallax_components[component_id].component_id = component_id;
+    core->world_data->entity_components.parallax_components[component_id] = *((ParallaxComponent*)component_data);
+    entity->components[COMPONENT_parallax] = &core->world_data->entity_components.parallax_components[component_id];
+    core->world_data->entity_components.parallax_components[component_id].parent_entity = entity;
+    core->world_data->entity_components.parallax_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < entity->active_chunk->component_set.parallax_component_count + 1; i++)
+    for (int i = 0; i < core->world_data->entity_components.parallax_component_count + 1; i++)
     {
-        if (!entity->active_chunk->component_set.parallax_components[i].parent_entity)
+        if (!core->world_data->entity_components.parallax_components[i].parent_entity)
         {
-            entity->active_chunk->component_set.parallax_free_component_id = i;
+            core->world_data->entity_components.parallax_free_component_id = i;
             break;
         }
     }
@@ -871,37 +871,37 @@ internal void RemoveParallaxComponent(Entity *entity)
 
     i32 deleted_component_id = component->component_id;
     ParallaxComponent empty_comp = {0};
-    entity->active_chunk->component_set.parallax_components[deleted_component_id] = empty_comp;
+    core->world_data->entity_components.parallax_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_parallax] = 0;
 
-    if (deleted_component_id < entity->active_chunk->component_set.parallax_free_component_id)
-        entity->active_chunk->component_set.parallax_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.parallax_free_component_id)
+        core->world_data->entity_components.parallax_free_component_id = deleted_component_id;
 }
 
 internal void AddParticleEmitterComponent(Entity *entity, void *component_data)
 {
     i32 component_id;
-    if (entity->active_chunk->component_set.particle_emitter_free_component_id == entity->active_chunk->component_set.particle_emitter_component_count)
+    if (core->world_data->entity_components.particle_emitter_free_component_id == core->world_data->entity_components.particle_emitter_component_count)
     {
-        component_id = entity->active_chunk->component_set.particle_emitter_component_count;
-        entity->active_chunk->component_set.particle_emitter_component_count++;
-        entity->active_chunk->component_set.particle_emitter_free_component_id = component_id + 1;
+        component_id = core->world_data->entity_components.particle_emitter_component_count;
+        core->world_data->entity_components.particle_emitter_component_count++;
+        core->world_data->entity_components.particle_emitter_free_component_id = component_id + 1;
     }
     else
     {
-        component_id = entity->active_chunk->component_set.particle_emitter_free_component_id;
+        component_id = core->world_data->entity_components.particle_emitter_free_component_id;
     }
 
-    entity->active_chunk->component_set.particle_emitter_components[component_id] = *((ParticleEmitterComponent*)component_data);
-    entity->components[COMPONENT_particle_emitter] = &entity->active_chunk->component_set.particle_emitter_components[component_id];
-    entity->active_chunk->component_set.particle_emitter_components[component_id].parent_entity = entity;
-    entity->active_chunk->component_set.particle_emitter_components[component_id].component_id = component_id;
+    core->world_data->entity_components.particle_emitter_components[component_id] = *((ParticleEmitterComponent*)component_data);
+    entity->components[COMPONENT_particle_emitter] = &core->world_data->entity_components.particle_emitter_components[component_id];
+    core->world_data->entity_components.particle_emitter_components[component_id].parent_entity = entity;
+    core->world_data->entity_components.particle_emitter_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < entity->active_chunk->component_set.particle_emitter_component_count + 1; i++)
+    for (int i = 0; i < core->world_data->entity_components.particle_emitter_component_count + 1; i++)
     {
-        if (!entity->active_chunk->component_set.particle_emitter_components[i].parent_entity)
+        if (!core->world_data->entity_components.particle_emitter_components[i].parent_entity)
         {
-            entity->active_chunk->component_set.particle_emitter_free_component_id = i;
+            core->world_data->entity_components.particle_emitter_free_component_id = i;
             break;
         }
     }
@@ -914,11 +914,11 @@ internal void RemoveParticleEmitterComponent(Entity *entity)
 
     i32 deleted_component_id = component->component_id;
     ParticleEmitterComponent empty_comp = {0};
-    entity->active_chunk->component_set.particle_emitter_components[deleted_component_id] = empty_comp;
+    core->world_data->entity_components.particle_emitter_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_particle_emitter] = 0;
 
-    if (deleted_component_id < entity->active_chunk->component_set.particle_emitter_free_component_id)
-        entity->active_chunk->component_set.particle_emitter_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.particle_emitter_free_component_id)
+        core->world_data->entity_components.particle_emitter_free_component_id = deleted_component_id;
 }
 
 internal void DeleteEntity(Entity *entity)
@@ -966,10 +966,9 @@ internal void DeleteEntity(Entity *entity)
     if (particle_emitter_component)
         RemoveParticleEmitterComponent(entity);
 
-    ChunkData *deleted_entity_active_chunk = entity->active_chunk;
     i32 deleted_entity_id = entity->entity_id;
     Entity empty_entity = {0};
     *entity = empty_entity;
-    if (deleted_entity_id < deleted_entity_active_chunk->free_entity_id)
-        deleted_entity_active_chunk->free_entity_id = deleted_entity_id;
+    if (deleted_entity_id < core->world_data->free_entity_index)
+        core->world_data->free_entity_index = deleted_entity_id;
 }
