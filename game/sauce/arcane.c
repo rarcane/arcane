@@ -1,8 +1,8 @@
 // NOTE(rjf): Third-Party Code
-#define STB_IMAGE_IMPLEMENTATION
-#define STBI_ONLY_PNG
-#include "ext/stb_image.h"
-#include "time.h"
+// #define STB_IMAGE_IMPLEMENTATION
+// #define STBI_ONLY_PNG
+// #include "ext/stb_image.h"
+// #include "time.h"
 
 // NOTE(rjf): Core Header Code
 #define TSFOUNDATION_LOG_PROCEDURE_FILE "tsarcane/arcane_tsfoundation_log_procedure.h"
@@ -62,17 +62,17 @@ PermanentLoad(TsPlatform *platform_)
 	platform = platform_;
 	core = MemoryArenaAllocateAndZero(&platform->permanent_arena, sizeof(*core));
 	HardAssert(core != 0);
-
+    
 	// NOTE(rjf): Initialize memory arenas.
 	{
 		core->permanent_arena = &platform->permanent_arena;
 		core->frame_arena = &platform->scratch_arena;
-
+        
 		u32 world_storage_size = Megabytes(1024);
 		void *world_storage = VirtualAlloc(0, world_storage_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 		core->world_arena = MemoryArenaInit(world_storage, world_storage_size);
 	}
-
+    
 	// NOTE(rjf): Initialize core systems.
 	{
 		// NOTE(rjf): Initialize TsDevTerminal.
@@ -81,9 +81,9 @@ PermanentLoad(TsPlatform *platform_)
 			{
 				TsDevTerminalCommand commands[] = {
 					0
-					//{"col_draw", "", "Toggles whether the collision bounds are drawn.", 1, ToggleCollisionCommand},
+                        //{"col_draw", "", "Toggles whether the collision bounds are drawn.", 1, ToggleCollisionCommand},
 				};
-
+                
 				TsDevTerminalVariable variables[] = {
 					{"camera_zoom", TSDEVTERMINAL_VARIABLE_TYPE_f32, &core->camera_zoom},
 					{"camera_offset", TSDEVTERMINAL_VARIABLE_TYPE_v2, &core->camera_offset},
@@ -93,57 +93,57 @@ PermanentLoad(TsPlatform *platform_)
 					{"draw_velocity", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->draw_velocity},
 					{"fullscreen", TSDEVTERMINAL_VARIABLE_TYPE_b32, &platform->fullscreen},
 				};
-
+                
 				init_info.frame_arena = core->frame_arena;
 				init_info.variable_count = ArrayCount(variables);
 				init_info.variables = variables;
 				init_info.command_count = ArrayCount(commands);
 				init_info.commands = commands;
 			}
-
+            
 			core->dev_terminal = MemoryArenaAllocate(core->permanent_arena, sizeof(*core->dev_terminal));
 			TsDevTerminalInit(core->dev_terminal, &init_info, core->permanent_arena);
 		}
-
+        
 		// NOTE(rjf): Initialize Ts2d.
 		{
-			core->renderer = platform->renderer;
+			core->renderer = platform->ts2d;
 			Ts2dInit(core->renderer, core->permanent_arena);
 		}
-
+        
 		// NOTE(rjf): Initialize TsAssets.
 		{
 			core->assets = MemoryArenaAllocate(core->permanent_arena, sizeof(*core->assets));
 			char *assets_root = MakeCStringOnMemoryArena(core->permanent_arena, "%sres/", platform->executable_folder_absolute_path);
 			TsAssetsInit(core->assets, assets_root, core->permanent_arena);
 		}
-
+        
 		// NOTE(rjf): Initialize TsUI.
 		{
 			core->ui = MemoryArenaAllocate(core->permanent_arena, sizeof(*core->ui));
 			TsUIInit(core->ui);
 		}
-
+        
 		// NOTE(tjr): Initialise Arcane data.
 		{
 			InitialiseActions();
 			InitialiseSpriteData();
 			InitialiseItemData();
-
+            
 			core->world_data = MemoryArenaAllocateAndZero(&core->world_arena, sizeof(WorldData));
 			core->world_data->floating_chunk.is_valid = 1;
-
+            
 			InitialiseECS();
-
+            
 			core->camera_zoom = DEFAULT_CAMERA_ZOOM;
 			core->shadow_opacity = 0.0f;
-
+            
 			core->delta_mult = 1.0f;
 			core->world_delta_mult = 1.0f;
-
+            
 			TempInitGameWorld();
 		}
-
+        
 		Ts2dSetDefaultFont(core->renderer, TsAssetsRequestTs2dFontByName(core->assets, "mono"));
 	}
 }
@@ -167,7 +167,7 @@ Update(void)
 		// NOTE(tjr): Entering / exiting full-screen
 		if (platform->key_pressed[KEY_f11])
 			platform->fullscreen = !platform->fullscreen;
-
+        
 		// NOTE(tjr): Toggle editor mode
 		if (platform->key_pressed[KEY_f1])
 		{
@@ -184,17 +184,17 @@ Update(void)
 				core->is_in_editor = 1;
 			}
 		}
-
+        
 		{
 			local_persist b8 initiated_click = 0;
 			local_persist b8 has_released = 0;
-
+            
 			if (has_released)
 			{
 				core->left_mouse_released = 0;
 				has_released = 0;
 			}
-
+            
 			if (initiated_click && !platform->left_mouse_down)
 			{
 				// Normal release
@@ -202,36 +202,36 @@ Update(void)
 				initiated_click = 0;
 				has_released = 1;
 			}
-
+            
 			if (initiated_click && platform->left_mouse_pressed)
 			{
 				// double click
 				core->left_mouse_released = 1;
 				initiated_click = 0;
 				has_released = 1;
-
+                
 				platform->left_mouse_pressed = 0;
 			}
-
+            
 			if (platform->left_mouse_pressed && core->left_mouse_released)
 				R_BREAK("Both a press and a release can not occur at the same time.");
-
+            
 			if (platform->left_mouse_pressed)
 			{
 				initiated_click = 1;
 			}
 		}
-
+        
 		{
 			local_persist b8 initiated_click = 0;
 			local_persist b8 has_released = 0;
-
+            
 			if (has_released)
 			{
 				core->right_mouse_released = 0;
 				has_released = 0;
 			}
-
+            
 			if (initiated_click && !platform->right_mouse_down)
 			{
 				// Normal release
@@ -239,26 +239,26 @@ Update(void)
 				initiated_click = 0;
 				has_released = 1;
 			}
-
+            
 			if (initiated_click && platform->right_mouse_pressed)
 			{
 				// double click
 				core->right_mouse_released = 1;
 				initiated_click = 0;
 				has_released = 1;
-
+                
 				platform->right_mouse_pressed = 0;
 			}
-
+            
 			if (platform->right_mouse_pressed && core->right_mouse_released)
 				R_BREAK("Both a press and a release can not occur at the same time.");
-
+            
 			if (platform->right_mouse_pressed)
 			{
 				initiated_click = 1;
 			}
 		}
-
+        
 		if (!core->is_mid_right_click && platform->left_mouse_pressed)
 		{
 			core->is_mid_left_click = 1;
@@ -267,7 +267,7 @@ Update(void)
 		{
 			core->is_mid_left_click = 0;
 		}
-
+        
 		if (!core->is_mid_left_click && platform->right_mouse_pressed)
 		{
 			core->is_mid_right_click = 1;
@@ -277,22 +277,22 @@ Update(void)
 			core->is_mid_right_click = 0;
 		}
 	}
-
+    
 	// NOTE(rjf): Load data from platform.
 	{
 		core->render_w = (f32)platform->window_width;
 		core->render_h = (f32)platform->window_height;
 		core->raw_delta_t = (f32)(1.f / platform->target_frames_per_second);
 	}
-
+    
 	// NOTE(tjr): Calculate delta times.
 	{
 		core->delta_t = core->raw_delta_t * core->delta_mult;
-
+        
 		core->world_delta_t = core->delta_t * core->world_delta_mult;
 		core->world_data->elapsed_world_time += core->world_delta_t;
 	}
-
+    
 	// NOTE(rjf): Begin renderer frame.
 	{
 		Ts2dBeginFrameInfo begin_frame_info = {0};
@@ -304,9 +304,9 @@ Update(void)
 		}
 		Ts2dBeginFrame(core->renderer, &begin_frame_info);
 	}
-
+    
 	TsDevTerminalUpdate(core->dev_terminal, core->delta_t);
-
+    
 	// NOTE(rjf): Begin UI frame.
 	{
 		TsUIFrameData ui_frame = {0};
@@ -325,19 +325,19 @@ Update(void)
 			ui_frame.left_pressed |= !platform->keyboard_captured * platform->last_key == KEY_left;
 			ui_frame.down_pressed |= !platform->keyboard_captured * platform->last_key == KEY_down;
 			ui_frame.right_pressed |= !platform->keyboard_captured * platform->last_key == KEY_right;
-
+            
 			if (platform->last_frame_gamepads)
 			{
 				ui_frame.down_pressed |= platform->gamepads[0].joystick_1.y <= -0.5f && platform->last_frame_gamepads[0].joystick_1.y > -0.5f;
 				ui_frame.left_pressed |= platform->gamepads[0].joystick_1.x <= -0.5f && platform->last_frame_gamepads[0].joystick_1.x > -0.5f;
 				ui_frame.up_pressed |= platform->gamepads[0].joystick_1.y >= +0.5f && platform->last_frame_gamepads[0].joystick_1.y < +0.5f;
 				ui_frame.right_pressed |= platform->gamepads[0].joystick_1.x >= +0.5f && platform->last_frame_gamepads[0].joystick_1.x < +0.5f;
-
+                
 				ui_frame.down_hold |= platform->gamepads[0].joystick_1.y <= -0.5f;
 				ui_frame.left_hold |= platform->gamepads[0].joystick_1.x <= -0.5f;
 				ui_frame.up_hold |= platform->gamepads[0].joystick_1.y >= +0.5f;
 				ui_frame.right_hold |= platform->gamepads[0].joystick_1.x >= +0.5f;
-
+                
 				ui_frame.up_pressed |= ((platform->gamepads[0].button_states[GAMEPAD_BUTTON_dpad_up]) && !(platform->last_frame_gamepads[0].button_states[GAMEPAD_BUTTON_dpad_up]));
 				ui_frame.left_pressed |= ((platform->gamepads[0].button_states[GAMEPAD_BUTTON_dpad_left]) && !(platform->last_frame_gamepads[0].button_states[GAMEPAD_BUTTON_dpad_left]));
 				ui_frame.down_pressed |= ((platform->gamepads[0].button_states[GAMEPAD_BUTTON_dpad_down]) && !(platform->last_frame_gamepads[0].button_states[GAMEPAD_BUTTON_dpad_down]));
@@ -350,7 +350,7 @@ Update(void)
 				ui_frame.down_hold |= (platform->gamepads[0].button_states[GAMEPAD_BUTTON_dpad_down]);
 				ui_frame.right_hold |= (platform->gamepads[0].button_states[GAMEPAD_BUTTON_dpad_right]);
 			}
-
+            
 			ui_frame.enter_pressed |= !platform->keyboard_captured * platform->last_key == KEY_enter;
 			ui_frame.tab_pressed |= !platform->keyboard_captured * platform->last_key == KEY_tab;
 			ui_frame.escape_pressed |= !platform->keyboard_captured * platform->last_key == KEY_esc;
@@ -365,7 +365,7 @@ Update(void)
 		}
 		TsUIBeginFrame(core->ui, &ui_frame);
 	}
-
+    
 	// NOTE(tjr): Application-wide slow-motion controls
 	{
 		static b8 is_time_dilated = 0;
@@ -384,7 +384,7 @@ Update(void)
 				is_time_dilated = 1;
 			}
 		}
-
+        
 		if (is_time_dilated)
 		{
 			TsUIPushPosition(core->ui, v2(10.0f, core->render_h - 70.0f));
@@ -395,7 +395,7 @@ Update(void)
 			TsUIPopPosition(core->ui);
 		}
 	}
-
+    
 	// NOTE(rjf): Update.
 	{
 		if (core->is_ingame)
@@ -404,38 +404,38 @@ Update(void)
 			Log("%f %f", world_mouse_pos.x, world_mouse_pos.y);
 			PushDebugLine(v2(world_mouse_pos.x - 10.0f, world_mouse_pos.y), v2(world_mouse_pos.x + 10.0f, world_mouse_pos.y), v3(1, 0, 0));
 			PushDebugLine(v2(world_mouse_pos.x, world_mouse_pos.y - 10.0f), v2(world_mouse_pos.x, world_mouse_pos.y + 10.0f), v3(1, 0, 0)); */
-
+            
 			DrawEditorUI();
 			if (core->is_in_editor)
 				TransformEditorCamera();
-
+            
 			core->performance_timer_count = 0;
-
+            
 			START_PERF_TIMER("Update");
-
+            
 			// NOTE(tjr): Perform if the game is not paused.
 			if (core->world_delta_t != 0.0f)
 			{
 				PreMoveUpdatePlayer();
-
+                
 				UpdateChunks();
 				AdvanceVelocity();
 				UpdateTriggers();
-
+                
 				if (!core->is_in_editor)
 					TransformInGameCamera();
-
+                
 				PostMoveUpdatePlayer();
 			}
-
+            
 			UpdateClouds();
 			UpdateParallax();
-
+            
 			DrawWorld();
 			UpdateParticleEmitters();
 			DrawGameUI();
 			DrawDebugLines();
-
+            
 			END_PERF_TIMER;
 		}
 		else
@@ -458,14 +458,14 @@ Update(void)
 			TsUIEndInputGroup(core->ui);
 		}
 	}
-
+    
 	// NOTE(rjf): End UI frame.
 	{
 		TsUIEndFrame(core->ui);
 	}
-
+    
 	TsDevTerminalRender(core->dev_terminal);
-
+    
 	// NOTE(rjf): End renderer frame.
 	{
 		START_PERF_TIMER("Rendering");
@@ -473,7 +473,7 @@ Update(void)
 		Ts2dSwapBuffers(core->renderer);
 		END_PERF_TIMER;
 	}
-
+    
 	// NOTE(rjf): Update assets.
 	{
 		TsAssetsUpdate(core->assets);
@@ -507,7 +507,7 @@ internal void PushDebugLine(v2 p1, v2 p2, v3 colour)
 		0.0f,
 		0.0f,
 	};
-
+    
 	if (core->debug_line_count == core->free_debug_line_index)
 	{
 		core->debug_lines[core->debug_line_count++] = debug_line;
@@ -516,7 +516,7 @@ internal void PushDebugLine(v2 p1, v2 p2, v3 colour)
 	else
 	{
 		core->debug_lines[core->free_debug_line_index] = debug_line;
-
+        
 		b8 found_free_index = 0;
 		for (int i = 0; i < core->debug_line_count + 1; i++)
 		{
@@ -527,7 +527,7 @@ internal void PushDebugLine(v2 p1, v2 p2, v3 colour)
 				break;
 			}
 		}
-
+        
 		R_DEV_ASSERT(found_free_index, "Couldn't find a spare index.");
 	}
 }
@@ -543,7 +543,7 @@ internal void PushDebugLineForDuration(v2 p1, v2 p2, v3 colour, f32 lifetime)
 		lifetime,
 		core->world_data->elapsed_world_time,
 	};
-
+    
 	if (core->debug_line_count == core->free_debug_line_index)
 	{
 		core->debug_lines[core->debug_line_count++] = debug_line;
@@ -552,7 +552,7 @@ internal void PushDebugLineForDuration(v2 p1, v2 p2, v3 colour, f32 lifetime)
 	else
 	{
 		core->debug_lines[core->free_debug_line_index] = debug_line;
-
+        
 		b8 found_free_index = 0;
 		for (int i = 0; i < core->debug_line_count + 1; i++)
 		{
@@ -563,7 +563,7 @@ internal void PushDebugLineForDuration(v2 p1, v2 p2, v3 colour, f32 lifetime)
 				break;
 			}
 		}
-
+        
 		R_DEV_ASSERT(found_free_index, "Couldn't find a spare index.");
 	}
 }
@@ -573,10 +573,10 @@ internal void PushDebugShape(Shape shape, v2 position, v3 colour)
 	for (int i = 0; i < shape.vertex_count; i++)
 	{
 		int secondPoint = (i == shape.vertex_count - 1 ? 0 : i + 1);
-
+        
 		v2 p1 = V2AddV2(position, v2(shape.vertices[i].x, shape.vertices[i].y));
 		v2 p2 = V2AddV2(position, v2(shape.vertices[secondPoint].x, shape.vertices[secondPoint].y));
-
+        
 		PushDebugLine(p1,
 					  p2,
 					  colour);
@@ -588,10 +588,10 @@ internal void PushDebugShapeForDuration(Shape shape, v2 position, v3 colour, f32
 	for (int i = 0; i < shape.vertex_count; i++)
 	{
 		int secondPoint = (i == shape.vertex_count - 1 ? 0 : i + 1);
-
+        
 		v2 p1 = V2AddV2(position, v2(shape.vertices[i].x, shape.vertices[i].y));
 		v2 p2 = V2AddV2(position, v2(shape.vertices[secondPoint].x, shape.vertices[secondPoint].y));
-
+        
 		PushDebugLineForDuration(p1,
 								 p2,
 								 colour,
@@ -604,16 +604,16 @@ internal void DrawDebugLines()
 	for (int i = 0; i < core->debug_line_count; i++)
 	{
 		DebugLine *debug_line = &core->debug_lines[i];
-
+        
 		if (debug_line->is_valid && debug_line->has_duration && debug_line->start_time + debug_line->lifetime <= core->world_data->elapsed_world_time)
 		{
 			DebugLine empty_debug_line = {0};
 			core->debug_lines[i] = empty_debug_line;
-
+            
 			if (i < core->free_debug_line_index)
 				core->free_debug_line_index = i;
 		}
-
+        
 		if (debug_line->is_valid)
 		{
 			f32 alpha;
@@ -621,17 +621,17 @@ internal void DrawDebugLines()
 				alpha = ((debug_line->start_time + debug_line->lifetime) - core->world_data->elapsed_world_time) / debug_line->lifetime;
 			else
 				alpha = 1.0f;
-
+            
 			Ts2dPushLine(core->renderer,
 						 v4(debug_line->colour.r, debug_line->colour.g, debug_line->colour.b, alpha),
 						 v2view(debug_line->p1),
 						 v2view(debug_line->p2));
-
+            
 			if (!debug_line->has_duration)
 			{
 				DebugLine empty_debug_line = {0};
 				core->debug_lines[i] = empty_debug_line;
-
+                
 				if (i < core->free_debug_line_index)
 					core->free_debug_line_index = i;
 			}

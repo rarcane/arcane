@@ -2,7 +2,7 @@
 * Copyright (C) Ryan Fleury - All Rights Reserved
 * Unauthorized copying of this file, via any medium is strictly prohibited
 * Proprietary and confidential
-* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2020
 */
 
 // TODO(rjf): We should super break this out so we don't need to remember
@@ -62,12 +62,14 @@ struct Ts2dSubModel
     int index_count;
     GLuint index_buffer;
     Ts2dMaterial *material;
+    BoundingBox model_space_bounding_box;
 };
 
 struct Ts2dModel
 {
     int sub_model_count;
     Ts2dSubModel *sub_models;
+    BoundingBox model_space_bounding_box;
 };
 
 typedef struct Ts2dOpenGLShaderInput Ts2dOpenGLShaderInput;
@@ -165,7 +167,7 @@ typedef struct Ts2d Ts2d;
 struct Ts2d
 {
     TS2D_COMMON_DATA;
-
+    
     // NOTE(rjf): Frame Data
     struct
     {
@@ -181,26 +183,26 @@ struct Ts2d
         f32 brightness;
         f32 grayscale;
     };
-
+    
     // NOTE(rjf): All-purpose VAO
     struct
     {
         GLuint all_purpose_vao;
     };
-
+    
 #define Ts2dInstanceType(name, size_per_instance, max) \
-    struct                                                 \
-    {                                                      \
-        GLuint vao;                                        \
-        GLuint instance_buffer;                            \
-        unsigned int instance_data_alloc_pos;              \
-        unsigned int instance_data_max;                    \
-        unsigned int instance_data_stride;                 \
-        GLubyte *instance_data;                            \
-    }                                                      \
-    name;
+struct                                                 \
+{                                                      \
+GLuint vao;                                        \
+GLuint instance_buffer;                            \
+unsigned int instance_data_alloc_pos;              \
+unsigned int instance_data_max;                    \
+unsigned int instance_data_stride;                 \
+GLubyte *instance_data;                            \
+}                                                      \
+name;
 #include "ts2d_opengl_instance_type_list.inc"
-
+    
     // NOTE(rjf): Request data
     struct
     {
@@ -208,7 +210,7 @@ struct Ts2d
         unsigned int request_memory_max;
         unsigned int request_memory_alloc_position;
     };
-
+    
     // NOTE(rjf): Light data
     struct
     {
@@ -219,7 +221,7 @@ struct Ts2d
     }
     lights[TS2D_MAX_LIGHT_COUNT];
     u32 light_count;
-
+    
     // NOTE(rjf): Clipping stack
     struct
     {
@@ -229,7 +231,7 @@ struct Ts2d
         v4 clip_stack[TS2D_CLIP_STACK_MAX];
         v4 current_clip;
     };
-
+    
     // NOTE(rjf): FBO data
     struct
     {
@@ -244,13 +246,13 @@ struct Ts2d
         Ts2dOpenGLFBO screen_size_scratch_fbo_3_8u;
         Ts2dOpenGLFBO half_screen_size_scratch_fbo_1_8u;
         Ts2dOpenGLFBO half_screen_size_scratch_fbo_2_8u;
-
+        
         Ts2dOpenGLFBO model_sprite_fbo;
     };
-
+    
     // NOTE(rjf): Shaders
     GLuint *shaders;
-
+    
     // NOTE(rjf): Platform-specific data
 #if TS2D_WIN32
     HDC win32_device_context;

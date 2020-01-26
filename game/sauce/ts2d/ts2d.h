@@ -2,7 +2,7 @@
 * Copyright (C) Ryan Fleury - All Rights Reserved
 * Unauthorized copying of this file, via any medium is strictly prohibited
 * Proprietary and confidential
-* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2020
 */
 
 #ifndef TS2D_H_INCLUDED
@@ -12,6 +12,10 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_ONLY_PNG
+#include "ext/stb_image.h"
 
 /*---------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------*/
@@ -48,31 +52,50 @@ typedef struct Ts2dFontGlyph        Ts2dFontGlyph;
 #define TS2D_DEBUG_EXTRA_ARGS
 #endif
 
+//~ NOTE(rjf): Main Procedures
 void          Ts2dInit                                    (Ts2d *renderer, MemoryArena *arena);
 void          Ts2dCleanUp                                 (Ts2d *renderer);
 void          Ts2dBeginFrame                              (Ts2d *renderer, Ts2dBeginFrameInfo *info);
 void          Ts2dEndFrame                                (Ts2d *renderer);
 void          Ts2dSwapBuffers                             (Ts2d *renderer);
+void          Ts2dSetDefaultFont                          (Ts2d *renderer, Ts2dFont *font);
+Ts2dFont     *Ts2dGetDefaultFont                          (Ts2d *renderer);
+
+//~ NOTE(rjf): Texture Procedures
 Ts2dTexture   Ts2dTextureInit                             (Ts2d *renderer, Ts2dTextureFormat format, int width, int height, void *data);
 Ts2dTexture   Ts2dTextureInitFlags                        (Ts2d *renderer, Ts2dTextureFlags flags, Ts2dTextureFormat format, int width, int height, void *data);
+Ts2dTexture   Ts2dTextureInitFromPNGData                  (Ts2d *renderer, void *png_data, u32 png_data_size);
+Ts2dTexture   Ts2dTextureLoad                             (Ts2d *renderer, char *path);
 void          Ts2dTextureCleanUp                          (Ts2d *renderer, Ts2dTexture *texture);
 void          Ts2dTextureSetFlags                         (Ts2dTexture *texture, Ts2dTextureFlags flags);
 b32           Ts2dTextureIsValid                          (Ts2dTexture *texture);
+
+//~ NOTE(rjf): Material Procedures
 Ts2dMaterial  Ts2dMaterialInit                            (Ts2d *renderer, Ts2dTexture *albedo);
 Ts2dMaterial  Ts2dMaterialInitSimple                      (Ts2d *renderer, v3 color);
 void          Ts2dMaterialCleanUp                         (Ts2d *renderer, Ts2dMaterial *material);
+
+//~ NOTE(rjf): Model Procedures
 Ts2dSubModel  Ts2dSubModelInit                            (Ts2d *renderer, Ts2dVertexDataFormat format, int vertex_count, f32 *vertex_data, int index_count, i32 *index_data, Ts2dMaterial *material);
 Ts2dSubModel  Ts2dSubModelInitSimple                      (Ts2d *renderer, Ts2dVertexDataFormat format, int vertex_count, f32 *vertex_data, Ts2dMaterial *material);
-Ts2dModel     Ts2dModelInit                               (Ts2d *renderer, int sub_model_count, Ts2dSubModel *sub_models);
+BoundingBox   Ts2dSubModelGetBoundingBox                  (Ts2dSubModel *sub_model);
 void          Ts2dSubModelCleanUp                         (Ts2d *renderer, Ts2dSubModel *sub_model);
+Ts2dModel     Ts2dModelInit                               (Ts2d *renderer, int sub_model_count, Ts2dSubModel *sub_models);
+Ts2dModel     Ts2dModelInitFromTSMData                    (Ts2d *renderer, void *data, u32 data_size);
+Ts2dModel     Ts2dModelLoad                               (Ts2d *renderer, char *path);
 void          Ts2dModelCleanUp                            (Ts2d *renderer, Ts2dModel *model);
+BoundingBox   Ts2dModelGetBoundingBox                     (Ts2dModel *sub_model);
+
+//~ NOTE(rjf): Font Procedures
 Ts2dFont      Ts2dFontInit                                (Ts2d *renderer, Ts2dTextureFormat format, int texture_width, int texture_height, void *texture_data, int size, int line_height, u32 glyph_count, Ts2dFontGlyph *glyphs, u32 glyph_lower_bound_character);
+Ts2dFont      Ts2dFontInitFromPNGAndFNTData               (Ts2d *renderer, void *png_data, u32 png_data_size, char *font_data);
+Ts2dFont      Ts2dFontLoad                                (Ts2d *renderer, char *png_path, char *fnt_path);
 void          Ts2dFontCleanUp                             (Ts2d *renderer, Ts2dFont *font);
 f32           Ts2dFontGetLineHeight                       (Ts2dFont *font);
 f32           Ts2dFontGetTextWidthN                       (Ts2dFont *font, char *text, u32 n);
 f32           Ts2dFontGetTextWidth                        (Ts2dFont *font, char *text);
-void          Ts2dSetDefaultFont                          (Ts2d *renderer, Ts2dFont *font);
-Ts2dFont     *Ts2dGetDefaultFont                          (Ts2d *renderer);
+
+//~ NOTE(rjf): Rendering Commands
 void          _Ts2dPushWorldBegin                         (Ts2d *renderer, Ts2dWorldInfo *world_info TS2D_DEBUG_EXTRA_PARAMS);
 void          _Ts2dPushBackgroundBegin                    (Ts2d *renderer TS2D_DEBUG_EXTRA_PARAMS);
 void          _Ts2dPushWorldEnd                           (Ts2d *renderer TS2D_DEBUG_EXTRA_PARAMS);
@@ -196,32 +219,44 @@ enum Ts2dTextureFlags
     TS2D_TEXTURE_FLAG_NOTHING = 0,
 };
 
-enum Ts2dVertexDataFormat
-{
-    TS2D_VERTEX_DATA_FORMAT_POSITION_UV_NORMAL_INTERLEAVED, // PPP,UV,NNN,PPP,UV,NNN ...
-    TS2D_VERTEX_DATA_FORMAT_POSITION_UV_NORMAL_SPLIT,       // PPP,PPP,PPP,PPP ... UV,UV,UV,UV ... NNN,NNN,NNN,NNN
-    TS2D_VERTEX_DATA_FORMAT_POSITION,                       // PPP,PPP,PPP ...
-};
+typedef u32 Ts2dVertexDataFormat;
+
+#define TS2D_VERTEX_POSITION         (1<<0)
+#define TS2D_VERTEX_UV               (1<<1)
+#define TS2D_VERTEX_NORMAL           (1<<2)
+#define TS2D_VERTEX_BONES            (1<<3)
+#define TS2D_VERTEX_INTERLEAVED      (1<<16) 
+
+#define TS2D_VERTEX_FORMAT_POSITION                              (TS2D_VERTEX_POSITION)
+#define TS2D_VERTEX_FORMAT_POSITION_UV_NORMAL_SPLIT              (TS2D_VERTEX_POSITION | TS2D_VERTEX_UV | TS2D_VERTEX_NORMAL)
+#define TS2D_VERTEX_FORMAT_POSITION_UV_NORMAL_INTERLEAVED        (TS2D_VERTEX_POSITION | TS2D_VERTEX_UV | TS2D_VERTEX_NORMAL | TS2D_VERTEX_INTERLEAVED)
+#define TS2D_VERTEX_FORMAT_POSITION_UV_NORMAL_BONES_INTERLEAVED  (TS2D_VERTEX_POSITION | TS2D_VERTEX_UV | TS2D_VERTEX_NORMAL | TS2D_VERTEX_BONES | TS2D_VERTEX_INTERLEAVED)
 
 static inline int
 Ts2dGetFloatsPerVertexWithFormat(Ts2dVertexDataFormat format)
 {
     int result = 0;
-    switch(format)
+    
+    if(format & TS2D_VERTEX_POSITION)
     {
-        case TS2D_VERTEX_DATA_FORMAT_POSITION_UV_NORMAL_INTERLEAVED:
-        case TS2D_VERTEX_DATA_FORMAT_POSITION_UV_NORMAL_SPLIT:
-        {
-            result = 8;
-            break;
-        }
-        case TS2D_VERTEX_DATA_FORMAT_POSITION:
-        {
-            result = 3;
-            break;
-        }
-        default: break;
+        result += 3;
     }
+    
+    if(format & TS2D_VERTEX_UV)
+    {
+        result += 2;
+    }
+    
+    if(format & TS2D_VERTEX_NORMAL)
+    {
+        result += 3;
+    }
+    
+    if(format & TS2D_VERTEX_BONES)
+    {
+        result += 5;
+    }
+    
     return result;
 }
 
@@ -245,7 +280,7 @@ struct Ts2dFontGlyph
 typedef struct Ts2dSkeletonBone Ts2dSkeletonBone;
 struct Ts2dSkeletonBone
 {
-    int parent_index;   
+    int parent_index;
     float transform[4][4];
 };
 

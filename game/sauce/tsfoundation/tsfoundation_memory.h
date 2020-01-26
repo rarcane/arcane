@@ -2,7 +2,7 @@
 * Copyright (C) Ryan Fleury - All Rights Reserved
 * Unauthorized copying of this file, via any medium is strictly prohibited
 * Proprietary and confidential
-* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2020
 */
 
 #define MemoryCopy                 memcpy
@@ -15,6 +15,27 @@ MemorySet(void *mem, u8 val, u64 size)
     {
         ((u8 *)mem)[i] = val;
     }
+}
+
+internal b32
+MemoryMatch(void *a, void *b, u32 size)
+{
+    b32 match = 0;
+    if(a && b)
+    {
+        match = 1;
+        u8 *a_byte = a;
+        u8 *b_byte = b;
+        for(u32 i = 0; i < size; ++i)
+        {
+            if(a_byte[i] != b_byte[i])
+            {
+                match = 0;
+                break;
+            }
+        }
+    }
+    return match;
 }
 
 typedef struct MemoryArena MemoryArena;

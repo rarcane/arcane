@@ -442,11 +442,13 @@ _ts2d__global_opengl_shaders[] = {
 {
 "Model Sprite",
 {
-{ 2, "vert_normal", },
-{ 1, "vert_uv", },
-{ 0, "vert_position", },
+{ 4, "vert_bone_weights_", },
+{ 3, "vert_bone_indices_", },
+{ 2, "vert_normal_", },
+{ 1, "vert_uv_", },
+{ 0, "vert_position_", },
 },
-3,
+5,
 {
 { 0, "color", },
 },
@@ -454,19 +456,50 @@ _ts2d__global_opengl_shaders[] = {
 "#version 330 core\n"
 "\n"
 "\n"
-"in vec3 vert_position;\n"
-"in vec2 vert_uv;\n"
-"in vec3 vert_normal;\n"
+"in vec3 vert_position_;\n"
+"in vec2 vert_uv_;\n"
+"in vec3 vert_normal_;\n"
+"in int vert_bone_indices_;\n"
+"in vec4 vert_bone_weights_;\n"
 "\n"
 "out vec3 frag_position;\n"
 "out vec3 frag_normal;\n"
 "\n"
 "uniform mat3 model_transform;\n"
 "uniform mat4 view_projection;\n"
+"uniform mat4 bone_transform[32];\n"
+"uniform int transform_with_bones;\n"
+"uniform vec3 origin_shift;\n"
 "\n"
 "void main()\n"
 "{\n"
-"    vec3 vertex_position = model_transform * vert_position;\n"
+"    vec3 vert_position = vert_position_;\n"
+"    vec2 vert_uv = vert_uv_;\n"
+"    vec3 vert_normal = vert_normal_;\n"
+"    int vert_bone_indices_packed = vert_bone_indices_;\n"
+"    vec4 vert_bone_weights = vert_bone_weights_;\n"
+"    \n"
+"    vec4 model_position = vec4(vert_position + origin_shift, 1);\n"
+"    if(transform_with_bones != 0)\n"
+"    {\n"
+"        int bone_index_1 = (vert_bone_indices_packed & 0x000000ff) >> 0;\n"
+"        int bone_index_2 = (vert_bone_indices_packed & 0x0000ff00) >> 8;\n"
+"        int bone_index_3 = (vert_bone_indices_packed & 0x00ff0000) >> 16;\n"
+"        int bone_index_4 = (vert_bone_indices_packed & 0xff000000) >> 32;\n"
+"        \n"
+"        float bone_weight_1 = vert_bone_weights.x;\n"
+"        float bone_weight_2 = vert_bone_weights.y;\n"
+"        float bone_weight_3 = vert_bone_weights.z;\n"
+"        float bone_weight_4 = vert_bone_weights.w;\n"
+"        \n"
+"        vec4 bone_transformed_model_position =\n"
+"            ((bone_transform[bone_index_1] * model_position * bone_weight_1) +\n"
+"             (bone_transform[bone_index_2] * model_position * bone_weight_2) +\n"
+"             (bone_transform[bone_index_3] * model_position * bone_weight_3) +\n"
+"             (bone_transform[bone_index_4] * model_position * bone_weight_4));\n"
+"    }\n"
+"    \n"
+"    vec3 vertex_position = model_transform * model_position.xyz;\n"
 "    vec4 world_space_position = vec4(vertex_position.x, vertex_position.y, vertex_position.z, 1);\n"
 "    vec4 clip_space_position = view_projection * world_space_position;\n"
 "    gl_Position = clip_space_position;\n"
@@ -486,21 +519,21 @@ _ts2d__global_opengl_shaders[] = {
 "\n"
 "void main()\n"
 "{\n"
-"	// NOTE(rjf): Calculate diffuse lighting.\n"
-"	float diffuse_factor = 1;\n"
-"	{\n"
-"		diffuse_factor = dot(shadow_vector, frag_normal);\n"
-"		diffuse_factor *= diffuse_factor;\n"
-"		if(diffuse_factor < 0.5)\n"
-"		{\n"
-"			diffuse_factor = 0.5;\n"
-"		}\n"
-"		else\n"
-"		{\n"
-"			diffuse_factor = 1;\n"
-"		}\n"
-"	}\n"
-"\n"
+"    // NOTE(rjf): Calculate diffuse lighting.\n"
+"    float diffuse_factor = 1;\n"
+"    {\n"
+"        diffuse_factor = dot(shadow_vector, frag_normal);\n"
+"        diffuse_factor *= diffuse_factor;\n"
+"        if(diffuse_factor < 0.5)\n"
+"        {\n"
+"            diffuse_factor = 0.5;\n"
+"        }\n"
+"        else\n"
+"        {\n"
+"            diffuse_factor = 1;\n"
+"        }\n"
+"    }\n"
+"    \n"
 "    color = vec4(diffuse_factor, diffuse_factor, diffuse_factor, 1);\n"
 "}\n"
 "",

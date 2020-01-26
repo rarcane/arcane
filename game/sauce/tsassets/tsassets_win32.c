@@ -2,7 +2,7 @@
 * Copyright (C) Ryan Fleury - All Rights Reserved
 * Unauthorized copying of this file, via any medium is strictly prohibited
 * Proprietary and confidential
-* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2020
 */
 
 void
@@ -26,19 +26,19 @@ _TsAssetsLoadDirectoryItems(TsAssets *assets, char *path, int *item_count_ptr, c
     DirectorySearchTask **target_search_task = &first_search_task;
     
 #define QueueTask(path) {\
-        DirectorySearchTask *new_task = MemoryArenaAllocate(arena, sizeof(*new_task));\
-        if(new_task != 0)\
-        {\
-            new_task->sub_search_pattern = path;\
-            new_task->next = 0;\
-            *target_search_task = new_task;\
-            target_search_task = &(*target_search_task)->next;\
-        }\
-        else\
-        {\
-            LogWarning("[Assets] Directory search task space exhausted.");\
-        }\
-    }
+DirectorySearchTask *new_task = MemoryArenaAllocate(arena, sizeof(*new_task));\
+if(new_task != 0)\
+{\
+new_task->sub_search_pattern = path;\
+new_task->next = 0;\
+*target_search_task = new_task;\
+target_search_task = &(*target_search_task)->next;\
+}\
+else\
+{\
+LogWarning("[Assets] Directory search task space exhausted.");\
+}\
+}
     
     QueueTask("");
     

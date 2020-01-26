@@ -2,7 +2,7 @@
 * Copyright (C) Ryan Fleury - All Rights Reserved
 * Unauthorized copying of this file, via any medium is strictly prohibited
 * Proprietary and confidential
-* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2020
 */
 
 // NOTE(rjf): Keys
@@ -107,7 +107,12 @@ struct TsPlatform
     MemoryArena scratch_arena;
     
     // NOTE(rjf): Engine Modules
-#include TSFOUNDATION_MODULES_DECLARATION_FILE
+#if TS2D
+    void *ts2d;
+#endif
+#if TS3D
+    void *ts3d;
+#endif
     
     // NOTE(rjf): Options
     volatile b32 quit;
@@ -171,12 +176,15 @@ struct TsPlatform
     void (*DeleteFile)(char *path);
     b32 (*MakeDirectory)(char *path);
     b32 (*DoesFileExist)(char *path);
+    b32 (*DoesDirectoryExist)(char *path);
+    b32 (*CopyFile)(char *dest, char *source);
+    b32 (*CopyDirectoryRecursively)(char *dest, char *source);
     TsPlatformDirectoryList (*PlatformDirectoryListLoad)(char *path, i32 flags);
     void (*PlatformDirectoryListCleanUp)(TsPlatformDirectoryList *file_list);
     void *(*HeapAlloc)(u32 size);
     void (*HeapFree)(void *memory);
     i32 (*QueueJob)(void *job_data, TsWorkerThreadDoJobWorkCallback *DoWork, TsWorkerThreadJobCompleteCallback *JobComplete);
-#define TS_WAIT_FOREVER 0xFFFFFFFF
+#define TS_WAIT_FOREVER (0xFFFFFFFF)
     b32 (*WaitForJob)(i32 job_index, u32 milliseconds);
     f32 (*GetTime)(void);
     u64 (*GetCycles)(void);

@@ -2,7 +2,7 @@
 * Copyright (C) Ryan Fleury - All Rights Reserved
 * Unauthorized copying of this file, via any medium is strictly prohibited
 * Proprietary and confidential
-* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2020
 */
 
 #ifndef TSUI_H_INCLUDED
@@ -373,9 +373,10 @@ struct TsUI
 };
 
 // NOTE(rjf): Main calls
-void  TsUIInit       (TsUI *ui);
-void  TsUIBeginFrame (TsUI *ui, TsUIFrameData *frame);
-void  TsUIEndFrame   (TsUI *ui);
+void  TsUIInit                      (TsUI *ui);
+void  TsUILoadFrameDataFromPlatform (TsUIFrameData *ui_frame);
+void  TsUIBeginFrame                (TsUI *ui, TsUIFrameData *frame);
+void  TsUIEndFrame                  (TsUI *ui);
 
 // NOTE(rjf): Input group calls
 void  TsUIBeginInputGroup  (TsUI *ui);

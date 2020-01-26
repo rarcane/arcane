@@ -2,15 +2,15 @@
 * Copyright (C) Ryan Fleury - All Rights Reserved
 * Unauthorized copying of this file, via any medium is strictly prohibited
 * Proprietary and confidential
-* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2020
 */
 
 void _TsAssetsInitTypeSizes(TsAssets *assets)
 {
 #define TsAssetsAssetType(name, load_info_name, max, pre_load_callback, load_callback, post_load_callback, clean_up_callback, is_loaded_callback, directory) {\
-        assets->asset_types[TSASSETS_TYPE_##name].size_per_asset = sizeof(name);\
-        assets->asset_types[TSASSETS_TYPE_##name].size_per_load_info = sizeof(load_info_name);\
-    }
+assets->asset_types[TSASSETS_TYPE_##name].size_per_asset = sizeof(name);\
+assets->asset_types[TSASSETS_TYPE_##name].size_per_load_info = sizeof(load_info_name);\
+}
 #include TSASSETS_ASSET_TYPE_FILE
 #undef TsAssetsAssetType
 }
@@ -25,12 +25,12 @@ void _TsAssetsInitTypeMaxCounts(TsAssets *assets)
 void _TsAssetsInitTypeCallbacks(TsAssets *assets)
 {
 #define TsAssetsAssetType(name, load_info_name, max, pre_load_callback, load_callback, post_load_callback, clean_up_callback, is_loaded_callback, directory) {\
-        assets->asset_types[TSASSETS_TYPE_##name].PreLoad  = pre_load_callback;\
-        assets->asset_types[TSASSETS_TYPE_##name].Load     = load_callback;\
-        assets->asset_types[TSASSETS_TYPE_##name].PostLoad  = post_load_callback;\
-        assets->asset_types[TSASSETS_TYPE_##name].CleanUp  = clean_up_callback;\
-        assets->asset_types[TSASSETS_TYPE_##name].IsLoaded = is_loaded_callback;\
-    }
+assets->asset_types[TSASSETS_TYPE_##name].PreLoad  = pre_load_callback;\
+assets->asset_types[TSASSETS_TYPE_##name].Load     = load_callback;\
+assets->asset_types[TSASSETS_TYPE_##name].PostLoad  = post_load_callback;\
+assets->asset_types[TSASSETS_TYPE_##name].CleanUp  = clean_up_callback;\
+assets->asset_types[TSASSETS_TYPE_##name].IsLoaded = is_loaded_callback;\
+}
 #include TSASSETS_ASSET_TYPE_FILE
 #undef TsAssetsAssetType
 }
@@ -38,9 +38,9 @@ void _TsAssetsInitTypeCallbacks(TsAssets *assets)
 void _TsAssetsInitWatchDirectoryNames(TsAssets *assets)
 {
 #define TsAssetsAssetType(name, load_info_name, max, pre_load_callback, load_callback, post_load_callback, clean_up_callback, is_loaded_callback, directory) {\
-        assets->asset_types[TSASSETS_TYPE_##name].asset_folder_name = directory;\
-        assets->asset_directories[TSASSETS_TYPE_##name].path = directory;\
-    }
+assets->asset_types[TSASSETS_TYPE_##name].asset_folder_name = directory;\
+assets->asset_directories[TSASSETS_TYPE_##name].path = directory;\
+}
 #include TSASSETS_ASSET_TYPE_FILE
 #undef TsAssetsAssetType
 }

@@ -19,8 +19,8 @@ rem  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 set role=ROLE_%role_name%
 set application_executable=arcane.exe
 set application_dll=arcane.dll
-set build_options= -DBUILD_WIN32=1 -DTSFOUNDATION_PROGRAM_OPTIONS=\"tsarcane/arcane_program_options.h\" -DTSFOUNDATION_WIN32_FILE=\"tsarcane/arcane_tsfoundation_win32.c\" -DTSFOUNDATION_MODULES_DECLARATION_FILE=\"tsarcane/arcane_tsfoundation_modules_declaration.h\" -DTSUI_STYLE_CALLS_FILE=\"tsarcane/arcane_tsui_style_calls.inc\" -DROLE=%role% -I..\..\game\sauce
-set common_compiler_flags= /TC /GL- -MTd -nologo -Gm- -GR- -Gs- -Gy- -Gw- -EHa- -Od -W3 -wd4201 -wd4100 -wd4189 /Zi -D_CRT_SECURE_NO_WARNINGS /FS %build_options%
+set build_options= -DBUILD_WIN32=1 -DTSFOUNDATION_PROGRAM_OPTIONS=\"tsarcane/arcane_program_options.h\"  -DTSUI_STYLE_CALLS_FILE=\"tsarcane/arcane_tsui_style_calls.inc\" -DROLE=%role% -DTS2D=1 -DTSUI=1 -DTSDEVTERMINAL=1 -DTSASSETS=1
+set common_compiler_flags= /TC /GL- -MTd -nologo -Gm- -GR- -Gs- -Gy- -Gw- -EHa- -Od -W3 -wd4201 -wd4100 -wd4189 /Zi -D_CRT_SECURE_NO_WARNINGS /FS -I..\..\game\sauce %build_options%
 set common_linker_flags= -opt:ref -incremental:no /Debug:fastlink
 set platform_linker_flags= user32.lib gdi32.lib winmm.lib opengl32.lib
 

@@ -2,7 +2,7 @@
 * Copyright (C) Ryan Fleury - All Rights Reserved
 * Unauthorized copying of this file, via any medium is strictly prohibited
 * Proprietary and confidential
-* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2020
 */
 
 TsUIID
@@ -821,6 +821,60 @@ TsUIInit(TsUI *ui)
 }
 
 void
+TsUILoadFrameDataFromPlatform (TsUIFrameData *ui_frame)
+{
+    ui_frame->render_width          = (f32)platform->window_width;
+    ui_frame->render_height         = (f32)platform->window_height;
+    ui_frame->cursor_x              = platform->mouse_x * (!platform->mouse_position_captured);
+    ui_frame->cursor_y              = platform->mouse_y * (!platform->mouse_position_captured);
+    ui_frame->cursor_scroll_x       = platform->mouse_scroll_x;
+    ui_frame->cursor_scroll_y       = platform->mouse_scroll_y;
+    ui_frame->cursor_left_down      = platform->left_mouse_down;
+    ui_frame->cursor_right_down     = platform->right_mouse_down;
+    ui_frame->cursor_left_pressed   = platform->left_mouse_pressed;
+    ui_frame->cursor_right_pressed  = platform->right_mouse_pressed;
+    ui_frame->up_pressed           |= !platform->keyboard_captured * platform->last_key == KEY_up;
+    ui_frame->left_pressed         |= !platform->keyboard_captured * platform->last_key == KEY_left;
+    ui_frame->down_pressed         |= !platform->keyboard_captured * platform->last_key == KEY_down;
+    ui_frame->right_pressed        |= !platform->keyboard_captured * platform->last_key == KEY_right;
+    
+    if (platform->last_frame_gamepads)
+    {
+        ui_frame->down_pressed  |= platform->gamepads[0].joystick_1.y <= -0.5f && platform->last_frame_gamepads[0].joystick_1.y > -0.5f;
+        ui_frame->left_pressed  |= platform->gamepads[0].joystick_1.x <= -0.5f && platform->last_frame_gamepads[0].joystick_1.x > -0.5f;
+        ui_frame->up_pressed    |= platform->gamepads[0].joystick_1.y >= +0.5f && platform->last_frame_gamepads[0].joystick_1.y < +0.5f;
+        ui_frame->right_pressed |= platform->gamepads[0].joystick_1.x >= +0.5f && platform->last_frame_gamepads[0].joystick_1.x < +0.5f;
+        
+        ui_frame->down_hold  |= platform->gamepads[0].joystick_1.y <= -0.5f;
+        ui_frame->left_hold  |= platform->gamepads[0].joystick_1.x <= -0.5f;
+        ui_frame->up_hold    |= platform->gamepads[0].joystick_1.y >= +0.5f;
+        ui_frame->right_hold |= platform->gamepads[0].joystick_1.x >= +0.5f;
+        
+        ui_frame->up_pressed     |= ((platform->gamepads[0].button_states[GAMEPAD_BUTTON_dpad_up])        && !(platform->last_frame_gamepads[0].button_states[GAMEPAD_BUTTON_dpad_up]));
+        ui_frame->left_pressed   |= ((platform->gamepads[0].button_states[GAMEPAD_BUTTON_dpad_left])      && !(platform->last_frame_gamepads[0].button_states[GAMEPAD_BUTTON_dpad_left]));
+        ui_frame->down_pressed   |= ((platform->gamepads[0].button_states[GAMEPAD_BUTTON_dpad_down])      && !(platform->last_frame_gamepads[0].button_states[GAMEPAD_BUTTON_dpad_down]));
+        ui_frame->right_pressed  |= ((platform->gamepads[0].button_states[GAMEPAD_BUTTON_dpad_right])     && !(platform->last_frame_gamepads[0].button_states[GAMEPAD_BUTTON_dpad_right]));
+        ui_frame->enter_pressed  |= ((platform->gamepads[0].button_states[GAMEPAD_BUTTON_a])              && !(platform->last_frame_gamepads[0].button_states[GAMEPAD_BUTTON_a]));
+        ui_frame->tab_pressed    |= ((platform->gamepads[0].button_states[GAMEPAD_BUTTON_right_shoulder]) && !(platform->last_frame_gamepads[0].button_states[GAMEPAD_BUTTON_right_shoulder]));
+        ui_frame->escape_pressed |= ((platform->gamepads[0].button_states[GAMEPAD_BUTTON_b])              && !(platform->last_frame_gamepads[0].button_states[GAMEPAD_BUTTON_b]));
+        ui_frame->up_hold        |=  (platform->gamepads[0].button_states[GAMEPAD_BUTTON_dpad_up]);
+        ui_frame->left_hold      |=  (platform->gamepads[0].button_states[GAMEPAD_BUTTON_dpad_left]);
+        ui_frame->down_hold      |=  (platform->gamepads[0].button_states[GAMEPAD_BUTTON_dpad_down]);
+        ui_frame->right_hold     |=  (platform->gamepads[0].button_states[GAMEPAD_BUTTON_dpad_right]);
+    }
+    
+    ui_frame->enter_pressed  |= !platform->keyboard_captured * platform->last_key == KEY_enter;
+    ui_frame->tab_pressed    |= !platform->keyboard_captured * platform->last_key == KEY_tab;
+    ui_frame->escape_pressed |= !platform->keyboard_captured * platform->last_key == KEY_esc;
+    ui_frame->up_hold        |= !platform->keyboard_captured * platform->key_down[KEY_up];
+    ui_frame->left_hold      |= !platform->keyboard_captured * platform->key_down[KEY_left];
+    ui_frame->down_hold      |= !platform->keyboard_captured * platform->key_down[KEY_down];
+    ui_frame->right_hold     |= !platform->keyboard_captured * platform->key_down[KEY_right];
+    ui_frame->delta_t         = 1.f / platform->target_frames_per_second;
+    ui_frame->widget_arena    = &platform->scratch_arena;
+}
+
+void
 TsUIBeginFrame(TsUI *ui, TsUIFrameData *frame)
 {
     // NOTE(rjf): Set last cursor position.
@@ -872,33 +926,33 @@ TsUIBeginFrame(TsUI *ui, TsUIFrameData *frame)
     {
         if(!ui->GetTextWidth)
         {
-#ifdef TS2D_H_INCLUDED
+#if TS2D
             ui->GetTextWidth = TsUIGetTextWidthDefaultTs2d;
-            ui->get_text_width_user_data = platform->renderer;
+            ui->get_text_width_user_data = platform->ts2d;
 #endif
         }
         
         if(!ui->GetTextHeight)
         {
-#ifdef TS2D_H_INCLUDED
+#if TS2D
             ui->GetTextHeight = TsUIGetTextHeightDefaultTs2d;
-            ui->get_text_height_user_data = platform->renderer;
+            ui->get_text_height_user_data = platform->ts2d;
 #endif
         }
         
         if(!ui->RenderWidget)
         {
-#ifdef TS2D_H_INCLUDED
+#if TS2D
             ui->RenderWidget = TsUIRenderWidgetDefaultTs2d;
-            ui->render_widget_user_data = platform->renderer;
+            ui->render_widget_user_data = platform->ts2d;
 #endif
         }
         
         if(!ui->RenderWindow)
         {
-#ifdef TS2D_H_INCLUDED
+#if TS2D
             ui->RenderWindow = TsUIRenderWindowDefaultTs2d;
-            ui->render_window_user_data = platform->renderer;
+            ui->render_window_user_data = platform->ts2d;
 #endif
         }
     }

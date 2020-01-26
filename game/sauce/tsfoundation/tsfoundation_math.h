@@ -2,7 +2,7 @@
 * Copyright (C) Ryan Fleury - All Rights Reserved
 * Unauthorized copying of this file, via any medium is strictly prohibited
 * Proprietary and confidential
-* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2020
 */
 
 #define DegreesToRadians(a) (PI / 180.f * (a))
@@ -179,6 +179,16 @@ typedef V3   v3;
 typedef V4   v4;
 typedef M3   m3;
 typedef M4   m4;
+
+typedef union BoundingBox BoundingBox;
+union BoundingBox
+{
+    struct
+    {
+        v3 min;
+        v3 max;
+    };
+};
 
 internal f32
 RandomF32(f32 low, f32 high)
@@ -772,6 +782,23 @@ M4Rotate(f32 angle, v3 axis)
     result.elements[2][2] = (axis.z * axis.z * cos_value) + cos_theta;
     
     return result;
+}
+
+#define BoundingBox(min, max) BoundingBoxInit((min), (max))
+internal BoundingBox
+BoundingBoxInit(v3 min, v3 max)
+{
+    BoundingBox bounding_box = {0};
+    bounding_box.min = min;
+    bounding_box.max = max;
+    return bounding_box;
+}
+
+internal v3
+BoundingBoxCenter(BoundingBox bounding_box)
+{
+    v3 v = V3DivideF32(V3AddV3(bounding_box.min, bounding_box.max), 2);
+    return v;
 }
 
 internal v3

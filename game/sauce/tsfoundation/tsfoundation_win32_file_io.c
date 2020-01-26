@@ -2,7 +2,7 @@
 * Copyright (C) Ryan Fleury - All Rights Reserved
 * Unauthorized copying of this file, via any medium is strictly prohibited
 * Proprietary and confidential
-* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2020
 */
 
 internal void
@@ -208,6 +208,125 @@ Win32DoesFileExist(char *path)
     return found;
 }
 
+internal b32
+Win32DoesDirectoryExist(char *path)
+{
+    DWORD file_attributes = GetFileAttributesA(path);
+    b32 found = (file_attributes != INVALID_FILE_ATTRIBUTES &&
+                 !!(file_attributes & FILE_ATTRIBUTE_DIRECTORY));
+    return found;
+}
+
+internal b32
+Win32CopyFile(char *dest, char *source)
+{
+    b32 success = 0;
+    success = CopyFile(source, dest, 0);
+    return success;
+}
+
+internal b32
+Win32CopyDirectoryRecursively(char *dest, char *source)
+{
+    b32 success = 0;
+    
+    Win32MakeDirectory(dest);
+    
+    char task_memory[Kilobytes(32)];
+    MemoryArena arena_ = MemoryArenaInit(task_memory, sizeof(task_memory));
+    MemoryArena *arena = &arena_;
+    
+    typedef struct DirectorySearchTask DirectorySearchTask;
+    struct DirectorySearchTask
+    {
+        char *sub_search_pattern;
+        char *copy_pattern;
+        DirectorySearchTask *next;
+    };
+    DirectorySearchTask *first_search_task = 0;
+    DirectorySearchTask **target_search_task = &first_search_task;
+    
+#define QueueTask(path) {\
+DirectorySearchTask *new_task = MemoryArenaAllocate(arena, sizeof(*new_task));\
+if(new_task != 0)\
+{\
+new_task->sub_search_pattern = path;\
+new_task->copy_pattern = path;\
+new_task->next = 0;\
+*target_search_task = new_task;\
+target_search_task = &(*target_search_task)->next;\
+}\
+else\
+{\
+LogWarning("[File I/O] Directory search task space exhausted.");\
+}\
+}
+    
+    QueueTask("");
+    
+    for(DirectorySearchTask *task = first_search_task; task; task = task->next)
+    {
+        // NOTE(rjf): Load file list
+        {
+            WIN32_FIND_DATAA file_find_data;
+            DWORD error = 0;
+            char search_pattern[MAX_PATH] = {0};
+            snprintf(search_pattern, MAX_PATH, "%s\\%s*", source, task->sub_search_pattern);
+            HANDLE file_handle = INVALID_HANDLE_VALUE;
+            file_handle = FindFirstFileA(search_pattern, &file_find_data);
+            Log("[File I/O] Copying \"%s\" to \"%s\".", source, dest);
+            
+            if(file_handle != INVALID_HANDLE_VALUE)
+            {
+                do
+                {
+                    if(file_find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+                    {
+                        if(!CStringMatchCaseSensitive(file_find_data.cFileName, ".") &&
+                           !CStringMatchCaseSensitive(file_find_data.cFileName, ".."))
+                        {
+                            char directory_name[MAX_PATH] = {0};
+                            MemoryCopy(directory_name, file_find_data.cFileName, sizeof(directory_name));
+                            QueueTask(MakeCStringOnMemoryArena(arena, "%s%s\\", task->sub_search_pattern, directory_name));
+                            
+                            char copy_directory_name[MAX_PATH] = {0};
+                            snprintf(copy_directory_name, sizeof(copy_directory_name), "%s\\%s\\%s",
+                                     dest, task->sub_search_pattern, directory_name);
+                            
+                            Log("[File I/O] Copying \"%s\".", copy_directory_name);
+                            Win32MakeDirectory(copy_directory_name);
+                        }
+                    }
+                    else
+                    {
+                        // NOTE(rjf): Copy file.
+                        {
+                            char item_name[MAX_PATH] = {0};
+                            MemoryCopy(item_name, file_find_data.cFileName, sizeof(item_name));
+                            
+                            char *source_path = MakeCStringOnMemoryArena(arena, "%s\\%s%s", source,
+                                                                         task->sub_search_pattern,
+                                                                         item_name);
+                            
+                            char *dest_path = MakeCStringOnMemoryArena(arena, "%s\\%s%s", dest,
+                                                                       task->sub_search_pattern,
+                                                                       item_name);
+                            
+                            Log("[File I/O] Copying \"%s\" to \"%s\".", source_path, dest_path);
+                            Win32CopyFile(dest_path, source_path);
+                        }
+                    }
+                }
+                while(FindNextFileA(file_handle, &file_find_data));
+            }
+        }
+    }
+    
+#undef QueueTask
+    
+    return success;
+}
+
 // NOTE(rjf): This only needs to be implemented for a development platform.
 internal TsPlatformDirectoryList
 Win32PlatformDirectoryListLoad(char *path, i32 flags)
@@ -215,7 +334,7 @@ Win32PlatformDirectoryListLoad(char *path, i32 flags)
     int item_count = 0;
     int item_capacity = 0;
     char **items = 0;
-
+    
     char task_memory[Kilobytes(32)];
     MemoryArena arena_ = MemoryArenaInit(task_memory, sizeof(task_memory));
     MemoryArena *arena = &arena_;
@@ -230,19 +349,19 @@ Win32PlatformDirectoryListLoad(char *path, i32 flags)
     DirectorySearchTask **target_search_task = &first_search_task;
     
 #define QueueTask(path) {\
-        DirectorySearchTask *new_task = MemoryArenaAllocate(arena, sizeof(*new_task));\
-        if(new_task != 0)\
-        {\
-            new_task->sub_search_pattern = path;\
-            new_task->next = 0;\
-            *target_search_task = new_task;\
-            target_search_task = &(*target_search_task)->next;\
-        }\
-        else\
-        {\
-            LogWarning("[File I/O] Directory search task space exhausted.");\
-        }\
-    }
+DirectorySearchTask *new_task = MemoryArenaAllocate(arena, sizeof(*new_task));\
+if(new_task != 0)\
+{\
+new_task->sub_search_pattern = path;\
+new_task->next = 0;\
+*target_search_task = new_task;\
+target_search_task = &(*target_search_task)->next;\
+}\
+else\
+{\
+LogWarning("[File I/O] Directory search task space exhausted.");\
+}\
+}
     
     QueueTask("");
     
@@ -258,7 +377,7 @@ Win32PlatformDirectoryListLoad(char *path, i32 flags)
             HANDLE file_handle = INVALID_HANDLE_VALUE;
             file_handle = FindFirstFileA(search_pattern, &file_find_data);
             Log("[File I/O] Searching \"%s\" directory%s.", find_file_path, (flags & TS_PLATFORM_DIRECTORY_LIST_RECURSIVE) ? " recursively" : "");
-
+            
             if(file_handle != INVALID_HANDLE_VALUE)
             {
                 do
@@ -352,7 +471,7 @@ Win32PlatformDirectoryListLoad(char *path, i32 flags)
     }
     
 #undef QueueTask
-
+    
     TsPlatformDirectoryList list = {0};
     list.flags = flags;
     list.item_count = item_count;

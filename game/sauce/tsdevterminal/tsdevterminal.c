@@ -2,7 +2,7 @@
 * Copyright (C) Ryan Fleury - All Rights Reserved
 * Unauthorized copying of this file, via any medium is strictly prohibited
 * Proprietary and confidential
-* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2020
 */
 
 #ifdef TS2D_H_INCLUDED
@@ -10,16 +10,16 @@
 internal void
 TsDevTerminalTs2dRenderFilledRect(v4 color, v4 rect)
 {
-    Ts2dPushFilledRect(platform->renderer, color, rect);
+    Ts2dPushFilledRect(platform->ts2d, color, rect);
 }
 
 internal f32
 TsDevTerminalTs2dRenderTextN(v4 color, v2 position, f32 scale, char *text, int n)
 {
-    Ts2dFont *font = Ts2dGetDefaultFont(platform->renderer);
+    Ts2dFont *font = Ts2dGetDefaultFont(platform->ts2d);
     if(font)
     {
-        return Ts2dPushTextN(platform->renderer, font, 0, color, position, scale, text, n);
+        return Ts2dPushTextN(platform->ts2d, font, 0, color, position, scale, text, n);
     }
     return 0.f;
 }
@@ -141,7 +141,7 @@ TSDEVTERMINAL_COMMAND_PROC(TsDevTerminalCommandSet)
                         *(f32 *)terminal->variables[i].address = GetFirstF32FromCString(val);
                         break;
                     }
-
+                    
                     case TSDEVTERMINAL_VARIABLE_TYPE_v2:
                     {
                         if(word_count > 2)
@@ -493,7 +493,7 @@ TsDevTerminalUpdate(TsDevTerminal *terminal, f32 delta_t)
     {
         platform->pump_events = 1;
     }
-
+    
     if(terminal->stuck_to_bottom)
     {
         terminal->scrollback_scroll_y_target = terminal->scrollback_scroll_y_upper_bound - overlay_rect.height + 50;

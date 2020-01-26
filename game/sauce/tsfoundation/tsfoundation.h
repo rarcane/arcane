@@ -2,7 +2,7 @@
 * Copyright (C) Ryan Fleury - All Rights Reserved
 * Unauthorized copying of this file, via any medium is strictly prohibited
 * Proprietary and confidential
-* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2020
 */
 
 #ifndef TSFOUNDATION_H_INCLUDED
@@ -19,6 +19,14 @@
 /*-----------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------------*/
+
+#if BUILD_WIN32
+#define TS_PLATFORM_WIN32 1
+#define TS_PLATFORM TS_PLATFORM_WIN32
+#elif BUILD_LINUX
+#define TS_PLATFORM_LINUX 1
+#define TS_PLATFORM TS_PLATFORM_LINUX
+#endif
 
 // NOTE(rjf): Program Options
 #ifndef TSFOUNDATION_PROGRAM_OPTIONS
@@ -47,6 +55,10 @@
 /*-----------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------------*/
+
+// NOTE(rjf): Build-modes for team roles
+#define ROLE_PROGRAMMER 1
+#define ROLE_ARTIST     2
 
 #define Stringify(a) _Stringify(a)
 #define _Stringify(a) #a

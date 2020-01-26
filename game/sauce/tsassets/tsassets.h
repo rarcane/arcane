@@ -2,7 +2,7 @@
 * Copyright (C) Ryan Fleury - All Rights Reserved
 * Unauthorized copying of this file, via any medium is strictly prohibited
 * Proprietary and confidential
-* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2020
 */
 
 #ifndef TSASSETS_H_INCLUDED
@@ -172,16 +172,16 @@ void TsAssetsDisableAssetCleanUp(TsAssets *assets);
 
 #define TsAssetsAssetType(name_, load_info_name, max, pre_load_callback, load_callback, post_load_callback, clean_up_callback, is_loaded_callback, directory) char *TsAssetsGet##name_##Name(TsAssets *assets, name_ *asset)\
 {\
-    int asset_index = asset ? (int)((uintptr_t)asset - (uintptr_t)assets->asset_types[TSASSETS_TYPE_##name_].table) / sizeof(name_) : -1;\
-    return asset_index >= 0 ? (assets->asset_types[TSASSETS_TYPE_##name_].name_to_index_keys[asset_index].name) : "";\
+int asset_index = asset ? (int)((uintptr_t)asset - (uintptr_t)assets->asset_types[TSASSETS_TYPE_##name_].table) / sizeof(name_) : -1;\
+return asset_index >= 0 ? (assets->asset_types[TSASSETS_TYPE_##name_].name_to_index_keys[asset_index].name) : "";\
 }
 #include TSASSETS_ASSET_TYPE_FILE
 #undef TsAssetsAssetType
 
 #define TsAssetsAssetType(name_, load_info_name, max, pre_load_callback, load_callback, post_load_callback, clean_up_callback, is_loaded_callback, directory) int TsAssetsGet##name_##Index(TsAssets *assets, name_ *asset)\
 {\
-    int asset_index = asset ? (int)((uintptr_t)asset - (uintptr_t)assets->asset_types[TSASSETS_TYPE_##name_].table) / sizeof(name_) : -1;\
-    return asset_index;\
+int asset_index = asset ? (int)((uintptr_t)asset - (uintptr_t)assets->asset_types[TSASSETS_TYPE_##name_].table) / sizeof(name_) : -1;\
+return asset_index;\
 }
 #include TSASSETS_ASSET_TYPE_FILE
 #undef TsAssetsAssetType

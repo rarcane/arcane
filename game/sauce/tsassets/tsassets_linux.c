@@ -2,7 +2,7 @@
 * Copyright (C) Ryan Fleury - All Rights Reserved
 * Unauthorized copying of this file, via any medium is strictly prohibited
 * Proprietary and confidential
-* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2020
 */
 
 void
@@ -26,125 +26,125 @@ _TsAssetsLoadDirectoryItems(TsAssets *assets, char *path, int *item_count_ptr, c
     DirectorySearchTask **target_search_task = &first_search_task;
     
 #define QueueTask(path) {\
-        DirectorySearchTask *new_task = MemoryArenaAllocate(arena, sizeof(*new_task));\
-        if(new_task != 0)\
-        {\
-            new_task->sub_search_pattern = path;\
-            new_task->next = 0;\
-            *target_search_task = new_task;\
-            target_search_task = &(*target_search_task)->next;\
-        }\
-        else\
-        {\
-            LogWarning("[Assets] Directory search task space exhausted.");\
-        }\
-    }
-    
-    QueueTask("");
-    
-    for(DirectorySearchTask *task = first_search_task; task; task = task->next)
+    DirectorySearchTask *new_task = MemoryArenaAllocate(arena, sizeof(*new_task));\
+    if(new_task != 0)\
+    {\
+        new_task->sub_search_pattern = path;\
+        new_task->next = 0;\
+        *target_search_task = new_task;\
+        target_search_task = &(*target_search_task)->next;\
+    }\
+    else\
+    {\
+        LogWarning("[Assets] Directory search task space exhausted.");\
+    }\
+}
+
+QueueTask("");
+
+for(DirectorySearchTask *task = first_search_task; task; task = task->next)
+{
+    // NOTE(rjf): Load file list
     {
-        // NOTE(rjf): Load file list
+        WIN32_FIND_DATAA file_find_data;
+        DWORD error = 0;
+        char search_pattern[MAX_PATH] = {0};
+        char find_file_path[MAX_PATH] = {0};
+        snprintf(search_pattern, MAX_PATH, "%s\\%s\\%s*", assets->assets_root_path, path, task->sub_search_pattern);
+        HANDLE file_handle = INVALID_HANDLE_VALUE;
+        file_handle = FindFirstFileA(search_pattern, &file_find_data);
+        
+        if(file_handle != INVALID_HANDLE_VALUE)
         {
-            WIN32_FIND_DATAA file_find_data;
-            DWORD error = 0;
-            char search_pattern[MAX_PATH] = {0};
-            char find_file_path[MAX_PATH] = {0};
-            snprintf(search_pattern, MAX_PATH, "%s\\%s\\%s*", assets->assets_root_path, path, task->sub_search_pattern);
-            HANDLE file_handle = INVALID_HANDLE_VALUE;
-            file_handle = FindFirstFileA(search_pattern, &file_find_data);
-            
-            if(file_handle != INVALID_HANDLE_VALUE)
+            do
             {
-                do
+                if(file_find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
                 {
-                    if(file_find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+                    if(!CStringMatchCaseSensitive(file_find_data.cFileName, ".") &&
+                       !CStringMatchCaseSensitive(file_find_data.cFileName, ".."))
                     {
-                        if(!CStringMatchCaseSensitive(file_find_data.cFileName, ".") &&
-                           !CStringMatchCaseSensitive(file_find_data.cFileName, ".."))
-                        {
-                            char directory_name[MAX_PATH] = {0};
-                            TsAssetsMemoryCopy(directory_name, file_find_data.cFileName, sizeof(directory_name));
-                            QueueTask(MakeCStringOnMemoryArena(arena, "%s%s\\", task->sub_search_pattern, directory_name));
-                        }
-                    }
-                    else
-                    {
-                        // NOTE(rjf): Make room for new item if we need to.
-                        {
-                            if(item_count + 1 >= item_capacity)
-                            {
-                                if(item_capacity == 0)
-                                {
-                                    item_capacity = 64;
-                                }
-                                else
-                                {
-                                    item_capacity <<= 1;
-                                }
-                                char **new_items = TsAssetsHeapAllocate(item_capacity * sizeof(char *));
-                                TsAssetsMemoryCopy(new_items, items, sizeof(char *) * item_count);
-                                if(items)
-                                {
-                                    TsAssetsHeapFree(items);
-                                }
-                                items = new_items;
-                            }
-                        }
-                        
-                        // NOTE(rjf): Allocate new item.
-                        char *new_item = 0;
-                        {
-                            TsAssetsMemoryCopy(find_file_path, file_find_data.cFileName, sizeof(find_file_path));
-                            unsigned int needed_bytes = CalculateCStringLength(find_file_path) + CalculateCStringLength(task->sub_search_pattern) + 1;
-                            new_item = TsAssetsHeapAllocate(needed_bytes + 1);
-                            snprintf(new_item, needed_bytes, "%s%s", task->sub_search_pattern, find_file_path);
-                            new_item[needed_bytes] = 0;
-                        }
-                        
-                        // NOTE(rjf): Remove extension from path.
-                        {
-                            char *last_period = new_item;
-                            for(int i = 0; new_item[i]; ++i)
-                            {
-                                if(new_item[i] == '.')
-                                {
-                                    last_period = new_item + i;
-                                }
-                            }
-                            
-                            if(last_period != new_item || new_item[0] == '.')
-                            {
-                                *last_period = 0;
-                            }
-                        }
-                        
-                        // NOTE(rjf): Replace backslashes with forward slashes.
-                        {
-                            for(int i = 0; new_item[i]; ++i)
-                            {
-                                if(new_item[i] == '\\')
-                                {
-                                    new_item[i] = '/';
-                                }
-                            }
-                        }
-                        
-                        // NOTE(rjf): Add item.
-                        {
-                            items[item_count++] = new_item;
-                        }
+                        char directory_name[MAX_PATH] = {0};
+                        TsAssetsMemoryCopy(directory_name, file_find_data.cFileName, sizeof(directory_name));
+                        QueueTask(MakeCStringOnMemoryArena(arena, "%s%s\\", task->sub_search_pattern, directory_name));
                     }
                 }
-                while(FindNextFileA(file_handle, &file_find_data));
+                else
+                {
+                    // NOTE(rjf): Make room for new item if we need to.
+                    {
+                        if(item_count + 1 >= item_capacity)
+                        {
+                            if(item_capacity == 0)
+                            {
+                                item_capacity = 64;
+                            }
+                            else
+                            {
+                                item_capacity <<= 1;
+                            }
+                            char **new_items = TsAssetsHeapAllocate(item_capacity * sizeof(char *));
+                            TsAssetsMemoryCopy(new_items, items, sizeof(char *) * item_count);
+                            if(items)
+                            {
+                                TsAssetsHeapFree(items);
+                            }
+                            items = new_items;
+                        }
+                    }
+                    
+                    // NOTE(rjf): Allocate new item.
+                    char *new_item = 0;
+                    {
+                        TsAssetsMemoryCopy(find_file_path, file_find_data.cFileName, sizeof(find_file_path));
+                        unsigned int needed_bytes = CalculateCStringLength(find_file_path) + CalculateCStringLength(task->sub_search_pattern) + 1;
+                        new_item = TsAssetsHeapAllocate(needed_bytes + 1);
+                        snprintf(new_item, needed_bytes, "%s%s", task->sub_search_pattern, find_file_path);
+                        new_item[needed_bytes] = 0;
+                    }
+                    
+                    // NOTE(rjf): Remove extension from path.
+                    {
+                        char *last_period = new_item;
+                        for(int i = 0; new_item[i]; ++i)
+                        {
+                            if(new_item[i] == '.')
+                            {
+                                last_period = new_item + i;
+                            }
+                        }
+                        
+                        if(last_period != new_item || new_item[0] == '.')
+                        {
+                            *last_period = 0;
+                        }
+                    }
+                    
+                    // NOTE(rjf): Replace backslashes with forward slashes.
+                    {
+                        for(int i = 0; new_item[i]; ++i)
+                        {
+                            if(new_item[i] == '\\')
+                            {
+                                new_item[i] = '/';
+                            }
+                        }
+                    }
+                    
+                    // NOTE(rjf): Add item.
+                    {
+                        items[item_count++] = new_item;
+                    }
+                }
             }
+            while(FindNextFileA(file_handle, &file_find_data));
         }
     }
-    
+}
+
 #undef QueueTask
-    
-    *item_count_ptr = item_count;
-    *items_ptr = items;
+
+*item_count_ptr = item_count;
+*items_ptr = items;
 }
 
 void

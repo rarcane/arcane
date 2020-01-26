@@ -2,7 +2,7 @@
 * Copyright (C) Ryan Fleury - All Rights Reserved
 * Unauthorized copying of this file, via any medium is strictly prohibited
 * Proprietary and confidential
-* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2019
+* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2020
 */
 
 // NOTE(rjf): Windows
@@ -45,10 +45,33 @@ global Align(64) Win32WorkerThreadData global_win32_worker_threads[64] = {0};
 #include "tsfoundation_win32_wasapi.c"
 #include "tsfoundation_win32_threads.c"
 
-#ifndef TSFOUNDATION_WIN32_FILE
-#define TSFOUNDATION_WIN32_FILE "tsfoundation_win32_default.c"
+//~ NOTE(rjf): Module-specific Initialization Stuff
+
+#if TS2D
+#include "ts2d/ts2d.h"
+#include "ts2d/ts2d_opengl_win32.c"
 #endif
-#include TSFOUNDATION_WIN32_FILE
+
+#if TS3D
+#include "ts3d/ts3d.h"
+#include "ts3d/ts3d_opengl_win32.c"
+#endif
+
+internal void
+TsFoundationWin32Init(void)
+{
+#if TS2D
+    platform->ts2d = MemoryArenaAllocate(&platform->permanent_arena, sizeof(Ts2d));
+    Ts2dInitWin32(platform->ts2d);
+#endif
+    
+#if TS3D
+    platform->ts3d = MemoryArenaAllocate(&platform->permanent_arena, sizeof(Ts3d));
+    Ts3dInitWin32(platform->ts3d);
+#endif
+}
+
+//~
 
 typedef enum Win32CursorStyle Win32CursorStyle;
 enum Win32CursorStyle
@@ -453,6 +476,9 @@ WinMain(HINSTANCE instance, HINSTANCE prev_instance, LPSTR lp_cmd_line, int n_sh
         global_platform.DeleteFile                     = Win32DeleteFile;
         global_platform.MakeDirectory                  = Win32MakeDirectory;
         global_platform.DoesFileExist                  = Win32DoesFileExist;
+        global_platform.DoesDirectoryExist             = Win32DoesDirectoryExist;
+        global_platform.CopyFile                       = Win32CopyFile;
+        global_platform.CopyDirectoryRecursively       = Win32CopyDirectoryRecursively;
         global_platform.PlatformDirectoryListLoad      = Win32PlatformDirectoryListLoad;
         global_platform.PlatformDirectoryListCleanUp   = Win32PlatformDirectoryListCleanUp;
         global_platform.QueueJob                       = Win32QueueJob;
