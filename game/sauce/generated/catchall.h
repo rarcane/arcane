@@ -1,20 +1,11 @@
-// @Define 
 #define MAX_ENTITIES_PER_CHUNK (128)
-// @Define 
 #define MAX_ACTIVE_ENTITIES (1024)
-// @Define 
 #define MAX_OVERLAPPING_COLLIDERS (50)
-// @Define 
 #define MAX_ENTITY_REFERENCES (10)
-// @Define 
 #define MAX_SUB_COLLIDERS (3)
-// @Define 
 #define MAX_STORAGE_SIZE (30)
-// @Define 
 #define MAX_PARTICLE_AMOUNT (300)
-// @Define 
 #define MAX_WORLD_CHUNKS (128)
-// @Define 
 #define CHUNK_SIZE (200)
 typedef enum EntityType EntityType;
 enum EntityType
@@ -263,26 +254,55 @@ void *components[COMPONENT_MAX];
 ChunkData *active_chunk;
 };
 
-typedef struct ChunkData ChunkData;
-struct ChunkData
+#define MAX_CLOUD_ENTITIES (50)
+typedef struct CloudEntity
+{
+Entity *parent_generic_entity;
+i32 unique_entity_id;
+    PositionComponent *position_comp;
+    SpriteComponent *sprite_comp;
+    ParallaxComponent *parallax_comp;
+} CloudEntity;
+
+#define MAX_GROUND_ENTITIES (1024)
+typedef struct GroundEntity
+{
+Entity *parent_generic_entity;
+i32 unique_entity_id;
+    PositionComponent *position_comp;
+    SpriteComponent *sprite_comp;
+    ColliderComponent *collider_comp;
+    PhysicsComponent *physics_comp;
+i32 test_varibale;
+} GroundEntity;
+
+typedef struct ChunkData
 {
 b8 is_valid;
 i32 entity_ids[MAX_ENTITIES_PER_CHUNK];
 i32 entity_count;
 i32 x_index;
 i32 y_index;
-};
+} ChunkData;
 
-typedef struct WorldData WorldData;
-struct WorldData
+typedef struct WorldData
 {
 f32 elapsed_world_time;
 ChunkData active_chunks[MAX_WORLD_CHUNKS];
 i32 active_chunk_count;
 ChunkData floating_chunk;
+
+CloudEntity cloud_entities[MAX_CLOUD_ENTITIES];
+i32 cloud_entity_count;
+i32 free_cloud_entity_index;
+GroundEntity ground_entities[MAX_GROUND_ENTITIES];
+i32 ground_entity_count;
+i32 free_ground_entity_index;
+
+// @GenerateUniqueEntityArrays 
 Entity entities[MAX_ACTIVE_ENTITIES];
 i32 entity_count;
 i32 free_entity_index;
 ComponentSet entity_components;
-};
+} WorldData;
 

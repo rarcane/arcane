@@ -319,7 +319,7 @@ internal void PrintComponentUI(void *component_data, ComponentType type)
     }
 }
 
-internal void AddPositionComponent(Entity *entity, void *component_data)
+internal PositionComponent *AddPositionComponent(Entity *entity)
 {
     i32 component_id;
     if (core->world_data->entity_components.position_free_component_id == core->world_data->entity_components.position_component_count)
@@ -333,7 +333,7 @@ internal void AddPositionComponent(Entity *entity, void *component_data)
         component_id = core->world_data->entity_components.position_free_component_id;
     }
 
-    core->world_data->entity_components.position_components[component_id] = *((PositionComponent*)component_data);
+    core->world_data->entity_components.position_components[component_id] = GetDefaultPositionComponent();
     entity->components[COMPONENT_position] = &core->world_data->entity_components.position_components[component_id];
     core->world_data->entity_components.position_components[component_id].parent_entity = entity;
     core->world_data->entity_components.position_components[component_id].component_id = component_id;
@@ -346,6 +346,8 @@ internal void AddPositionComponent(Entity *entity, void *component_data)
             break;
         }
     }
+
+    return &core->world_data->entity_components.position_components[component_id];
 }
 
 internal void RemovePositionComponent(Entity *entity)
@@ -362,7 +364,7 @@ internal void RemovePositionComponent(Entity *entity)
         core->world_data->entity_components.position_free_component_id = deleted_component_id;
 }
 
-internal void AddSpriteComponent(Entity *entity, void *component_data)
+internal SpriteComponent *AddSpriteComponent(Entity *entity)
 {
     i32 component_id;
     if (core->world_data->entity_components.sprite_free_component_id == core->world_data->entity_components.sprite_component_count)
@@ -376,7 +378,7 @@ internal void AddSpriteComponent(Entity *entity, void *component_data)
         component_id = core->world_data->entity_components.sprite_free_component_id;
     }
 
-    core->world_data->entity_components.sprite_components[component_id] = *((SpriteComponent*)component_data);
+    core->world_data->entity_components.sprite_components[component_id] = GetDefaultSpriteComponent();
     entity->components[COMPONENT_sprite] = &core->world_data->entity_components.sprite_components[component_id];
     core->world_data->entity_components.sprite_components[component_id].parent_entity = entity;
     core->world_data->entity_components.sprite_components[component_id].component_id = component_id;
@@ -389,6 +391,8 @@ internal void AddSpriteComponent(Entity *entity, void *component_data)
             break;
         }
     }
+
+    return &core->world_data->entity_components.sprite_components[component_id];
 }
 
 internal void RemoveSpriteComponent(Entity *entity)
@@ -405,7 +409,7 @@ internal void RemoveSpriteComponent(Entity *entity)
         core->world_data->entity_components.sprite_free_component_id = deleted_component_id;
 }
 
-internal void AddSubSpriteComponent(Entity *entity, void *component_data)
+internal SubSpriteComponent *AddSubSpriteComponent(Entity *entity)
 {
     i32 component_id;
     if (core->world_data->entity_components.sub_sprite_free_component_id == core->world_data->entity_components.sub_sprite_component_count)
@@ -419,7 +423,7 @@ internal void AddSubSpriteComponent(Entity *entity, void *component_data)
         component_id = core->world_data->entity_components.sub_sprite_free_component_id;
     }
 
-    core->world_data->entity_components.sub_sprite_components[component_id] = *((SubSpriteComponent*)component_data);
+    core->world_data->entity_components.sub_sprite_components[component_id] = GetDefaultSubSpriteComponent();
     entity->components[COMPONENT_sub_sprite] = &core->world_data->entity_components.sub_sprite_components[component_id];
     core->world_data->entity_components.sub_sprite_components[component_id].parent_entity = entity;
     core->world_data->entity_components.sub_sprite_components[component_id].component_id = component_id;
@@ -432,6 +436,8 @@ internal void AddSubSpriteComponent(Entity *entity, void *component_data)
             break;
         }
     }
+
+    return &core->world_data->entity_components.sub_sprite_components[component_id];
 }
 
 internal void RemoveSubSpriteComponent(Entity *entity)
@@ -448,7 +454,7 @@ internal void RemoveSubSpriteComponent(Entity *entity)
         core->world_data->entity_components.sub_sprite_free_component_id = deleted_component_id;
 }
 
-internal void AddAnimationComponent(Entity *entity, void *component_data)
+internal AnimationComponent *AddAnimationComponent(Entity *entity)
 {
     i32 component_id;
     if (core->world_data->entity_components.animation_free_component_id == core->world_data->entity_components.animation_component_count)
@@ -462,7 +468,7 @@ internal void AddAnimationComponent(Entity *entity, void *component_data)
         component_id = core->world_data->entity_components.animation_free_component_id;
     }
 
-    core->world_data->entity_components.animation_components[component_id] = *((AnimationComponent*)component_data);
+    core->world_data->entity_components.animation_components[component_id] = GetDefaultAnimationComponent();
     entity->components[COMPONENT_animation] = &core->world_data->entity_components.animation_components[component_id];
     core->world_data->entity_components.animation_components[component_id].parent_entity = entity;
     core->world_data->entity_components.animation_components[component_id].component_id = component_id;
@@ -475,6 +481,8 @@ internal void AddAnimationComponent(Entity *entity, void *component_data)
             break;
         }
     }
+
+    return &core->world_data->entity_components.animation_components[component_id];
 }
 
 internal void RemoveAnimationComponent(Entity *entity)
@@ -491,7 +499,7 @@ internal void RemoveAnimationComponent(Entity *entity)
         core->world_data->entity_components.animation_free_component_id = deleted_component_id;
 }
 
-internal void AddColliderComponent(Entity *entity, void *component_data)
+internal ColliderComponent *AddColliderComponent(Entity *entity)
 {
     i32 component_id;
     if (core->world_data->entity_components.collider_free_component_id == core->world_data->entity_components.collider_component_count)
@@ -505,7 +513,7 @@ internal void AddColliderComponent(Entity *entity, void *component_data)
         component_id = core->world_data->entity_components.collider_free_component_id;
     }
 
-    core->world_data->entity_components.collider_components[component_id] = *((ColliderComponent*)component_data);
+    core->world_data->entity_components.collider_components[component_id] = GetDefaultColliderComponent();
     entity->components[COMPONENT_collider] = &core->world_data->entity_components.collider_components[component_id];
     core->world_data->entity_components.collider_components[component_id].parent_entity = entity;
     core->world_data->entity_components.collider_components[component_id].component_id = component_id;
@@ -518,6 +526,8 @@ internal void AddColliderComponent(Entity *entity, void *component_data)
             break;
         }
     }
+
+    return &core->world_data->entity_components.collider_components[component_id];
 }
 
 internal void RemoveColliderComponent(Entity *entity)
@@ -534,7 +544,7 @@ internal void RemoveColliderComponent(Entity *entity)
         core->world_data->entity_components.collider_free_component_id = deleted_component_id;
 }
 
-internal void AddVelocityComponent(Entity *entity, void *component_data)
+internal VelocityComponent *AddVelocityComponent(Entity *entity)
 {
     i32 component_id;
     if (core->world_data->entity_components.velocity_free_component_id == core->world_data->entity_components.velocity_component_count)
@@ -548,7 +558,7 @@ internal void AddVelocityComponent(Entity *entity, void *component_data)
         component_id = core->world_data->entity_components.velocity_free_component_id;
     }
 
-    core->world_data->entity_components.velocity_components[component_id] = *((VelocityComponent*)component_data);
+    core->world_data->entity_components.velocity_components[component_id] = GetDefaultVelocityComponent();
     entity->components[COMPONENT_velocity] = &core->world_data->entity_components.velocity_components[component_id];
     core->world_data->entity_components.velocity_components[component_id].parent_entity = entity;
     core->world_data->entity_components.velocity_components[component_id].component_id = component_id;
@@ -561,6 +571,8 @@ internal void AddVelocityComponent(Entity *entity, void *component_data)
             break;
         }
     }
+
+    return &core->world_data->entity_components.velocity_components[component_id];
 }
 
 internal void RemoveVelocityComponent(Entity *entity)
@@ -577,7 +589,7 @@ internal void RemoveVelocityComponent(Entity *entity)
         core->world_data->entity_components.velocity_free_component_id = deleted_component_id;
 }
 
-internal void AddPhysicsComponent(Entity *entity, void *component_data)
+internal PhysicsComponent *AddPhysicsComponent(Entity *entity)
 {
     i32 component_id;
     if (core->world_data->entity_components.physics_free_component_id == core->world_data->entity_components.physics_component_count)
@@ -591,7 +603,7 @@ internal void AddPhysicsComponent(Entity *entity, void *component_data)
         component_id = core->world_data->entity_components.physics_free_component_id;
     }
 
-    core->world_data->entity_components.physics_components[component_id] = *((PhysicsComponent*)component_data);
+    core->world_data->entity_components.physics_components[component_id] = GetDefaultPhysicsComponent();
     entity->components[COMPONENT_physics] = &core->world_data->entity_components.physics_components[component_id];
     core->world_data->entity_components.physics_components[component_id].parent_entity = entity;
     core->world_data->entity_components.physics_components[component_id].component_id = component_id;
@@ -604,6 +616,8 @@ internal void AddPhysicsComponent(Entity *entity, void *component_data)
             break;
         }
     }
+
+    return &core->world_data->entity_components.physics_components[component_id];
 }
 
 internal void RemovePhysicsComponent(Entity *entity)
@@ -620,7 +634,7 @@ internal void RemovePhysicsComponent(Entity *entity)
         core->world_data->entity_components.physics_free_component_id = deleted_component_id;
 }
 
-internal void AddMovementComponent(Entity *entity, void *component_data)
+internal MovementComponent *AddMovementComponent(Entity *entity)
 {
     i32 component_id;
     if (core->world_data->entity_components.movement_free_component_id == core->world_data->entity_components.movement_component_count)
@@ -634,7 +648,7 @@ internal void AddMovementComponent(Entity *entity, void *component_data)
         component_id = core->world_data->entity_components.movement_free_component_id;
     }
 
-    core->world_data->entity_components.movement_components[component_id] = *((MovementComponent*)component_data);
+    core->world_data->entity_components.movement_components[component_id] = GetDefaultMovementComponent();
     entity->components[COMPONENT_movement] = &core->world_data->entity_components.movement_components[component_id];
     core->world_data->entity_components.movement_components[component_id].parent_entity = entity;
     core->world_data->entity_components.movement_components[component_id].component_id = component_id;
@@ -647,6 +661,8 @@ internal void AddMovementComponent(Entity *entity, void *component_data)
             break;
         }
     }
+
+    return &core->world_data->entity_components.movement_components[component_id];
 }
 
 internal void RemoveMovementComponent(Entity *entity)
@@ -663,7 +679,7 @@ internal void RemoveMovementComponent(Entity *entity)
         core->world_data->entity_components.movement_free_component_id = deleted_component_id;
 }
 
-internal void AddArcEntityComponent(Entity *entity, void *component_data)
+internal ArcEntityComponent *AddArcEntityComponent(Entity *entity)
 {
     i32 component_id;
     if (core->world_data->entity_components.arc_entity_free_component_id == core->world_data->entity_components.arc_entity_component_count)
@@ -677,7 +693,7 @@ internal void AddArcEntityComponent(Entity *entity, void *component_data)
         component_id = core->world_data->entity_components.arc_entity_free_component_id;
     }
 
-    core->world_data->entity_components.arc_entity_components[component_id] = *((ArcEntityComponent*)component_data);
+    core->world_data->entity_components.arc_entity_components[component_id] = GetDefaultArcEntityComponent();
     entity->components[COMPONENT_arc_entity] = &core->world_data->entity_components.arc_entity_components[component_id];
     core->world_data->entity_components.arc_entity_components[component_id].parent_entity = entity;
     core->world_data->entity_components.arc_entity_components[component_id].component_id = component_id;
@@ -690,6 +706,8 @@ internal void AddArcEntityComponent(Entity *entity, void *component_data)
             break;
         }
     }
+
+    return &core->world_data->entity_components.arc_entity_components[component_id];
 }
 
 internal void RemoveArcEntityComponent(Entity *entity)
@@ -706,7 +724,7 @@ internal void RemoveArcEntityComponent(Entity *entity)
         core->world_data->entity_components.arc_entity_free_component_id = deleted_component_id;
 }
 
-internal void AddItemComponent(Entity *entity, void *component_data)
+internal ItemComponent *AddItemComponent(Entity *entity)
 {
     i32 component_id;
     if (core->world_data->entity_components.item_free_component_id == core->world_data->entity_components.item_component_count)
@@ -720,7 +738,7 @@ internal void AddItemComponent(Entity *entity, void *component_data)
         component_id = core->world_data->entity_components.item_free_component_id;
     }
 
-    core->world_data->entity_components.item_components[component_id] = *((ItemComponent*)component_data);
+    core->world_data->entity_components.item_components[component_id] = GetDefaultItemComponent();
     entity->components[COMPONENT_item] = &core->world_data->entity_components.item_components[component_id];
     core->world_data->entity_components.item_components[component_id].parent_entity = entity;
     core->world_data->entity_components.item_components[component_id].component_id = component_id;
@@ -733,6 +751,8 @@ internal void AddItemComponent(Entity *entity, void *component_data)
             break;
         }
     }
+
+    return &core->world_data->entity_components.item_components[component_id];
 }
 
 internal void RemoveItemComponent(Entity *entity)
@@ -749,7 +769,7 @@ internal void RemoveItemComponent(Entity *entity)
         core->world_data->entity_components.item_free_component_id = deleted_component_id;
 }
 
-internal void AddTriggerComponent(Entity *entity, void *component_data)
+internal TriggerComponent *AddTriggerComponent(Entity *entity)
 {
     i32 component_id;
     if (core->world_data->entity_components.trigger_free_component_id == core->world_data->entity_components.trigger_component_count)
@@ -763,7 +783,7 @@ internal void AddTriggerComponent(Entity *entity, void *component_data)
         component_id = core->world_data->entity_components.trigger_free_component_id;
     }
 
-    core->world_data->entity_components.trigger_components[component_id] = *((TriggerComponent*)component_data);
+    core->world_data->entity_components.trigger_components[component_id] = GetDefaultTriggerComponent();
     entity->components[COMPONENT_trigger] = &core->world_data->entity_components.trigger_components[component_id];
     core->world_data->entity_components.trigger_components[component_id].parent_entity = entity;
     core->world_data->entity_components.trigger_components[component_id].component_id = component_id;
@@ -776,6 +796,8 @@ internal void AddTriggerComponent(Entity *entity, void *component_data)
             break;
         }
     }
+
+    return &core->world_data->entity_components.trigger_components[component_id];
 }
 
 internal void RemoveTriggerComponent(Entity *entity)
@@ -792,7 +814,7 @@ internal void RemoveTriggerComponent(Entity *entity)
         core->world_data->entity_components.trigger_free_component_id = deleted_component_id;
 }
 
-internal void AddStorageComponent(Entity *entity, void *component_data)
+internal StorageComponent *AddStorageComponent(Entity *entity)
 {
     i32 component_id;
     if (core->world_data->entity_components.storage_free_component_id == core->world_data->entity_components.storage_component_count)
@@ -806,7 +828,7 @@ internal void AddStorageComponent(Entity *entity, void *component_data)
         component_id = core->world_data->entity_components.storage_free_component_id;
     }
 
-    core->world_data->entity_components.storage_components[component_id] = *((StorageComponent*)component_data);
+    core->world_data->entity_components.storage_components[component_id] = GetDefaultStorageComponent();
     entity->components[COMPONENT_storage] = &core->world_data->entity_components.storage_components[component_id];
     core->world_data->entity_components.storage_components[component_id].parent_entity = entity;
     core->world_data->entity_components.storage_components[component_id].component_id = component_id;
@@ -819,6 +841,8 @@ internal void AddStorageComponent(Entity *entity, void *component_data)
             break;
         }
     }
+
+    return &core->world_data->entity_components.storage_components[component_id];
 }
 
 internal void RemoveStorageComponent(Entity *entity)
@@ -835,7 +859,7 @@ internal void RemoveStorageComponent(Entity *entity)
         core->world_data->entity_components.storage_free_component_id = deleted_component_id;
 }
 
-internal void AddParallaxComponent(Entity *entity, void *component_data)
+internal ParallaxComponent *AddParallaxComponent(Entity *entity)
 {
     i32 component_id;
     if (core->world_data->entity_components.parallax_free_component_id == core->world_data->entity_components.parallax_component_count)
@@ -849,7 +873,7 @@ internal void AddParallaxComponent(Entity *entity, void *component_data)
         component_id = core->world_data->entity_components.parallax_free_component_id;
     }
 
-    core->world_data->entity_components.parallax_components[component_id] = *((ParallaxComponent*)component_data);
+    core->world_data->entity_components.parallax_components[component_id] = GetDefaultParallaxComponent();
     entity->components[COMPONENT_parallax] = &core->world_data->entity_components.parallax_components[component_id];
     core->world_data->entity_components.parallax_components[component_id].parent_entity = entity;
     core->world_data->entity_components.parallax_components[component_id].component_id = component_id;
@@ -862,6 +886,8 @@ internal void AddParallaxComponent(Entity *entity, void *component_data)
             break;
         }
     }
+
+    return &core->world_data->entity_components.parallax_components[component_id];
 }
 
 internal void RemoveParallaxComponent(Entity *entity)
@@ -878,7 +904,7 @@ internal void RemoveParallaxComponent(Entity *entity)
         core->world_data->entity_components.parallax_free_component_id = deleted_component_id;
 }
 
-internal void AddParticleEmitterComponent(Entity *entity, void *component_data)
+internal ParticleEmitterComponent *AddParticleEmitterComponent(Entity *entity)
 {
     i32 component_id;
     if (core->world_data->entity_components.particle_emitter_free_component_id == core->world_data->entity_components.particle_emitter_component_count)
@@ -892,7 +918,7 @@ internal void AddParticleEmitterComponent(Entity *entity, void *component_data)
         component_id = core->world_data->entity_components.particle_emitter_free_component_id;
     }
 
-    core->world_data->entity_components.particle_emitter_components[component_id] = *((ParticleEmitterComponent*)component_data);
+    core->world_data->entity_components.particle_emitter_components[component_id] = GetDefaultParticleEmitterComponent();
     entity->components[COMPONENT_particle_emitter] = &core->world_data->entity_components.particle_emitter_components[component_id];
     core->world_data->entity_components.particle_emitter_components[component_id].parent_entity = entity;
     core->world_data->entity_components.particle_emitter_components[component_id].component_id = component_id;
@@ -905,6 +931,8 @@ internal void AddParticleEmitterComponent(Entity *entity, void *component_data)
             break;
         }
     }
+
+    return &core->world_data->entity_components.particle_emitter_components[component_id];
 }
 
 internal void RemoveParticleEmitterComponent(Entity *entity)
@@ -972,3 +1000,55 @@ internal void DeleteEntity(Entity *entity)
     if (deleted_entity_id < core->world_data->free_entity_index)
         core->world_data->free_entity_index = deleted_entity_id;
 }
+
+static CloudEntity *NewCloudEntity()
+{
+    R_DEV_ASSERT(core->world_data->free_cloud_entity_index + 1 < MAX_CLOUD_ENTITIES, "Maximum amount of Cloud entites reached");
+
+    i32 new_unique_id = core->world_data->free_cloud_entity_index;
+    if (core->world_data->free_cloud_entity_index == core->world_data->cloud_entity_count)
+    {
+        core->world_data->cloud_entity_count++;
+        core->world_data->free_cloud_entity_index++;
+    }
+    core->world_data->cloud_entities[new_unique_id].unique_entity_id = new_unique_id;
+
+    Entity *generic_entity = NewEntity("Cloud", ENTITY_TYPE_scenic);
+    CloudEntity *unique_entity = &core->world_data->cloud_entities[new_unique_id];
+    unique_entity->parent_generic_entity = generic_entity;
+
+    unique_entity->unique_entity_id = new_unique_id;
+
+    unique_entity->position_comp = AddPositionComponent(generic_entity);
+    unique_entity->sprite_comp = AddSpriteComponent(generic_entity);
+    unique_entity->parallax_comp = AddParallaxComponent(generic_entity);
+
+    return unique_entity;
+}
+
+static GroundEntity *NewGroundEntity()
+{
+    R_DEV_ASSERT(core->world_data->free_ground_entity_index + 1 < MAX_GROUND_ENTITIES, "Maximum amount of Ground entites reached");
+
+    i32 new_unique_id = core->world_data->free_ground_entity_index;
+    if (core->world_data->free_ground_entity_index == core->world_data->ground_entity_count)
+    {
+        core->world_data->ground_entity_count++;
+        core->world_data->free_ground_entity_index++;
+    }
+    core->world_data->ground_entities[new_unique_id].unique_entity_id = new_unique_id;
+
+    Entity *generic_entity = NewEntity("Ground", ENTITY_TYPE_ground);
+    GroundEntity *unique_entity = &core->world_data->ground_entities[new_unique_id];
+    unique_entity->parent_generic_entity = generic_entity;
+
+    unique_entity->unique_entity_id = new_unique_id;
+
+    unique_entity->position_comp = AddPositionComponent(generic_entity);
+    unique_entity->sprite_comp = AddSpriteComponent(generic_entity);
+    unique_entity->collider_comp = AddColliderComponent(generic_entity);
+    unique_entity->physics_comp = AddPhysicsComponent(generic_entity);
+
+    return unique_entity;
+}
+

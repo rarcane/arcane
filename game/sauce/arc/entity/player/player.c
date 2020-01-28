@@ -211,8 +211,10 @@ internal void PostMoveUpdatePlayer()
 						ItemComponent *new_held_item_comp = hotbar_storage->items[i];
 						Entity *new_held_item = hotbar_storage->items[i]->parent_entity;
 
-						AttachPosition(new_held_item, v2(0.0f, 0.0f));
-						AttachSprite(new_held_item, item_data[new_held_item_comp->item_type].icon_sprite, -0.025f);
+						AddPositionComponent(new_held_item);
+						SpriteComponent *new_held_item_sprite = AddSpriteComponent(new_held_item);
+						new_held_item_sprite->sprite_data.sprite_enum = item_data[new_held_item_comp->item_type].icon_sprite;
+						new_held_item_sprite->sprite_data.render_layer = -0.025f;
 
 						core->held_item = new_held_item;
 						core->active_hotbar_slot = i + 1;

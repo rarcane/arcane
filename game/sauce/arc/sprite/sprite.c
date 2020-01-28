@@ -204,7 +204,7 @@ internal void RenderBackgroundSprites()
 	for (int j = 0; j < core->world_data->entity_components.sprite_component_count; j++)
 	{
 		SpriteComponent *sprite_component = &core->world_data->entity_components.sprite_components[j];
-		if (sprite_component->parent_entity->entity_id > 0 && sprite_component->is_background_sprite) // Validate entity & check if it's a background sprite
+		if (sprite_component->parent_entity && sprite_component->is_background_sprite) // Validate entity & check if it's a background sprite
 		{
 			Entity *entity = sprite_component->parent_entity;
 
@@ -227,7 +227,7 @@ internal void RenderBackgroundSprites()
 	for (int j = 0; j < core->world_data->entity_components.sub_sprite_component_count; j++)
 	{
 		SubSpriteComponent *sub_sprite_component = &core->world_data->entity_components.sub_sprite_components[j];
-		if (sub_sprite_component->parent_entity->entity_id > 0) // Validate entity
+		if (sub_sprite_component->parent_entity) // Validate entity
 		{
 			Entity *entity = sub_sprite_component->parent_entity;
 
@@ -334,7 +334,7 @@ internal void RenderForegroundSprites()
 	for (int j = 0; j < core->world_data->entity_components.sprite_component_count; j++)
 	{
 		SpriteComponent *sprite_component = &core->world_data->entity_components.sprite_components[j];
-		if (sprite_component->parent_entity->entity_id > 0 && !sprite_component->is_background_sprite) // Validate entity & check if it's a foreground sprite
+		if (sprite_component->parent_entity && !sprite_component->is_background_sprite) // Validate entity & check if it's a foreground sprite
 		{
 			Entity *entity = sprite_component->parent_entity;
 
@@ -357,7 +357,7 @@ internal void RenderForegroundSprites()
 	for (int j = 0; j < core->world_data->entity_components.sub_sprite_component_count; j++)
 	{
 		SubSpriteComponent *sub_sprite_component = &core->world_data->entity_components.sub_sprite_components[j];
-		if (sub_sprite_component->parent_entity->entity_id > 0) // Validate entity
+		if (sub_sprite_component->parent_entity) // Validate entity
 		{
 			Entity *entity = sub_sprite_component->parent_entity;
 

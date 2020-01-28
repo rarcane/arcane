@@ -43,7 +43,7 @@ internal Entity *NewEntity(char name[], EntityType type)
 /* --- Entity component helper functions --- */
 // Used for quick setup of a new entity, if more indepth creation is required - create the components directly through the AddComponent macro
 
-internal void AttachPosition(Entity *entity, v2 world_position)
+/* internal void AttachPosition(Entity *entity, v2 world_position)
 {
 	PositionComponent position = {
 		.position = world_position,
@@ -183,7 +183,7 @@ internal void AttachTrigger(Entity *entity, void (*enter_trigger_callback)(Overl
 	TriggerComponent trigger = {
 		.trigger_against = trigger_against,
 		.enter_trigger_callback = enter_trigger_callback,
-		exit_trigger_callback = exit_trigger_callback,
+		.exit_trigger_callback = exit_trigger_callback,
 	};
 	AddTriggerComponent(entity, &trigger);
 }
@@ -258,4 +258,4 @@ internal void SetupBackgroundEntity(Entity *entity, v2 desired_position, SpriteT
 		.desired_position = desired_position,
 	};
 	AddParallaxComponent(entity, &parallax);
-}
+} */

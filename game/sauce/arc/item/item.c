@@ -36,11 +36,23 @@ internal void ConvertToGroundItem(ItemComponent *item_comp)
 
 	StaticSprite *ground_sprite = GetStaticSprite(item_data[item_comp->item_type].ground_sprite);
 
-	AttachPosition(item, v2(player_pos->position.x + 10 * (player_sub_sprite->is_flipped ? -1 : 1), player_pos->position.y - 20));
-	AttachSprite(item, item_data[item_comp->item_type].ground_sprite, 1.0f);
-	AttachVelocity(item, v2(player_sub_sprite->is_flipped ? -50.0f : 50.0f, 0.0f), v2(0, 0), COLLIDER_FLAGS_ground);
-	AttachPhysics(item, 1.0f, (item_data[item_comp->item_type].flags & ITEM_FLAG_bouncy) ? 0.5f : 0.0f);
-	AttachCollider(item, GetRectangleShape(ground_sprite->source.zw, v2(0.0f, 0.0f)), COLLIDER_FLAGS_item);
+	PositionComponent *item_pos = AddPositionComponent(item);
+	item_pos->position = v2(player_pos->position.x + 10 * (player_sub_sprite->is_flipped ? -1 : 1), player_pos->position.y - 20);
+
+	SpriteComponent *item_sprite = AddSpriteComponent(item);
+	item_sprite->sprite_data.sprite_enum = item_data[item_comp->item_type].ground_sprite;
+	item_sprite->sprite_data.render_layer = 1.0f;
+
+	VelocityComponent *item_velocity = AddVelocityComponent(item);
+	item_velocity->velocity = v2(player_sub_sprite->is_flipped ? -50.0f : 50.0f, 0.0f);
+	item_velocity->collide_against = COLLIDER_FLAGS_ground;
+
+	PhysicsComponent *item_physics = AddPhysicsComponent(item);
+	item_physics->bounce_mult = (item_data[item_comp->item_type].flags & ITEM_FLAG_bouncy) ? 0.5f : 0.0f;
+
+	ColliderComponent *item_collider = AddColliderComponent(item);
+	item_collider->shape = GetRectangleShape(ground_sprite->source.zw, v2(0.0f, 0.0f));
+	item_collider->flags = COLLIDER_FLAGS_item;
 }
 
 internal void StripItemGroundComponents(ItemComponent *item_comp)

@@ -2,328 +2,72 @@ internal void TempInitGameWorld()
 {
 	core->is_ingame = 1;
 
-	// avert your eyes lmao
-
-	{
-		Entity *tree = NewEntity("Tree", ENTITY_TYPE_resource);
-		AttachPosition(tree, v2(-260.0f, 13.0f));
-		AttachSprite(tree, STATIC_SPRITE_pine_tree_v1, 2.0f);
-		AttachLoopedParticleEmitter(tree, 0.5f, GeneratePineParticles);
-
-		SpriteComponent *sprite_comp = tree->components[COMPONENT_sprite];
-		sprite_comp->is_flipped = 0;
-	}
-	{
-		Entity *tree = NewEntity("Tree", ENTITY_TYPE_resource);
-		AttachPosition(tree, v2(-190.0f, 0.0f));
-		AttachSprite(tree, STATIC_SPRITE_pine_tree_v1, 2.0f);
-		AttachLoopedParticleEmitter(tree, 0.5f, GeneratePineParticles);
-
-		SpriteComponent *sprite_comp = tree->components[COMPONENT_sprite];
-		sprite_comp->is_flipped = 1;
-	}
-	{
-		Entity *tree = NewEntity("Tree", ENTITY_TYPE_resource);
-		AttachPosition(tree, v2(-110.0f, 10.0f));
-		AttachSprite(tree, STATIC_SPRITE_pine_tree_v1, 2.0f);
-		AttachLoopedParticleEmitter(tree, 0.5f, GeneratePineParticles);
-
-		SpriteComponent *sprite_comp = tree->components[COMPONENT_sprite];
-		sprite_comp->is_flipped = 0;
-	}
-	{
-		Entity *tree = NewEntity("Tree", ENTITY_TYPE_resource);
-		AttachPosition(tree, v2(103.0f, 10.0f));
-		AttachSprite(tree, STATIC_SPRITE_pine_tree_v1, 2.0f);
-		AttachLoopedParticleEmitter(tree, 0.5f, GeneratePineParticles);
-
-		SpriteComponent *sprite_comp = tree->components[COMPONENT_sprite];
-		sprite_comp->is_flipped = 1;
-	}
-	{
-		Entity *tree = NewEntity("Tree", ENTITY_TYPE_resource);
-		AttachPosition(tree, v2(182.0f, 0.0f));
-		AttachSprite(tree, STATIC_SPRITE_pine_tree_v1, 2.0f);
-		AttachLoopedParticleEmitter(tree, 0.5f, GeneratePineParticles);
-
-		SpriteComponent *sprite_comp = tree->components[COMPONENT_sprite];
-		sprite_comp->is_flipped = 0;
-	}
-	{
-		Entity *tree = NewEntity("Tree", ENTITY_TYPE_resource);
-		AttachPosition(tree, v2(250.0f, 13.0f));
-		AttachSprite(tree, STATIC_SPRITE_pine_tree_v1, 2.0f);
-		AttachLoopedParticleEmitter(tree, 0.5f, GeneratePineParticles);
-
-		SpriteComponent *sprite_comp = tree->components[COMPONENT_sprite];
-		sprite_comp->is_flipped = 1;
-	}
-
-	{
-		Entity *hills3 = NewEntity("Hill", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(hills3, v2(-272.0f, 0.0f), STATIC_SPRITE_hills_1_v1, 5.1f, v2(0.4f, 0.1f));
-		Entity *hills1 = NewEntity("Hill", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(hills1, v2(-93.0f, 0.0f), STATIC_SPRITE_hills_1_v2, 5.0f, v2(0.4f, 0.1f));
-		Entity *hills2 = NewEntity("Hill", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(hills2, v2(93.0f, 0.0f), STATIC_SPRITE_hills_1_v1, 5.1f, v2(0.4f, 0.1f));
-		Entity *hills4 = NewEntity("Hill", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(hills4, v2(272.0f, 0.0f), STATIC_SPRITE_hills_1_v2, 5.0f, v2(0.4f, 0.1f));
-
-		{
-			Entity *bg1_tree_1 = NewEntity("bgtree", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg1_tree_1, v2(-212.0f, 2.0f), STATIC_SPRITE_bg1_pine_tree_v1, 5.2f, v2(0.4f, 0.1f));
-
-			SpriteComponent *sprite_comp = bg1_tree_1->components[COMPONENT_sprite];
-			sprite_comp->is_flipped = 1;
-		}
-		{
-			Entity *bg1_tree_1 = NewEntity("bgtree", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg1_tree_1, v2(-93.0f, 2.0f), STATIC_SPRITE_bg1_pine_tree_v2, 5.2f, v2(0.4f, 0.1f));
-
-			SpriteComponent *sprite_comp = bg1_tree_1->components[COMPONENT_sprite];
-			sprite_comp->is_flipped = 1;
-		}
-		{
-			Entity *bg1_tree_1 = NewEntity("bgtree", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg1_tree_1, v2(80.0f, 6.0f), STATIC_SPRITE_bg1_pine_tree_v1, 5.2f, v2(0.4f, 0.1f));
-		}
-		{
-			Entity *bg1_tree_1 = NewEntity("bgtree", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg1_tree_1, v2(155.0f, 2.0f), STATIC_SPRITE_bg1_pine_tree_v2, 5.2f, v2(0.4f, 0.1f));
-		}
-
-		{
-			Entity *bg1_shrub = NewEntity("Bg1 Shrub", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg1_shrub, v2(-80, 2.0f), STATIC_SPRITE_bg1_shrub_v1, 5.15f, v2(0.4f, 0.1f));
-		}
-		{
-			Entity *bg1_shrub = NewEntity("Bg1 Shrub", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg1_shrub, v2(-171, 0.0f), STATIC_SPRITE_bg1_shrub_v2, 5.15f, v2(0.4f, 0.1f));
-		}
-		{
-			Entity *bg1_shrub = NewEntity("Bg1 Shrub", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg1_shrub, v2(-22, -3.0f), STATIC_SPRITE_bg1_shrub_v3, 5.15f, v2(0.4f, 0.1f));
-		}
-		{
-			Entity *bg1_shrub = NewEntity("Bg1 Shrub", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg1_shrub, v2(196, -4.0f), STATIC_SPRITE_bg1_shrub_v2, 5.15f, v2(0.4f, 0.1f));
-		}
-		{
-			Entity *bg1_shrub = NewEntity("Bg1 Shrub", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg1_shrub, v2(91, 1.0f), STATIC_SPRITE_bg1_shrub_v3, 5.15f, v2(0.4f, 0.1f));
-		}
-
-		{
-			Entity *bg1_sapling = NewEntity("Bg1 Sapling", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg1_sapling, v2(-160.0f, 0.0f), STATIC_SPRITE_bg1_sapling_v1, 5.17f, v2(0.4f, 0.1f));
-		}
-		{
-			Entity *bg1_sapling = NewEntity("Bg1 Sapling", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg1_sapling, v2(-46.0f, -8.0f), STATIC_SPRITE_bg1_sapling_v2, 5.17f, v2(0.4f, 0.1f));
-		}
-		{
-			Entity *bg1_sapling = NewEntity("Bg1 Sapling", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg1_sapling, v2(36.0f, -8.0f), STATIC_SPRITE_bg1_sapling_v3, 5.17f, v2(0.4f, 0.1f));
-		}
-		{
-			Entity *bg1_sapling = NewEntity("Bg1 Sapling", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg1_sapling, v2(-198.0f, 11.0f), STATIC_SPRITE_bg1_sapling_v1, 5.17f, v2(0.4f, 0.1f));
-		}
-		{
-			Entity *bg1_sapling = NewEntity("Bg1 Sapling", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg1_sapling, v2(178.0f, -8.0f), STATIC_SPRITE_bg1_sapling_v2, 5.17f, v2(0.4f, 0.1f));
-		}
-		{
-			Entity *bg1_sapling = NewEntity("Bg1 Sapling", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg1_sapling, v2(209.0f, -8.0f), STATIC_SPRITE_bg1_sapling_v3, 5.17f, v2(0.4f, 0.1f));
-		}
-	}
-
-	{
-		Entity *bg2_hills3 = NewEntity("hills", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(bg2_hills3, v2(-300.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.1f, v2(0.6f, 0.2f));
-		Entity *bg2_hills2 = NewEntity("hills", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(bg2_hills2, v2(-100.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.1f, v2(0.6f, 0.2f));
-		Entity *bg2_hills4 = NewEntity("hills", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(bg2_hills4, v2(100.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.0f, v2(0.6f, 0.2f));
-		Entity *bg2_hills1 = NewEntity("hills", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(bg2_hills1, v2(300.0f, 0.0f), STATIC_SPRITE_bg2_hills_v1, 6.0f, v2(0.6f, 0.2f));
-
-		{
-			Entity *bg2_tree = NewEntity("bg2 tree", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg2_tree, v2(-169, -5), STATIC_SPRITE_bg2_pine_tree_v1, 6.5f, v2(0.6f, 0.2f));
-		}
-		{
-			Entity *bg2_tree = NewEntity("bg2 tree", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg2_tree, v2(-127, -5), STATIC_SPRITE_bg2_pine_tree_v2, 6.5f, v2(0.6f, 0.2f));
-		}
-		{
-			Entity *bg2_tree = NewEntity("bg2 tree", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg2_tree, v2(54, -5), STATIC_SPRITE_bg2_pine_tree_v1, 6.5f, v2(0.6f, 0.2f));
-			SpriteComponent *sprite_comp = bg2_tree->components[COMPONENT_sprite];
-			sprite_comp->is_flipped = 1;
-		}
-		{
-			Entity *bg2_tree = NewEntity("bg2 tree", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg2_tree, v2(104, -5), STATIC_SPRITE_bg2_pine_tree_v1, 6.5f, v2(0.6f, 0.2f));
-			SpriteComponent *sprite_comp = bg2_tree->components[COMPONENT_sprite];
-			sprite_comp->is_flipped = 1;
-		}
-
-		{
-			Entity *bg2_shrub = NewEntity("bg2 shrub", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg2_shrub, v2(-150, -9), STATIC_SPRITE_bg2_shrub_v1, 6.4f, v2(0.6f, 0.2f));
-		}
-		{
-			Entity *bg2_shrub = NewEntity("bg2 shrub", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg2_shrub, v2(54, -6), STATIC_SPRITE_bg2_shrub_v2, 6.4f, v2(0.6f, 0.2f));
-		}
-		{
-			Entity *bg2_shrub = NewEntity("bg2 shrub", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg2_shrub, v2(126, -6), STATIC_SPRITE_bg2_shrub_v3, 6.4f, v2(0.6f, 0.2f));
-		}
-	}
-
-	{
-		Entity *bg3_hills1 = NewEntity("hills", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(bg3_hills1, v2(100.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.75f, 0.3f));
-		Entity *bg3_hills2 = NewEntity("hills", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(bg3_hills2, v2(-100.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.75f, 0.3f));
-		Entity *bg3_hills3 = NewEntity("hills", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(bg3_hills3, v2(300.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.75f, 0.3f));
-		Entity *bg3_hills4 = NewEntity("hills", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(bg3_hills4, v2(-300.0f, 0.0f), STATIC_SPRITE_bg3_hills_v1, 7.0f, v2(0.75f, 0.3f));
-
-		{
-			Entity *bg3_tree_1 = NewEntity("bgtree", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg3_tree_1, v2(30.0f, -17.0f), STATIC_SPRITE_bg3_pine_tree_v1, 7.5f, v2(0.75f, 0.3f));
-		}
-		{
-			Entity *bg3_tree_1 = NewEntity("bgtree", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg3_tree_1, v2(43.0f, -17.0f), STATIC_SPRITE_bg3_pine_tree_v2, 7.6f, v2(0.75f, 0.3f));
-		}
-		{
-			Entity *bg3_tree_1 = NewEntity("bgtree", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg3_tree_1, v2(56.0f, -17.0f), STATIC_SPRITE_bg3_pine_tree_v3, 7.5f, v2(0.75f, 0.3f));
-		}
-
-		{
-			Entity *bg3_shrub = NewEntity("bg3 shrub", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg3_shrub, v2(15.0f, -21.0f), STATIC_SPRITE_bg3_shrub_v1, 7.3f, v2(0.75, 0.3f));
-		}
-		{
-			Entity *bg3_shrub = NewEntity("bg3 shrub", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg3_shrub, v2(44.0f, -18.0f), STATIC_SPRITE_bg3_shrub_v4, 7.3f, v2(0.75, 0.3f));
-		}
-
-		{
-			Entity *bg3_tree_1 = NewEntity("bgtree", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg3_tree_1, v2(-49.0f, -17.0f), STATIC_SPRITE_bg3_pine_tree_v4, 7.5f, v2(0.75f, 0.3f));
-		}
-		{
-			Entity *bg3_tree_1 = NewEntity("bgtree", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg3_tree_1, v2(-36.0f, -17.0f), STATIC_SPRITE_bg3_pine_tree_v5, 7.6f, v2(0.75f, 0.3f));
-		}
-		{
-			Entity *bg3_tree_1 = NewEntity("bgtree", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg3_tree_1, v2(-25.0f, -17.0f), STATIC_SPRITE_bg3_pine_tree_v6, 7.5f, v2(0.75f, 0.3f));
-		}
-		{
-			Entity *bg3_tree_1 = NewEntity("bgtree", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg3_tree_1, v2(-87.0f, -17.0f), STATIC_SPRITE_bg3_pine_tree_v7, 7.5f, v2(0.75f, 0.3f));
-		}
-		{
-			Entity *bg3_tree_1 = NewEntity("bgtree", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg3_tree_1, v2(-73.0f, -17.0f), STATIC_SPRITE_bg3_pine_tree_v8, 7.5f, v2(0.75f, 0.3f));
-		}
-
-		{
-			Entity *bg3_shrub = NewEntity("bg3 shrub", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg3_shrub, v2(-29.0f, -18.0f), STATIC_SPRITE_bg3_shrub_v1, 7.3f, v2(0.75, 0.3f));
-		}
-		{
-			Entity *bg3_shrub = NewEntity("bg3 shrub", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg3_shrub, v2(-59.0f, -19.0f), STATIC_SPRITE_bg3_shrub_v2, 7.3f, v2(0.75, 0.3f));
-		}
-		{
-			Entity *bg3_shrub = NewEntity("bg3 shrub", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg3_shrub, v2(-147.0f, -18.0f), STATIC_SPRITE_bg3_shrub_v3, 7.3f, v2(0.75, 0.3f));
-		}
-		{
-			Entity *bg3_shrub = NewEntity("bg3 shrub", ENTITY_TYPE_scenic);
-			SetupBackgroundEntity(bg3_shrub, v2(193.0f, -18.0f), STATIC_SPRITE_bg3_shrub_v4, 7.3f, v2(0.75, 0.3f));
-		}
-	}
-
-	Entity *mid_mountains_1 = NewEntity("Mountains", ENTITY_TYPE_scenic);
-	SetupBackgroundEntity(mid_mountains_1, v2(-250.0f, 0.0f), STATIC_SPRITE_mid_mountains, 8.0f, v2(0.93f, 0.68f));
-	Entity *mid_mountains_2 = NewEntity("Mountains", ENTITY_TYPE_scenic);
-	SetupBackgroundEntity(mid_mountains_2, v2(-850.0f, 0.0f), STATIC_SPRITE_mid_mountains, 8.0f, v2(0.93f, 0.68f));
-	Entity *mid_mountains_3 = NewEntity("Mountains", ENTITY_TYPE_scenic);
-	SetupBackgroundEntity(mid_mountains_3, v2(350.0f, 0.0f), STATIC_SPRITE_mid_mountains, 8.0f, v2(0.93f, 0.68f));
-
-	Entity *far_mountains_1 = NewEntity("Mountains", ENTITY_TYPE_scenic);
-	SetupBackgroundEntity(far_mountains_1, v2(0.0f, 0.0f), STATIC_SPRITE_far_mountains, 9.0f, v2(0.95f, 0.7f));
-	Entity *far_mountains_2 = NewEntity("Mountains", ENTITY_TYPE_scenic);
-	SetupBackgroundEntity(far_mountains_2, v2(-600.0f, 0.0f), STATIC_SPRITE_far_mountains, 9.0f, v2(0.95f, 0.7f));
-	Entity *far_mountains_3 = NewEntity("Mountains", ENTITY_TYPE_scenic);
-	SetupBackgroundEntity(far_mountains_3, v2(600.0f, 0.0f), STATIC_SPRITE_far_mountains, 9.0f, v2(0.95f, 0.7f));
-
 	{
 		core->player = NewEntity("Player", ENTITY_TYPE_character);
 		core->player->flags |= ENTITY_FLAGS_no_delete;
 
-		AttachPosition(core->player, v2(0.0f, -100.0f));
-		AttachCollider(core->player, GetRectangleShape(v2(14.0f, 35.0f), v2(0.0f, 0.0f)), COLLIDER_FLAGS_player);
-		AttachPhysics(core->player, 1.0f, 0.0f);
-		AttachVelocity(core->player, v2(0, 0), v2(250.0f, 0.0f), COLLIDER_FLAGS_ground);
-		AttachMovement(core->player, 100.0f);
-		AttachArcEntity(core->player, ARC_ENTITY_player, ANIMATION_STATE_player_idle, 0.0f);
+		PositionComponent *player_pos = AddPositionComponent(core->player);
+		player_pos->position = v2(0.0f, -100.0f);
 
-		SubSpriteComponent *sub_sprite_comp = core->player->components[COMPONENT_sub_sprite];
-		SpriteData *arm_sub_sprite = GetSubSpriteByType(sub_sprite_comp, DYNAMIC_SPRITE_player_idle_arm);
-		arm_sub_sprite->render_layer -= 0.05f;
+		ColliderComponent *player_collider = AddColliderComponent(core->player);
+		player_collider->shape = GetRectangleShape(v2(14.0f, 35.0f), v2(0.0f, 0.0f));
+		player_collider->flags = COLLIDER_FLAGS_player;
+
+		PhysicsComponent *player_physics = AddPhysicsComponent(core->player);
+
+		VelocityComponent *player_velocity = AddVelocityComponent(core->player);
+		player_velocity->acceleration = v2(250.0f, 0.0f);
+		player_velocity->collide_against = COLLIDER_FLAGS_ground;
+
+		MovementComponent *player_movement = AddMovementComponent(core->player);
+		player_movement->move_speed = 100.0f;
+
+		ArcEntityComponent *player_arc_entity = AddArcEntityComponent(core->player);
+		player_arc_entity->entity_type = ARC_ENTITY_player;
+		player_arc_entity->current_animation_state = ANIMATION_STATE_player_idle;
+
+		SubSpriteComponent *player_sub_sprite = AddSubSpriteComponent(core->player);
+		player_sub_sprite->sub_sprites[0].sprite_enum = arc_entity_animation_state_data[ANIMATION_STATE_player_idle].dynamic_sprites[0];
+		player_sub_sprite->sub_sprites[0].render_layer = 0.0f;
+		player_sub_sprite->sub_sprites[1].sprite_enum = arc_entity_animation_state_data[ANIMATION_STATE_player_idle].dynamic_sprites[1];
+		player_sub_sprite->sub_sprites[1].render_layer = -0.05f;
+		player_sub_sprite->sub_sprite_count = 2;
+
+		AddAnimationComponent(core->player);
 	}
 
 	{
 		core->sword = NewEntity("Sword", ENTITY_TYPE_item);
 		core->sword->flags |= ENTITY_FLAGS_no_delete;
-		AttachItem(core->sword, ITEM_flint_sword, 1);
-	}
+		ItemComponent *sword_item = AddItemComponent(core->sword);
+		sword_item->item_type = ITEM_flint_sword;
+		sword_item->stack_size = 1;
 
-	{
 		core->backpack = NewEntity("Backpack", ENTITY_TYPE_storage);
 		core->backpack->flags |= ENTITY_FLAGS_no_delete;
-		AttachStorage(core->backpack, 9);
+		StorageComponent *backpack_storage = AddStorageComponent(core->backpack);
+		backpack_storage->storage_size = 9;
 
 		core->hotbar = NewEntity("Hotbar", ENTITY_TYPE_storage); // Hotbar should technically be attached to the player entity
 		core->hotbar->flags |= ENTITY_FLAGS_no_delete;
-		AttachStorage(core->hotbar, 2);
+		StorageComponent *hotbar_storage = AddStorageComponent(core->hotbar);
+		hotbar_storage->storage_size = 2;
 
-		StorageComponent *storage = core->backpack->components[COMPONENT_storage];
-		AddItemToStorage(core->sword->components[COMPONENT_item], storage, 2);
+		AddItemToStorage(sword_item, backpack_storage, 2);
 	}
 
 	for (int i = -10; i < 11; i++)
 	{
-		Entity *ground = NewEntity("Ground", ENTITY_TYPE_ground);
-		AttachPosition(ground, v2(i * 100.0f, 0.0f));
-		AttachSprite(ground, STATIC_SPRITE_ground_forest, -1.0f);
-		AttachCollider(ground, GetRectangleShape(v2(100.0f, 87.0f), v2(0.0f, 87.0f)), COLLIDER_FLAGS_ground);
-		AttachPhysics(ground, 1.0f, 1.0f);
-		//AttachLoopedParticleEmitter(ground, 1.0f, GenerateGroundParticles);
-
-		Entity *ground_rocks = NewEntity("GroundRocks", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(ground_rocks,
-							  v2(i * 100.0f, 0.0f),
-							  STATIC_SPRITE_ground_rocks_v1 + RandomI32(0, 1),
-							  2.5f,
-							  v2(0.1f, 0.025f));
-		/* AttachPosition(ground_rocks, v2(i * 100.0f, 0.0f));
-		AttachSprite(ground_rocks, STATIC_SPRITE_ground_rocks_v1 + RandomI32(0, 1), 2.5f); */
+		GroundEntity *ground = NewGroundEntity();
+		ground->position_comp->position = v2(i * 100.0f, 0.0f);
+		ground->sprite_comp->sprite_data.sprite_enum = STATIC_SPRITE_ground_forest;
+		ground->sprite_comp->sprite_data.render_layer = -1.0f;
+		ground->collider_comp->shape = GetRectangleShape(v2(100.0f, 87.0f), v2(0.0f, 87.0f));
+		ground->collider_comp->flags = COLLIDER_FLAGS_ground;
+		ground->physics_comp->bounce_mult = 1.0f;
 	}
 
-	for (int i = 0; i < 12; i++)
+	/* for (int i = 0; i < 12; i++)
 	{
 		Entity *cloud = NewEntity("Cloud", ENTITY_TYPE_scenic);
 		SetupBackgroundEntity(cloud,
@@ -336,7 +80,7 @@ internal void TempInitGameWorld()
 		sprite_comp->sprite_data.tint = v4u(0.5f);
 
 		core->clouds[core->cloud_count++] = cloud;
-	}
+	} */
 }
 
 internal void DrawWorld()
@@ -471,7 +215,7 @@ internal void UpdateParallax()
 
 internal void UpdateClouds()
 {
-	for (int i = 0; i < core->cloud_count; i++)
+	/* for (int i = 0; i < core->cloud_count; i++)
 	{
 		Entity *cloud = core->clouds[i];
 		if (cloud)
@@ -499,7 +243,7 @@ internal void UpdateClouds()
 				core->clouds[i] = new_cloud;
 			}
 		}
-	}
+	} */
 }
 
 internal i32 FloatToChunkIndex(f32 position)
@@ -522,7 +266,7 @@ internal ChunkData *GetChunkAtPosition(v2 position)
 		}
 	}
 
-	// Chunk doesn't exist yet, so just create it at this positon
+	// Chunk GenerateEntityArraysdoesn't exist yet, so just create it at this positon
 	ChunkData *chunk = &core->world_data->active_chunks[core->world_data->active_chunk_count];
 	chunk->is_valid = 1;
 	chunk->x_index = FloatToChunkIndex(position.x);
