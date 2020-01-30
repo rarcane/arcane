@@ -7,21 +7,21 @@
 #define MAX_PARTICLE_AMOUNT (300)
 #define MAX_WORLD_CHUNKS (128)
 #define CHUNK_SIZE (200)
-typedef enum EntityType EntityType;
-enum EntityType
+typedef enum GeneralisedEntityType GeneralisedEntityType;
+enum GeneralisedEntityType
 {
-ENTITY_TYPE_undefined,
-ENTITY_TYPE_character,
-ENTITY_TYPE_monster,
-ENTITY_TYPE_animal,
-ENTITY_TYPE_item,
-ENTITY_TYPE_storage,
-ENTITY_TYPE_resource,
-ENTITY_TYPE_scenic,
-ENTITY_TYPE_ground,
-ENTITY_TYPE_MAX,
+GENERALISED_ENTITY_TYPE_undefined,
+GENERALISED_ENTITY_TYPE_character,
+GENERALISED_ENTITY_TYPE_monster,
+GENERALISED_ENTITY_TYPE_animal,
+GENERALISED_ENTITY_TYPE_item,
+GENERALISED_ENTITY_TYPE_storage,
+GENERALISED_ENTITY_TYPE_resource,
+GENERALISED_ENTITY_TYPE_scenic,
+GENERALISED_ENTITY_TYPE_ground,
+GENERALISED_ENTITY_TYPE_MAX,
 };
-static char *GetEntityTypeTypeName(EntityType type);
+static char *GetGeneralisedEntityTypeTypeName(GeneralisedEntityType type);
 
 #define ENTITY_FLAGS_no_delete (1<<0)
 typedef unsigned int EntityFlags;
@@ -242,17 +242,19 @@ i32 particle_emitter_component_count;
 i32 particle_emitter_free_component_id;
 } ComponentSet;
 
-// @GenerateComponentList 
-typedef struct Entity Entity;
-struct Entity
+#define MAX_CHARACTER_ENTITIES (1)
+typedef struct CharacterEntity
 {
-i32 entity_id;
-char name[20];
-EntityType type;
-EntityFlags flags;
-void *components[COMPONENT_MAX];
-ChunkData *active_chunk;
-};
+Entity *parent_generic_entity;
+    PositionComponent *position_comp;
+    SubSpriteComponent *sub_sprite_comp;
+    AnimationComponent *animation_comp;
+    ColliderComponent *collider_comp;
+    PhysicsComponent *physics_comp;
+    VelocityComponent *velocity_comp;
+    MovementComponent *movement_comp;
+    ArcEntityComponent *arc_entity_comp;
+} CharacterEntity;
 
 #define MAX_CLOUD_ENTITIES (50)
 typedef struct CloudEntity
@@ -273,8 +275,29 @@ i32 unique_entity_id;
     SpriteComponent *sprite_comp;
     ColliderComponent *collider_comp;
     PhysicsComponent *physics_comp;
-i32 test_varibale;
+f32 incline_angle;
 } GroundEntity;
+
+typedef enum EntityType
+{
+    ENTITY_TYPE_generic,
+    ENTITY_TYPE_character,
+    ENTITY_TYPE_cloud,
+    ENTITY_TYPE_ground,
+    ENTITY_TYPE_MAX
+} EntityType;
+
+typedef struct Entity
+{
+i32 entity_id;
+char name[20];
+GeneralisedEntityType generalised_type;
+void *unique_entity;
+EntityType type;
+EntityFlags flags;
+void *components[COMPONENT_MAX];
+ChunkData *active_chunk;
+} Entity;
 
 typedef struct ChunkData
 {
@@ -292,6 +315,7 @@ ChunkData active_chunks[MAX_WORLD_CHUNKS];
 i32 active_chunk_count;
 ChunkData floating_chunk;
 
+CharacterEntity character_entity;
 CloudEntity cloud_entities[MAX_CLOUD_ENTITIES];
 i32 cloud_entity_count;
 i32 free_cloud_entity_index;

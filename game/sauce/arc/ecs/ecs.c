@@ -4,7 +4,7 @@ internal void InitialiseECS()
 	core->world_data->free_entity_index = 1;
 }
 
-internal Entity *NewEntity(char name[], EntityType type)
+internal Entity *NewEntity(char name[], EntityType type, GeneralisedEntityType generalised_type)
 {
 	if (core->world_data->free_entity_index == core->world_data->entity_count) // Entity ID is caught up
 	{
@@ -14,6 +14,7 @@ internal Entity *NewEntity(char name[], EntityType type)
 
 		core->world_data->entities[entity_id].entity_id = entity_id;
 		strcpy(core->world_data->entities[entity_id].name, name);
+		core->world_data->entities[entity_id].generalised_type = generalised_type;
 		core->world_data->entities[entity_id].type = type;
 
 		return &core->world_data->entities[entity_id];
@@ -24,6 +25,7 @@ internal Entity *NewEntity(char name[], EntityType type)
 
 		core->world_data->entities[entity_id].entity_id = entity_id;
 		strcpy(core->world_data->entities[entity_id].name, name);
+		core->world_data->entities[entity_id].generalised_type = generalised_type;
 		core->world_data->entities[entity_id].type = type;
 
 		// Determine the next free ID

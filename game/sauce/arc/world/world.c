@@ -3,52 +3,36 @@ internal void TempInitGameWorld()
 	core->is_ingame = 1;
 
 	{
-		core->player = NewEntity("Player", ENTITY_TYPE_character);
-		core->player->flags |= ENTITY_FLAGS_no_delete;
-
-		PositionComponent *player_pos = AddPositionComponent(core->player);
-		player_pos->position = v2(0.0f, -100.0f);
-
-		ColliderComponent *player_collider = AddColliderComponent(core->player);
-		player_collider->shape = GetRectangleShape(v2(14.0f, 35.0f), v2(0.0f, 0.0f));
-		player_collider->flags = COLLIDER_FLAGS_player;
-
-		PhysicsComponent *player_physics = AddPhysicsComponent(core->player);
-
-		VelocityComponent *player_velocity = AddVelocityComponent(core->player);
-		player_velocity->acceleration = v2(250.0f, 0.0f);
-		player_velocity->collide_against = COLLIDER_FLAGS_ground;
-
-		MovementComponent *player_movement = AddMovementComponent(core->player);
-		player_movement->move_speed = 100.0f;
-
-		ArcEntityComponent *player_arc_entity = AddArcEntityComponent(core->player);
-		player_arc_entity->entity_type = ARC_ENTITY_player;
-		player_arc_entity->current_animation_state = ANIMATION_STATE_player_idle;
-
-		SubSpriteComponent *player_sub_sprite = AddSubSpriteComponent(core->player);
-		player_sub_sprite->sub_sprites[0].sprite_enum = arc_entity_animation_state_data[ANIMATION_STATE_player_idle].dynamic_sprites[0];
-		player_sub_sprite->sub_sprites[0].render_layer = 0.0f;
-		player_sub_sprite->sub_sprites[1].sprite_enum = arc_entity_animation_state_data[ANIMATION_STATE_player_idle].dynamic_sprites[1];
-		player_sub_sprite->sub_sprites[1].render_layer = -0.05f;
-		player_sub_sprite->sub_sprite_count = 2;
-
-		AddAnimationComponent(core->player);
+		CharacterEntity *character = InitialiseCharacterEntity();
+		character->parent_generic_entity->flags |= ENTITY_FLAGS_no_delete;
+		character->position_comp->position = v2(0.0f, -100.0f);
+		character->collider_comp->shape = GetRectangleShape(v2(14.0f, 35.0f), v2(0.0f, 0.0f));
+		character->collider_comp->flags = COLLIDER_FLAGS_player;
+		character->velocity_comp->acceleration = v2(250.0f, 0.0f);
+		character->velocity_comp->collide_against = COLLIDER_FLAGS_ground;
+		character->movement_comp->move_speed = 100.0f;
+		character->arc_entity_comp->entity_type = ARC_ENTITY_player;
+		character->arc_entity_comp->current_animation_state = ANIMATION_STATE_player_idle;
+		character->sub_sprite_comp->sub_sprites[0].sprite_enum = arc_entity_animation_state_data[ANIMATION_STATE_player_idle].dynamic_sprites[0];
+		character->sub_sprite_comp->sub_sprites[0].render_layer = 0.0f;
+		character->sub_sprite_comp->sub_sprites[1].sprite_enum = arc_entity_animation_state_data[ANIMATION_STATE_player_idle].dynamic_sprites[1];
+		character->sub_sprite_comp->sub_sprites[1].render_layer = -0.05f;
+		character->sub_sprite_comp->sub_sprite_count = 2;
 	}
 
 	{
-		core->sword = NewEntity("Sword", ENTITY_TYPE_item);
+		core->sword = NewEntity("Sword", ENTITY_TYPE_generic, GENERALISED_ENTITY_TYPE_item);
 		core->sword->flags |= ENTITY_FLAGS_no_delete;
 		ItemComponent *sword_item = AddItemComponent(core->sword);
 		sword_item->item_type = ITEM_flint_sword;
 		sword_item->stack_size = 1;
 
-		core->backpack = NewEntity("Backpack", ENTITY_TYPE_storage);
+		core->backpack = NewEntity("Backpack", ENTITY_TYPE_generic, GENERALISED_ENTITY_TYPE_storage);
 		core->backpack->flags |= ENTITY_FLAGS_no_delete;
 		StorageComponent *backpack_storage = AddStorageComponent(core->backpack);
 		backpack_storage->storage_size = 9;
 
-		core->hotbar = NewEntity("Hotbar", ENTITY_TYPE_storage); // Hotbar should technically be attached to the player entity
+		core->hotbar = NewEntity("Hotbar", ENTITY_TYPE_generic, GENERALISED_ENTITY_TYPE_storage); // Hotbar should technically be attached to the player entity
 		core->hotbar->flags |= ENTITY_FLAGS_no_delete;
 		StorageComponent *hotbar_storage = AddStorageComponent(core->hotbar);
 		hotbar_storage->storage_size = 2;
@@ -172,9 +156,9 @@ internal void PostUpdateWorldAnimations()
 	// NOTE(tjr): Update held item to player hand socket.
 	if (core->held_item)
 	{
-		PositionComponent *position_comp = core->player->components[COMPONENT_position];
-		AnimationComponent *animation_comp = core->player->components[COMPONENT_animation];
-		SubSpriteComponent *sub_sprite_comp = core->player->components[COMPONENT_sub_sprite];
+		PositionComponent *position_comp = core->world_data->character_entity.position_comp;
+		AnimationComponent *animation_comp = core->world_data->character_entity.animation_comp;
+		SubSpriteComponent *sub_sprite_comp = core->world_data->character_entity.sub_sprite_comp;
 
 		PositionComponent *held_item_pos_comp = core->held_item->components[COMPONENT_position];
 		// TODO: Extract into some sort of socket finding function?

@@ -38,7 +38,8 @@
 			"generated_ecs.h": "c",
 			"collision.h": "c",
 			"ecs.h": "c",
-			"old_ecs.h": "c"
+			"old_ecs.h": "c",
+			"data_desk.h": "c"
 		},
 		"editor.formatOnSave": true,
 		"editor.find.autoFindInSelection": true,

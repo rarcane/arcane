@@ -1,16 +1,12 @@
 internal void PreMoveUpdatePlayer()
 {
-	if (!core->player)
-		return;
-
-	PositionComponent *position_comp = core->player->components[COMPONENT_position];
-	VelocityComponent *velocity_comp = core->player->components[COMPONENT_velocity];
-	MovementComponent *movement_comp = core->player->components[COMPONENT_movement];
-	ArcEntityComponent *arc_entity_comp = core->player->components[COMPONENT_arc_entity];
-	SpriteComponent *sprite_comp = core->player->components[COMPONENT_sprite];
-	SubSpriteComponent *sub_sprite_comp = core->player->components[COMPONENT_sub_sprite];
-	AnimationComponent *animation_comp = core->player->components[COMPONENT_animation];
-	R_DEV_ASSERT(velocity_comp && movement_comp && arc_entity_comp && animation_comp && (sprite_comp || sub_sprite_comp), "Entity does not have the required components.");
+	PositionComponent *position_comp = core->world_data->character_entity.position_comp;
+	VelocityComponent *velocity_comp = core->world_data->character_entity.velocity_comp;
+	MovementComponent *movement_comp = core->world_data->character_entity.movement_comp;
+	ArcEntityComponent *arc_entity_comp = core->world_data->character_entity.arc_entity_comp;
+	SubSpriteComponent *sub_sprite_comp = core->world_data->character_entity.sub_sprite_comp;
+	AnimationComponent *animation_comp = core->world_data->character_entity.animation_comp;
+	R_DEV_ASSERT(velocity_comp && movement_comp && arc_entity_comp && animation_comp && sub_sprite_comp, "Entity does not have the required components.");
 
 	b8 is_sprinting = 0;
 	if (IsActionDown(ACTION_move_left))
@@ -63,25 +59,11 @@ internal void PreMoveUpdatePlayer()
 	{
 		if (movement_comp->axis_x < 0.0f)
 		{
-			if (sprite_comp)
-			{
-				sprite_comp->is_flipped = 1;
-			}
-			else
-			{
-				sub_sprite_comp->is_flipped = 1;
-			}
+			sub_sprite_comp->is_flipped = 1;
 		}
 		else if (movement_comp->axis_x > 0.0f)
 		{
-			if (sprite_comp)
-			{
-				sprite_comp->is_flipped = 0;
-			}
-			else
-			{
-				sub_sprite_comp->is_flipped = 0;
-			}
+			sub_sprite_comp->is_flipped = 0;
 		}
 
 		if (movement_comp->axis_x == 0)
@@ -111,8 +93,8 @@ internal void PostMoveUpdatePlayer()
 	{
 		ColliderComponent *overlapping_colliders[MAX_OVERLAPPING_COLLIDERS];
 
-		PositionComponent *player_pos = core->player->components[COMPONENT_position];
-		SubSpriteComponent *player_sprite = core->player->components[COMPONENT_sub_sprite];
+		PositionComponent *player_pos = core->world_data->character_entity.position_comp;
+		SubSpriteComponent *player_sprite = core->world_data->character_entity.sub_sprite_comp;
 
 		i32 overlap_count = GetOverlappingCollidersAtPosition(overlapping_colliders,
 															  GetRectangleShape(v2(20.0f, 30.0f), v2(0.0f, 0.0f)),

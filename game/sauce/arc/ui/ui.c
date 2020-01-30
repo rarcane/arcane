@@ -109,7 +109,7 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 
 			if (icon_data->item_comp && icon_data->item_comp->stack_size > 1)
 			{
-				Entity *new_item = NewEntity("Item", ENTITY_TYPE_item);
+				Entity *new_item = NewEntity("Item", ENTITY_TYPE_generic, GENERALISED_ENTITY_TYPE_item);
 				ItemComponent *new_item_comp = AddItemComponent(new_item);
 				new_item_comp->item_type = icon_data->item_comp->item_type;
 				new_item_comp->stack_size = icon_data->item_comp->stack_size / 2;
@@ -331,7 +331,7 @@ internal void DrawGameUI()
 	{
 		TsUIBeginInputGroup(core->ui);
 		{
-			SubSpriteComponent *player_sub_sprite = core->player->components[COMPONENT_sub_sprite];
+			SubSpriteComponent *player_sub_sprite = core->world_data->character_entity.sub_sprite_comp;
 
 			TsUIPushSize(core->ui, v2(60, 60));
 
@@ -643,13 +643,7 @@ internal void DrawEditorUI()
 															   core->selected_entity->name, core->selected_entity->entity_id);
 						TsUITitle(core->ui, label);
 
-						for (int i = 1; i < COMPONENT_MAX; i++)
-						{
-							if (core->selected_entity->components[i])
-							{
-								PrintComponentUI(core->selected_entity->components[i], i);
-							}
-						}
+						PrintEntityDataUI(core->selected_entity);
 					}
 					TsUIPopWidth(core->ui);
 
@@ -748,14 +742,14 @@ internal void DrawEditorUI()
 					TsUIPushWidth(core->ui, entity_list_window_rect.width - 50);
 
 					// NOTE(tjr): Entity category (type) view
-					for (int i = 0; i < ENTITY_TYPE_MAX; i++)
+					for (int i = 0; i < GENERALISED_ENTITY_TYPE_MAX; i++)
 					{
-						if (TsUICollapsable(core->ui, GetEntityTypeName(i)))
+						if (TsUICollapsable(core->ui, GetGeneralisedEntityTypeName(i)))
 						{
 							for (int j = 1; j < core->world_data->entity_count; j++) // TEMP: Need to sort these before-hand. Will eventually get too inefficient.
 							{
 								Entity *entity = &core->world_data->entities[j];
-								if (entity->entity_id > 0 && entity->type == i)
+								if (entity->entity_id > 0 && entity->generalised_type == i)
 								{
 									if (TsUIToggler(core->ui, entity->name, (core->selected_entity ? core->selected_entity->entity_id == j : 0)))
 									{

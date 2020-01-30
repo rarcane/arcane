@@ -10,9 +10,10 @@ MAX_PARTICLE_AMOUNT :: 300
 MAX_WORLD_CHUNKS :: 128
 CHUNK_SIZE :: 200
 
+
 /* --- ENUMS --- */
 
-EntityType :: enum
+GeneralisedEntityType :: enum
 {
     undefined,
 	character,
@@ -24,6 +25,7 @@ EntityType :: enum
 	scenic,
 	ground,
 }
+
 
 /* --- FLAGS --- */
 
@@ -53,10 +55,11 @@ ParticleEmitterFlags :: flags
 	repeat,
 }
 
-/* --- ECS --- */
-
 @ForwardDeclare(Entity)
 ForwardEntity :: _;
+
+
+/* --- COMPONENTS --- */
 
 @Component
 Position :: struct
@@ -178,15 +181,17 @@ ParticleEmitter :: struct
 @ForwardDeclare(ChunkData)
 ForwardChunk :: _;
 
-@GenerateComponentList // Tag is used to generate all of the component data.
-Entity :: struct
+@GenerateComponentCode
+Dummy2 :: _;
+
+
+/* --- ENTITIES --- */
+
+@UniqueEntity(1, character)
+Character :: struct
 {
-	entity_id : i32;
-	name : char[20];
-	type : EntityType;
-	flags : EntityFlags;
-	components : *void[COMPONENT_MAX];
-	active_chunk : *ChunkData;
+	@ComponentList(Position, SubSprite, Animation, Collider, Physics, Velocity, Movement, ArcEntity)
+	dummy : Dummy;
 }
 
 @UniqueEntity(50, scenic)
@@ -202,8 +207,27 @@ Ground :: struct
 	@ComponentList(Position, Sprite, Collider, Physics)
 	dummy : Dummy;
 	
-	test_varibale : i32;
+	//@Editable(-135, 135)
+	incline_angle : f32;
 }
+
+@GenerateEntityCode
+Dummy3 :: _;
+
+Entity :: struct
+{
+	entity_id : i32;
+	name : char[20];
+	generalised_type : GeneralisedEntityType;
+	
+	unique_entity : *void;
+	type : EntityType;
+	
+	flags : EntityFlags;
+	components : *void[COMPONENT_MAX];
+	active_chunk : *ChunkData;
+}
+
 
 /* --- WORLD DATA --- */
 

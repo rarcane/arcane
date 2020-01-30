@@ -1,32 +1,32 @@
-static char *GetEntityTypeName(EntityType type)
+static char *GetGeneralisedEntityTypeName(GeneralisedEntityType type)
 {
 switch(type)
 {
-case ENTITY_TYPE_undefined:
+case GENERALISED_ENTITY_TYPE_undefined:
 return "Undefined";
 break;
-case ENTITY_TYPE_character:
+case GENERALISED_ENTITY_TYPE_character:
 return "Character";
 break;
-case ENTITY_TYPE_monster:
+case GENERALISED_ENTITY_TYPE_monster:
 return "Monster";
 break;
-case ENTITY_TYPE_animal:
+case GENERALISED_ENTITY_TYPE_animal:
 return "Animal";
 break;
-case ENTITY_TYPE_item:
+case GENERALISED_ENTITY_TYPE_item:
 return "Item";
 break;
-case ENTITY_TYPE_storage:
+case GENERALISED_ENTITY_TYPE_storage:
 return "Storage";
 break;
-case ENTITY_TYPE_resource:
+case GENERALISED_ENTITY_TYPE_resource:
 return "Resource";
 break;
-case ENTITY_TYPE_scenic:
+case GENERALISED_ENTITY_TYPE_scenic:
 return "Scenic";
 break;
-case ENTITY_TYPE_ground:
+case GENERALISED_ENTITY_TYPE_ground:
 return "Ground";
 break;
 default:
@@ -35,7 +35,7 @@ break;
 }
 }
 
-internal void PrintComponentUI(void *component_data, ComponentType type)
+internal void PrintComponentDataUI(void *component_data, ComponentType type)
 {
     switch (type)
     {
@@ -1001,6 +1001,25 @@ internal void DeleteEntity(Entity *entity)
         core->world_data->free_entity_index = deleted_entity_id;
 }
 
+static CharacterEntity *InitialiseCharacterEntity()
+{
+    Entity *generic_entity = NewEntity("Character", ENTITY_TYPE_character, GENERALISED_ENTITY_TYPE_character);
+    CharacterEntity *unique_entity = &core->world_data->character_entity;
+    generic_entity->unique_entity = unique_entity;
+    unique_entity->parent_generic_entity = generic_entity;
+
+    unique_entity->position_comp = AddPositionComponent(generic_entity);
+    unique_entity->sub_sprite_comp = AddSubSpriteComponent(generic_entity);
+    unique_entity->animation_comp = AddAnimationComponent(generic_entity);
+    unique_entity->collider_comp = AddColliderComponent(generic_entity);
+    unique_entity->physics_comp = AddPhysicsComponent(generic_entity);
+    unique_entity->velocity_comp = AddVelocityComponent(generic_entity);
+    unique_entity->movement_comp = AddMovementComponent(generic_entity);
+    unique_entity->arc_entity_comp = AddArcEntityComponent(generic_entity);
+
+    return unique_entity;
+}
+
 static CloudEntity *NewCloudEntity()
 {
     R_DEV_ASSERT(core->world_data->free_cloud_entity_index + 1 < MAX_CLOUD_ENTITIES, "Maximum amount of Cloud entites reached");
@@ -1013,10 +1032,10 @@ static CloudEntity *NewCloudEntity()
     }
     core->world_data->cloud_entities[new_unique_id].unique_entity_id = new_unique_id;
 
-    Entity *generic_entity = NewEntity("Cloud", ENTITY_TYPE_scenic);
+    Entity *generic_entity = NewEntity("Cloud", ENTITY_TYPE_cloud, GENERALISED_ENTITY_TYPE_scenic);
     CloudEntity *unique_entity = &core->world_data->cloud_entities[new_unique_id];
+    generic_entity->unique_entity = unique_entity;
     unique_entity->parent_generic_entity = generic_entity;
-
     unique_entity->unique_entity_id = new_unique_id;
 
     unique_entity->position_comp = AddPositionComponent(generic_entity);
@@ -1038,10 +1057,10 @@ static GroundEntity *NewGroundEntity()
     }
     core->world_data->ground_entities[new_unique_id].unique_entity_id = new_unique_id;
 
-    Entity *generic_entity = NewEntity("Ground", ENTITY_TYPE_ground);
+    Entity *generic_entity = NewEntity("Ground", ENTITY_TYPE_ground, GENERALISED_ENTITY_TYPE_ground);
     GroundEntity *unique_entity = &core->world_data->ground_entities[new_unique_id];
+    generic_entity->unique_entity = unique_entity;
     unique_entity->parent_generic_entity = generic_entity;
-
     unique_entity->unique_entity_id = new_unique_id;
 
     unique_entity->position_comp = AddPositionComponent(generic_entity);
@@ -1052,3 +1071,35 @@ static GroundEntity *NewGroundEntity()
     return unique_entity;
 }
 
+static void PrintEntityDataUI(Entity *entity)
+{
+    switch(entity->type)
+    {
+    case ENTITY_TYPE_character :
+    {
+        CharacterEntity *unique_entity = entity->unique_entity;
+        break;
+    }
+    case ENTITY_TYPE_cloud :
+    {
+        CloudEntity *unique_entity = entity->unique_entity;
+        break;
+    }
+    case ENTITY_TYPE_ground :
+    {
+        GroundEntity *unique_entity = entity->unique_entity;
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "incline_angle: %f", unique_entity->incline_angle); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+        break;
+    }
+    }
+
+    for (int i = 1; i < COMPONENT_MAX; i++)
+    {
+        if (entity->components[i])
+        {
+            PrintComponentDataUI(entity->components[i], i);
+        }
+    }
+}

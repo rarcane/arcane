@@ -39,7 +39,6 @@ struct Core
 	//ComponentSet *component_set;
 
 	// NOTE(tjr): Temp entity stores
-	Entity *player;
 	Entity *backpack;
 	Entity *sword;
 

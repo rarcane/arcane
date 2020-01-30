@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "data_desk.h"
 
@@ -42,7 +43,10 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 		fprintf(file, "{\n");
 
 		fprintf(file, "Entity *parent_generic_entity;\n");
-		fprintf(file, "i32 unique_entity_id;\n");
+		if (atoi(DataDeskGetTagParameter(tag, 0)->name) > 1)
+		{
+			fprintf(file, "i32 unique_entity_id;\n");
+		}
 
 		for (DataDeskNode *member = root->struct_declaration.first_member; member; member = member->next)
 		{
@@ -66,11 +70,13 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 
 		fprintf(file, "} %sEntity;\n\n", root->name);
 	}
-	else if (DataDeskNodeHasTag(root, "GenerateComponentList"))
+	else if (DataDeskNodeHasTag(root, "GenerateComponentCode"))
 	{
 		GenerateComponentCode();
-
-		DataDeskFWriteGraphAsC(file, root, 0);
+	}
+	else if (DataDeskNodeHasTag(root, "GenerateEntityCode"))
+	{
+		GenerateEntityCode();
 	}
 	else if (DataDeskNodeHasTag(root, "ForwardDeclare"))
 	{
@@ -205,8 +211,6 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 DATA_DESK_FUNC void
 DataDeskCustomCleanUpCallback(void)
 {
-	GenerateEntityCode();
-
 	fclose(global_catchall_header);
 	fclose(global_catchall_implementation);
 }
@@ -430,7 +434,7 @@ GenerateComponentCode(void)
 		{
 			// NOTE(tjr): Generate Component UI print function.
 			{
-				fprintf(file, "internal void PrintComponentUI(void *component_data, ComponentType type)\n");
+				fprintf(file, "internal void PrintComponentDataUI(void *component_data, ComponentType type)\n");
 				fprintf(file, "{\n");
 				fprintf(file, "    switch (type)\n");
 				fprintf(file, "    {\n");
@@ -534,12 +538,19 @@ static void GenerateUniqueEntityArrays()
 		DataDeskNode *entity_node = unique_entities[i];
 		DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
 
-		fprintf(file, "%sEntity %s_entities[MAX_%s_ENTITIES];\n",
-				entity_node->name,
-				entity_node->name_lowercase_with_underscores,
-				entity_node->name_uppercase_with_underscores);
-		fprintf(file, "i32 %s_entity_count;\n", entity_node->name_lowercase_with_underscores);
-		fprintf(file, "i32 free_%s_entity_index;\n", entity_node->name_lowercase_with_underscores);
+		if (atoi(DataDeskGetTagParameter(entity_node_tag, 0)->name) > 1)
+		{
+			fprintf(file, "%sEntity %s_entities[MAX_%s_ENTITIES];\n",
+					entity_node->name,
+					entity_node->name_lowercase_with_underscores,
+					entity_node->name_uppercase_with_underscores);
+			fprintf(file, "i32 %s_entity_count;\n", entity_node->name_lowercase_with_underscores);
+			fprintf(file, "i32 free_%s_entity_index;\n", entity_node->name_lowercase_with_underscores);
+		}
+		else
+		{
+			fprintf(file, "%sEntity %s_entity;\n", entity_node->name, entity_node->name_lowercase_with_underscores);
+		}
 	}
 	fprintf(file, "\n");
 }
@@ -547,41 +558,120 @@ static void GenerateUniqueEntityArrays()
 static void GenerateEntityCode()
 {
 	{
-		FILE *file = global_catchall_implementation;
+		FILE *file = global_catchall_header;
+
+		// NOTE(tjr): Unique entity type enum.
+		fprintf(file, "typedef enum EntityType\n");
+		fprintf(file, "{\n");
+		fprintf(file, "    ENTITY_TYPE_generic,\n");
 		for (int i = 0; i < unique_entity_count; i++)
 		{
 			DataDeskNode *entity_node = unique_entities[i];
 			DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
 
-			fprintf(file, "static %sEntity *New%sEntity()\n", entity_node->name, entity_node->name);
-			fprintf(file, "{\n");
-			fprintf(file, "    R_DEV_ASSERT(core->world_data->free_%s_entity_index + 1 < MAX_%s_ENTITIES, \"Maximum amount of %s entites reached\");\n\n", entity_node->name_lowercase_with_underscores, entity_node->name_uppercase_with_underscores, entity_node->name);
+			fprintf(file, "    ENTITY_TYPE_%s,\n", entity_node->name_lowercase_with_underscores);
+		}
+		fprintf(file, "    ENTITY_TYPE_MAX\n");
+		fprintf(file, "} EntityType;\n\n");
+	}
 
-			fprintf(file, "    i32 new_unique_id = core->world_data->free_%s_entity_index;\n", entity_node->name_lowercase_with_underscores);
-			fprintf(file, "    if (core->world_data->free_%s_entity_index == core->world_data->%s_entity_count)\n", entity_node->name_lowercase_with_underscores, entity_node->name_lowercase_with_underscores);
-			fprintf(file, "    {\n");
-			fprintf(file, "        core->world_data->%s_entity_count++;\n", entity_node->name_lowercase_with_underscores);
-			fprintf(file, "        core->world_data->free_%s_entity_index++;\n", entity_node->name_lowercase_with_underscores);
-			fprintf(file, "    }\n");
-			fprintf(file, "    core->world_data->%s_entities[new_unique_id].unique_entity_id = new_unique_id;\n\n", entity_node->name_lowercase_with_underscores);
+	{
+		FILE *file = global_catchall_implementation;
 
-			fprintf(file, "    Entity *generic_entity = NewEntity(\"%s\", ENTITY_TYPE_%s);\n", entity_node->name, DataDeskGetTagParameter(entity_node_tag, 1)->name);
-			fprintf(file, "    %sEntity *unique_entity = &core->world_data->%s_entities[new_unique_id];\n", entity_node->name, entity_node->name_lowercase_with_underscores);
-			fprintf(file, "    unique_entity->parent_generic_entity = generic_entity;\n\n");
-			fprintf(file, "    unique_entity->unique_entity_id = new_unique_id;\n\n");
+		// NOTE(tjr): New entity function.
+		for (int i = 0; i < unique_entity_count; i++)
+		{
+			DataDeskNode *entity_node = unique_entities[i];
+			DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
 
-			DataDeskNode *component_list_tag = DataDeskGetNodeTag(entity_node->struct_declaration.first_member, "ComponentList");
-			int tag_index = 0;
-			DataDeskNode *tag_param = DataDeskGetTagParameter(component_list_tag, tag_index);
-			while (tag_param)
+			if (atoi(DataDeskGetTagParameter(entity_node_tag, 0)->name) > 1)
 			{
-				fprintf(file, "    unique_entity->%s_comp = Add%sComponent(generic_entity);\n", tag_param->name_lowercase_with_underscores, tag_param->name);
-				tag_param = DataDeskGetTagParameter(component_list_tag, ++tag_index);
+				fprintf(file, "static %sEntity *New%sEntity()\n", entity_node->name, entity_node->name);
+				fprintf(file, "{\n");
+
+				fprintf(file, "    R_DEV_ASSERT(core->world_data->free_%s_entity_index + 1 < MAX_%s_ENTITIES, \"Maximum amount of %s entites reached\");\n\n", entity_node->name_lowercase_with_underscores, entity_node->name_uppercase_with_underscores, entity_node->name);
+
+				fprintf(file, "    i32 new_unique_id = core->world_data->free_%s_entity_index;\n", entity_node->name_lowercase_with_underscores);
+				fprintf(file, "    if (core->world_data->free_%s_entity_index == core->world_data->%s_entity_count)\n", entity_node->name_lowercase_with_underscores, entity_node->name_lowercase_with_underscores);
+				fprintf(file, "    {\n");
+				fprintf(file, "        core->world_data->%s_entity_count++;\n", entity_node->name_lowercase_with_underscores);
+				fprintf(file, "        core->world_data->free_%s_entity_index++;\n", entity_node->name_lowercase_with_underscores);
+				fprintf(file, "    }\n");
+				fprintf(file, "    core->world_data->%s_entities[new_unique_id].unique_entity_id = new_unique_id;\n\n", entity_node->name_lowercase_with_underscores);
+
+				fprintf(file, "    Entity *generic_entity = NewEntity(\"%s\", ENTITY_TYPE_%s, GENERALISED_ENTITY_TYPE_%s);\n", entity_node->name, entity_node->name_lowercase_with_underscores, DataDeskGetTagParameter(entity_node_tag, 1)->name);
+				fprintf(file, "    %sEntity *unique_entity = &core->world_data->%s_entities[new_unique_id];\n", entity_node->name, entity_node->name_lowercase_with_underscores);
+				fprintf(file, "    generic_entity->unique_entity = unique_entity;\n");
+				fprintf(file, "    unique_entity->parent_generic_entity = generic_entity;\n");
+				fprintf(file, "    unique_entity->unique_entity_id = new_unique_id;\n\n");
+
+				DataDeskNode *component_list_tag = DataDeskGetNodeTag(entity_node->struct_declaration.first_member, "ComponentList");
+				int tag_index = 0;
+				DataDeskNode *tag_param = DataDeskGetTagParameter(component_list_tag, tag_index);
+				while (tag_param)
+				{
+					fprintf(file, "    unique_entity->%s_comp = Add%sComponent(generic_entity);\n", tag_param->name_lowercase_with_underscores, tag_param->name);
+					tag_param = DataDeskGetTagParameter(component_list_tag, ++tag_index);
+				}
+
+				fprintf(file, "\n    return unique_entity;\n");
+				fprintf(file, "}\n\n");
+			}
+			else
+			{
+				fprintf(file, "static %sEntity *Initialise%sEntity()\n", entity_node->name, entity_node->name);
+				fprintf(file, "{\n");
+
+				fprintf(file, "    Entity *generic_entity = NewEntity(\"%s\", ENTITY_TYPE_%s, GENERALISED_ENTITY_TYPE_%s);\n", entity_node->name, entity_node->name_lowercase_with_underscores, DataDeskGetTagParameter(entity_node_tag, 1)->name);
+				fprintf(file, "    %sEntity *unique_entity = &core->world_data->%s_entity;\n", entity_node->name, entity_node->name_lowercase_with_underscores);
+				fprintf(file, "    generic_entity->unique_entity = unique_entity;\n");
+				fprintf(file, "    unique_entity->parent_generic_entity = generic_entity;\n\n");
+
+				DataDeskNode *component_list_tag = DataDeskGetNodeTag(entity_node->struct_declaration.first_member, "ComponentList");
+				int tag_index = 0;
+				DataDeskNode *tag_param = DataDeskGetTagParameter(component_list_tag, tag_index);
+				while (tag_param)
+				{
+					fprintf(file, "    unique_entity->%s_comp = Add%sComponent(generic_entity);\n", tag_param->name_lowercase_with_underscores, tag_param->name);
+					tag_param = DataDeskGetTagParameter(component_list_tag, ++tag_index);
+				}
+
+				fprintf(file, "\n    return unique_entity;\n");
+				fprintf(file, "}\n\n");
+			}
+		}
+
+		// NOTE(tjr): Entity print function.
+		fprintf(file, "static void PrintEntityDataUI(Entity *entity)\n");
+		fprintf(file, "{\n");
+		fprintf(file, "    switch(entity->type)\n");
+		fprintf(file, "    {\n");
+		for (int i = 0; i < unique_entity_count; i++)
+		{
+			DataDeskNode *entity_node = unique_entities[i];
+			DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
+
+			fprintf(file, "    case ENTITY_TYPE_%s :\n", entity_node->name_lowercase_with_underscores);
+			fprintf(file, "    {\n");
+			fprintf(file, "        %sEntity *unique_entity = entity->unique_entity;\n", entity_node->name);
+
+			for (DataDeskNode *member = entity_node->struct_declaration.first_member->next;
+				 member; member = member->next)
+			{
+				GeneratePrintUICodeForAST(file, member, "unique_entity->");
 			}
 
-			fprintf(file, "\n    return unique_entity;\n");
-
-			fprintf(file, "}\n\n");
+			fprintf(file, "        break;\n");
+			fprintf(file, "    }\n");
 		}
+		fprintf(file, "    }\n\n");
+		fprintf(file, "    for (int i = 1; i < COMPONENT_MAX; i++)\n");
+		fprintf(file, "    {\n");
+		fprintf(file, "        if (entity->components[i])\n");
+		fprintf(file, "        {\n");
+		fprintf(file, "            PrintComponentDataUI(entity->components[i], i);\n");
+		fprintf(file, "        }\n");
+		fprintf(file, "    }\n");
+		fprintf(file, "}\n");
 	}
 }

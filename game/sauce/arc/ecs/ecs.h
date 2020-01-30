@@ -1,4 +1,4 @@
-internal Entity *NewEntity(char *name, EntityType type);
+internal Entity *NewEntity(char *name, EntityType type, GeneralisedEntityType generalised_type);
 // internal void AddComponent(Entity *entity, ComponentType component_type, void *component);
 // internal void RemoveComponent(Entity *entity, ComponentType component_type);
 
