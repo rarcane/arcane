@@ -1088,9 +1088,7 @@ static void PrintEntityDataUI(Entity *entity)
     case ENTITY_TYPE_ground :
     {
         GroundEntity *unique_entity = entity->unique_entity;
-            TsUIPushAutoWidth(core->ui);
-            { char label[100]; sprintf(label, "incline_angle: %f", unique_entity->incline_angle); TsUILabel(core->ui, label); }
-            TsUIPopWidth(core->ui);
+            unique_entity->incline_angle = TsUISlider(core->ui, "incline_angle", unique_entity->incline_angle, 0, 135);
         break;
     }
     }

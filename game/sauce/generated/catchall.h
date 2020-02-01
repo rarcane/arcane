@@ -275,6 +275,7 @@ i32 unique_entity_id;
     SpriteComponent *sprite_comp;
     ColliderComponent *collider_comp;
     PhysicsComponent *physics_comp;
+// @Editable(0, 135) 
 f32 incline_angle;
 } GroundEntity;
 

@@ -601,6 +601,11 @@ internal void DrawEditorUI()
 				pin_windows = 1;
 			else
 				pin_windows = 0;
+
+			if (TsUIToggler(core->ui, "Draw Colliders", core->draw_colliders))
+				core->draw_colliders = 1;
+			else
+				core->draw_colliders = 0;
 		}
 		TsUIDropdownEnd(core->ui);
 		TsUIPopRow(core->ui);

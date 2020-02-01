@@ -22,7 +22,9 @@ StaticSprite(cloud_v5, "scenic/clouds", v4(80.0f, 25.0f, 80.0f, 25.0f), v2(0.0f,
 StaticSprite(cloud_v6, "scenic/clouds", v4(160.0f, 25.0f, 80.0f, 25.0f), v2(0.0f, 0.0f))
 
 // Forest
-StaticSprite(ground_forest, "scenic/forest_ground", v4(0.0f, 8.0f, 100.0f, 90.0f), v2(0.0f, 87.0f))
+StaticSprite(ground_forest_flat, "scenic/forest_ground", v4(0.0f, 40.0f, 100.0f, 90.0f), v2(0.0f, 87.0f))
+StaticSprite(ground_forest_10_degree, "scenic/forest_ground", v4(100.0f, 25.0f, 100.0f, 105.0f), v2(0.0f, 87.0f))
+
 StaticSprite(ground_rocks_v1, "scenic/forest_ground", v4(0.0f, 0.0f, 100.0f, 4.0f), v2(0.0f, 0.0f))
 StaticSprite(ground_rocks_v2, "scenic/forest_ground", v4(0.0f, 4.0f, 100.0f, 4.0f), v2(0.0f, 0.0f))
 

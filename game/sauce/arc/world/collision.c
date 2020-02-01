@@ -88,7 +88,7 @@ internal Shape GetRectangleShape(v2 size, v2 offset)
 	return shape;
 }
 
-internal Shape GetSlopeShape(v2 size)
+internal Shape GetSlopeShape(v2 size, v2 offset)
 {
 	Shape shape = {
 		.vertices = {

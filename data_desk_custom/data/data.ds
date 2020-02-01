@@ -207,7 +207,7 @@ Ground :: struct
 	@ComponentList(Position, Sprite, Collider, Physics)
 	dummy : Dummy;
 	
-	//@Editable(-135, 135)
+	@Editable(0, 135)
 	incline_angle : f32;
 }
 
