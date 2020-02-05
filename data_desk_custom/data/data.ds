@@ -9,6 +9,7 @@ MAX_STORAGE_SIZE :: 30
 MAX_PARTICLE_AMOUNT :: 300
 MAX_WORLD_CHUNKS :: 128
 CHUNK_SIZE :: 200
+MAX_PIXEL_CLUSTER_LENGTH :: 64
 
 
 /* --- ENUMS --- */
@@ -24,6 +25,7 @@ GeneralisedEntityType :: enum
 	resource,
 	scenic,
 	ground,
+	pixel_object,
 }
 
 
@@ -204,11 +206,33 @@ Cloud :: struct
 @UniqueEntity(1024, ground)
 Ground :: struct
 {
-	@ComponentList(Position, Sprite, Collider, Physics)
+	@ComponentList(Position, Collider, Physics)
+	dummy : Dummy;
+}
+
+Pixel :: struct
+{
+	position : v2;
+	colour : v4;
+}
+
+@UniqueEntity(1024, pixel_object)
+FloatingPixel :: struct
+{
+	@ComponentList(Position, Physics, Velocity)
 	dummy : Dummy;
 	
-	@Editable(0, 135)
-	incline_angle : f32;
+	pixel : Pixel;
+}
+
+@UniqueEntity(1024, pixel_object)
+PixelCluster :: struct
+{
+	@ComponentList(Position)//, Physics, Velocity)
+	dummy : Dummy;
+	
+	pixels : Pixel[MAX_PIXEL_CLUSTER_LENGTH * MAX_PIXEL_CLUSTER_LENGTH];
+	texture : Ts2dTexture;
 }
 
 @GenerateEntityCode

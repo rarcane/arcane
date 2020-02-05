@@ -3,22 +3,22 @@
 		"path": "$ROOTPATH$\\game\\sauce\\arcane.c",
 		"bookmarks": [
 			{
-				"line": 59,
+				"line": 60,
 				"column": 36,
 				"label": ""
 			},
 			{
-				"line": 126,
+				"line": 127,
 				"column": 3,
 				"label": ""
 			},
 			{
-				"line": 163,
+				"line": 167,
 				"column": 12,
 				"label": ""
 			},
 			{
-				"line": 398,
+				"line": 402,
 				"column": 6,
 				"label": ""
 			}
@@ -45,6 +45,16 @@
 			{
 				"line": 555,
 				"column": 32,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$\\game\\sauce\\arc\\world\\world.c",
+		"bookmarks": [
+			{
+				"line": 54,
+				"column": 29,
 				"label": ""
 			}
 		]

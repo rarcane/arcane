@@ -29,6 +29,9 @@ break;
 case GENERALISED_ENTITY_TYPE_ground:
 return "Ground";
 break;
+case GENERALISED_ENTITY_TYPE_pixel_object:
+return "Pixel Object";
+break;
 default:
 return "INVALID";
 break;
@@ -1064,9 +1067,56 @@ static GroundEntity *NewGroundEntity()
     unique_entity->unique_entity_id = new_unique_id;
 
     unique_entity->position_comp = AddPositionComponent(generic_entity);
-    unique_entity->sprite_comp = AddSpriteComponent(generic_entity);
     unique_entity->collider_comp = AddColliderComponent(generic_entity);
     unique_entity->physics_comp = AddPhysicsComponent(generic_entity);
+
+    return unique_entity;
+}
+
+static FloatingPixelEntity *NewFloatingPixelEntity()
+{
+    R_DEV_ASSERT(core->world_data->free_floating_pixel_entity_index + 1 < MAX_FLOATING_PIXEL_ENTITIES, "Maximum amount of FloatingPixel entites reached");
+
+    i32 new_unique_id = core->world_data->free_floating_pixel_entity_index;
+    if (core->world_data->free_floating_pixel_entity_index == core->world_data->floating_pixel_entity_count)
+    {
+        core->world_data->floating_pixel_entity_count++;
+        core->world_data->free_floating_pixel_entity_index++;
+    }
+    core->world_data->floating_pixel_entities[new_unique_id].unique_entity_id = new_unique_id;
+
+    Entity *generic_entity = NewEntity("FloatingPixel", ENTITY_TYPE_floating_pixel, GENERALISED_ENTITY_TYPE_pixel_object);
+    FloatingPixelEntity *unique_entity = &core->world_data->floating_pixel_entities[new_unique_id];
+    generic_entity->unique_entity = unique_entity;
+    unique_entity->parent_generic_entity = generic_entity;
+    unique_entity->unique_entity_id = new_unique_id;
+
+    unique_entity->position_comp = AddPositionComponent(generic_entity);
+    unique_entity->physics_comp = AddPhysicsComponent(generic_entity);
+    unique_entity->velocity_comp = AddVelocityComponent(generic_entity);
+
+    return unique_entity;
+}
+
+static PixelClusterEntity *NewPixelClusterEntity()
+{
+    R_DEV_ASSERT(core->world_data->free_pixel_cluster_entity_index + 1 < MAX_PIXEL_CLUSTER_ENTITIES, "Maximum amount of PixelCluster entites reached");
+
+    i32 new_unique_id = core->world_data->free_pixel_cluster_entity_index;
+    if (core->world_data->free_pixel_cluster_entity_index == core->world_data->pixel_cluster_entity_count)
+    {
+        core->world_data->pixel_cluster_entity_count++;
+        core->world_data->free_pixel_cluster_entity_index++;
+    }
+    core->world_data->pixel_cluster_entities[new_unique_id].unique_entity_id = new_unique_id;
+
+    Entity *generic_entity = NewEntity("PixelCluster", ENTITY_TYPE_pixel_cluster, GENERALISED_ENTITY_TYPE_pixel_object);
+    PixelClusterEntity *unique_entity = &core->world_data->pixel_cluster_entities[new_unique_id];
+    generic_entity->unique_entity = unique_entity;
+    unique_entity->parent_generic_entity = generic_entity;
+    unique_entity->unique_entity_id = new_unique_id;
+
+    unique_entity->position_comp = AddPositionComponent(generic_entity);
 
     return unique_entity;
 }
@@ -1088,7 +1138,19 @@ static void PrintEntityDataUI(Entity *entity)
     case ENTITY_TYPE_ground :
     {
         GroundEntity *unique_entity = entity->unique_entity;
-            unique_entity->incline_angle = TsUISlider(core->ui, "incline_angle", unique_entity->incline_angle, 0, 135);
+        break;
+    }
+    case ENTITY_TYPE_floating_pixel :
+    {
+        FloatingPixelEntity *unique_entity = entity->unique_entity;
+            // TODO: Don't know how to generate UI print for variable 'pixel'
+        break;
+    }
+    case ENTITY_TYPE_pixel_cluster :
+    {
+        PixelClusterEntity *unique_entity = entity->unique_entity;
+            // TODO: Don't know how to generate UI print for variable 'pixels'
+            // TODO: Don't know how to generate UI print for variable 'texture'
         break;
     }
     }

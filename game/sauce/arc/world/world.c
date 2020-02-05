@@ -44,11 +44,34 @@ internal void TempInitGameWorld()
 	{
 		GroundEntity *ground = NewGroundEntity();
 		ground->position_comp->position = v2(i * 100.0f, 0.0f);
-		ground->sprite_comp->sprite_data.sprite_enum = STATIC_SPRITE_ground_forest_flat;
-		ground->sprite_comp->sprite_data.render_layer = -1.0f;
+		// ground->sprite_comp->sprite_data.sprite_enum = STATIC_SPRITE_ground_forest_flat;
+		// ground->sprite_comp->sprite_data.render_layer = -1.0f;
 		ground->collider_comp->shape = GetRectangleShape(v2(100.0f, 87.0f), v2(0.0f, 87.0f));
 		ground->collider_comp->flags = COLLIDER_FLAGS_ground;
 		ground->physics_comp->bounce_mult = 1.0f;
+	}
+
+	for (int h = 0; h < 5; h++)
+	{
+		for (int i = -10; i < 11; i++)
+		{
+			PixelClusterEntity *pixel_cluster = NewPixelClusterEntity();
+			pixel_cluster->position_comp->position = v2(i * (f32)MAX_PIXEL_CLUSTER_LENGTH, h * (f32)MAX_PIXEL_CLUSTER_LENGTH);
+
+			for (int j = 0; j < MAX_PIXEL_CLUSTER_LENGTH; j++)
+			{
+				for (int k = 0; k < MAX_PIXEL_CLUSTER_LENGTH; k++)
+				{
+					pixel_cluster->pixels[k + MAX_PIXEL_CLUSTER_LENGTH * j].position = v2(i * MAX_PIXEL_CLUSTER_LENGTH + (f32)k, (f32)j);
+					pixel_cluster->pixels[k + MAX_PIXEL_CLUSTER_LENGTH * j].colour = v4(121.0f / 255.0f + RandomF32(0.0f, 0.1f),
+																						87.0f / 255.0f + RandomF32(0.0f, 0.1f),
+																						70.0f / 255.0f + RandomF32(0.0f, 0.1f),
+																						1.0f);
+				}
+			}
+
+			UpdatePixelClusterTexture(pixel_cluster);
+		}
 	}
 
 	/* for (int i = 0; i < 12; i++)
@@ -324,29 +347,6 @@ internal void UpdateChunks()
 				core->world_data->floating_chunk.entity_ids[core->world_data->floating_chunk.entity_count++] = entity->entity_id;
 				entity->active_chunk = &core->world_data->floating_chunk;
 			}
-		}
-	}
-}
-
-internal void UpdateGroundEntities()
-{
-	for (int i = 0; i < core->world_data->ground_entity_count; i++)
-	{
-		GroundEntity *ground_entity = &core->world_data->ground_entities[i];
-		if (ground_entity->incline_angle > 0.0f)
-		{
-			ground_entity->collider_comp->shape = GetRectangleShape(v2(100.0f, 87.0f), v2(0.0f, 87.0f));
-			if (ground_entity->sprite_comp->is_flipped)
-				ground_entity->collider_comp->shape.vertices[0].y -= 17.0f;
-			else
-				ground_entity->collider_comp->shape.vertices[1].y -= 17.0f;
-
-			ground_entity->sprite_comp->sprite_data.sprite_enum = STATIC_SPRITE_ground_forest_10_degree;
-		}
-		else
-		{
-			ground_entity->collider_comp->shape = GetRectangleShape(v2(100.0f, 87.0f), v2(0.0f, 87.0f));
-			ground_entity->sprite_comp->sprite_data.sprite_enum = STATIC_SPRITE_ground_forest_flat;
 		}
 	}
 }

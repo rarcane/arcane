@@ -7,6 +7,7 @@
 #define MAX_PARTICLE_AMOUNT (300)
 #define MAX_WORLD_CHUNKS (128)
 #define CHUNK_SIZE (200)
+#define MAX_PIXEL_CLUSTER_LENGTH (64)
 typedef enum GeneralisedEntityType GeneralisedEntityType;
 enum GeneralisedEntityType
 {
@@ -19,6 +20,7 @@ GENERALISED_ENTITY_TYPE_storage,
 GENERALISED_ENTITY_TYPE_resource,
 GENERALISED_ENTITY_TYPE_scenic,
 GENERALISED_ENTITY_TYPE_ground,
+GENERALISED_ENTITY_TYPE_pixel_object,
 GENERALISED_ENTITY_TYPE_MAX,
 };
 static char *GetGeneralisedEntityTypeTypeName(GeneralisedEntityType type);
@@ -272,12 +274,36 @@ typedef struct GroundEntity
 Entity *parent_generic_entity;
 i32 unique_entity_id;
     PositionComponent *position_comp;
-    SpriteComponent *sprite_comp;
     ColliderComponent *collider_comp;
     PhysicsComponent *physics_comp;
-// @Editable(0, 135) 
-f32 incline_angle;
 } GroundEntity;
+
+typedef struct Pixel
+{
+v2 position;
+v4 colour;
+} Pixel;
+
+#define MAX_FLOATING_PIXEL_ENTITIES (1024)
+typedef struct FloatingPixelEntity
+{
+Entity *parent_generic_entity;
+i32 unique_entity_id;
+    PositionComponent *position_comp;
+    PhysicsComponent *physics_comp;
+    VelocityComponent *velocity_comp;
+Pixel pixel;
+} FloatingPixelEntity;
+
+#define MAX_PIXEL_CLUSTER_ENTITIES (1024)
+typedef struct PixelClusterEntity
+{
+Entity *parent_generic_entity;
+i32 unique_entity_id;
+    PositionComponent *position_comp;
+Pixel pixels[(MAX_PIXEL_CLUSTER_LENGTH*MAX_PIXEL_CLUSTER_LENGTH)];
+Ts2dTexture texture;
+} PixelClusterEntity;
 
 typedef enum EntityType
 {
@@ -285,6 +311,8 @@ typedef enum EntityType
     ENTITY_TYPE_character,
     ENTITY_TYPE_cloud,
     ENTITY_TYPE_ground,
+    ENTITY_TYPE_floating_pixel,
+    ENTITY_TYPE_pixel_cluster,
     ENTITY_TYPE_MAX
 } EntityType;
 
@@ -323,6 +351,12 @@ i32 free_cloud_entity_index;
 GroundEntity ground_entities[MAX_GROUND_ENTITIES];
 i32 ground_entity_count;
 i32 free_ground_entity_index;
+FloatingPixelEntity floating_pixel_entities[MAX_FLOATING_PIXEL_ENTITIES];
+i32 floating_pixel_entity_count;
+i32 free_floating_pixel_entity_index;
+PixelClusterEntity pixel_cluster_entities[MAX_PIXEL_CLUSTER_ENTITIES];
+i32 pixel_cluster_entity_count;
+i32 free_pixel_cluster_entity_index;
 
 // @GenerateUniqueEntityArrays 
 Entity entities[MAX_ACTIVE_ENTITIES];

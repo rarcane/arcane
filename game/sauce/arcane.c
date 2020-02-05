@@ -50,6 +50,7 @@
 #include "generated/catchall.c"
 #include "arc/ecs/ecs.c"
 #include "arc/item/item.c"
+#include "arc/world/pixel.c"
 #include "arc/world/world.c"
 #include "arc/world/collision.c"
 #include "arc/entity/player/player.c"
@@ -131,6 +132,7 @@ PermanentLoad(TsPlatform *platform_)
 			InitialiseItemData();
 
 			core->world_data = MemoryArenaAllocateAndZero(&core->world_arena, sizeof(WorldData));
+			R_DEV_ASSERT(core->world_data, "Failed to allocate memory for WorldData.");
 			core->world_data->floating_chunk.is_valid = 1;
 
 			InitialiseECS();
@@ -413,8 +415,6 @@ Update(void)
 
 			START_PERF_TIMER("Update");
 
-			UpdateGroundEntities();
-
 			// NOTE(tjr): Perform if the game is not paused.
 			if (core->world_delta_t != 0.0f)
 			{
@@ -434,6 +434,7 @@ Update(void)
 			UpdateParallax();
 
 			DrawWorld();
+			RenderPixelObjects();
 			UpdateParticleEmitters();
 			DrawGameUI();
 			DrawDebugLines();
