@@ -51,6 +51,14 @@ internal void TempInitGameWorld()
 		ground->physics_comp->bounce_mult = 1.0f;
 	}
 
+	{
+		PixelClusterEntity *pixel_cluster = NewPixelClusterEntity();
+		pixel_cluster->position_comp->position = v2(0.0f, -100.0f);
+
+		LoadPixelClusterFromPNG(pixel_cluster, "texture/scenic/rocks");
+		UpdatePixelClusterTexture(pixel_cluster);
+	}
+
 	for (int h = 0; h < 5; h++)
 	{
 		for (int i = -10; i < 11; i++)

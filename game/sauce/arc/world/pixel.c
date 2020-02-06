@@ -42,3 +42,41 @@ internal void UpdatePixelClusterTexture(PixelClusterEntity *pixel_cluster)
 											 MAX_PIXEL_CLUSTER_LENGTH,
 											 pixel_data);
 }
+
+internal void LoadPixelClusterFromPNG(PixelClusterEntity *cluster, char *path)
+{
+	Ts2dTexture texture = {0};
+	void *png_data = 0;
+	u32 png_data_len = 0;
+	char png_path[256] = {0};
+	snprintf(png_path, sizeof(png_path), "%sres/%s.png", platform->executable_folder_absolute_path, path);
+	platform->LoadEntireFile(png_path, &png_data, &png_data_len, 0);
+
+	R_DEV_ASSERT(png_data && png_data_len, "Invalid path when loading pixel cluster (%s)", png_path);
+
+	int texture_width = 0;
+	int texture_height = 0;
+	int channels = 0;
+	void *texture_data = stbi_load_from_memory(png_data, png_data_len, &texture_width, &texture_height, &channels, 4);
+
+	R_DEV_ASSERT(texture_width == MAX_PIXEL_CLUSTER_LENGTH && texture_height == MAX_PIXEL_CLUSTER_LENGTH,
+				 "Image must be 64x64 for now.");
+
+	unsigned char *texture_buffer = &((unsigned char *)(texture_data))[0];
+	for (int i = 0; i < texture_width * texture_height; i++)
+	{
+		Pixel *pixel = &cluster->pixels[i];
+
+		pixel->colour.r = *texture_buffer / 255.0f;
+		texture_buffer++;
+		pixel->colour.g = *texture_buffer / 255.0f;
+		texture_buffer++;
+		pixel->colour.b = *texture_buffer / 255.0f;
+		texture_buffer++;
+		pixel->colour.a = *texture_buffer / 255.0f;
+		texture_buffer++;
+	}
+
+	platform->FreeFileMemory(png_data);
+	stbi_image_free(texture_data);
+}
