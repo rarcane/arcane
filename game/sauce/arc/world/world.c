@@ -59,59 +59,16 @@ internal void TempInitGameWorld()
 		UpdatePixelClusterTexture(pixel_cluster);
 	}
 
-	//i32 frequency = 4;
+	srand(5);
 
 	for (int i = 0; i < 128; i++)
 	{
 		for (int j = 0; j < 128; j++)
 		{
-			core->random_field[j][i] = RandomF32(0.0f, 1.0f); //(RandomI32(0, 1) ? -1.0f : 1.0f);
-															  //random_field[i][j].y = RandomF32(0.0f, 1.0f); //(RandomI32(0, 1) ? -1.0f : 1.0f);
+			core->random_field[j][i].x = (RandomI32(0, 1) ? -1.0f : 1.0f);
+			core->random_field[i][j].y = (RandomI32(0, 1) ? -1.0f : 1.0f);
 		}
 	}
-
-	/* f32 perlin_field[64][64];
-
-	for (int i = 0; i < 64; i++)
-		for (int j = 0; j < 64; j++)
-			perlin_field[i][j] = -50.0f;
-
-	for (int h = 0; h < 16; h++)
-		for (int i = 0; i < 16; i++)
-		{
-			v2 top_left_vec = random_field[h][i];
-			v2 top_right_vec = random_field[h][i + 1];
-			v2 bottom_left_vec = random_field[h + 1][i];
-			v2 bottom_right_vec = random_field[h + 1][i + 1];
-
-			for (i32 j = 0; j < 4; j++)
-			{
-				f32 j_alpha = (f32)j / 3.0f;
-
-				for (i32 k = 0; k < 4; k++)
-				{
-					f32 k_alpha = (f32)k / 3.0f;
-
-					v2 top_left_distance_from_pixel = {k_alpha, -j_alpha};
-					f32 top_left_dot = top_left_vec.x * top_left_distance_from_pixel.x + top_left_vec.y * top_left_distance_from_pixel.y;
-
-					v2 top_right_distance_from_pixel = {-(1.0f - k_alpha), -j_alpha};
-					f32 top_right_dot = top_right_vec.x * top_right_distance_from_pixel.x + top_right_vec.y * top_right_distance_from_pixel.y;
-
-					v2 bottom_left_distance_from_pixel = {k_alpha, 1.0f - j_alpha};
-					f32 bottom_left_dot = bottom_left_vec.x * bottom_left_distance_from_pixel.x + bottom_left_vec.y * bottom_left_distance_from_pixel.y;
-
-					v2 bottom_right_distance_from_pixel = {-(1.0f - k_alpha), 1.0f - j_alpha};
-					f32 bottom_right_dot = bottom_right_vec.x * bottom_right_distance_from_pixel.x + bottom_right_vec.y * bottom_right_distance_from_pixel.y;
-
-					f32 top_interp = top_left_dot + k_alpha * (top_right_dot - top_left_dot);
-					f32 bottom_interp = bottom_left_dot + k_alpha * (bottom_right_dot - bottom_left_dot);
-					f32 final = top_interp + j_alpha * (bottom_interp - top_interp);
-
-					perlin_field[h * 4 + j][i * 4 + k] = final;
-				}
-			}
-		} */
 
 	f32 pixel_cluster_noise[64][64];
 
@@ -122,7 +79,7 @@ internal void TempInitGameWorld()
 		{
 			f32 frequency = 1.0f;
 			f32 amplitude = 1.0f;
-			f32 max_value = 1.0f;
+			f32 max_value = 0.0f;
 
 			f32 noise_amount = 0.0f;
 			for (int k = 0; k < octaves; k++)
@@ -166,9 +123,9 @@ internal void TempInitGameWorld()
 		{
 			for (int k = 0; k < MAX_PIXEL_CLUSTER_LENGTH; k++)
 			{
-				pixel_cluster->pixels[k + MAX_PIXEL_CLUSTER_LENGTH * j].colour = v4(pixel_cluster_noise[j][k],
-																					pixel_cluster_noise[j][k],
-																					pixel_cluster_noise[j][k],
+				pixel_cluster->pixels[k + MAX_PIXEL_CLUSTER_LENGTH * j].colour = v4((pixel_cluster_noise[j][k] + 1) / 2.0f,
+																					(pixel_cluster_noise[j][k] + 1) / 2.0f,
+																					(pixel_cluster_noise[j][k] + 1) / 2.0f,
 																					1.0f);
 			}
 		}
@@ -456,18 +413,34 @@ internal void UpdateChunks()
 static f32 GenerateNoise(f32 x_pos, f32 y_pos, f32 frequency)
 {
 	i32 x_min = (i32)floorf(x_pos);
+	i32 x_max = (i32)floorf(x_pos) + 1;
+
 	i32 y_min = (i32)floorf(y_pos);
+	i32 y_max = (i32)floorf(y_pos) + 1;
 
 	R_DEV_ASSERT(x_min < 128 && y_min < 128, "Noise out of bonds.");
 
-	f32 p0 = core->random_field[y_min][x_min];
-	f32 p1 = core->random_field[y_min][x_min + 1];
-	f32 p2 = core->random_field[y_min + 1][x_min];
-	f32 p3 = core->random_field[y_min + 1][x_min + 1];
+	v2 g0 = core->random_field[y_min][x_min];
+	v2 g1 = core->random_field[y_min][x_min + 1];
+	v2 g2 = core->random_field[y_min + 1][x_min];
+	v2 g3 = core->random_field[y_min + 1][x_min + 1];
 
-	f32 lerp1 = p0 + fmodf(x_pos, 1) * (p1 - p0);
-	f32 lerp2 = p2 + fmodf(x_pos, 1) * (p3 - p2);
-	f32 lerp3 = lerp1 + fmodf(y_pos, 1) * (lerp2 - lerp1);
+	v2 d0 = {x_pos - x_min, y_pos - y_min};
+	v2 d1 = {x_pos - x_max, y_pos - y_min};
+	v2 d2 = {x_pos - x_min, y_pos - y_max};
+	v2 d3 = {x_pos - x_max, y_pos - y_max};
+
+	f32 p0 = g0.x * d0.x + g0.y * d0.y;
+	f32 p1 = g1.x * d1.x + g1.y * d1.y;
+	f32 p2 = g2.x * d2.x + g2.y * d2.y;
+	f32 p3 = g3.x * d3.x + g3.y * d3.y;
+
+	f32 x_fade = 6 * powf((x_pos - x_min), 5) - 15 * powf((x_pos - x_min), 4) + 10 * powf((x_pos - x_min), 3);
+	f32 y_fade = 6 * powf((y_pos - y_min), 5) - 15 * powf((y_pos - y_min), 4) + 10 * powf((y_pos - y_min), 3);
+
+	f32 lerp1 = p0 + x_fade * (p1 - p0);
+	f32 lerp2 = p2 + x_fade * (p3 - p2);
+	f32 lerp3 = lerp1 + y_fade * (lerp2 - lerp1);
 
 	return lerp3;
 }

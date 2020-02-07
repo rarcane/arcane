@@ -67,7 +67,7 @@ struct Core
 	Entity *clouds[MAX_CLOUDS];
 	i32 cloud_count;
 
-	f32 random_field[128][128];
+	v2 random_field[128][128];
 
 	// NOTE(tjr): World stuff
 	MemoryArena world_arena; // TODO: Associate this with save loading/unloading
