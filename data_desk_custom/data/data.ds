@@ -1,6 +1,6 @@
 /* --- CONSTANTS --- */
 
-MAX_ENTITIES_PER_CHUNK :: 128
+MAX_ENTITIES_PER_CHUNK :: 256
 MAX_ACTIVE_ENTITIES :: 1024
 MAX_OVERLAPPING_COLLIDERS :: 50
 MAX_ENTITY_REFERENCES :: 10
@@ -55,6 +55,11 @@ AnimationFlags :: flags
 ParticleEmitterFlags :: flags
 {
 	repeat,
+}
+
+PixelFlags :: flags
+{
+	apply_gravity,
 }
 
 @ForwardDeclare(Entity)
@@ -219,20 +224,32 @@ Pixel :: struct
 @UniqueEntity(1024, pixel_object)
 FloatingPixel :: struct
 {
-	@ComponentList(Position, Physics, Velocity)
+	@ComponentList(Position)
 	dummy : Dummy;
 	
-	pixel : Pixel;
+	flags : PixelFlags;
+	
+	colour : v4;
+	
+	mass : f32;
+	velocity : v2;
+	restitution : f32;
 }
 
 @UniqueEntity(1024, pixel_object)
 PixelCluster :: struct
 {
-	@ComponentList(Position)//, Physics, Velocity)
+	@ComponentList(Position)
 	dummy : Dummy;
+	
+	flags : PixelFlags;
 	
 	pixels : Pixel[MAX_PIXEL_CLUSTER_LENGTH * MAX_PIXEL_CLUSTER_LENGTH];
 	texture : Ts2dTexture;
+	
+	mass : f32;
+	velocity : v2;
+	restitution : f32;
 }
 
 @GenerateEntityCode

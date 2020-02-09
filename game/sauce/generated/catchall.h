@@ -1,4 +1,4 @@
-#define MAX_ENTITIES_PER_CHUNK (128)
+#define MAX_ENTITIES_PER_CHUNK (256)
 #define MAX_ACTIVE_ENTITIES (1024)
 #define MAX_OVERLAPPING_COLLIDERS (50)
 #define MAX_ENTITY_REFERENCES (10)
@@ -42,6 +42,9 @@ typedef unsigned int AnimationFlags;
 
 #define PARTICLE_EMITTER_FLAGS_repeat (1<<0)
 typedef unsigned int ParticleEmitterFlags;
+
+#define PIXEL_FLAGS_apply_gravity (1<<0)
+typedef unsigned int PixelFlags;
 
 typedef struct Entity Entity;
 
@@ -290,9 +293,11 @@ typedef struct FloatingPixelEntity
 Entity *parent_generic_entity;
 i32 unique_entity_id;
     PositionComponent *position_comp;
-    PhysicsComponent *physics_comp;
-    VelocityComponent *velocity_comp;
-Pixel pixel;
+PixelFlags flags;
+v4 colour;
+f32 mass;
+v2 velocity;
+f32 restitution;
 } FloatingPixelEntity;
 
 #define MAX_PIXEL_CLUSTER_ENTITIES (1024)
@@ -301,8 +306,12 @@ typedef struct PixelClusterEntity
 Entity *parent_generic_entity;
 i32 unique_entity_id;
     PositionComponent *position_comp;
+PixelFlags flags;
 Pixel pixels[(MAX_PIXEL_CLUSTER_LENGTH*MAX_PIXEL_CLUSTER_LENGTH)];
 Ts2dTexture texture;
+f32 mass;
+v2 velocity;
+f32 restitution;
 } PixelClusterEntity;
 
 typedef enum EntityType

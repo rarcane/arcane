@@ -54,83 +54,84 @@ internal void TempInitGameWorld()
 	{
 		PixelClusterEntity *pixel_cluster = NewPixelClusterEntity();
 		pixel_cluster->position_comp->position = v2(0.0f, -100.0f);
+		pixel_cluster->flags |= PIXEL_FLAGS_apply_gravity;
 
 		LoadPixelClusterFromPNG(pixel_cluster, "texture/scenic/rock");
 		UpdatePixelClusterTexture(pixel_cluster);
 	}
 
-	srand(5);
-
-	for (int i = 0; i < 128; i++)
+	/* {
+		FloatingPixelEntity *f_pixel = NewFloatingPixelEntity();
+		f_pixel->position_comp->position = v2(-50.0f, 0.0f);
+		f_pixel->velocity = v2(500.0f, -500.0f);
+		f_pixel->colour = v4u(1.0f);
+	}
 	{
-		for (int j = 0; j < 128; j++)
+		FloatingPixelEntity *f_pixel = NewFloatingPixelEntity();
+		f_pixel->position_comp->position = v2(50.0f, -25.0f);
+		f_pixel->velocity = v2(-500.0f, -250.0f);
+		f_pixel->colour = v4u(1.0f);
+	} */
+
+	{
+		for (int i = 0; i < 20; i++)
 		{
-			core->random_field[j][i].x = (RandomI32(0, 1) ? -1.0f : 1.0f);
-			core->random_field[i][j].y = (RandomI32(0, 1) ? -1.0f : 1.0f);
+			FloatingPixelEntity *f_pixel = NewFloatingPixelEntity();
+			f_pixel->position_comp->position.x = (f32)i;
+			f_pixel->position_comp->position.y = 20.0f;
+
+			f_pixel->colour = v4u(1.0f);
 		}
 	}
 
-	f32 pixel_cluster_noise[64][64];
-
-	i32 octaves = 8;
-
-	for (int i = 0; i < 64; i++)
-		for (int j = 0; j < 64; j++)
-		{
-			f32 frequency = 1.0f;
-			f32 amplitude = 1.0f;
-			f32 max_value = 0.0f;
-
-			f32 noise_amount = 0.0f;
-			for (int k = 0; k < octaves; k++)
-			{
-				noise_amount += GenerateNoise((j / 64.0f) * frequency, (i / 64.0f) * frequency, frequency) * amplitude;
-				max_value += amplitude;
-				frequency *= 2.0f;
-				amplitude *= 0.5f;
-			}
-
-			pixel_cluster_noise[i][j] = noise_amount / max_value;
-		}
-
+	ShufflePerlinNoise();
 	for (int h = 0; h < 5; h++)
 	{
-		for (int i = -10; i < 11; i++)
+		for (int g = -10; g < 11; g++)
 		{
 			PixelClusterEntity *pixel_cluster = NewPixelClusterEntity();
-			pixel_cluster->position_comp->position = v2(i * (f32)MAX_PIXEL_CLUSTER_LENGTH, h * (f32)MAX_PIXEL_CLUSTER_LENGTH);
+			pixel_cluster->position_comp->position = v2(g * (f32)MAX_PIXEL_CLUSTER_LENGTH, h * (f32)MAX_PIXEL_CLUSTER_LENGTH - 1.0f);
+
+			f32 pixel_cluster_noise[64][64];
+			i32 octaves = 3;
+			for (int i = 0; i < 64; i++)
+			{
+				for (int j = 0; j < 64; j++)
+				{
+					f32 frequency = 2.0f;
+					f32 amplitude = 1.0f;
+					f32 max_value = 0.0f;
+
+					f32 noise_amount = 0.0f;
+					for (int k = 0; k < octaves; k++)
+					{
+						noise_amount += GetPerlinNoise((j / 64.0f + g + 10) * frequency, (i / 64.0f + h) * frequency) * amplitude;
+						max_value += amplitude;
+						frequency *= 2.0f;
+						amplitude *= 0.5f;
+					}
+
+					pixel_cluster_noise[i][j] = noise_amount / max_value;
+				}
+			}
 
 			for (int j = 0; j < MAX_PIXEL_CLUSTER_LENGTH; j++)
 			{
 				for (int k = 0; k < MAX_PIXEL_CLUSTER_LENGTH; k++)
 				{
-					pixel_cluster->pixels[k + MAX_PIXEL_CLUSTER_LENGTH * j].position = v2(i * MAX_PIXEL_CLUSTER_LENGTH + (f32)k, (f32)j);
-					pixel_cluster->pixels[k + MAX_PIXEL_CLUSTER_LENGTH * j].colour = v4(121.0f / 255.0f + RandomF32(0.0f, 0.1f),
-																						87.0f / 255.0f + RandomF32(0.0f, 0.1f),
-																						70.0f / 255.0f + RandomF32(0.0f, 0.1f),
-																						1.0f);
+					f32 noise = (pixel_cluster_noise[j][k] + 1) / 2.0f;
+
+					pixel_cluster->pixels[k + MAX_PIXEL_CLUSTER_LENGTH * j].position = v2(g * MAX_PIXEL_CLUSTER_LENGTH + (f32)k, (f32)j);
+					if (!(j == 0 && h == 0 && RandomI32(0, 4) == 0))
+						pixel_cluster->pixels[k + MAX_PIXEL_CLUSTER_LENGTH * j].colour = v4(80.0f / 255.0f + noise / 6.0f,
+																							58.0f / 255.0f + noise / 6.0f,
+																							51.0f / 255.0f + noise / 6.0f,
+																							1.0f);
 				}
 			}
 
 			UpdatePixelClusterTexture(pixel_cluster);
 		}
-	}
-
-	{
-		PixelClusterEntity *pixel_cluster = &core->world_data->pixel_cluster_entities[10];
-
-		for (int j = 0; j < MAX_PIXEL_CLUSTER_LENGTH; j++)
-		{
-			for (int k = 0; k < MAX_PIXEL_CLUSTER_LENGTH; k++)
-			{
-				pixel_cluster->pixels[k + MAX_PIXEL_CLUSTER_LENGTH * j].colour = v4((pixel_cluster_noise[j][k] + 1) / 2.0f,
-																					(pixel_cluster_noise[j][k] + 1) / 2.0f,
-																					(pixel_cluster_noise[j][k] + 1) / 2.0f,
-																					1.0f);
-			}
-		}
-
-		UpdatePixelClusterTexture(pixel_cluster);
 	}
 
 	/* for (int i = 0; i < 12; i++)
@@ -408,39 +409,4 @@ internal void UpdateChunks()
 			}
 		}
 	}
-}
-
-static f32 GenerateNoise(f32 x_pos, f32 y_pos, f32 frequency)
-{
-	i32 x_min = (i32)floorf(x_pos);
-	i32 x_max = (i32)floorf(x_pos) + 1;
-
-	i32 y_min = (i32)floorf(y_pos);
-	i32 y_max = (i32)floorf(y_pos) + 1;
-
-	R_DEV_ASSERT(x_min < 128 && y_min < 128, "Noise out of bonds.");
-
-	v2 g0 = core->random_field[y_min][x_min];
-	v2 g1 = core->random_field[y_min][x_min + 1];
-	v2 g2 = core->random_field[y_min + 1][x_min];
-	v2 g3 = core->random_field[y_min + 1][x_min + 1];
-
-	v2 d0 = {x_pos - x_min, y_pos - y_min};
-	v2 d1 = {x_pos - x_max, y_pos - y_min};
-	v2 d2 = {x_pos - x_min, y_pos - y_max};
-	v2 d3 = {x_pos - x_max, y_pos - y_max};
-
-	f32 p0 = g0.x * d0.x + g0.y * d0.y;
-	f32 p1 = g1.x * d1.x + g1.y * d1.y;
-	f32 p2 = g2.x * d2.x + g2.y * d2.y;
-	f32 p3 = g3.x * d3.x + g3.y * d3.y;
-
-	f32 x_fade = 6 * powf((x_pos - x_min), 5) - 15 * powf((x_pos - x_min), 4) + 10 * powf((x_pos - x_min), 3);
-	f32 y_fade = 6 * powf((y_pos - y_min), 5) - 15 * powf((y_pos - y_min), 4) + 10 * powf((y_pos - y_min), 3);
-
-	f32 lerp1 = p0 + x_fade * (p1 - p0);
-	f32 lerp2 = p2 + x_fade * (p3 - p2);
-	f32 lerp3 = lerp1 + y_fade * (lerp2 - lerp1);
-
-	return lerp3;
 }

@@ -213,6 +213,10 @@ internal void AdvanceVelocity()
 				instigator_velocity_comp->ideal_velocity.y = TERMINAL_VELOCITY;
 				instigator_velocity_comp->acceleration.y = WORLD_GRAVITY * instigator_velocity_comp->acceleration_mult.y;
 
+				// TODO: Not sure about this whole idea of "Ideal Velocity", shouldn't the velocity just
+				// be +- via different forces (input, gravity, friction, etc). Like if the player becomes
+				// exhaused and can only run, the added velocity each frame would just halve. Then the player
+				// would slowly reach its new max velocity over time due to friciton.
 				v2 *velocity = &instigator_velocity_comp->velocity;
 				v2 *ideal_velocity = &instigator_velocity_comp->ideal_velocity;
 

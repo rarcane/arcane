@@ -14,7 +14,7 @@
 #define ARCANE_UI_STYLE_MENU (1 << 0)
 #define ARCANE_UI_STYLE_GAME (1 << 1)
 #include "tsui/tsui.h"
-#include "util.h"
+#include "arc/util.h"
 #include "tsarcane/arcane_tsui_callbacks.h"
 #include "arcane.h"
 #include "core.h"
@@ -41,7 +41,7 @@
 #include "tsarcane/arcane_tsui_callbacks.c"
 #include "tsarcane/arcane_tsfoundation_log_procedure.c"
 // NOTE(tjr): Game Implementation Code
-#include "util.c"
+#include "arc/util.c"
 #include "tsarcane/terminalcommands.c"
 #include "arc/entity/player/action.c"
 #include "arc/sprite/sprite.c"
@@ -415,6 +415,8 @@ Update(void)
 
 			START_PERF_TIMER("Update");
 
+			UpdatePixels();
+
 			// NOTE(tjr): Perform if the game is not paused.
 			if (core->world_delta_t != 0.0f)
 			{
@@ -438,6 +440,19 @@ Update(void)
 			UpdateParticleEmitters();
 			DrawGameUI();
 			DrawDebugLines();
+
+			if (platform->left_mouse_pressed)
+			{
+				FloatingPixelEntity *f_pixel = NewFloatingPixelEntity();
+				f_pixel->position_comp->position = v2(floorf(GetMousePositionInWorldSpace().x), floorf(GetMousePositionInWorldSpace().y));
+				f_pixel->colour = v4u(1.0f);
+				f_pixel->flags |= PIXEL_FLAGS_apply_gravity;
+
+				/* FloatingPixelEntity *f_pixel2 = NewFloatingPixelEntity();
+				f_pixel2->colour = v4u(1.0f);
+				f_pixel2->position = v2(floorf(GetMousePositionInWorldSpace().x), floorf(GetMousePositionInWorldSpace().y + 1));
+				f_pixel2->flags |= PIXEL_FLAGS_apply_gravity; */
+			}
 
 			END_PERF_TIMER;
 		}

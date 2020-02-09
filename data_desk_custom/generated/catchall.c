@@ -1092,8 +1092,6 @@ static FloatingPixelEntity *NewFloatingPixelEntity()
     unique_entity->unique_entity_id = new_unique_id;
 
     unique_entity->position_comp = AddPositionComponent(generic_entity);
-    unique_entity->physics_comp = AddPhysicsComponent(generic_entity);
-    unique_entity->velocity_comp = AddVelocityComponent(generic_entity);
 
     return unique_entity;
 }
@@ -1143,14 +1141,34 @@ static void PrintEntityDataUI(Entity *entity)
     case ENTITY_TYPE_floating_pixel :
     {
         FloatingPixelEntity *unique_entity = entity->unique_entity;
-            // TODO: Don't know how to generate UI print for variable 'pixel'
+            // TODO: Don't know how to generate UI print for variable 'flags'
+            // TODO: Don't know how to generate UI print for variable 'colour'
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "mass: %f", unique_entity->mass); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "velocity: %f, %f", unique_entity->velocity.x, unique_entity->velocity.y); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "restitution: %f", unique_entity->restitution); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
         break;
     }
     case ENTITY_TYPE_pixel_cluster :
     {
         PixelClusterEntity *unique_entity = entity->unique_entity;
+            // TODO: Don't know how to generate UI print for variable 'flags'
             // TODO: Don't know how to generate UI print for variable 'pixels'
             // TODO: Don't know how to generate UI print for variable 'texture'
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "mass: %f", unique_entity->mass); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "velocity: %f, %f", unique_entity->velocity.x, unique_entity->velocity.y); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "restitution: %f", unique_entity->restitution); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
         break;
     }
     }
