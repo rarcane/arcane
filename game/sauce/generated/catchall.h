@@ -6,7 +6,7 @@
 #define MAX_STORAGE_SIZE (30)
 #define MAX_PARTICLE_AMOUNT (300)
 #define MAX_WORLD_CHUNKS (128)
-#define CHUNK_SIZE (200)
+#define CHUNK_SIZE (256)
 #define MAX_PIXEL_CLUSTER_LENGTH (64)
 typedef enum GeneralisedEntityType GeneralisedEntityType;
 enum GeneralisedEntityType
@@ -24,6 +24,17 @@ GENERALISED_ENTITY_TYPE_pixel_object,
 GENERALISED_ENTITY_TYPE_MAX,
 };
 static char *GetGeneralisedEntityTypeTypeName(GeneralisedEntityType type);
+
+typedef enum MaterialType MaterialType;
+enum MaterialType
+{
+MATERIAL_TYPE_dirt,
+MATERIAL_TYPE_sand,
+MATERIAL_TYPE_water,
+MATERIAL_TYPE_air,
+MATERIAL_TYPE_MAX,
+};
+static char *GetMaterialTypeTypeName(MaterialType type);
 
 #define ENTITY_FLAGS_no_delete (1<<0)
 typedef unsigned int EntityFlags;
@@ -45,6 +56,9 @@ typedef unsigned int ParticleEmitterFlags;
 
 #define PIXEL_FLAGS_apply_gravity (1<<0)
 typedef unsigned int PixelFlags;
+
+#define MATERIAL_FLAGS_no_gravity (1<<0)
+typedef unsigned int MaterialFlags;
 
 typedef struct Entity Entity;
 
@@ -298,7 +312,16 @@ v4 colour;
 f32 mass;
 v2 velocity;
 f32 restitution;
+v2 new_velocity;
+b8 is_collision_resolved;
 } FloatingPixelEntity;
+
+typedef struct CollisionManifold
+{
+FloatingPixelEntity *instigator;
+FloatingPixelEntity *subject;
+v2 normal;
+} CollisionManifold;
 
 #define MAX_PIXEL_CLUSTER_ENTITIES (1024)
 typedef struct PixelClusterEntity
@@ -337,6 +360,13 @@ void *components[COMPONENT_MAX];
 ChunkData *active_chunk;
 } Entity;
 
+typedef struct Cell
+{
+MaterialType material;
+MaterialFlags flags;
+f32 mass;
+} Cell;
+
 typedef struct ChunkData
 {
 b8 is_valid;
@@ -344,6 +374,7 @@ i32 entity_ids[MAX_ENTITIES_PER_CHUNK];
 i32 entity_count;
 i32 x_index;
 i32 y_index;
+Cell cells[CHUNK_SIZE][CHUNK_SIZE];
 } ChunkData;
 
 typedef struct WorldData

@@ -447,6 +447,9 @@ Update(void)
 				f_pixel->position_comp->position = v2(floorf(GetMousePositionInWorldSpace().x), floorf(GetMousePositionInWorldSpace().y));
 				f_pixel->colour = v4u(1.0f);
 				f_pixel->flags |= PIXEL_FLAGS_apply_gravity;
+				f_pixel->velocity.y = 50.0f;
+				f_pixel->mass = 50.0f;
+				f_pixel->restitution = 0.0f;
 
 				/* FloatingPixelEntity *f_pixel2 = NewFloatingPixelEntity();
 				f_pixel2->colour = v4u(1.0f);

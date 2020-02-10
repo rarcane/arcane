@@ -51,14 +51,14 @@ internal void TempInitGameWorld()
 		ground->physics_comp->bounce_mult = 1.0f;
 	}
 
-	{
+	/* {
 		PixelClusterEntity *pixel_cluster = NewPixelClusterEntity();
 		pixel_cluster->position_comp->position = v2(0.0f, -100.0f);
 		pixel_cluster->flags |= PIXEL_FLAGS_apply_gravity;
 
 		LoadPixelClusterFromPNG(pixel_cluster, "texture/scenic/rock");
 		UpdatePixelClusterTexture(pixel_cluster);
-	}
+	} */
 
 	/* {
 		FloatingPixelEntity *f_pixel = NewFloatingPixelEntity();
@@ -79,8 +79,9 @@ internal void TempInitGameWorld()
 			FloatingPixelEntity *f_pixel = NewFloatingPixelEntity();
 			f_pixel->position_comp->position.x = (f32)i;
 			f_pixel->position_comp->position.y = 20.0f;
-
 			f_pixel->colour = v4u(1.0f);
+			f_pixel->mass = 100.0f;
+			f_pixel->restitution = 0.0f;
 		}
 	}
 

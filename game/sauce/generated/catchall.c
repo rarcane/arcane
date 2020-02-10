@@ -38,6 +38,28 @@ break;
 }
 }
 
+static char *GetMaterialTypeName(MaterialType type)
+{
+switch(type)
+{
+case MATERIAL_TYPE_dirt:
+return "Dirt";
+break;
+case MATERIAL_TYPE_sand:
+return "Sand";
+break;
+case MATERIAL_TYPE_water:
+return "Water";
+break;
+case MATERIAL_TYPE_air:
+return "Air";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
 internal void PrintComponentDataUI(void *component_data, ComponentType type)
 {
     switch (type)
@@ -1151,6 +1173,12 @@ static void PrintEntityDataUI(Entity *entity)
             TsUIPopWidth(core->ui);
             TsUIPushAutoWidth(core->ui);
             { char label[100]; sprintf(label, "restitution: %f", unique_entity->restitution); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, "new_velocity: %f, %f", unique_entity->new_velocity.x, unique_entity->new_velocity.y); TsUILabel(core->ui, label); }
+            TsUIPopWidth(core->ui);
+            TsUIPushAutoWidth(core->ui);
+            { char label[100]; sprintf(label, unique_entity->is_collision_resolved ? "is_collision_resolved: true" : "is_collision_resolved: false"); TsUILabel(core->ui, label); }
             TsUIPopWidth(core->ui);
         break;
     }

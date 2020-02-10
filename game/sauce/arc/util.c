@@ -16,9 +16,9 @@ internal v2 NormaliseV2(v2 vector)
 	return normal_vector;
 }
 
-internal int GetSign(f32 x)
+internal i32 GetSign(f32 x)
 {
-	return (x > 0) - (x < 0);
+	return (x > 0.0f) - (x < 0.0f);
 }
 
 internal void ShufflePerlinNoise()

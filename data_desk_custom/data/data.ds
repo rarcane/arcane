@@ -8,7 +8,7 @@ MAX_SUB_COLLIDERS :: 3
 MAX_STORAGE_SIZE :: 30
 MAX_PARTICLE_AMOUNT :: 300
 MAX_WORLD_CHUNKS :: 128
-CHUNK_SIZE :: 200
+CHUNK_SIZE :: 256
 MAX_PIXEL_CLUSTER_LENGTH :: 64
 
 
@@ -26,6 +26,14 @@ GeneralisedEntityType :: enum
 	scenic,
 	ground,
 	pixel_object,
+}
+
+MaterialType :: enum
+{
+	dirt,
+	sand,
+	water,
+	air,
 }
 
 
@@ -60,6 +68,11 @@ ParticleEmitterFlags :: flags
 PixelFlags :: flags
 {
 	apply_gravity,
+}
+
+MaterialFlags :: flags
+{
+	no_gravity,
 }
 
 @ForwardDeclare(Entity)
@@ -234,6 +247,17 @@ FloatingPixel :: struct
 	mass : f32;
 	velocity : v2;
 	restitution : f32;
+	
+	new_velocity : v2;
+	
+	is_collision_resolved : b8;
+}
+
+CollisionManifold :: struct
+{
+	instigator : *FloatingPixelEntity;
+	subject : *FloatingPixelEntity;
+	normal : v2;
 }
 
 @UniqueEntity(1024, pixel_object)
@@ -272,6 +296,13 @@ Entity :: struct
 
 /* --- WORLD DATA --- */
 
+Cell :: struct
+{
+	material : MaterialType;
+	flags : MaterialFlags;
+	mass : f32;
+}
+
 ChunkData :: struct
 {
 	is_valid : b8;
@@ -279,6 +310,8 @@ ChunkData :: struct
 	entity_count : i32;
 	x_index : i32;
 	y_index : i32;
+	
+	cells : Cell[CHUNK_SIZE][CHUNK_SIZE];
 }
 
 WorldData :: struct

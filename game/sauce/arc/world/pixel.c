@@ -93,58 +93,55 @@ internal void LoadPixelClusterFromPNG(PixelClusterEntity *cluster, char *path)
 	stbi_image_free(texture_data);
 }
 
-internal void UpdatePixels()
+internal void ResolvePixelCollision(FloatingPixelEntity *pixel)
 {
-	// Velocity calculation
-	for (int i = 0; i < core->world_data->floating_pixel_entity_count; i++)
+	R_DEV_ASSERT(pixel->parent_generic_entity, "Invalid pixel entity");
+
+	if (!pixel->is_collision_resolved || pixel->velocity.x != 0.0f || pixel->velocity.y != 0.0f)
 	{
-		FloatingPixelEntity *pixel = &core->world_data->floating_pixel_entities[i];
-		if (pixel->parent_generic_entity)
+		v2 new_pixel_pos = v2(pixel->position_comp->position.x + pixel->velocity.x * core->world_delta_t, pixel->position_comp->position.y + pixel->velocity.y * core->world_delta_t);
+		v2 pixel_delta = V2SubtractV2(new_pixel_pos, pixel->position_comp->position);
+
+		b8 ceil_pixel_x = pixel_delta.x >= 0;
+		b8 ceil_pixel_y = pixel_delta.y >= 0;
+
+		i32 x_pixel_steps = (i32)fabsf(ceil_pixel_x ? ceilf(pixel_delta.x) : floorf(pixel_delta.x));
+		i32 y_pixel_steps = (i32)fabsf(ceil_pixel_y ? ceilf(pixel_delta.y) : floorf(pixel_delta.y));
+		b8 x_is_largest = x_pixel_steps >= y_pixel_steps;
+
+		if (x_pixel_steps == 0 && y_pixel_steps == 0)
 		{
-			if (pixel->flags & PIXEL_FLAGS_apply_gravity)
-				pixel->velocity.y = 50.0f;
+			pixel->position_comp->position = new_pixel_pos;
 		}
-	}
-
-	// Collision calculation
-	for (int i = 0; i < core->world_data->floating_pixel_entity_count; i++)
-	{
-		FloatingPixelEntity *pixel = &core->world_data->floating_pixel_entities[i];
-		if (pixel->parent_generic_entity)
+		else
 		{
-			if (pixel->velocity.x != 0.0f || pixel->velocity.y != 0.0f)
+			// Test against other pixels
+			b32 does_collide = 0;
+			CollisionManifold manifold = {0};
+			for (int k = 0; k < core->world_data->floating_pixel_entity_count; k++)
 			{
-				v2 new_pixel_pos = v2(pixel->position_comp->position.x + pixel->velocity.x * core->world_delta_t, pixel->position_comp->position.y + pixel->velocity.y * core->world_delta_t);
-				v2 pixel_delta = V2SubtractV2(new_pixel_pos, pixel->position_comp->position);
-
-				b8 ceil_pixel_x = pixel_delta.x >= 0;
-				b8 ceil_pixel_y = pixel_delta.y >= 0;
-
-				i32 x_pixel_steps = (i32)fabsf(ceil_pixel_x ? ceilf(pixel_delta.x) : floorf(pixel_delta.x));
-				i32 y_pixel_steps = (i32)fabsf(ceil_pixel_y ? ceilf(pixel_delta.y) : floorf(pixel_delta.y));
-				b8 x_is_largest = x_pixel_steps >= y_pixel_steps;
-
-				if (x_pixel_steps == 0 && y_pixel_steps == 0)
+				FloatingPixelEntity *against_pixel = &core->world_data->floating_pixel_entities[k];
+				if (against_pixel->parent_generic_entity && against_pixel != pixel)
 				{
-					pixel->position_comp->position = new_pixel_pos;
-				}
-				else
-				{
-					// Test against other pixels
-					b32 does_collide = 0;
-					for (int k = 0; k < core->world_data->floating_pixel_entity_count; k++)
+					for (int j = 1; j <= (x_is_largest ? x_pixel_steps : y_pixel_steps); j++)
 					{
-						FloatingPixelEntity *against_pixel = &core->world_data->floating_pixel_entities[k];
-						if (against_pixel->parent_generic_entity && against_pixel != pixel)
+						f32 step_alpha = (x_is_largest ? (f32)j / (f32)x_pixel_steps : (f32)j / (f32)y_pixel_steps);
+
+						v2 pixel_projection = {pixel->position_comp->position.x + step_alpha * pixel_delta.x,
+											   pixel->position_comp->position.y + step_alpha * pixel_delta.y};
+
+						v2 against_pixel_pos = against_pixel->position_comp->position;
+
+						// If the pixel collides against the subject's fixed position
+						if ((ceil_pixel_x ? ceilf(pixel_projection.x) : floorf(pixel_projection.x)) == floorf(against_pixel_pos.x) &&
+							(ceil_pixel_y ? ceilf(pixel_projection.y) : floorf(pixel_projection.y)) == floorf(against_pixel_pos.y))
 						{
-							for (int j = 1; j <= (x_is_largest ? x_pixel_steps : y_pixel_steps); j++)
+							// Ensure the subject has had its collision resolved.
+							if (!against_pixel->is_collision_resolved)
+								ResolvePixelCollision(against_pixel);
+
+							if (against_pixel->velocity.x != 0.0f || against_pixel->velocity.y != 0.0f)
 							{
-								f32 step_alpha = (x_is_largest ? (f32)j / (f32)x_pixel_steps : (f32)j / (f32)y_pixel_steps);
-
-								v2 pixel_projection = {pixel->position_comp->position.x + step_alpha * pixel_delta.x,
-													   pixel->position_comp->position.y + step_alpha * pixel_delta.y};
-
-								// TODO: Need to ensure the against pixel's collision is resolved.
 								v2 new_against_pixel_pos = v2(against_pixel->position_comp->position.x + against_pixel->velocity.x * core->world_delta_t, against_pixel->position_comp->position.y + against_pixel->velocity.y * core->world_delta_t);
 								v2 against_pixel_delta = V2SubtractV2(new_against_pixel_pos, against_pixel->position_comp->position);
 
@@ -154,37 +151,110 @@ internal void UpdatePixels()
 								v2 against_pixel_projection = {against_pixel->position_comp->position.x + step_alpha * against_pixel_delta.x,
 															   against_pixel->position_comp->position.y + step_alpha * against_pixel_delta.y};
 
+								// Test if it collides against a projection of the subject
 								if ((ceil_pixel_x ? ceilf(pixel_projection.x) : floorf(pixel_projection.x)) ==
 										(ceil_against_pixel_x ? ceilf(against_pixel_projection.x) : floorf(against_pixel_projection.x)) &&
 									(ceil_pixel_y ? ceilf(pixel_projection.y) : floorf(pixel_projection.y)) ==
 										(ceil_against_pixel_y ? ceilf(against_pixel_projection.y) : floorf(against_pixel_projection.y)))
 								{
-									f32 pixel_delta_magnitude = SquareRoot(pixel_delta.x * pixel_delta.x + pixel_delta.y * pixel_delta.y);
-
 									does_collide = 1;
-									pixel->position_comp->position = v2(against_pixel_projection.x - GetSign(pixel_delta.x),
-																		against_pixel_projection.y - GetSign(pixel_delta.y));
+									manifold.instigator = pixel;
+									manifold.subject = against_pixel;
+									manifold.normal = v2((f32)GetSign(pixel_delta.x), (f32)GetSign(pixel_delta.y));
+
+									/* pixel->position_comp->position = v2(against_pixel_projection.x - GetSign(pixel_delta.x),
+																		against_pixel_projection.y - GetSign(pixel_delta.y)); */
 									break;
 								}
 							}
+							else
+							{
+								// It's collided against the fixed position, since the velocity is 0 no projection is needed.
+								does_collide = 1;
+								manifold.instigator = pixel;
+								manifold.subject = against_pixel;
+								manifold.normal = v2((f32)GetSign(pixel_delta.x), (f32)GetSign(pixel_delta.y));
 
-							if (does_collide)
+								/* pixel->position_comp->position = v2(against_pixel_pos.x - GetSign(pixel_delta.x),
+																	against_pixel_pos.y - GetSign(pixel_delta.y)); */
 								break;
+							}
 						}
+
+						// TODO: If that fails, also test for a projection, without the fixed pre-requisite?
+						// This will catch really fast moving pixels which would otherwise tunnel through eachother.
 					}
 
 					if (does_collide)
-					{
-						// Temp workaround
-						pixel->velocity.y = 0.0f;
-						pixel->flags = 0;
-					}
-					else
-					{
-						pixel->position_comp->position = new_pixel_pos;
-					}
+						break;
 				}
 			}
+
+			if (does_collide)
+			{
+				FloatingPixelEntity *instigator = manifold.instigator;
+				FloatingPixelEntity *subject = manifold.subject;
+
+				v2 relative_velocity = V2SubtractV2(subject->velocity, instigator->velocity);
+				f32 velocity_along_normal = manifold.normal.x * relative_velocity.x + manifold.normal.y * relative_velocity.y;
+
+				f32 restitution = MinimumF32(instigator->restitution, subject->restitution);
+
+				f32 impulse = -(1 + restitution) * velocity_along_normal;
+				impulse = impulse / (1.0f / instigator->mass + 1.0f / subject->mass);
+
+				v2 impulse_vector = V2MultiplyF32(manifold.normal, impulse);
+
+				instigator->new_velocity = V2SubtractV2(instigator->velocity, V2MultiplyF32(impulse_vector, 1.0f / instigator->mass));
+				subject->new_velocity = V2AddV2(subject->velocity, V2MultiplyF32(impulse_vector, 1.0f / subject->mass));
+			}
+			else
+			{
+				pixel->new_velocity = pixel->velocity;
+			}
+		}
+	}
+
+	pixel->is_collision_resolved = 1;
+}
+
+internal void UpdatePixels()
+{
+	// Velocity calculation
+	for (int i = 0; i < core->world_data->floating_pixel_entity_count; i++)
+	{
+		FloatingPixelEntity *pixel = &core->world_data->floating_pixel_entities[i];
+		if (pixel->parent_generic_entity)
+		{
+			/* if (pixel->flags & PIXEL_FLAGS_apply_gravity)
+				pixel->velocity.y = 50.0f; */
+		}
+	}
+
+	// Collision calculation
+	for (int i = 0; i < core->world_data->floating_pixel_entity_count; i++)
+	{
+		FloatingPixelEntity *pixel = &core->world_data->floating_pixel_entities[i];
+		if (pixel->parent_generic_entity)
+		{
+			ResolvePixelCollision(pixel);
+		}
+	}
+
+	// Position updates
+	for (int i = 0; i < core->world_data->floating_pixel_entity_count; i++)
+	{
+		FloatingPixelEntity *pixel = &core->world_data->floating_pixel_entities[i];
+		if (pixel->parent_generic_entity)
+		{
+			R_DEV_ASSERT(pixel->is_collision_resolved, "Collision hasn't been calculated yet.");
+
+			v2 new_position = {pixel->position_comp->position.x + pixel->new_velocity.x * core->world_delta_t,
+							   pixel->position_comp->position.y + pixel->new_velocity.y * core->world_delta_t};
+
+			pixel->position_comp->position = new_position;
+
+			pixel->is_collision_resolved = 0;
 		}
 	}
 }
