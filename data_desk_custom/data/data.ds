@@ -28,12 +28,12 @@ GeneralisedEntityType :: enum
 	pixel_object,
 }
 
-MaterialType :: enum
+CellMaterialType :: enum
 {
+	air,
 	dirt,
 	sand,
 	water,
-	air,
 }
 
 
@@ -70,7 +70,7 @@ PixelFlags :: flags
 	apply_gravity,
 }
 
-MaterialFlags :: flags
+CellFlags :: flags
 {
 	no_gravity,
 }
@@ -228,54 +228,6 @@ Ground :: struct
 	dummy : Dummy;
 }
 
-Pixel :: struct
-{
-	position : v2;
-	colour : v4;
-}
-
-@UniqueEntity(1024, pixel_object)
-FloatingPixel :: struct
-{
-	@ComponentList(Position)
-	dummy : Dummy;
-	
-	flags : PixelFlags;
-	
-	colour : v4;
-	
-	mass : f32;
-	velocity : v2;
-	restitution : f32;
-	
-	new_velocity : v2;
-	
-	is_collision_resolved : b8;
-}
-
-CollisionManifold :: struct
-{
-	instigator : *FloatingPixelEntity;
-	subject : *FloatingPixelEntity;
-	normal : v2;
-}
-
-@UniqueEntity(1024, pixel_object)
-PixelCluster :: struct
-{
-	@ComponentList(Position)
-	dummy : Dummy;
-	
-	flags : PixelFlags;
-	
-	pixels : Pixel[MAX_PIXEL_CLUSTER_LENGTH * MAX_PIXEL_CLUSTER_LENGTH];
-	texture : Ts2dTexture;
-	
-	mass : f32;
-	velocity : v2;
-	restitution : f32;
-}
-
 @GenerateEntityCode
 Dummy3 :: _;
 
@@ -298,8 +250,8 @@ Entity :: struct
 
 Cell :: struct
 {
-	material : MaterialType;
-	flags : MaterialFlags;
+	material : CellMaterialType;
+	flags : CellFlags;
 	mass : f32;
 }
 
@@ -312,6 +264,7 @@ ChunkData :: struct
 	y_index : i32;
 	
 	cells : Cell[CHUNK_SIZE][CHUNK_SIZE];
+	texture : Ts2dTexture;
 }
 
 WorldData :: struct

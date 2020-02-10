@@ -48,15 +48,5 @@
 				"label": ""
 			}
 		]
-	},
-	{
-		"path": "$ROOTPATH$\\game\\sauce\\arc\\world\\world.c",
-		"bookmarks": [
-			{
-				"line": 90,
-				"column": 2,
-				"label": ""
-			}
-		]
 	}
 ]

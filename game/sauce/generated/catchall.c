@@ -38,21 +38,21 @@ break;
 }
 }
 
-static char *GetMaterialTypeName(MaterialType type)
+static char *GetCellMaterialTypeName(CellMaterialType type)
 {
 switch(type)
 {
-case MATERIAL_TYPE_dirt:
+case CELL_MATERIAL_TYPE_air:
+return "Air";
+break;
+case CELL_MATERIAL_TYPE_dirt:
 return "Dirt";
 break;
-case MATERIAL_TYPE_sand:
+case CELL_MATERIAL_TYPE_sand:
 return "Sand";
 break;
-case MATERIAL_TYPE_water:
+case CELL_MATERIAL_TYPE_water:
 return "Water";
-break;
-case MATERIAL_TYPE_air:
-return "Air";
 break;
 default:
 return "INVALID";
@@ -1095,52 +1095,6 @@ static GroundEntity *NewGroundEntity()
     return unique_entity;
 }
 
-static FloatingPixelEntity *NewFloatingPixelEntity()
-{
-    R_DEV_ASSERT(core->world_data->free_floating_pixel_entity_index + 1 < MAX_FLOATING_PIXEL_ENTITIES, "Maximum amount of FloatingPixel entites reached");
-
-    i32 new_unique_id = core->world_data->free_floating_pixel_entity_index;
-    if (core->world_data->free_floating_pixel_entity_index == core->world_data->floating_pixel_entity_count)
-    {
-        core->world_data->floating_pixel_entity_count++;
-        core->world_data->free_floating_pixel_entity_index++;
-    }
-    core->world_data->floating_pixel_entities[new_unique_id].unique_entity_id = new_unique_id;
-
-    Entity *generic_entity = NewEntity("FloatingPixel", ENTITY_TYPE_floating_pixel, GENERALISED_ENTITY_TYPE_pixel_object);
-    FloatingPixelEntity *unique_entity = &core->world_data->floating_pixel_entities[new_unique_id];
-    generic_entity->unique_entity = unique_entity;
-    unique_entity->parent_generic_entity = generic_entity;
-    unique_entity->unique_entity_id = new_unique_id;
-
-    unique_entity->position_comp = AddPositionComponent(generic_entity);
-
-    return unique_entity;
-}
-
-static PixelClusterEntity *NewPixelClusterEntity()
-{
-    R_DEV_ASSERT(core->world_data->free_pixel_cluster_entity_index + 1 < MAX_PIXEL_CLUSTER_ENTITIES, "Maximum amount of PixelCluster entites reached");
-
-    i32 new_unique_id = core->world_data->free_pixel_cluster_entity_index;
-    if (core->world_data->free_pixel_cluster_entity_index == core->world_data->pixel_cluster_entity_count)
-    {
-        core->world_data->pixel_cluster_entity_count++;
-        core->world_data->free_pixel_cluster_entity_index++;
-    }
-    core->world_data->pixel_cluster_entities[new_unique_id].unique_entity_id = new_unique_id;
-
-    Entity *generic_entity = NewEntity("PixelCluster", ENTITY_TYPE_pixel_cluster, GENERALISED_ENTITY_TYPE_pixel_object);
-    PixelClusterEntity *unique_entity = &core->world_data->pixel_cluster_entities[new_unique_id];
-    generic_entity->unique_entity = unique_entity;
-    unique_entity->parent_generic_entity = generic_entity;
-    unique_entity->unique_entity_id = new_unique_id;
-
-    unique_entity->position_comp = AddPositionComponent(generic_entity);
-
-    return unique_entity;
-}
-
 static void PrintEntityDataUI(Entity *entity)
 {
     switch(entity->type)
@@ -1158,45 +1112,6 @@ static void PrintEntityDataUI(Entity *entity)
     case ENTITY_TYPE_ground :
     {
         GroundEntity *unique_entity = entity->unique_entity;
-        break;
-    }
-    case ENTITY_TYPE_floating_pixel :
-    {
-        FloatingPixelEntity *unique_entity = entity->unique_entity;
-            // TODO: Don't know how to generate UI print for variable 'flags'
-            // TODO: Don't know how to generate UI print for variable 'colour'
-            TsUIPushAutoWidth(core->ui);
-            { char label[100]; sprintf(label, "mass: %f", unique_entity->mass); TsUILabel(core->ui, label); }
-            TsUIPopWidth(core->ui);
-            TsUIPushAutoWidth(core->ui);
-            { char label[100]; sprintf(label, "velocity: %f, %f", unique_entity->velocity.x, unique_entity->velocity.y); TsUILabel(core->ui, label); }
-            TsUIPopWidth(core->ui);
-            TsUIPushAutoWidth(core->ui);
-            { char label[100]; sprintf(label, "restitution: %f", unique_entity->restitution); TsUILabel(core->ui, label); }
-            TsUIPopWidth(core->ui);
-            TsUIPushAutoWidth(core->ui);
-            { char label[100]; sprintf(label, "new_velocity: %f, %f", unique_entity->new_velocity.x, unique_entity->new_velocity.y); TsUILabel(core->ui, label); }
-            TsUIPopWidth(core->ui);
-            TsUIPushAutoWidth(core->ui);
-            { char label[100]; sprintf(label, unique_entity->is_collision_resolved ? "is_collision_resolved: true" : "is_collision_resolved: false"); TsUILabel(core->ui, label); }
-            TsUIPopWidth(core->ui);
-        break;
-    }
-    case ENTITY_TYPE_pixel_cluster :
-    {
-        PixelClusterEntity *unique_entity = entity->unique_entity;
-            // TODO: Don't know how to generate UI print for variable 'flags'
-            // TODO: Don't know how to generate UI print for variable 'pixels'
-            // TODO: Don't know how to generate UI print for variable 'texture'
-            TsUIPushAutoWidth(core->ui);
-            { char label[100]; sprintf(label, "mass: %f", unique_entity->mass); TsUILabel(core->ui, label); }
-            TsUIPopWidth(core->ui);
-            TsUIPushAutoWidth(core->ui);
-            { char label[100]; sprintf(label, "velocity: %f, %f", unique_entity->velocity.x, unique_entity->velocity.y); TsUILabel(core->ui, label); }
-            TsUIPopWidth(core->ui);
-            TsUIPushAutoWidth(core->ui);
-            { char label[100]; sprintf(label, "restitution: %f", unique_entity->restitution); TsUILabel(core->ui, label); }
-            TsUIPopWidth(core->ui);
         break;
     }
     }

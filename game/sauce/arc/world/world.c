@@ -51,104 +51,77 @@ internal void TempInitGameWorld()
 		ground->physics_comp->bounce_mult = 1.0f;
 	}
 
-	/* {
-		PixelClusterEntity *pixel_cluster = NewPixelClusterEntity();
-		pixel_cluster->position_comp->position = v2(0.0f, -100.0f);
-		pixel_cluster->flags |= PIXEL_FLAGS_apply_gravity;
-
-		LoadPixelClusterFromPNG(pixel_cluster, "texture/scenic/rock");
-		UpdatePixelClusterTexture(pixel_cluster);
-	} */
-
-	/* {
-		FloatingPixelEntity *f_pixel = NewFloatingPixelEntity();
-		f_pixel->position_comp->position = v2(-50.0f, 0.0f);
-		f_pixel->velocity = v2(500.0f, -500.0f);
-		f_pixel->colour = v4u(1.0f);
-	}
 	{
-		FloatingPixelEntity *f_pixel = NewFloatingPixelEntity();
-		f_pixel->position_comp->position = v2(50.0f, -25.0f);
-		f_pixel->velocity = v2(-500.0f, -250.0f);
-		f_pixel->colour = v4u(1.0f);
-	} */
+		ChunkData *chunk = GetChunkAtPosition(v2(0, 0));
 
-	{
-		for (int i = 0; i < 20; i++)
+		ShufflePerlinNoise();
+		for (int x = 0; x < CHUNK_SIZE; x++)
 		{
-			FloatingPixelEntity *f_pixel = NewFloatingPixelEntity();
-			f_pixel->position_comp->position.x = (f32)i;
-			f_pixel->position_comp->position.y = 20.0f;
-			f_pixel->colour = v4u(1.0f);
-			f_pixel->mass = 100.0f;
-			f_pixel->restitution = 0.0f;
-		}
-	}
+			i32 octaves = 8;
+			f32 frequency = 1.0f;
+			f32 amplitude = 1.0f;
+			f32 max_value = 0.0f;
 
-	ShufflePerlinNoise();
-	for (int h = 0; h < 5; h++)
-	{
-		for (int g = -10; g < 11; g++)
-		{
-			PixelClusterEntity *pixel_cluster = NewPixelClusterEntity();
-			pixel_cluster->position_comp->position = v2(g * (f32)MAX_PIXEL_CLUSTER_LENGTH, h * (f32)MAX_PIXEL_CLUSTER_LENGTH - 1.0f);
-
-			f32 pixel_cluster_noise[64][64];
-			i32 octaves = 3;
-			for (int i = 0; i < 64; i++)
+			f32 noise_amount = 0.0f;
+			for (int k = 0; k < octaves; k++)
 			{
-				for (int j = 0; j < 64; j++)
-				{
-					f32 frequency = 2.0f;
-					f32 amplitude = 1.0f;
-					f32 max_value = 0.0f;
+				noise_amount += GetPerlinNoise(((f32)x / (f32)CHUNK_SIZE) * frequency, 0.0f) * amplitude;
+				max_value += amplitude;
+				frequency *= 2.0f;
+				amplitude *= 0.5f;
+			}
 
-					f32 noise_amount = 0.0f;
-					for (int k = 0; k < octaves; k++)
+			f32 noise = noise_amount / max_value;
+
+			i32 terrain_height = (i32)floorf(100.0f + 50.0f * noise);
+			R_DEV_ASSERT(terrain_height < CHUNK_SIZE, "Out of bounds.");
+			for (int y = 0; y < terrain_height; y++)
+			{
+				chunk->cells[CHUNK_SIZE - (terrain_height - y)][x].material = CELL_MATERIAL_TYPE_dirt;
+			}
+		}
+
+		{
+			unsigned char pixel_data[CHUNK_SIZE * CHUNK_SIZE * 4];
+			unsigned char *pixel_buffer = &pixel_data[0];
+
+			for (int y = 0; y < CHUNK_SIZE; y++)
+			{
+				for (int x = 0; x < CHUNK_SIZE; x++)
+				{
+					Cell *cell = &chunk->cells[y][x];
+					v4 colour;
+					switch (cell->material)
 					{
-						noise_amount += GetPerlinNoise((j / 64.0f + g + 10) * frequency, (i / 64.0f + h) * frequency) * amplitude;
-						max_value += amplitude;
-						frequency *= 2.0f;
-						amplitude *= 0.5f;
+					case CELL_MATERIAL_TYPE_air:
+						colour = v4u(0.0f);
+						break;
+					case CELL_MATERIAL_TYPE_dirt:
+						colour = v4(80.0f / 255.0f, 58.0f / 255.0f, 51.0f / 255.0f, 1.0f);
+						break;
+					default:
+						colour = v4u(1.0f);
+						break;
 					}
 
-					pixel_cluster_noise[i][j] = noise_amount / max_value;
+					*pixel_buffer = (unsigned char)(ClampF32(colour.r, 0.0f, 1.0f) * 255.0f);
+					pixel_buffer++;
+					*pixel_buffer = (unsigned char)(ClampF32(colour.g, 0.0f, 1.0f) * 255.0f);
+					pixel_buffer++;
+					*pixel_buffer = (unsigned char)(ClampF32(colour.b, 0.0f, 1.0f) * 255.0f);
+					pixel_buffer++;
+					*pixel_buffer = (unsigned char)(ClampF32(colour.a, 0.0f, 1.0f) * 255.0f);
+					pixel_buffer++;
 				}
 			}
 
-			for (int j = 0; j < MAX_PIXEL_CLUSTER_LENGTH; j++)
-			{
-				for (int k = 0; k < MAX_PIXEL_CLUSTER_LENGTH; k++)
-				{
-					f32 noise = (pixel_cluster_noise[j][k] + 1) / 2.0f;
-
-					pixel_cluster->pixels[k + MAX_PIXEL_CLUSTER_LENGTH * j].position = v2(g * MAX_PIXEL_CLUSTER_LENGTH + (f32)k, (f32)j);
-					if (!(j == 0 && h == 0 && RandomI32(0, 4) == 0))
-						pixel_cluster->pixels[k + MAX_PIXEL_CLUSTER_LENGTH * j].colour = v4(80.0f / 255.0f + noise / 6.0f,
-																							58.0f / 255.0f + noise / 6.0f,
-																							51.0f / 255.0f + noise / 6.0f,
-																							1.0f);
-				}
-			}
-
-			UpdatePixelClusterTexture(pixel_cluster);
+			chunk->texture = Ts2dTextureInit(core->renderer,
+											 TS2D_TEXTURE_FORMAT_R8G8B8A8,
+											 CHUNK_SIZE,
+											 CHUNK_SIZE,
+											 pixel_data);
 		}
 	}
-
-	/* for (int i = 0; i < 12; i++)
-	{
-		Entity *cloud = NewEntity("Cloud", ENTITY_TYPE_scenic);
-		SetupBackgroundEntity(cloud,
-							  v2(-300.0f + i * 50.0f, RandomF32(-87.0f, -105.0f)),
-							  STATIC_SPRITE_cloud_v1 + RandomI32(0, 5),
-							  RandomI32(0, 2) != 0 ? 8.5f : 9.5f,
-							  v2(0.95f, 0.7f));
-
-		SpriteComponent *sprite_comp = cloud->components[COMPONENT_sprite];
-		sprite_comp->sprite_data.tint = v4u(0.5f);
-
-		core->clouds[core->cloud_count++] = cloud;
-	} */
 }
 
 internal void DrawWorld()
