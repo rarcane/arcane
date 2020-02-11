@@ -5,7 +5,7 @@ internal void TempInitGameWorld()
 	{
 		CharacterEntity *character = InitialiseCharacterEntity();
 		character->parent_generic_entity->flags |= ENTITY_FLAGS_no_delete;
-		character->position_comp->position = v2(0.0f, 0.0f);
+		character->position_comp->position = v2(CHUNK_SIZE / 2.0f, 0.0f);
 		character->collider_comp->shape = GetRectangleShape(v2(14.0f, 35.0f), v2(0.0f, 0.0f));
 		character->collider_comp->flags = COLLIDER_FLAGS_player;
 		character->velocity_comp->acceleration = v2(250.0f, 0.0f);
@@ -52,12 +52,12 @@ internal void TempInitGameWorld()
 	}
 
 	{
-		ChunkData *chunk = GetChunkAtPosition(v2(0, 0));
+		ChunkData *chunk = GetChunkAtPosition(v2(0, -1));
 
 		ShufflePerlinNoise();
 		for (int x = 0; x < CHUNK_SIZE; x++)
 		{
-			i32 octaves = 8;
+			i32 octaves = 6;
 			f32 frequency = 1.0f;
 			f32 amplitude = 1.0f;
 			f32 max_value = 0.0f;
@@ -77,50 +77,13 @@ internal void TempInitGameWorld()
 			R_DEV_ASSERT(terrain_height < CHUNK_SIZE, "Out of bounds.");
 			for (int y = 0; y < terrain_height; y++)
 			{
-				chunk->cells[CHUNK_SIZE - (terrain_height - y)][x].material = CELL_MATERIAL_TYPE_dirt;
+				Cell *cell = &chunk->cells[CHUNK_SIZE - y - 1][x];
+				CellMaterial *material = NewCellMaterial(cell);
+				material->material_type = CELL_MATERIAL_TYPE_dirt;
 			}
 		}
 
-		{
-			unsigned char pixel_data[CHUNK_SIZE * CHUNK_SIZE * 4];
-			unsigned char *pixel_buffer = &pixel_data[0];
-
-			for (int y = 0; y < CHUNK_SIZE; y++)
-			{
-				for (int x = 0; x < CHUNK_SIZE; x++)
-				{
-					Cell *cell = &chunk->cells[y][x];
-					v4 colour;
-					switch (cell->material)
-					{
-					case CELL_MATERIAL_TYPE_air:
-						colour = v4u(0.0f);
-						break;
-					case CELL_MATERIAL_TYPE_dirt:
-						colour = v4(80.0f / 255.0f, 58.0f / 255.0f, 51.0f / 255.0f, 1.0f);
-						break;
-					default:
-						colour = v4u(1.0f);
-						break;
-					}
-
-					*pixel_buffer = (unsigned char)(ClampF32(colour.r, 0.0f, 1.0f) * 255.0f);
-					pixel_buffer++;
-					*pixel_buffer = (unsigned char)(ClampF32(colour.g, 0.0f, 1.0f) * 255.0f);
-					pixel_buffer++;
-					*pixel_buffer = (unsigned char)(ClampF32(colour.b, 0.0f, 1.0f) * 255.0f);
-					pixel_buffer++;
-					*pixel_buffer = (unsigned char)(ClampF32(colour.a, 0.0f, 1.0f) * 255.0f);
-					pixel_buffer++;
-				}
-			}
-
-			chunk->texture = Ts2dTextureInit(core->renderer,
-											 TS2D_TEXTURE_FORMAT_R8G8B8A8,
-											 CHUNK_SIZE,
-											 CHUNK_SIZE,
-											 pixel_data);
-		}
+		UpdateChunkTexture(chunk);
 	}
 }
 
@@ -307,13 +270,29 @@ internal ChunkData *GetChunkAtPosition(v2 position)
 		}
 	}
 
-	// Chunk GenerateEntityArraysdoesn't exist yet, so just create it at this positon
-	ChunkData *chunk = &core->world_data->active_chunks[core->world_data->active_chunk_count];
-	chunk->is_valid = 1;
-	chunk->x_index = FloatToChunkIndex(position.x);
-	chunk->y_index = FloatToChunkIndex(position.y);
-	core->world_data->active_chunk_count++;
-	return chunk;
+	// Chunk doesn't exist yet, so just initialise a new one at this positon
+	{
+		R_DEV_ASSERT(core->world_data->active_chunk_count + 1 < MAX_WORLD_CHUNKS, "Too many chunccs bruh");
+
+		ChunkData *chunk = &core->world_data->active_chunks[core->world_data->active_chunk_count++];
+		chunk->is_valid = 1;
+		chunk->x_index = FloatToChunkIndex(position.x);
+		chunk->y_index = FloatToChunkIndex(position.y);
+
+		// Initialise cells
+		for (int y = 0; y < CHUNK_SIZE; y++)
+		{
+			for (int x = 0; x < CHUNK_SIZE; x++)
+			{
+				Cell *cell = &chunk->cells[y][x];
+				cell->parent_chunk = chunk;
+				cell->x_index = x;
+				cell->y_index = y;
+			}
+		}
+
+		return chunk;
+	}
 }
 
 // NOTE(tjr): Returns 9 surrounding chunks (including the central chunk) in relation to a position

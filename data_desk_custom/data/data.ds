@@ -10,6 +10,7 @@ MAX_PARTICLE_AMOUNT :: 300
 MAX_WORLD_CHUNKS :: 128
 CHUNK_SIZE :: 256
 MAX_PIXEL_CLUSTER_LENGTH :: 64
+MAX_DYNAMIC_CELLS :: 1024
 
 
 /* --- ENUMS --- */
@@ -248,11 +249,29 @@ Entity :: struct
 
 /* --- WORLD DATA --- */
 
+@ForwardDeclare(Cell)
+ForwardCell :: _;
+
+CellMaterial :: struct
+{
+	id : i32;
+	parent_cell : *Cell;
+	material_type : CellMaterialType;
+	flags : CellFlags;
+	
+	position : v2;
+	velocity : v2;
+	
+	has_been_updated : b8;
+}
+
 Cell :: struct
 {
-	material : CellMaterialType;
-	flags : CellFlags;
-	mass : f32;
+	parent_chunk : *ChunkData;
+	x_index : i32;
+	y_index : i32;
+	
+	material : *CellMaterial;
 }
 
 ChunkData :: struct
@@ -264,6 +283,14 @@ ChunkData :: struct
 	y_index : i32;
 	
 	cells : Cell[CHUNK_SIZE][CHUNK_SIZE];
+	
+	cell_materials : CellMaterial[CHUNK_SIZE * CHUNK_SIZE];
+	cell_material_count : i32;
+	free_cell_material_index : i32;
+	
+	dynamic_cell_materials : *CellMaterial[MAX_DYNAMIC_CELLS];
+	dynamic_cell_material_count : i32;
+	
 	texture : Ts2dTexture;
 }
 

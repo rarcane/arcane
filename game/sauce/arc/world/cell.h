@@ -1,0 +1,1 @@
+internal void UpdateChunkTexture(ChunkData *chunk);

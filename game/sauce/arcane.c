@@ -26,6 +26,7 @@
 #include "arc/world/particle.h"
 #include "generated/catchall.h"
 #include "arc/ecs/ecs.h"
+#include "arc/world/cell.h"
 #include "arc/world/world.h"
 #include "arc/world/collision.h"
 #include "arc/entity/player/player.h"
@@ -50,7 +51,7 @@
 #include "generated/catchall.c"
 #include "arc/ecs/ecs.c"
 #include "arc/item/item.c"
-#include "arc/world/pixel.c"
+#include "arc/world/cell.c"
 #include "arc/world/world.c"
 #include "arc/world/collision.c"
 #include "arc/entity/player/player.c"
@@ -418,6 +419,8 @@ Update(void)
 			// NOTE(tjr): Perform if the game is not paused.
 			if (core->world_delta_t != 0.0f)
 			{
+				UpdateCellMaterials();
+
 				PreMoveUpdatePlayer();
 
 				UpdateChunks();
@@ -439,9 +442,31 @@ Update(void)
 			RenderCells();
 			DrawDebugLines();
 
-			if (platform->left_mouse_pressed)
+			if (platform->left_mouse_down)
 			{
-				// ...
+				v2 mouse_pos = GetMousePositionInWorldSpace();
+
+				if (mouse_pos.x >= 0.0f && mouse_pos.x < CHUNK_SIZE && mouse_pos.y <= 0.0f && mouse_pos.y > -CHUNK_SIZE)
+				{
+					ChunkData *chunk = GetChunkAtPosition(v2(0, -1));
+					Cell *cell = GetCellAtPosition((i32)roundf(mouse_pos.x), (i32)roundf(mouse_pos.y));
+					Cell *cell_2 = GetCellAtPosition((i32)roundf(mouse_pos.x), (i32)roundf(mouse_pos.y) + 1);
+					if (!cell->material)
+					{
+						// Create a new dirt cell
+						CellMaterial *material = NewCellMaterial(cell);
+						material->material_type = CELL_MATERIAL_TYPE_dirt;
+
+						chunk->dynamic_cell_materials[chunk->dynamic_cell_material_count++] = material;
+
+						/* CellMaterial *material2 = NewCellMaterial(cell_2);
+						material2->material_type = CELL_MATERIAL_TYPE_dirt;
+
+						chunk->dynamic_cell_materials[chunk->dynamic_cell_material_count++] = material2; */
+
+						UpdateChunkTexture(chunk);
+					}
+				}
 			}
 
 			END_PERF_TIMER;

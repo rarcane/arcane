@@ -8,6 +8,7 @@
 #define MAX_WORLD_CHUNKS (128)
 #define CHUNK_SIZE (256)
 #define MAX_PIXEL_CLUSTER_LENGTH (64)
+#define MAX_DYNAMIC_CELLS (1024)
 typedef enum GeneralisedEntityType GeneralisedEntityType;
 enum GeneralisedEntityType
 {
@@ -316,11 +317,25 @@ void *components[COMPONENT_MAX];
 ChunkData *active_chunk;
 } Entity;
 
+typedef struct Cell Cell;
+
+typedef struct CellMaterial
+{
+i32 id;
+Cell *parent_cell;
+CellMaterialType material_type;
+CellFlags flags;
+v2 position;
+v2 velocity;
+b8 has_been_updated;
+} CellMaterial;
+
 typedef struct Cell
 {
-CellMaterialType material;
-CellFlags flags;
-f32 mass;
+ChunkData *parent_chunk;
+i32 x_index;
+i32 y_index;
+CellMaterial *material;
 } Cell;
 
 typedef struct ChunkData
@@ -331,6 +346,11 @@ i32 entity_count;
 i32 x_index;
 i32 y_index;
 Cell cells[CHUNK_SIZE][CHUNK_SIZE];
+CellMaterial cell_materials[(CHUNK_SIZE*CHUNK_SIZE)];
+i32 cell_material_count;
+i32 free_cell_material_index;
+CellMaterial *dynamic_cell_materials[MAX_DYNAMIC_CELLS];
+i32 dynamic_cell_material_count;
 Ts2dTexture texture;
 } ChunkData;
 
