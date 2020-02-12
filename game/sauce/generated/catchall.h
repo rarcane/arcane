@@ -325,6 +325,8 @@ i32 id;
 Cell *parent_cell;
 CellMaterialType material_type;
 CellFlags flags;
+f32 mass;
+f32 restitution;
 v2 position;
 v2 velocity;
 b8 has_been_updated;

@@ -259,6 +259,9 @@ CellMaterial :: struct
 	material_type : CellMaterialType;
 	flags : CellFlags;
 	
+	mass : f32; // TODO: Extract these out into material lookup data
+	restitution : f32;
+	
 	position : v2;
 	velocity : v2;
 	

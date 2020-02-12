@@ -456,6 +456,7 @@ Update(void)
 						// Create a new dirt cell
 						CellMaterial *material = NewCellMaterial(cell);
 						material->material_type = CELL_MATERIAL_TYPE_dirt;
+						material->mass = 5.0f;
 
 						chunk->dynamic_cell_materials[chunk->dynamic_cell_material_count++] = material;
 
