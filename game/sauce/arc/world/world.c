@@ -80,6 +80,7 @@ internal void TempInitGameWorld()
 				Cell *cell = &chunk->cells[CHUNK_SIZE - y - 1][x];
 				CellMaterial *material = NewCellMaterial(cell);
 				material->material_type = CELL_MATERIAL_TYPE_dirt;
+				material->restitution = 0.25f;
 			}
 		}
 
@@ -87,8 +88,8 @@ internal void TempInitGameWorld()
 			CellMaterial *material = NewCellMaterial(GetCellAtPosition(100, -100));
 			material->flags |= CELL_FLAGS_no_gravity;
 			material->material_type = CELL_MATERIAL_TYPE_dirt;
-			material->mass = 200.0f;
-			material->velocity = v2(500.0f, 0.0f);
+			material->mass = 0.0f;
+			material->velocity = v2(20.0f, 0.0f);
 
 			chunk->dynamic_cell_materials[chunk->dynamic_cell_material_count++] = material;
 		}
@@ -97,7 +98,7 @@ internal void TempInitGameWorld()
 			material->flags |= CELL_FLAGS_no_gravity;
 			material->material_type = CELL_MATERIAL_TYPE_dirt;
 			material->mass = 5.0f;
-			material->velocity = v2(-500.0f, 0.0f);
+			material->velocity = v2(-20.0f, 0.0f);
 
 			chunk->dynamic_cell_materials[chunk->dynamic_cell_material_count++] = material;
 		} */

@@ -55,15 +55,17 @@ internal void ProcessCellMaterial(CellMaterial *material)
 				i32 y_cell_movement = (i32)round(y_cell_steps * step_alpha); */
 
 				// TODO: Crossing into different chunks
-				Cell *next_cell = GetCellAtPosition(cell_chunk->x_index * CHUNK_SIZE + cell->x_index + GetSign(x_cell_steps),
-													cell_chunk->y_index * CHUNK_SIZE + cell->y_index + GetSign(y_cell_steps));
+				Cell *next_cell = GetCellAtPosition(cell_chunk->x_index * CHUNK_SIZE + cell->x_index + GetSign((f32)x_cell_steps),
+													cell_chunk->y_index * CHUNK_SIZE + cell->y_index + GetSign((f32)y_cell_steps));
 
 				// Process the material in the next cell if it's got velocity
 				if (next_cell->material &&
 					(next_cell->material->velocity.x != 0.0f || next_cell->material->velocity.y != 0.0f) &&
 					!next_cell->material->has_been_updated)
 				{
+					material->has_been_updated = 1;
 					ProcessCellMaterial(next_cell->material);
+					material->has_been_updated = 0;
 
 					next_cell = GetCellAtPosition(cell_chunk->x_index * CHUNK_SIZE + cell->x_index + x_is_larger,
 												  cell_chunk->y_index * CHUNK_SIZE + cell->y_index + !x_is_larger);
@@ -91,71 +93,63 @@ internal void ProcessCellMaterial(CellMaterial *material)
 				else
 				{
 					// Cell already has a material in it. Process interaction accordingly.
-					if (next_cell->material->velocity.x != 0.0f || next_cell->material->velocity.y != 0.0f)
-					{
-						CellMaterial *collided_material = next_cell->material;
+					CellMaterial *collided_material = next_cell->material;
 
-						f32 collision_magnitude = SquareRoot((f32)x_cell_steps * (f32)x_cell_steps + (f32)y_cell_steps * (f32)y_cell_steps);
-						v2 collision_normal = v2(x_cell_steps / collision_magnitude, y_cell_steps / collision_magnitude);
+					f32 collision_magnitude = SquareRoot((f32)x_cell_steps * (f32)x_cell_steps + (f32)y_cell_steps * (f32)y_cell_steps);
+					v2 collision_normal = v2(x_cell_steps / collision_magnitude, y_cell_steps / collision_magnitude);
 
-						v2 relative_velocity = V2SubtractV2(collided_material->velocity, material->velocity);
-						f32 velocity_along_normal = relative_velocity.x * collision_normal.x + relative_velocity.y * collision_normal.y;
+					v2 relative_velocity = V2SubtractV2(collided_material->velocity, material->velocity);
+					f32 velocity_along_normal = relative_velocity.x * collision_normal.x + relative_velocity.y * collision_normal.y;
 
-						f32 restitution = MinimumF32(material->restitution, collided_material->restitution);
+					f32 restitution = MinimumF32(material->restitution, collided_material->restitution);
 
-						f32 impulse_scalar = -(1 + restitution) * velocity_along_normal;
-						impulse_scalar = impulse_scalar / (1.0f / material->mass + 1.0f / collided_material->mass);
-
-						v2 impulse = V2MultiplyF32(collision_normal, impulse_scalar);
-
-						v2 impulse_a = V2MultiplyF32(impulse, 1.0f / material->mass);
-						material->velocity = V2SubtractV2(material->velocity, impulse_a);
-
-						v2 impulse_b = V2MultiplyF32(impulse, 1.0f / collided_material->mass);
-						collided_material->velocity = V2AddV2(collided_material->velocity, impulse_b);
-
-						material->position = collided_material->position;
-
-						//material->position = v2(next_position.x - x_cell_steps, next_position.y - y_cell_steps);
-
-						break;
-					}
+					f32 a_inv_mass;
+					if (material->mass == 0)
+						a_inv_mass = 0;
 					else
-					{
-						material->position = v2(0.5f, 0.5f);
-						material->velocity = v2(0.0f, 0.0f);
-					}
+						a_inv_mass = 1.0f / material->mass;
+
+					f32 b_inv_mass;
+					if (collided_material->mass == 0)
+						b_inv_mass = 0;
+					else
+						b_inv_mass = 1.0f / collided_material->mass;
+
+					f32 impulse_scalar = -(1 + restitution) * velocity_along_normal;
+					impulse_scalar = impulse_scalar / (a_inv_mass + b_inv_mass);
+
+					v2 impulse = V2MultiplyF32(collision_normal, impulse_scalar);
+
+					v2 impulse_a = V2MultiplyF32(impulse, a_inv_mass);
+					material->velocity = V2SubtractV2(material->velocity, impulse_a);
+
+					v2 impulse_b = V2MultiplyF32(impulse, b_inv_mass);
+					collided_material->velocity = V2AddV2(collided_material->velocity, impulse_b);
+
+					material->position = collided_material->position;
+
+					break;
 				}
 			}
 
-			/* if (has_collided)
-			{
-				material->position = v2(0.5f, 0.5f);
-				material->velocity = v2(0.0f, 0.0f);
-			}
-			else
-			{
-				/* material->has_been_updated = 1;
-				cell_chunk->dynamic_cell_materials[cell_chunk->dynamic_cell_material_count++] = material; 
-			} */
+			material->has_been_updated = 1;
+
+			if (material->velocity.x != 0.0f || material->velocity.y != 0.0f)
+				cell_chunk->dynamic_cell_materials[cell_chunk->dynamic_cell_material_count++] = material;
 		}
 		else
 		{
 			// Hasn't moved across any cells
 			material->position = next_position;
 
-			/* material->has_been_updated = 1;
-			cell_chunk->dynamic_cell_materials[cell_chunk->dynamic_cell_material_count++] = material; */
+			material->has_been_updated = 1;
+			cell_chunk->dynamic_cell_materials[cell_chunk->dynamic_cell_material_count++] = material;
 		}
 	}
 	else
 	{
-		//	R_BREAK("Why is this cell dynamic?");
+		R_BREAK("Why is this cell dynamic?");
 	}
-
-	// TEMP
-	material->has_been_updated = 1;
-	cell_chunk->dynamic_cell_materials[cell_chunk->dynamic_cell_material_count++] = material;
 }
 
 internal void UpdateCellMaterials()
