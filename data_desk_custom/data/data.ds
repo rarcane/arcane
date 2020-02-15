@@ -10,7 +10,7 @@ MAX_PARTICLE_AMOUNT :: 300
 MAX_WORLD_CHUNKS :: 128
 CHUNK_SIZE :: 256
 MAX_PIXEL_CLUSTER_LENGTH :: 64
-MAX_DYNAMIC_CELLS :: 1024
+MAX_DYNAMIC_CELLS :: 256
 
 
 /* --- ENUMS --- */
@@ -261,10 +261,12 @@ CellMaterial :: struct
 	
 	mass : f32; // TODO: Extract these out into material lookup data
 	restitution : f32;
+	max_height : i32;
 	
 	position : v2;
 	velocity : v2;
 	
+	is_material_dynamic : b8;
 	has_been_updated : b8;
 }
 

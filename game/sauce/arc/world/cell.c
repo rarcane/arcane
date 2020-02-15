@@ -28,10 +28,25 @@ internal Cell *GetCellAtPosition(i32 x, i32 y)
 	return &chunk->cells[cell_y][cell_x];
 }
 
+internal Cell *GetCellAtRelativePosition(Cell *relative_cell, i32 x, i32 y)
+{
+	return GetCellAtPosition(relative_cell->parent_chunk->x_index * CHUNK_SIZE + relative_cell->x_index + x,
+							 relative_cell->parent_chunk->y_index * CHUNK_SIZE + relative_cell->y_index + y);
+}
+
+internal void MakeMaterialDynamic(CellMaterial *material)
+{
+	R_DEV_ASSERT(!material->is_material_dynamic, "Material is already dynamic.");
+	material->is_material_dynamic = 1;
+	material->parent_cell->parent_chunk->dynamic_cell_materials[material->parent_cell->parent_chunk->dynamic_cell_material_count++] = material;
+}
+
 internal void ProcessCellMaterial(CellMaterial *material)
 {
 	Cell *cell = material->parent_cell;
 	ChunkData *cell_chunk = material->parent_cell->parent_chunk;
+
+	b8 no_longer_dynamic = 0;
 
 	R_DEV_ASSERT(!material->has_been_updated, "Cell contents have already been updated.");
 	if (material->velocity.x != 0.0f || material->velocity.y != 0.0f)
@@ -44,19 +59,10 @@ internal void ProcessCellMaterial(CellMaterial *material)
 
 		if (abs(x_cell_steps) > 0 || abs(y_cell_steps) > 0)
 		{
-			/* b8 has_collided = 0;
-			CellMaterial *collided_material = 0; */
-
 			for (int j = 1; j < (x_is_larger ? abs(x_cell_steps) : abs(y_cell_steps)) + 1; j++)
 			{
-				/* f32 step_alpha = (f32)j / (x_is_larger ? (f32)abs(x_cell_steps) : (f32)abs(y_cell_steps));
-
-				i32 x_cell_movement = (i32)round(x_cell_steps * step_alpha);
-				i32 y_cell_movement = (i32)round(y_cell_steps * step_alpha); */
-
 				// TODO: Crossing into different chunks
-				Cell *next_cell = GetCellAtPosition(cell_chunk->x_index * CHUNK_SIZE + cell->x_index + GetSign((f32)x_cell_steps),
-													cell_chunk->y_index * CHUNK_SIZE + cell->y_index + GetSign((f32)y_cell_steps));
+				Cell *next_cell = GetCellAtRelativePosition(cell, GetSign((f32)x_cell_steps), GetSign((f32)y_cell_steps));
 
 				// Process the material in the next cell if it's got velocity
 				if (next_cell->material &&
@@ -67,8 +73,7 @@ internal void ProcessCellMaterial(CellMaterial *material)
 					ProcessCellMaterial(next_cell->material);
 					material->has_been_updated = 0;
 
-					next_cell = GetCellAtPosition(cell_chunk->x_index * CHUNK_SIZE + cell->x_index + x_is_larger,
-												  cell_chunk->y_index * CHUNK_SIZE + cell->y_index + !x_is_larger);
+					next_cell = GetCellAtRelativePosition(cell, GetSign((f32)x_cell_steps), GetSign((f32)y_cell_steps));
 				}
 
 				if (!next_cell->material)
@@ -121,35 +126,42 @@ internal void ProcessCellMaterial(CellMaterial *material)
 					v2 impulse = V2MultiplyF32(collision_normal, impulse_scalar);
 
 					v2 impulse_a = V2MultiplyF32(impulse, a_inv_mass);
-					material->velocity = V2SubtractV2(material->velocity, impulse_a);
+					material->velocity.x -= impulse_a.x;
+					if (fabsf(material->velocity.y - impulse_a.y) <= 1.0f)
+						material->velocity.y = 0.0f;
+					else
+						material->velocity.y -= impulse_a.y;
 
 					v2 impulse_b = V2MultiplyF32(impulse, b_inv_mass);
 					collided_material->velocity = V2AddV2(collided_material->velocity, impulse_b);
 
 					material->position = collided_material->position;
 
+					// Bake it into the ground mass
+					if (collided_material->mass == 0 && material->velocity.x == 0.0f && material->velocity.y == 0.0f)
+					{
+						material->mass = 0;
+						no_longer_dynamic = 1;
+					}
+
 					break;
 				}
 			}
-
-			material->has_been_updated = 1;
-
-			if (material->velocity.x != 0.0f || material->velocity.y != 0.0f)
-				cell_chunk->dynamic_cell_materials[cell_chunk->dynamic_cell_material_count++] = material;
 		}
 		else
 		{
 			// Hasn't moved across any cells
 			material->position = next_position;
-
-			material->has_been_updated = 1;
-			cell_chunk->dynamic_cell_materials[cell_chunk->dynamic_cell_material_count++] = material;
 		}
 	}
 	else
 	{
-		R_BREAK("Why is this cell dynamic?");
+		/* R_BREAK("Why is this material being processed?"); */
 	}
+
+	material->has_been_updated = 1;
+	if (!no_longer_dynamic)
+		MakeMaterialDynamic(material);
 }
 
 internal void UpdateCellMaterials()
@@ -166,30 +178,34 @@ internal void UpdateCellMaterials()
 		chunk->dynamic_cell_materials[i] = 0;
 	chunk->dynamic_cell_material_count = 0;
 
-	// Apply gravity
 	for (int i = 0; i < dynamic_cell_material_count; i++)
 	{
-		CellMaterial *cell = dynamic_cell_materials[i];
+		CellMaterial *material = dynamic_cell_materials[i];
 
-		cell->has_been_updated = 0;
+		material->has_been_updated = 0;
+		material->is_material_dynamic = 0;
 
-		if (!(cell->flags & CELL_FLAGS_no_gravity))
+		if (!(material->flags & CELL_FLAGS_no_gravity))
 		{
-			cell->velocity.y += 50.0f * core->world_delta_t;
-			if (cell->velocity.y > 980.0f)
-				cell->velocity.y = 980.0f;
+			/* Cell *cell_below = GetCellAtRelativePosition(material->parent_cell, 0, 1);
+			if (!cell_below->material)
+			{ */
+			material->velocity.y += 50.0f * core->world_delta_t;
+			if (material->velocity.y > 980.0f)
+				material->velocity.y = 980.0f;
+			/* } */
 		}
 	}
 
 	// Attempt to move in direction of velocity
 	for (int i = 0; i < dynamic_cell_material_count; i++)
 	{
-		CellMaterial *cell = dynamic_cell_materials[i];
-		R_DEV_ASSERT(cell->position.x <= 1.0f && cell->position.x >= 0.0f && cell->position.y <= 1.0f && cell->position.y >= 0.0f,
-					 "Position should not be outside of the cell.");
+		CellMaterial *material = dynamic_cell_materials[i];
+		R_DEV_ASSERT(material->position.x <= 1.0f && material->position.x >= 0.0f && material->position.y <= 1.0f && material->position.y >= 0.0f,
+					 "Position should not be outside of the material.");
 
-		if (!cell->has_been_updated)
-			ProcessCellMaterial(cell);
+		if (!material->has_been_updated)
+			ProcessCellMaterial(material);
 	}
 
 	UpdateChunkTexture(chunk);

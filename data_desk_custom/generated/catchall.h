@@ -8,7 +8,7 @@
 #define MAX_WORLD_CHUNKS (128)
 #define CHUNK_SIZE (256)
 #define MAX_PIXEL_CLUSTER_LENGTH (64)
-#define MAX_DYNAMIC_CELLS (1024)
+#define MAX_DYNAMIC_CELLS (256)
 typedef enum GeneralisedEntityType GeneralisedEntityType;
 enum GeneralisedEntityType
 {
@@ -327,8 +327,10 @@ CellMaterialType material_type;
 CellFlags flags;
 f32 mass;
 f32 restitution;
+i32 max_height;
 v2 position;
 v2 velocity;
+b8 is_material_dynamic;
 b8 has_been_updated;
 } CellMaterial;
 

@@ -80,7 +80,7 @@ internal void TempInitGameWorld()
 				Cell *cell = &chunk->cells[CHUNK_SIZE - y - 1][x];
 				CellMaterial *material = NewCellMaterial(cell);
 				material->material_type = CELL_MATERIAL_TYPE_dirt;
-				material->restitution = 0.25f;
+				material->max_height = 4;
 			}
 		}
 

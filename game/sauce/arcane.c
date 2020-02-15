@@ -457,7 +457,7 @@ Update(void)
 						CellMaterial *material = NewCellMaterial(cell);
 						material->material_type = CELL_MATERIAL_TYPE_dirt;
 						material->mass = 5.0f;
-						material->restitution = 0.0f;
+						material->max_height = 4;
 
 						chunk->dynamic_cell_materials[chunk->dynamic_cell_material_count++] = material;
 
