@@ -1,8 +1,6 @@
 // NOTE(rjf): Third-Party Code
-// #define STB_IMAGE_IMPLEMENTATION
-// #define STBI_ONLY_PNG
-// #include "ext/stb_image.h"
-// #include "time.h"
+#define CUTE_C2_IMPLEMENTATION
+#include "ext/cute_c2.h"
 
 // NOTE(rjf): Core Header Code
 #define TSFOUNDATION_LOG_PROCEDURE_FILE "tsarcane/arcane_tsfoundation_log_procedure.h"

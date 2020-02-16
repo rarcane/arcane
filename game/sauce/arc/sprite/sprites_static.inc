@@ -28,12 +28,6 @@ StaticSprite(ground_forest_10_degree, "scenic/forest_ground", v4(100.0f, 25.0f, 
 StaticSprite(ground_rocks_v1, "scenic/forest_ground", v4(0.0f, 0.0f, 100.0f, 4.0f), v2(0.0f, 0.0f))
 StaticSprite(ground_rocks_v2, "scenic/forest_ground", v4(0.0f, 4.0f, 100.0f, 4.0f), v2(0.0f, 0.0f))
 
-StaticSprite(rock_v1, "scenic/rocks", v4(0.0f, 0.0f, 8.0f, 8.0f), v2(4.0f, 4.0f))
-StaticSprite(rock_v2, "scenic/rocks", v4(8.0f, 0.0f, 8.0f, 8.0f), v2(4.0f, 4.0f))
-StaticSprite(rock_v3, "scenic/rocks", v4(0.0f, 8.0f, 8.0f, 8.0f), v2(4.0f, 4.0f))
-StaticSprite(rock_v4, "scenic/rocks", v4(8.0f, 8.0f, 8.0f, 8.0f), v2(4.0f, 4.0f))
-
-
 StaticSprite(pine_tree_v1, "scenic/trees/pine_tree", v4(0.0f, 0.0f, 90.0f, 170.0f), v2(0.0f, 0.0f))
 
 StaticSprite(hills_1_v1, "scenic/background/bg1_hills", v4(0.0f, 0.0f, 200.0f, 35.0f), v2(0.0f, 20.0f))

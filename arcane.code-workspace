@@ -39,7 +39,8 @@
 			"collision.h": "c",
 			"ecs.h": "c",
 			"old_ecs.h": "c",
-			"data_desk.h": "c"
+			"data_desk.h": "c",
+			"tsassets.h": "c"
 		},
 		"editor.formatOnSave": true,
 		"editor.find.autoFindInSelection": true,

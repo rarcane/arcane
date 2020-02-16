@@ -73,7 +73,7 @@ internal void TempInitGameWorld()
 		i32 terrain_height = (i32)floorf(200.0f + 50.0f * noise);
 		for (int y = -1; y > -terrain_height - 1; y--)
 		{
-			Cell *cell = GetCellAtPosition(x - CHUNK_SIZE * 6, y + 185);
+			Cell *cell = GetCellAtPosition(x - CHUNK_SIZE * 6, y + 200);
 			CellMaterial *material = NewCellMaterial(cell);
 			material->material_type = CELL_MATERIAL_TYPE_dirt;
 			material->max_height = 4;
