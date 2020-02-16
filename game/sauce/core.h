@@ -9,6 +9,7 @@ typedef struct ItemComponent ItemComponent;
 typedef struct StorageComponent StorageComponent;
 
 typedef struct WorldData WorldData;
+typedef struct CellChunk CellChunk;
 
 typedef struct DebugLine
 {
@@ -72,6 +73,9 @@ struct Core
 	// NOTE(tjr): World stuff
 	MemoryArena world_arena; // TODO: Associate this with save loading/unloading
 	WorldData *world_data;
+
+	i32 queued_cell_chunk_count;
+	CellChunk *queued_cell_chunks_for_update[512];
 
 	// NOTE(rjf): Render size data.
 	union {

@@ -9,6 +9,7 @@ MAX_STORAGE_SIZE :: 30
 MAX_PARTICLE_AMOUNT :: 300
 MAX_WORLD_CHUNKS :: 128
 CHUNK_SIZE :: 256
+CELL_CHUNK_SIZE :: 128
 MAX_PIXEL_CLUSTER_LENGTH :: 64
 MAX_DYNAMIC_CELLS :: 256
 
@@ -270,13 +271,27 @@ CellMaterial :: struct
 	has_been_updated : b8;
 }
 
+@ForwardDeclare(CellChunk)
+ForwardCellChunk :: _;
+
 Cell :: struct
+{
+	parent_cell_chunk : *CellChunk;
+	x_index : i32;
+	y_index : i32;
+	
+	material : *CellMaterial;
+}
+
+CellChunk :: struct
 {
 	parent_chunk : *ChunkData;
 	x_index : i32;
 	y_index : i32;
 	
-	material : *CellMaterial;
+	cells : Cell[CELL_CHUNK_SIZE][CELL_CHUNK_SIZE];
+	
+	texture : Ts2dTexture;
 }
 
 ChunkData :: struct
@@ -287,7 +302,7 @@ ChunkData :: struct
 	x_index : i32;
 	y_index : i32;
 	
-	cells : Cell[CHUNK_SIZE][CHUNK_SIZE];
+	cell_chunks : CellChunk[CHUNK_SIZE / CELL_CHUNK_SIZE][CHUNK_SIZE / CELL_CHUNK_SIZE];
 	
 	cell_materials : CellMaterial[CHUNK_SIZE * CHUNK_SIZE];
 	cell_material_count : i32;
@@ -295,8 +310,6 @@ ChunkData :: struct
 	
 	dynamic_cell_materials : *CellMaterial[MAX_DYNAMIC_CELLS];
 	dynamic_cell_material_count : i32;
-	
-	texture : Ts2dTexture;
 }
 
 WorldData :: struct

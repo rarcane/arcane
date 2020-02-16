@@ -51,59 +51,33 @@ internal void TempInitGameWorld()
 		ground->physics_comp->bounce_mult = 1.0f;
 	}
 
+	ShufflePerlinNoise();
+	for (int x = 0; x < CHUNK_SIZE * 12; x++)
 	{
-		ChunkData *chunk = GetChunkAtPosition(v2(0, -1));
+		i32 octaves = 4;
+		f32 frequency = 0.5f;
+		f32 amplitude = 1.0f;
+		f32 max_value = 0.0f;
 
-		ShufflePerlinNoise();
-		for (int x = 0; x < CHUNK_SIZE; x++)
+		f32 noise_amount = 0.0f;
+		for (int k = 0; k < octaves; k++)
 		{
-			i32 octaves = 6;
-			f32 frequency = 1.0f;
-			f32 amplitude = 1.0f;
-			f32 max_value = 0.0f;
-
-			f32 noise_amount = 0.0f;
-			for (int k = 0; k < octaves; k++)
-			{
-				noise_amount += GetPerlinNoise(((f32)x / (f32)CHUNK_SIZE) * frequency, 0.0f) * amplitude;
-				max_value += amplitude;
-				frequency *= 2.0f;
-				amplitude *= 0.5f;
-			}
-
-			f32 noise = noise_amount / max_value;
-
-			i32 terrain_height = (i32)floorf(100.0f + 50.0f * noise);
-			R_DEV_ASSERT(terrain_height < CHUNK_SIZE, "Out of bounds.");
-			for (int y = 0; y < terrain_height; y++)
-			{
-				Cell *cell = &chunk->cells[CHUNK_SIZE - y - 1][x];
-				CellMaterial *material = NewCellMaterial(cell);
-				material->material_type = CELL_MATERIAL_TYPE_dirt;
-				material->max_height = 4;
-			}
+			noise_amount += GetPerlinNoise(((f32)x / (f32)CHUNK_SIZE) * frequency, 0.0f) * amplitude;
+			max_value += amplitude;
+			frequency *= 2.0f;
+			amplitude *= 0.5f;
 		}
 
-		/* {
-			CellMaterial *material = NewCellMaterial(GetCellAtPosition(100, -100));
-			material->flags |= CELL_FLAGS_no_gravity;
-			material->material_type = CELL_MATERIAL_TYPE_dirt;
-			material->mass = 0.0f;
-			material->velocity = v2(20.0f, 0.0f);
+		f32 noise = noise_amount / max_value;
 
-			chunk->dynamic_cell_materials[chunk->dynamic_cell_material_count++] = material;
-		}
+		i32 terrain_height = (i32)floorf(200.0f + 50.0f * noise);
+		for (int y = -1; y > -terrain_height - 1; y--)
 		{
-			CellMaterial *material = NewCellMaterial(GetCellAtPosition(200, -100));
-			material->flags |= CELL_FLAGS_no_gravity;
+			Cell *cell = GetCellAtPosition(x - CHUNK_SIZE * 6, y + 185);
+			CellMaterial *material = NewCellMaterial(cell);
 			material->material_type = CELL_MATERIAL_TYPE_dirt;
-			material->mass = 5.0f;
-			material->velocity = v2(-20.0f, 0.0f);
-
-			chunk->dynamic_cell_materials[chunk->dynamic_cell_material_count++] = material;
-		} */
-
-		UpdateChunkTexture(chunk);
+			material->max_height = 4;
+		}
 	}
 }
 
@@ -299,17 +273,30 @@ internal ChunkData *GetChunkAtPosition(v2 position)
 		chunk->x_index = FloatToChunkIndex(position.x);
 		chunk->y_index = FloatToChunkIndex(position.y);
 
-		// Initialise cells
-		for (int y = 0; y < CHUNK_SIZE; y++)
+		for (int i = 0; i < CHUNK_SIZE / CELL_CHUNK_SIZE; i++)
 		{
-			for (int x = 0; x < CHUNK_SIZE; x++)
+			for (int j = 0; j < CHUNK_SIZE / CELL_CHUNK_SIZE; j++)
 			{
-				Cell *cell = &chunk->cells[y][x];
-				cell->parent_chunk = chunk;
-				cell->x_index = x;
-				cell->y_index = y;
+				CellChunk *cell_chunk = &chunk->cell_chunks[i][j];
+				cell_chunk->x_index = j;
+				cell_chunk->y_index = i;
+				cell_chunk->parent_chunk = chunk;
+
+				// Initialise cells
+				for (int y = 0; y < CELL_CHUNK_SIZE; y++)
+				{
+					for (int x = 0; x < CELL_CHUNK_SIZE; x++)
+					{
+						Cell *cell = &cell_chunk->cells[y][x];
+						cell->parent_cell_chunk = cell_chunk;
+						cell->x_index = x;
+						cell->y_index = y;
+					}
+				}
 			}
 		}
+
+		UpdateChunkTextures(chunk);
 
 		return chunk;
 	}

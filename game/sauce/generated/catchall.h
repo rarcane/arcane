@@ -7,6 +7,7 @@
 #define MAX_PARTICLE_AMOUNT (300)
 #define MAX_WORLD_CHUNKS (128)
 #define CHUNK_SIZE (256)
+#define CELL_CHUNK_SIZE (128)
 #define MAX_PIXEL_CLUSTER_LENGTH (64)
 #define MAX_DYNAMIC_CELLS (256)
 typedef enum GeneralisedEntityType GeneralisedEntityType;
@@ -334,13 +335,24 @@ b8 is_material_dynamic;
 b8 has_been_updated;
 } CellMaterial;
 
+typedef struct CellChunk CellChunk;
+
 typedef struct Cell
 {
-ChunkData *parent_chunk;
+CellChunk *parent_cell_chunk;
 i32 x_index;
 i32 y_index;
 CellMaterial *material;
 } Cell;
+
+typedef struct CellChunk
+{
+ChunkData *parent_chunk;
+i32 x_index;
+i32 y_index;
+Cell cells[CELL_CHUNK_SIZE][CELL_CHUNK_SIZE];
+Ts2dTexture texture;
+} CellChunk;
 
 typedef struct ChunkData
 {
@@ -349,13 +361,12 @@ i32 entity_ids[MAX_ENTITIES_PER_CHUNK];
 i32 entity_count;
 i32 x_index;
 i32 y_index;
-Cell cells[CHUNK_SIZE][CHUNK_SIZE];
+CellChunk cell_chunks[(CHUNK_SIZE/CELL_CHUNK_SIZE)][(CHUNK_SIZE/CELL_CHUNK_SIZE)];
 CellMaterial cell_materials[(CHUNK_SIZE*CHUNK_SIZE)];
 i32 cell_material_count;
 i32 free_cell_material_index;
 CellMaterial *dynamic_cell_materials[MAX_DYNAMIC_CELLS];
 i32 dynamic_cell_material_count;
-Ts2dTexture texture;
 } ChunkData;
 
 typedef struct WorldData

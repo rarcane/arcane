@@ -1,1 +1,2 @@
-internal void UpdateChunkTexture(ChunkData *chunk);
+internal void UpdateCellChunkTexture(CellChunk *chunk);
+internal void AddCellChunkToUpdateQueue(CellChunk *chunk);

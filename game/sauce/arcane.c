@@ -446,28 +446,16 @@ Update(void)
 			{
 				v2 mouse_pos = GetMousePositionInWorldSpace();
 
-				if (mouse_pos.x >= 0.0f && mouse_pos.x < CHUNK_SIZE && mouse_pos.y <= 0.0f && mouse_pos.y > -CHUNK_SIZE)
+				Cell *cell = GetCellAtPosition((i32)roundf(mouse_pos.x), (i32)roundf(mouse_pos.y));
+				if (!cell->material)
 				{
-					ChunkData *chunk = GetChunkAtPosition(v2(0, -1));
-					Cell *cell = GetCellAtPosition((i32)roundf(mouse_pos.x), (i32)roundf(mouse_pos.y));
-					Cell *cell_2 = GetCellAtPosition((i32)roundf(mouse_pos.x), (i32)roundf(mouse_pos.y) + 1);
-					if (!cell->material)
-					{
-						// Create a new dirt cell
-						CellMaterial *material = NewCellMaterial(cell);
-						material->material_type = CELL_MATERIAL_TYPE_dirt;
-						material->mass = 5.0f;
-						material->max_height = 4;
+					// Create a new dirt cell
+					CellMaterial *material = NewCellMaterial(cell);
+					material->material_type = CELL_MATERIAL_TYPE_dirt;
+					material->mass = 5.0f;
+					material->max_height = 4;
 
-						chunk->dynamic_cell_materials[chunk->dynamic_cell_material_count++] = material;
-
-						/* CellMaterial *material2 = NewCellMaterial(cell_2);
-						material2->material_type = CELL_MATERIAL_TYPE_dirt;
-
-						chunk->dynamic_cell_materials[chunk->dynamic_cell_material_count++] = material2; */
-
-						UpdateChunkTexture(chunk);
-					}
+					MakeMaterialDynamic(material);
 				}
 			}
 
