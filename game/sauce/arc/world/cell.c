@@ -2,22 +2,39 @@ internal CellMaterial *NewCellMaterial(Cell *cell)
 {
 	ChunkData *chunk = cell->parent_cell_chunk->parent_chunk;
 	R_DEV_ASSERT(!cell->material, "There's already a material in this cell.");
-	R_DEV_ASSERT(chunk->free_cell_material_index != -1, "No free cell materials in chunk.");
+	R_DEV_ASSERT(chunk->free_cell_material_id != 0, "No free cell materials in chunk.");
 
-	i32 new_id = chunk->free_cell_material_index;
-	if (chunk->cell_material_count == chunk->free_cell_material_index)
+	i32 new_id = chunk->free_cell_material_id;
+	if (chunk->cell_material_count == chunk->free_cell_material_id - 1)
 	{
 		chunk->cell_material_count++;
-		chunk->free_cell_material_index++;
+		chunk->free_cell_material_id++;
 	}
-	CellMaterial *cell_material = &chunk->cell_materials[new_id];
+
+	CellMaterial *cell_material = &chunk->cell_materials[new_id - 1];
 	cell_material->id = new_id;
 	cell_material->parent_cell = cell;
 	cell_material->position = v2(0.5f, 0.5f);
-
 	cell->material = cell_material;
-
 	AddCellChunkToUpdateQueue(cell->parent_cell_chunk);
+
+	if (chunk->cell_material_count != chunk->free_cell_material_id - 1)
+	{
+		R_DEV_ASSERT(chunk->cell_material_count + 1 < CHUNK_SIZE * CHUNK_SIZE, "What would happen here.");
+
+		// Free index would have been used. Find the next one.
+		b8 found = 0;
+		for (int i = 0; i < chunk->cell_material_count + 1; i++)
+		{
+			if (chunk->cell_materials[i].id == 0)
+			{
+				chunk->free_cell_material_id = i + 1;
+				found = 1;
+				break;
+			}
+		}
+		R_DEV_ASSERT(found, "Couldn't find a free index?");
+	}
 
 	return cell_material;
 }
@@ -26,14 +43,14 @@ internal void DeleteMaterialFromChunk(ChunkData *chunk, CellMaterial *material)
 {
 	for (int i = 0; i < chunk->cell_material_count; i++)
 	{
-		CellMaterial *supposed = &chunk->cell_materials[i];
-		if (supposed == material)
+		CellMaterial *existing = &chunk->cell_materials[i];
+		if (existing == material)
 		{
 			CellMaterial empty = {0};
 			chunk->cell_materials[i] = empty;
 
-			if (i < chunk->free_cell_material_index)
-				chunk->free_cell_material_index = i;
+			if (i + 1 < chunk->free_cell_material_id)
+				chunk->free_cell_material_id = i + 1;
 
 			break;
 		}
@@ -164,6 +181,7 @@ internal void ProcessCellMaterial(CellMaterial *material)
 	b8 no_longer_dynamic = 0;
 
 	R_DEV_ASSERT(!material->has_been_updated, "Cell contents have already been updated.");
+	R_DEV_ASSERT(material->id != 0, "Invalid material.");
 	if (material->velocity.x != 0.0f || material->velocity.y != 0.0f)
 	{
 		v2 next_position = V2AddV2(material->position, V2MultiplyF32(material->velocity, core->world_delta_t));
@@ -365,15 +383,8 @@ internal void UpdateCellMaterials()
 			R_DEV_ASSERT(material->position.x <= 1.0f && material->position.x >= 0.0f && material->position.y <= 1.0f && material->position.y >= 0.0f,
 						 "Position should not be outside of the material.");
 
-			if (!material->has_been_updated)
+			if (material->id && !material->has_been_updated)
 				ProcessCellMaterial(material);
-		}
-
-		for (int i = 0; i < chunk->dynamic_cell_material_count; i++)
-		{
-			CellMaterial *material = chunk->dynamic_cell_materials[i];
-			CellChunk *cell_chunk = material->parent_cell->parent_cell_chunk;
-			//AddCellChunkToUpdateQueue(cell_chunk);
 		}
 	}
 }

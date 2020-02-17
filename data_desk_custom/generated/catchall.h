@@ -64,6 +64,26 @@ typedef unsigned int CellFlags;
 
 typedef struct Entity Entity;
 
+typedef union c2Shape c2Shape;
+union c2Shape
+{
+c2AABB aabb;
+c2Capsule capsule;
+c2Circle circle;
+c2Poly poly;
+};
+
+typedef enum c2ShapeType c2ShapeType;
+enum c2ShapeType
+{
+C2_SHAPE_TYPE_aabb,
+C2_SHAPE_TYPE_capsule,
+C2_SHAPE_TYPE_circle,
+C2_SHAPE_TYPE_poly,
+C2_SHAPE_TYPE_MAX,
+};
+static char *Getc2ShapeTypeTypeName(c2ShapeType type);
+
 typedef struct ChunkData ChunkData;
 
 typedef struct PositionComponent
@@ -106,7 +126,8 @@ typedef struct ColliderComponent
 {
 Entity *parent_entity;
 i32 component_id;
-Shape shape;
+c2Shape shapee;
+c2ShapeType shape_type;
 ColliderFlags flags;
 } ColliderComponent;
 
@@ -364,7 +385,7 @@ i32 y_index;
 CellChunk cell_chunks[(CHUNK_SIZE/CELL_CHUNK_SIZE)][(CHUNK_SIZE/CELL_CHUNK_SIZE)];
 CellMaterial cell_materials[(CHUNK_SIZE*CHUNK_SIZE)];
 i32 cell_material_count;
-i32 free_cell_material_index;
+i32 free_cell_material_id;
 CellMaterial *dynamic_cell_materials[MAX_DYNAMIC_CELLS];
 i32 dynamic_cell_material_count;
 } ChunkData;

@@ -51,7 +51,8 @@ internal void ConvertToGroundItem(ItemComponent *item_comp)
 	item_physics->bounce_mult = (item_data[item_comp->item_type].flags & ITEM_FLAG_bouncy) ? 0.5f : 0.0f;
 
 	ColliderComponent *item_collider = AddColliderComponent(item);
-	item_collider->shape = GetRectangleShape(ground_sprite->source.zw, v2(0.0f, 0.0f));
+	//item_collider->shape = GetRectangleShape(ground_sprite->source.zw, v2(0.0f, 0.0f));
+	R_TODO;
 	item_collider->flags = COLLIDER_FLAGS_item;
 }
 

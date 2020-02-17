@@ -60,6 +60,28 @@ break;
 }
 }
 
+static char *Getc2ShapeTypeName(c2ShapeType type)
+{
+switch(type)
+{
+case C2_SHAPE_TYPE_aabb:
+return "Aabb";
+break;
+case C2_SHAPE_TYPE_capsule:
+return "Capsule";
+break;
+case C2_SHAPE_TYPE_circle:
+return "Circle";
+break;
+case C2_SHAPE_TYPE_poly:
+return "Poly";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
 internal void PrintComponentDataUI(void *component_data, ComponentType type)
 {
     switch (type)
@@ -148,7 +170,8 @@ internal void PrintComponentDataUI(void *component_data, ComponentType type)
         char title[100];
         sprintf(title, "Collider #%i", component->component_id);
         if (TsUICollapsable(core->ui, title))        {
-            // TODO: Don't know how to generate UI print for variable 'shape'
+            // TODO: Don't know how to generate UI print for variable 'shapee'
+            // TODO: Don't know how to generate UI print for variable 'shape_type'
             // TODO: Don't know how to generate UI print for variable 'flags'
 
             TsUICollapsableEnd(core->ui);

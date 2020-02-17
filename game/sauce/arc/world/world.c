@@ -6,7 +6,12 @@ internal void TempInitGameWorld()
 		CharacterEntity *character = InitialiseCharacterEntity();
 		character->parent_generic_entity->flags |= ENTITY_FLAGS_no_delete;
 		character->position_comp->position = v2(CHUNK_SIZE / 2.0f, 0.0f);
-		character->collider_comp->shape = GetRectangleShape(v2(14.0f, 35.0f), v2(0.0f, 0.0f));
+
+		//character->collider_comp->shape = GetRectangleShape(v2(14.0f, 35.0f), v2(0.0f, 0.0f));
+		c2AABB aabb = {c2V(-5.0f, -40.0f), c2V(5.0f, 0.0f)};
+		character->collider_comp->shapee.aabb = aabb;
+		character->collider_comp->shape_type = C2_SHAPE_TYPE_aabb;
+
 		character->collider_comp->flags = COLLIDER_FLAGS_player;
 		character->velocity_comp->acceleration = v2(250.0f, 0.0f);
 		character->velocity_comp->collide_against = COLLIDER_FLAGS_ground;
@@ -46,7 +51,12 @@ internal void TempInitGameWorld()
 		ground->position_comp->position = v2(i * 100.0f, 0.0f);
 		// ground->sprite_comp->sprite_data.sprite_enum = STATIC_SPRITE_ground_forest_flat;
 		// ground->sprite_comp->sprite_data.render_layer = -1.0f;
-		ground->collider_comp->shape = GetRectangleShape(v2(100.0f, 87.0f), v2(0.0f, 87.0f));
+		//ground->collider_comp->shape = GetRectangleShape(v2(100.0f, 87.0f), v2(0.0f, 87.0f));
+
+		c2AABB aabb = {c2V(-50.0f, -87.0f), c2V(50.0f, 0.0f)};
+		ground->collider_comp->shapee.aabb = aabb;
+		ground->collider_comp->shape_type = C2_SHAPE_TYPE_aabb;
+
 		ground->collider_comp->flags = COLLIDER_FLAGS_ground;
 		ground->physics_comp->bounce_mult = 1.0f;
 	}
@@ -272,6 +282,7 @@ internal ChunkData *GetChunkAtPosition(v2 position)
 		chunk->is_valid = 1;
 		chunk->x_index = FloatToChunkIndex(position.x);
 		chunk->y_index = FloatToChunkIndex(position.y);
+		chunk->free_cell_material_id = 1;
 
 		for (int i = 0; i < CHUNK_SIZE / CELL_CHUNK_SIZE; i++)
 		{

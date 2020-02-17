@@ -139,7 +139,7 @@ internal v2 ProjectVerticesOntoAxis(v2 vertices[], int vertex_count, v2 axis, v2
 // NOTE(tjr): Get the colliders that are overlapping with the provided shape. Returns a count of the amount.
 internal i32 GetOverlappingCollidersAtPosition(ColliderComponent *in_overlapping_colliders[], Shape shape, v2 position, b8 overlap_with)
 {
-	PushDebugShapeForDuration(shape, position, v3(1.0f, 0.0f, 0.0f), 2.5f);
+	/* PushDebugShapeForDuration(shape, position, v3(1.0f, 0.0f, 0.0f), 2.5f);
 
 	int overlap_count = 0;
 
@@ -189,13 +189,15 @@ internal i32 GetOverlappingCollidersAtPosition(ColliderComponent *in_overlapping
 		}
 	}
 
-	return overlap_count;
+	return overlap_count; */
+
+	return 0;
 }
 
 // NOTE(tjr): Update all velocity-based colliders
 internal void AdvanceVelocity()
 {
-	for (int j = 0; j < core->world_data->entity_components.velocity_component_count; j++)
+	/* 	for (int j = 0; j < core->world_data->entity_components.velocity_component_count; j++)
 	{
 		VelocityComponent *instigator_velocity_comp = &core->world_data->entity_components.velocity_components[j];
 		if (instigator_velocity_comp->parent_entity)
@@ -358,149 +360,16 @@ internal void AdvanceVelocity()
 
 							if ((instigator_velocity_comp->collide_against & supposed_collider_comp->flags) == supposed_collider_comp->flags) // Ensure it can collide against this type
 							{
-								v2 separating_axes[MAX_COLLIDER_VERTICES * 2] = {0};
-								int separating_axes_count = GetSerparatingAxes(separating_axes, instigator_collider_comp->shape, supposed_collider_comp->shape);
-								R_DEV_ASSERT(separating_axes_count <= 8 && separating_axes_count >= 3, "uhhh");
-
-								// NOTE(tjr): Determine if the entities are colliding, if so provide the relevant data.
-								b8 is_colliding = 1;
-								CollisionInfo collision_info = {0};
-								float minimumOverlap;
-								v2 minimum_axis;
-								b8 first_iteration = 1;
-								for (int m = 0; m < separating_axes_count; m++)
-								{
-									v2 proj1 = ProjectVerticesOntoAxis(instigator_collider_comp->shape.vertices, instigator_collider_comp->shape.vertex_count, separating_axes[m], extrapolated_position);
-									v2 proj2 = ProjectVerticesOntoAxis(supposed_collider_comp->shape.vertices, supposed_collider_comp->shape.vertex_count, separating_axes[m], supposed_position_comp->position);
-
-									if (proj1.x < proj2.y && proj1.y > proj2.x) // Do the projections between each collider overlap?
-									{
-										float overlapAmount = proj2.x - proj1.y;
-										if (first_iteration || fabsf(overlapAmount) < fabsf(minimumOverlap))
-										{
-											first_iteration = 0;
-											minimumOverlap = overlapAmount;
-											minimum_axis = separating_axes[m];
-										}
-									}
-									else
-									{
-										is_colliding = 0;
-										break;
-									}
-								}
-
-								if (is_colliding)
-								{
-									v2 mtv = {minimum_axis.x * minimumOverlap, minimum_axis.y * minimumOverlap};
-									// float newMag = SquareRoot(mtv.x * mtv.x + mtv.y * mtv.y);
-									// float currentMag = SquareRoot(closestMTV.x * closestMTV.x + closestMTV.y * closestMTV.y);
-									// if (fabsf(newMag) > fabsf(currentMag))
-									// {
-									// 	closestMTV = mtv;
-									// 	closest_mtv_axis = minimum_axis;
-									// }
-
-									collision_info.is_valid = 1;
-									collision_info.instigator = instigator_entity;
-									collision_info.victim = supposed_entity;
-									collision_info.instigatorMTV = mtv;
-									collision_info.collision_axis = minimum_axis;
-
-									collisions[collision_count++] = collision_info;
-								}
+								// Test for collision
 							}
 						}
 					}
 				}
 			}
-			R_DEV_ASSERT(collision_count <= MAX_SIMULTANEOUS_COLLISIONS, "Why are there so many collisions?");
+			R_DEV_ASSERT(collision_count < MAX_SIMULTANEOUS_COLLISIONS, "Why are there so many collisions?");
 
 			if (collision_count > 0)
 			{
-				v2 *velocity = &instigator_velocity_comp->velocity;
-
-				//v2 proposed_movement_vector = V2SubtractV2(extrapolated_position, previous_position);
-
-				// f32 frictions[MAX_SIMULTANEOUS_COLLISIONS];
-				// i32 friction_count = 0;
-
-				b8 first_iteration = 1;
-				v2 closest_mtv = {0.0f, 0.0f};
-				v2 closest_mtv_axis = {0.0f, 0.0f};
-				i32 closest_entity_index = 0;
-
-				float x_greatest_mtv = 0.0f;
-				float y_greatest_mtv = 0.0f;
-
-				float closest_bounce_mult = 1.0f;
-				float closest_friction_mult = 1.0f;
-
-				for (int j = 0; j < collision_count; j++)
-				{
-					CollisionInfo *collision = &collisions[j];
-
-					PhysicsComponent *victim_physics_comp = collision->victim->components[COMPONENT_physics];
-					R_DEV_ASSERT(victim_physics_comp, "Collision entity has no physics component for friction calculation.");
-
-					float newMag = SquareRoot(collision->instigatorMTV.x * collision->instigatorMTV.x + collision->instigatorMTV.y * collision->instigatorMTV.y);
-					float currentMag = SquareRoot(closest_mtv.x * closest_mtv.x + closest_mtv.y * closest_mtv.y);
-					if (first_iteration || fabsf(newMag) > fabsf(currentMag))
-					{
-						closest_entity_index = collision->victim->entity_id;
-						closest_mtv = collision->instigatorMTV;
-						closest_mtv_axis = collision->collision_axis;
-						closest_bounce_mult = victim_physics_comp->bounce_mult;
-						closest_friction_mult = victim_physics_comp->friction_mult;
-					}
-
-					if (first_iteration || fabsf(collision->instigatorMTV.x) > fabsf(x_greatest_mtv))
-					{
-						x_greatest_mtv = collision->instigatorMTV.x;
-						//x_greatest_mtv_axis = minimum_axis;
-					}
-					if (first_iteration || fabsf(collision->instigatorMTV.y) > fabsf(y_greatest_mtv))
-					{
-						y_greatest_mtv = collision->instigatorMTV.y;
-						//y_greatest_mtv_axis = minimum_axis;
-					}
-					first_iteration = 0;
-				}
-
-				if (fabsf(closest_mtv_axis.x) > fabsf(closest_mtv_axis.y)) // Closest collision is horizontal
-				{
-					velocity->x = previous_velocity.x * (-closest_bounce_mult * instigator_physics_comp->bounce_mult);
-				}
-				else if (fabsf(closest_mtv_axis.y) > fabsf(closest_mtv_axis.x)) // Closest collision is vertical
-				{
-					velocity->y = previous_velocity.y * (-closest_bounce_mult * instigator_physics_comp->bounce_mult);
-				}
-				else
-				{
-					R_BREAK("Perfect right angle collision?");
-					velocity->x = previous_velocity.x * (-closest_bounce_mult * instigator_physics_comp->bounce_mult);
-					velocity->y = previous_velocity.y * (-closest_bounce_mult * instigator_physics_comp->bounce_mult);
-				}
-
-				if (fabsf(velocity->x) < 1.0f)
-					velocity->x = 0.0f;
-				if (fabsf(velocity->y) < 1.0f)
-					velocity->y = 0.0f;
-
-				//Log("Closest Collision: %i", closest_entity_index);
-
-				// f32 average_friction = 0.0f;
-				// if (friction_count > 0)
-				// {
-				// 	f32 friction_sum = 0.0f;
-				// 	for (int j = 0; j < friction_count; j++)
-				// 		friction_sum += frictions[j];
-
-				// 	average_friction = friction_sum / friction_count;
-				// }
-
-				instigator_position_comp->position = V2AddV2(extrapolated_position, v2(x_greatest_mtv, y_greatest_mtv));
-				instigator_velocity_comp->previous_friction = 1.0f; //average_friction;
 			}
 			else
 			{
@@ -508,13 +377,13 @@ internal void AdvanceVelocity()
 				instigator_velocity_comp->previous_friction = 0.0f;
 			}
 		}
-	}
+	} */
 }
 
 // NOTE(tjr): Update all trigger-based colliders
 internal void UpdateTriggers()
 {
-	for (int i = 0; i < core->world_data->entity_components.trigger_component_count; i++)
+	/* for (int i = 0; i < core->world_data->entity_components.trigger_component_count; i++)
 	{
 		TriggerComponent *trigger_comp = &core->world_data->entity_components.trigger_components[i];
 		if (trigger_comp->parent_entity)
@@ -642,7 +511,7 @@ internal void UpdateTriggers()
 			MemoryCopy(trigger_comp->previous_overlaps, overlaps, sizeof(OverlappedColliderInfo) * MAX_OVERLAPPING_COLLIDERS);
 			trigger_comp->previous_overlaps_count = overlap_count;
 		}
-	}
+	} */
 }
 
 internal void RenderColliders()
@@ -658,7 +527,7 @@ internal void RenderColliders()
 			v2 world_pos = position_comp->position;
 			v2 view_pos = v2view(world_pos);
 
-			for (int j = 0; j < collider_comp->shape.vertex_count; j++)
+			/* for (int j = 0; j < collider_comp->shape.vertex_count; j++)
 			{
 				int secondPoint = (j == collider_comp->shape.vertex_count - 1 ? 0 : j + 1);
 				Ts2dPushLine(
@@ -666,7 +535,7 @@ internal void RenderColliders()
 					v4(1.0f, 1.0f, 1.0f, 1.0f),
 					V2AddV2(view_pos, v2(collider_comp->shape.vertices[j].x * core->camera_zoom, collider_comp->shape.vertices[j].y * core->camera_zoom)),
 					V2AddV2(view_pos, v2(collider_comp->shape.vertices[secondPoint].x * core->camera_zoom, collider_comp->shape.vertices[secondPoint].y * core->camera_zoom)));
-			}
+			} */
 		}
 	}
 }

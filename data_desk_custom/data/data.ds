@@ -115,10 +115,28 @@ Animation :: struct
 	frame_start_time : f32;
 }
 
+c2Shape :: union
+{
+	aabb : c2AABB;
+	capsule : c2Capsule;
+	circle : c2Circle;
+	poly : c2Poly;
+}
+
+c2ShapeType :: enum
+{
+	aabb,
+	capsule,
+	circle,
+	poly,
+}
+
 @Component
 Collider :: struct
 {
-	shape : Shape;
+	shapee : c2Shape;
+	shape_type : c2ShapeType;
+	
 	flags : ColliderFlags;
 }
 
@@ -306,7 +324,7 @@ ChunkData :: struct
 	
 	cell_materials : CellMaterial[CHUNK_SIZE * CHUNK_SIZE];
 	cell_material_count : i32;
-	free_cell_material_index : i32;
+	free_cell_material_id : i32;
 	
 	dynamic_cell_materials : *CellMaterial[MAX_DYNAMIC_CELLS];
 	dynamic_cell_material_count : i32;
