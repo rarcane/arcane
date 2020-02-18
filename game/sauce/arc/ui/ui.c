@@ -443,7 +443,7 @@ internal void DrawGameUI()
 			entity_has_position = 1;
 		}
 
-		if (entity_has_position)
+		/* if (entity_has_position)
 		{
 			Shape x_arrow_bounds = GetRectangleShape(v2(32.5f, 7.0f), v2(19.75f, 3.5f));
 			Shape y_arrow_bounds = GetRectangleShape(v2(7.0f, 32.5f), v2(0.0f, -3.5f));
@@ -555,7 +555,7 @@ internal void DrawGameUI()
 								  middle->source,
 								  v4(middle_pos.x, middle_pos.y, middle_size.x, middle_size.y),
 								  v4(1.0f * middle_tint, 1.0f * middle_tint, 1.0f * middle_tint, 1.0f));
-		}
+		} */
 	}
 }
 

@@ -422,8 +422,7 @@ Update(void)
 				PreMoveUpdatePlayer();
 
 				UpdateChunks();
-				AdvanceVelocity();
-				UpdateTriggers();
+				UpdatePhysics();
 
 				if (!core->is_in_editor)
 					TransformInGameCamera();
@@ -507,7 +506,7 @@ internal v2 GetMousePositionInWorldSpace()
 }
 
 // NOTE(tjr): Determine if the mouse position is overlapping a shape within world-space. Shape must be AABB for now.
-internal b8 IsMouseOverlappingWorldShape(Shape shape, v2 shape_world_pos)
+/* internal b8 IsMouseOverlappingWorldShape(Shape shape, v2 shape_world_pos)
 {
 	v2 mouse_pos = GetMousePositionInWorldSpace();
 	if (mouse_pos.x > shape.vertices[0].x + shape_world_pos.x && mouse_pos.x <= shape.vertices[1].x + shape_world_pos.x &&
@@ -515,7 +514,7 @@ internal b8 IsMouseOverlappingWorldShape(Shape shape, v2 shape_world_pos)
 		return 1;
 	else
 		return 0;
-}
+} */
 
 internal void PushDebugLine(v2 p1, v2 p2, v3 colour)
 {
@@ -589,7 +588,7 @@ internal void PushDebugLineForDuration(v2 p1, v2 p2, v3 colour, f32 lifetime)
 	}
 }
 
-internal void PushDebugShape(Shape shape, v2 position, v3 colour)
+/* internal void PushDebugShape(Shape shape, v2 position, v3 colour)
 {
 	for (int i = 0; i < shape.vertex_count; i++)
 	{
@@ -618,7 +617,7 @@ internal void PushDebugShapeForDuration(Shape shape, v2 position, v3 colour, f32
 								 colour,
 								 lifetime);
 	}
-}
+} */
 
 internal void DrawDebugLines()
 {

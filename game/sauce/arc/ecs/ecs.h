@@ -36,7 +36,13 @@ internal AnimationComponent GetDefaultAnimationComponent()
 	return comp;
 }
 
-internal ColliderComponent GetDefaultColliderComponent()
+internal PhysicsBodyComponent GetDefaultPhysicsBodyComponent()
+{
+	PhysicsBodyComponent comp = {0};
+	return comp;
+}
+
+/* internal ColliderComponent GetDefaultColliderComponent()
 {
 	ColliderComponent comp = {0};
 	return comp;
@@ -52,9 +58,8 @@ internal VelocityComponent GetDefaultVelocityComponent()
 internal PhysicsComponent GetDefaultPhysicsComponent()
 {
 	PhysicsComponent comp = {0};
-	comp.friction_mult = 1.0f;
 	return comp;
-}
+} */
 
 internal MovementComponent GetDefaultMovementComponent()
 {

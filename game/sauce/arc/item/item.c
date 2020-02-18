@@ -43,17 +43,17 @@ internal void ConvertToGroundItem(ItemComponent *item_comp)
 	item_sprite->sprite_data.sprite_enum = item_data[item_comp->item_type].ground_sprite;
 	item_sprite->sprite_data.render_layer = 1.0f;
 
-	VelocityComponent *item_velocity = AddVelocityComponent(item);
+	/* VelocityComponent *item_velocity = AddVelocityComponent(item);
 	item_velocity->velocity = v2(player_sub_sprite->is_flipped ? -50.0f : 50.0f, 0.0f);
 	item_velocity->collide_against = COLLIDER_FLAGS_ground;
 
 	PhysicsComponent *item_physics = AddPhysicsComponent(item);
-	item_physics->bounce_mult = (item_data[item_comp->item_type].flags & ITEM_FLAG_bouncy) ? 0.5f : 0.0f;
+	item_physics->restitution = (item_data[item_comp->item_type].flags & ITEM_FLAG_bouncy) ? 0.5f : 0.0f;
 
 	ColliderComponent *item_collider = AddColliderComponent(item);
-	//item_collider->shape = GetRectangleShape(ground_sprite->source.zw, v2(0.0f, 0.0f));
+	//item_collider->shape = GetRectangleShape(ground_sprite->source.zw,  v2(0.0f, 0.0f));
+	item_collider->flags = COLLIDER_FLAGS_item;*/
 	R_TODO;
-	item_collider->flags = COLLIDER_FLAGS_item;
 }
 
 internal void StripItemGroundComponents(ItemComponent *item_comp)
@@ -61,7 +61,7 @@ internal void StripItemGroundComponents(ItemComponent *item_comp)
 	Entity *item = item_comp->parent_entity;
 	RemovePositionComponent(item);
 	RemoveSpriteComponent(item);
-	RemoveVelocityComponent(item);
+	/* RemoveVelocityComponent(item);
 	RemovePhysicsComponent(item);
-	RemoveColliderComponent(item);
+	RemoveColliderComponent(item);*/
 }

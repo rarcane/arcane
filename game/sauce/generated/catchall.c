@@ -164,62 +164,24 @@ internal void PrintComponentDataUI(void *component_data, ComponentType type)
         break;
     }
 
-    case COMPONENT_collider :
+    case COMPONENT_physics_body :
     {
-        ColliderComponent *component = (ColliderComponent*)component_data;
+        PhysicsBodyComponent *component = (PhysicsBodyComponent*)component_data;
         char title[100];
-        sprintf(title, "Collider #%i", component->component_id);
+        sprintf(title, "PhysicsBody #%i", component->component_id);
         if (TsUICollapsable(core->ui, title))        {
-            // TODO: Don't know how to generate UI print for variable 'shapee'
+            // TODO: Don't know how to generate UI print for variable 'shape'
             // TODO: Don't know how to generate UI print for variable 'shape_type'
-            // TODO: Don't know how to generate UI print for variable 'flags'
-
-            TsUICollapsableEnd(core->ui);
-        }
-        break;
-    }
-
-    case COMPONENT_velocity :
-    {
-        VelocityComponent *component = (VelocityComponent*)component_data;
-        char title[100];
-        sprintf(title, "Velocity #%i", component->component_id);
-        if (TsUICollapsable(core->ui, title))        {
+            // TODO: Don't know how to generate UI print for variable 'material'
+            // TODO: Don't know how to generate UI print for variable 'mass_data'
             TsUIPushAutoWidth(core->ui);
             { char label[100]; sprintf(label, "velocity: %f, %f", component->velocity.x, component->velocity.y); TsUILabel(core->ui, label); }
             TsUIPopWidth(core->ui);
             TsUIPushAutoWidth(core->ui);
-            { char label[100]; sprintf(label, "ideal_velocity: %f, %f", component->ideal_velocity.x, component->ideal_velocity.y); TsUILabel(core->ui, label); }
+            { char label[100]; sprintf(label, "force: %f, %f", component->force.x, component->force.y); TsUILabel(core->ui, label); }
             TsUIPopWidth(core->ui);
             TsUIPushAutoWidth(core->ui);
-            { char label[100]; sprintf(label, "acceleration: %f, %f", component->acceleration.x, component->acceleration.y); TsUILabel(core->ui, label); }
-            TsUIPopWidth(core->ui);
-            TsUIPushAutoWidth(core->ui);
-            { char label[100]; sprintf(label, "acceleration_mult: %f, %f", component->acceleration_mult.x, component->acceleration_mult.y); TsUILabel(core->ui, label); }
-            TsUIPopWidth(core->ui);
-            TsUIPushAutoWidth(core->ui);
-            { char label[100]; sprintf(label, "previous_friction: %f", component->previous_friction); TsUILabel(core->ui, label); }
-            TsUIPopWidth(core->ui);
-            TsUIPushAutoWidth(core->ui);
-            { char label[100]; sprintf(label, component->collide_against ? "collide_against: true" : "collide_against: false"); TsUILabel(core->ui, label); }
-            TsUIPopWidth(core->ui);
-
-            TsUICollapsableEnd(core->ui);
-        }
-        break;
-    }
-
-    case COMPONENT_physics :
-    {
-        PhysicsComponent *component = (PhysicsComponent*)component_data;
-        char title[100];
-        sprintf(title, "Physics #%i", component->component_id);
-        if (TsUICollapsable(core->ui, title))        {
-            TsUIPushAutoWidth(core->ui);
-            { char label[100]; sprintf(label, "friction_mult: %f", component->friction_mult); TsUILabel(core->ui, label); }
-            TsUIPopWidth(core->ui);
-            TsUIPushAutoWidth(core->ui);
-            { char label[100]; sprintf(label, "bounce_mult: %f", component->bounce_mult); TsUILabel(core->ui, label); }
+            { char label[100]; sprintf(label, "gravity_multiplier: %f", component->gravity_multiplier); TsUILabel(core->ui, label); }
             TsUIPopWidth(core->ui);
 
             TsUICollapsableEnd(core->ui);
@@ -547,139 +509,49 @@ internal void RemoveAnimationComponent(Entity *entity)
         core->world_data->entity_components.animation_free_component_id = deleted_component_id;
 }
 
-internal ColliderComponent *AddColliderComponent(Entity *entity)
+internal PhysicsBodyComponent *AddPhysicsBodyComponent(Entity *entity)
 {
     i32 component_id;
-    if (core->world_data->entity_components.collider_free_component_id == core->world_data->entity_components.collider_component_count)
+    if (core->world_data->entity_components.physics_body_free_component_id == core->world_data->entity_components.physics_body_component_count)
     {
-        component_id = core->world_data->entity_components.collider_component_count;
-        core->world_data->entity_components.collider_component_count++;
-        core->world_data->entity_components.collider_free_component_id = component_id + 1;
+        component_id = core->world_data->entity_components.physics_body_component_count;
+        core->world_data->entity_components.physics_body_component_count++;
+        core->world_data->entity_components.physics_body_free_component_id = component_id + 1;
     }
     else
     {
-        component_id = core->world_data->entity_components.collider_free_component_id;
+        component_id = core->world_data->entity_components.physics_body_free_component_id;
     }
 
-    core->world_data->entity_components.collider_components[component_id] = GetDefaultColliderComponent();
-    entity->components[COMPONENT_collider] = &core->world_data->entity_components.collider_components[component_id];
-    core->world_data->entity_components.collider_components[component_id].parent_entity = entity;
-    core->world_data->entity_components.collider_components[component_id].component_id = component_id;
+    core->world_data->entity_components.physics_body_components[component_id] = GetDefaultPhysicsBodyComponent();
+    entity->components[COMPONENT_physics_body] = &core->world_data->entity_components.physics_body_components[component_id];
+    core->world_data->entity_components.physics_body_components[component_id].parent_entity = entity;
+    core->world_data->entity_components.physics_body_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < core->world_data->entity_components.collider_component_count + 1; i++)
+    for (int i = 0; i < core->world_data->entity_components.physics_body_component_count + 1; i++)
     {
-        if (!core->world_data->entity_components.collider_components[i].parent_entity)
+        if (!core->world_data->entity_components.physics_body_components[i].parent_entity)
         {
-            core->world_data->entity_components.collider_free_component_id = i;
+            core->world_data->entity_components.physics_body_free_component_id = i;
             break;
         }
     }
 
-    return &core->world_data->entity_components.collider_components[component_id];
+    return &core->world_data->entity_components.physics_body_components[component_id];
 }
 
-internal void RemoveColliderComponent(Entity *entity)
+internal void RemovePhysicsBodyComponent(Entity *entity)
 {
-    ColliderComponent *component = entity->components[COMPONENT_collider];
-    R_DEV_ASSERT(component, "Entity does not a ColliderComponent attached, so it can't remove it.");
+    PhysicsBodyComponent *component = entity->components[COMPONENT_physics_body];
+    R_DEV_ASSERT(component, "Entity does not a PhysicsBodyComponent attached, so it can't remove it.");
 
     i32 deleted_component_id = component->component_id;
-    ColliderComponent empty_comp = {0};
-    core->world_data->entity_components.collider_components[deleted_component_id] = empty_comp;
-    entity->components[COMPONENT_collider] = 0;
+    PhysicsBodyComponent empty_comp = {0};
+    core->world_data->entity_components.physics_body_components[deleted_component_id] = empty_comp;
+    entity->components[COMPONENT_physics_body] = 0;
 
-    if (deleted_component_id < core->world_data->entity_components.collider_free_component_id)
-        core->world_data->entity_components.collider_free_component_id = deleted_component_id;
-}
-
-internal VelocityComponent *AddVelocityComponent(Entity *entity)
-{
-    i32 component_id;
-    if (core->world_data->entity_components.velocity_free_component_id == core->world_data->entity_components.velocity_component_count)
-    {
-        component_id = core->world_data->entity_components.velocity_component_count;
-        core->world_data->entity_components.velocity_component_count++;
-        core->world_data->entity_components.velocity_free_component_id = component_id + 1;
-    }
-    else
-    {
-        component_id = core->world_data->entity_components.velocity_free_component_id;
-    }
-
-    core->world_data->entity_components.velocity_components[component_id] = GetDefaultVelocityComponent();
-    entity->components[COMPONENT_velocity] = &core->world_data->entity_components.velocity_components[component_id];
-    core->world_data->entity_components.velocity_components[component_id].parent_entity = entity;
-    core->world_data->entity_components.velocity_components[component_id].component_id = component_id;
-
-    for (int i = 0; i < core->world_data->entity_components.velocity_component_count + 1; i++)
-    {
-        if (!core->world_data->entity_components.velocity_components[i].parent_entity)
-        {
-            core->world_data->entity_components.velocity_free_component_id = i;
-            break;
-        }
-    }
-
-    return &core->world_data->entity_components.velocity_components[component_id];
-}
-
-internal void RemoveVelocityComponent(Entity *entity)
-{
-    VelocityComponent *component = entity->components[COMPONENT_velocity];
-    R_DEV_ASSERT(component, "Entity does not a VelocityComponent attached, so it can't remove it.");
-
-    i32 deleted_component_id = component->component_id;
-    VelocityComponent empty_comp = {0};
-    core->world_data->entity_components.velocity_components[deleted_component_id] = empty_comp;
-    entity->components[COMPONENT_velocity] = 0;
-
-    if (deleted_component_id < core->world_data->entity_components.velocity_free_component_id)
-        core->world_data->entity_components.velocity_free_component_id = deleted_component_id;
-}
-
-internal PhysicsComponent *AddPhysicsComponent(Entity *entity)
-{
-    i32 component_id;
-    if (core->world_data->entity_components.physics_free_component_id == core->world_data->entity_components.physics_component_count)
-    {
-        component_id = core->world_data->entity_components.physics_component_count;
-        core->world_data->entity_components.physics_component_count++;
-        core->world_data->entity_components.physics_free_component_id = component_id + 1;
-    }
-    else
-    {
-        component_id = core->world_data->entity_components.physics_free_component_id;
-    }
-
-    core->world_data->entity_components.physics_components[component_id] = GetDefaultPhysicsComponent();
-    entity->components[COMPONENT_physics] = &core->world_data->entity_components.physics_components[component_id];
-    core->world_data->entity_components.physics_components[component_id].parent_entity = entity;
-    core->world_data->entity_components.physics_components[component_id].component_id = component_id;
-
-    for (int i = 0; i < core->world_data->entity_components.physics_component_count + 1; i++)
-    {
-        if (!core->world_data->entity_components.physics_components[i].parent_entity)
-        {
-            core->world_data->entity_components.physics_free_component_id = i;
-            break;
-        }
-    }
-
-    return &core->world_data->entity_components.physics_components[component_id];
-}
-
-internal void RemovePhysicsComponent(Entity *entity)
-{
-    PhysicsComponent *component = entity->components[COMPONENT_physics];
-    R_DEV_ASSERT(component, "Entity does not a PhysicsComponent attached, so it can't remove it.");
-
-    i32 deleted_component_id = component->component_id;
-    PhysicsComponent empty_comp = {0};
-    core->world_data->entity_components.physics_components[deleted_component_id] = empty_comp;
-    entity->components[COMPONENT_physics] = 0;
-
-    if (deleted_component_id < core->world_data->entity_components.physics_free_component_id)
-        core->world_data->entity_components.physics_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.physics_body_free_component_id)
+        core->world_data->entity_components.physics_body_free_component_id = deleted_component_id;
 }
 
 internal MovementComponent *AddMovementComponent(Entity *entity)
@@ -1011,34 +883,28 @@ internal void DeleteEntity(Entity *entity)
     AnimationComponent *animation_component = entity->components[4];
     if (animation_component)
         RemoveAnimationComponent(entity);
-    ColliderComponent *collider_component = entity->components[5];
-    if (collider_component)
-        RemoveColliderComponent(entity);
-    VelocityComponent *velocity_component = entity->components[6];
-    if (velocity_component)
-        RemoveVelocityComponent(entity);
-    PhysicsComponent *physics_component = entity->components[7];
-    if (physics_component)
-        RemovePhysicsComponent(entity);
-    MovementComponent *movement_component = entity->components[8];
+    PhysicsBodyComponent *physics_body_component = entity->components[5];
+    if (physics_body_component)
+        RemovePhysicsBodyComponent(entity);
+    MovementComponent *movement_component = entity->components[6];
     if (movement_component)
         RemoveMovementComponent(entity);
-    ArcEntityComponent *arc_entity_component = entity->components[9];
+    ArcEntityComponent *arc_entity_component = entity->components[7];
     if (arc_entity_component)
         RemoveArcEntityComponent(entity);
-    ItemComponent *item_component = entity->components[10];
+    ItemComponent *item_component = entity->components[8];
     if (item_component)
         RemoveItemComponent(entity);
-    TriggerComponent *trigger_component = entity->components[11];
+    TriggerComponent *trigger_component = entity->components[9];
     if (trigger_component)
         RemoveTriggerComponent(entity);
-    StorageComponent *storage_component = entity->components[12];
+    StorageComponent *storage_component = entity->components[10];
     if (storage_component)
         RemoveStorageComponent(entity);
-    ParallaxComponent *parallax_component = entity->components[13];
+    ParallaxComponent *parallax_component = entity->components[11];
     if (parallax_component)
         RemoveParallaxComponent(entity);
-    ParticleEmitterComponent *particle_emitter_component = entity->components[14];
+    ParticleEmitterComponent *particle_emitter_component = entity->components[12];
     if (particle_emitter_component)
         RemoveParticleEmitterComponent(entity);
 
@@ -1059,9 +925,7 @@ static CharacterEntity *InitialiseCharacterEntity()
     unique_entity->position_comp = AddPositionComponent(generic_entity);
     unique_entity->sub_sprite_comp = AddSubSpriteComponent(generic_entity);
     unique_entity->animation_comp = AddAnimationComponent(generic_entity);
-    unique_entity->collider_comp = AddColliderComponent(generic_entity);
-    unique_entity->physics_comp = AddPhysicsComponent(generic_entity);
-    unique_entity->velocity_comp = AddVelocityComponent(generic_entity);
+    unique_entity->physics_body_comp = AddPhysicsBodyComponent(generic_entity);
     unique_entity->movement_comp = AddMovementComponent(generic_entity);
     unique_entity->arc_entity_comp = AddArcEntityComponent(generic_entity);
 
@@ -1112,8 +976,7 @@ static GroundEntity *NewGroundEntity()
     unique_entity->unique_entity_id = new_unique_id;
 
     unique_entity->position_comp = AddPositionComponent(generic_entity);
-    unique_entity->collider_comp = AddColliderComponent(generic_entity);
-    unique_entity->physics_comp = AddPhysicsComponent(generic_entity);
+    unique_entity->physics_body_comp = AddPhysicsBodyComponent(generic_entity);
 
     return unique_entity;
 }

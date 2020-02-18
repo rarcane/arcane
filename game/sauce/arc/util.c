@@ -67,3 +67,10 @@ internal f32 GetPerlinNoise(f32 x_pos, f32 y_pos)
 
 	return lerp3;
 }
+
+internal c2AABB v2AddAABB(v2 a, c2AABB aabb)
+{
+	c2AABB new_aabb = {.min = c2V(a.x + aabb.min.x, a.y + aabb.min.y),
+					   .max = c2V(a.x + aabb.max.x, a.y + aabb.max.y)};
+	return new_aabb;
+}

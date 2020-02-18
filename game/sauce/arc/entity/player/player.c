@@ -1,12 +1,12 @@
 internal void PreMoveUpdatePlayer()
 {
 	PositionComponent *position_comp = core->world_data->character_entity.position_comp;
-	VelocityComponent *velocity_comp = core->world_data->character_entity.velocity_comp;
+	//VelocityComponent *velocity_comp = core->world_data->character_entity.velocity_comp;
 	MovementComponent *movement_comp = core->world_data->character_entity.movement_comp;
 	ArcEntityComponent *arc_entity_comp = core->world_data->character_entity.arc_entity_comp;
 	SubSpriteComponent *sub_sprite_comp = core->world_data->character_entity.sub_sprite_comp;
 	AnimationComponent *animation_comp = core->world_data->character_entity.animation_comp;
-	R_DEV_ASSERT(velocity_comp && movement_comp && arc_entity_comp && animation_comp && sub_sprite_comp, "Entity does not have the required components.");
+	R_DEV_ASSERT(movement_comp && arc_entity_comp && animation_comp && sub_sprite_comp, "Entity does not have the required components.");
 
 	b8 is_sprinting = 0;
 	if (IsActionDown(ACTION_move_left))
@@ -48,11 +48,11 @@ internal void PreMoveUpdatePlayer()
 		movement_comp->axis_x = 0.0f;
 	}
 
-	velocity_comp->ideal_velocity.x = movement_comp->axis_x * movement_comp->move_speed * movement_comp->move_speed_mult;
+	//velocity_comp->ideal_velocity.x = movement_comp->axis_x * movement_comp->move_speed * movement_comp->move_speed_mult;
 
 	if (IsActionPressed(ACTION_jump))
 	{
-		velocity_comp->velocity.y = -200.0f;
+		//velocity_comp->velocity.y = -200.0f;
 	}
 
 	// NOTE(tjr): Update animation state
@@ -89,7 +89,7 @@ internal void PreMoveUpdatePlayer()
 internal void PostMoveUpdatePlayer()
 {
 	// NOTE(tjr): Check for an interaction with the world.
-	if (platform->key_pressed[KEY_e])
+	/* if (platform->key_pressed[KEY_e])
 	{
 		ColliderComponent *overlapping_colliders[MAX_OVERLAPPING_COLLIDERS];
 
@@ -172,7 +172,7 @@ internal void PostMoveUpdatePlayer()
 				}
 			}
 		}
-	}
+	} */
 
 	// NOTE(tjr): Check for a hotbar slot update.
 	{

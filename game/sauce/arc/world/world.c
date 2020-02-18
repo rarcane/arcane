@@ -5,16 +5,21 @@ internal void TempInitGameWorld()
 	{
 		CharacterEntity *character = InitialiseCharacterEntity();
 		character->parent_generic_entity->flags |= ENTITY_FLAGS_no_delete;
-		character->position_comp->position = v2(CHUNK_SIZE / 2.0f, 0.0f);
+		character->position_comp->position = v2(0.0f, -50.0f);
 
-		//character->collider_comp->shape = GetRectangleShape(v2(14.0f, 35.0f), v2(0.0f, 0.0f));
 		c2AABB aabb = {c2V(-5.0f, -40.0f), c2V(5.0f, 0.0f)};
-		character->collider_comp->shapee.aabb = aabb;
-		character->collider_comp->shape_type = C2_SHAPE_TYPE_aabb;
+		character->physics_body_comp->shape.aabb = aabb;
+		character->physics_body_comp->mass_data.mass = 70.0f;
+		character->physics_body_comp->mass_data.inv_mass = 1.0f / 70.0f;
+		character->physics_body_comp->material.restitution = 0.4f;
+		character->physics_body_comp->gravity_multiplier = 2.0f;
 
+		/* character->collider_comp->shape.aabb = aabb;
+		character->collider_comp->shape_type = C2_SHAPE_TYPE_aabb;
 		character->collider_comp->flags = COLLIDER_FLAGS_player;
 		character->velocity_comp->acceleration = v2(250.0f, 0.0f);
-		character->velocity_comp->collide_against = COLLIDER_FLAGS_ground;
+		character->velocity_comp->collide_against = COLLIDER_FLAGS_ground; */
+
 		character->movement_comp->move_speed = 100.0f;
 		character->arc_entity_comp->entity_type = ARC_ENTITY_player;
 		character->arc_entity_comp->current_animation_state = ANIMATION_STATE_player_idle;
@@ -53,12 +58,12 @@ internal void TempInitGameWorld()
 		// ground->sprite_comp->sprite_data.render_layer = -1.0f;
 		//ground->collider_comp->shape = GetRectangleShape(v2(100.0f, 87.0f), v2(0.0f, 87.0f));
 
-		c2AABB aabb = {c2V(-50.0f, -87.0f), c2V(50.0f, 0.0f)};
-		ground->collider_comp->shapee.aabb = aabb;
+		c2AABB aabb = {c2V(-50.0f, 0.0f), c2V(50.0f, 87.0f)};
+		/* ground->collider_comp->shape.aabb = aabb;
 		ground->collider_comp->shape_type = C2_SHAPE_TYPE_aabb;
 
 		ground->collider_comp->flags = COLLIDER_FLAGS_ground;
-		ground->physics_comp->bounce_mult = 1.0f;
+		ground->physics_comp->restitution = 1.0f; */
 	}
 
 	ShufflePerlinNoise();
@@ -159,7 +164,7 @@ internal void DrawWorld()
 	Ts2dPushWorldEnd(core->renderer);
 
 	// NOTE(tjr): Draw velocity projection.
-	if (core->draw_velocity)
+	/* if (core->draw_velocity)
 	{
 		for (int j = 0; j < core->world_data->entity_components.velocity_component_count; j++)
 		{
@@ -172,7 +177,7 @@ internal void DrawWorld()
 				v2view(PositionComponent->position),
 				v2view(V2AddV2(PositionComponent->position, V2MultiplyV2(velocity_comp->velocity, v2(0.5f, 0.5f)))));
 		}
-	}
+	} */
 }
 
 internal void PostUpdateWorldAnimations()

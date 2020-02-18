@@ -131,10 +131,34 @@ c2ShapeType :: enum
 	poly,
 }
 
+PhysicsMaterial :: struct
+{
+	density : f32;
+	restitution : f32;
+}
+
+MassData :: struct
+{
+	mass : f32;
+	inv_mass : f32;
+}
+
 @Component
+PhysicsBody :: struct
+{
+	shape : c2Shape;
+	shape_type : c2ShapeType;
+	material : PhysicsMaterial;
+	mass_data : MassData;
+	velocity : v2;
+	force : v2;
+	gravity_multiplier : f32;
+}
+
+/*@Component
 Collider :: struct
 {
-	shapee : c2Shape;
+	shape : c2Shape;
 	shape_type : c2ShapeType;
 	
 	flags : ColliderFlags;
@@ -154,9 +178,9 @@ Velocity :: struct
 @Component
 Physics :: struct
 {
-	friction_mult : f32;
-	bounce_mult : f32;
-}
+	restitution : f32;
+	mass : f32;
+}*/
 
 @Component
 Movement :: struct
@@ -230,7 +254,7 @@ Dummy2 :: _;
 @UniqueEntity(1, character)
 Character :: struct
 {
-	@ComponentList(Position, SubSprite, Animation, Collider, Physics, Velocity, Movement, ArcEntity)
+	@ComponentList(Position, SubSprite, Animation, PhysicsBody, Movement, ArcEntity)
 	dummy : Dummy;
 }
 
@@ -244,7 +268,7 @@ Cloud :: struct
 @UniqueEntity(1024, ground)
 Ground :: struct
 {
-	@ComponentList(Position, Collider, Physics)
+	@ComponentList(Position, PhysicsBody)
 	dummy : Dummy;
 }
 

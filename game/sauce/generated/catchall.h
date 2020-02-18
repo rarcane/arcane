@@ -84,6 +84,18 @@ C2_SHAPE_TYPE_MAX,
 };
 static char *Getc2ShapeTypeTypeName(c2ShapeType type);
 
+typedef struct PhysicsMaterial
+{
+f32 density;
+f32 restitution;
+} PhysicsMaterial;
+
+typedef struct MassData
+{
+f32 mass;
+f32 inv_mass;
+} MassData;
+
 typedef struct ChunkData ChunkData;
 
 typedef struct PositionComponent
@@ -122,34 +134,18 @@ f32 interval_mult;
 f32 frame_start_time;
 } AnimationComponent;
 
-typedef struct ColliderComponent
+typedef struct PhysicsBodyComponent
 {
 Entity *parent_entity;
 i32 component_id;
-c2Shape shapee;
+c2Shape shape;
 c2ShapeType shape_type;
-ColliderFlags flags;
-} ColliderComponent;
-
-typedef struct VelocityComponent
-{
-Entity *parent_entity;
-i32 component_id;
+PhysicsMaterial material;
+MassData mass_data;
 v2 velocity;
-v2 ideal_velocity;
-v2 acceleration;
-v2 acceleration_mult;
-f32 previous_friction;
-b8 collide_against;
-} VelocityComponent;
-
-typedef struct PhysicsComponent
-{
-Entity *parent_entity;
-i32 component_id;
-f32 friction_mult;
-f32 bounce_mult;
-} PhysicsComponent;
+v2 force;
+f32 gravity_multiplier;
+} PhysicsBodyComponent;
 
 typedef struct MovementComponent
 {
@@ -225,9 +221,7 @@ COMPONENT_position,
 COMPONENT_sprite,
 COMPONENT_sub_sprite,
 COMPONENT_animation,
-COMPONENT_collider,
-COMPONENT_velocity,
-COMPONENT_physics,
+COMPONENT_physics_body,
 COMPONENT_movement,
 COMPONENT_arc_entity,
 COMPONENT_item,
@@ -252,15 +246,9 @@ i32 sub_sprite_free_component_id;
 AnimationComponent animation_components[MAX_ACTIVE_ENTITIES];
 i32 animation_component_count;
 i32 animation_free_component_id;
-ColliderComponent collider_components[MAX_ACTIVE_ENTITIES];
-i32 collider_component_count;
-i32 collider_free_component_id;
-VelocityComponent velocity_components[MAX_ACTIVE_ENTITIES];
-i32 velocity_component_count;
-i32 velocity_free_component_id;
-PhysicsComponent physics_components[MAX_ACTIVE_ENTITIES];
-i32 physics_component_count;
-i32 physics_free_component_id;
+PhysicsBodyComponent physics_body_components[MAX_ACTIVE_ENTITIES];
+i32 physics_body_component_count;
+i32 physics_body_free_component_id;
 MovementComponent movement_components[MAX_ACTIVE_ENTITIES];
 i32 movement_component_count;
 i32 movement_free_component_id;
@@ -291,9 +279,7 @@ Entity *parent_generic_entity;
     PositionComponent *position_comp;
     SubSpriteComponent *sub_sprite_comp;
     AnimationComponent *animation_comp;
-    ColliderComponent *collider_comp;
-    PhysicsComponent *physics_comp;
-    VelocityComponent *velocity_comp;
+    PhysicsBodyComponent *physics_body_comp;
     MovementComponent *movement_comp;
     ArcEntityComponent *arc_entity_comp;
 } CharacterEntity;
@@ -314,8 +300,7 @@ typedef struct GroundEntity
 Entity *parent_generic_entity;
 i32 unique_entity_id;
     PositionComponent *position_comp;
-    ColliderComponent *collider_comp;
-    PhysicsComponent *physics_comp;
+    PhysicsBodyComponent *physics_body_comp;
 } GroundEntity;
 
 typedef enum EntityType
