@@ -1,7 +1,7 @@
 internal void PreMoveUpdatePlayer()
 {
 	PositionComponent *position_comp = core->world_data->character_entity.position_comp;
-	//VelocityComponent *velocity_comp = core->world_data->character_entity.velocity_comp;
+	PhysicsBodyComponent *body_comp = core->world_data->character_entity.physics_body_comp;
 	MovementComponent *movement_comp = core->world_data->character_entity.movement_comp;
 	ArcEntityComponent *arc_entity_comp = core->world_data->character_entity.arc_entity_comp;
 	SubSpriteComponent *sub_sprite_comp = core->world_data->character_entity.sub_sprite_comp;
@@ -48,11 +48,11 @@ internal void PreMoveUpdatePlayer()
 		movement_comp->axis_x = 0.0f;
 	}
 
-	//velocity_comp->ideal_velocity.x = movement_comp->axis_x * movement_comp->move_speed * movement_comp->move_speed_mult;
+	body_comp->force.x = movement_comp->axis_x * movement_comp->move_speed * movement_comp->move_speed_mult * 100;
 
 	if (IsActionPressed(ACTION_jump))
 	{
-		//velocity_comp->velocity.y = -200.0f;
+		body_comp->force.y = -10000.0f / body_comp->mass_data.inv_mass;
 	}
 
 	// NOTE(tjr): Update animation state

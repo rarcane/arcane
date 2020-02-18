@@ -588,37 +588,6 @@ internal void PushDebugLineForDuration(v2 p1, v2 p2, v3 colour, f32 lifetime)
 	}
 }
 
-/* internal void PushDebugShape(Shape shape, v2 position, v3 colour)
-{
-	for (int i = 0; i < shape.vertex_count; i++)
-	{
-		int secondPoint = (i == shape.vertex_count - 1 ? 0 : i + 1);
-
-		v2 p1 = V2AddV2(position, v2(shape.vertices[i].x, shape.vertices[i].y));
-		v2 p2 = V2AddV2(position, v2(shape.vertices[secondPoint].x, shape.vertices[secondPoint].y));
-
-		PushDebugLine(p1,
-					  p2,
-					  colour);
-	}
-}
-
-internal void PushDebugShapeForDuration(Shape shape, v2 position, v3 colour, f32 lifetime)
-{
-	for (int i = 0; i < shape.vertex_count; i++)
-	{
-		int secondPoint = (i == shape.vertex_count - 1 ? 0 : i + 1);
-
-		v2 p1 = V2AddV2(position, v2(shape.vertices[i].x, shape.vertices[i].y));
-		v2 p2 = V2AddV2(position, v2(shape.vertices[secondPoint].x, shape.vertices[secondPoint].y));
-
-		PushDebugLineForDuration(p1,
-								 p2,
-								 colour,
-								 lifetime);
-	}
-} */
-
 internal void DrawDebugLines()
 {
 	for (int i = 0; i < core->debug_line_count; i++)

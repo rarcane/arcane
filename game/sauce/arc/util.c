@@ -74,3 +74,39 @@ internal c2AABB v2AddAABB(v2 a, c2AABB aabb)
 					   .max = c2V(a.x + aabb.max.x, a.y + aabb.max.y)};
 	return new_aabb;
 }
+
+internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v3 colour)
+{
+	switch (type)
+	{
+	case C2_SHAPE_TYPE_aabb:
+	{
+		v2 p0 = V2AddV2(position, v2(shape.aabb.min.x, shape.aabb.min.y));
+		v2 p1 = V2AddV2(position, v2(shape.aabb.max.x, shape.aabb.min.y));
+		v2 p2 = V2AddV2(position, v2(shape.aabb.max.x, shape.aabb.max.y));
+		v2 p3 = V2AddV2(position, v2(shape.aabb.min.x, shape.aabb.max.y));
+
+		PushDebugLine(p0, p1, colour);
+		PushDebugLine(p1, p2, colour);
+		PushDebugLine(p2, p3, colour);
+		PushDebugLine(p3, p0, colour);
+	}
+	break;
+	}
+}
+
+/* internal void PushDebugShapeForDuration(Shape shape, v2 position, v3 colour, f32 lifetime)
+{
+	for (int i = 0; i < shape.vertex_count; i++)
+	{
+		int secondPoint = (i == shape.vertex_count - 1 ? 0 : i + 1);
+
+		v2 p1 = V2AddV2(position, v2(shape.vertices[i].x, shape.vertices[i].y));
+		v2 p2 = V2AddV2(position, v2(shape.vertices[secondPoint].x, shape.vertices[secondPoint].y));
+
+		PushDebugLineForDuration(p1,
+								 p2,
+								 colour,
+								 lifetime);
+	}
+} */
