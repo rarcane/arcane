@@ -63,25 +63,52 @@ internal void UpdatePhysics()
 
 			if (velocity_along_normal <= 0)
 			{
+				// Impulse resolution
 				f32 restitution = MinimumF32(a_body_comp->material.restitution, b_body_comp->material.restitution);
 
-				f32 impulse_scalar = -(1 + restitution) * velocity_along_normal;
-				impulse_scalar = impulse_scalar / (a_body_comp->mass_data.inv_mass + b_body_comp->mass_data.inv_mass);
+				f32 j = -(1 + restitution) * velocity_along_normal;
+				j = j / (a_body_comp->mass_data.inv_mass + b_body_comp->mass_data.inv_mass);
 
-				v2 impulse = V2MultiplyF32(normal, impulse_scalar);
+				v2 impulse = V2MultiplyF32(normal, j);
 
 				v2 impulse_a = V2MultiplyF32(impulse, a_body_comp->mass_data.inv_mass);
 				a_body_comp->velocity = V2AddV2(a_body_comp->velocity, impulse_a);
 
 				v2 impulse_b = V2MultiplyF32(impulse, b_body_comp->mass_data.inv_mass);
 				b_body_comp->velocity = V2AddV2(b_body_comp->velocity, impulse_b);
-			}
 
-			const f32 percent = 0.2f;
-			const f32 slop = 0.01f;
-			v2 correction = V2MultiplyF32(normal, (MaximumF32(manifold.depths[0] - slop, 0.0f) / (a_body_comp->mass_data.inv_mass + b_body_comp->mass_data.inv_mass)) * percent);
-			a_pos_comp->position = V2SubtractV2(a_pos_comp->position, V2MultiplyF32(correction, a_body_comp->mass_data.inv_mass));
-			b_pos_comp->position = V2AddV2(b_pos_comp->position, V2MultiplyF32(correction, b_body_comp->mass_data.inv_mass));
+				// Friction
+				v2 new_rv = V2SubtractV2(b_body_comp->velocity, a_body_comp->velocity);
+				v2 tangent = V2SubtractV2(new_rv, V2MultiplyF32(normal, new_rv.x * normal.x + new_rv.y * normal.y));
+				v2Normalise(&tangent);
+
+				f32 jt = -(new_rv.x * tangent.x + new_rv.y * tangent.y);
+				jt = jt / (a_body_comp->mass_data.inv_mass + b_body_comp->mass_data.inv_mass);
+
+				f32 mu = PythagSolve(a_body_comp->material.static_friction, b_body_comp->material.static_friction);
+
+				v2 friction_impulse;
+				if (fabsf(jt) < j * mu)
+					friction_impulse = V2MultiplyF32(tangent, jt);
+				else
+				{
+					f32 dynamic_friction = PythagSolve(a_body_comp->material.dynamic_friction, b_body_comp->material.dynamic_friction);
+					friction_impulse = V2MultiplyF32(tangent, -j * dynamic_friction);
+				}
+
+				v2 friction_impulse_a = V2MultiplyF32(friction_impulse, a_body_comp->mass_data.inv_mass);
+				a_body_comp->velocity = V2SubtractV2(a_body_comp->velocity, friction_impulse_a);
+
+				v2 friction_impulse_b = V2MultiplyF32(friction_impulse, b_body_comp->mass_data.inv_mass);
+				b_body_comp->velocity = V2AddV2(b_body_comp->velocity, friction_impulse_b);
+
+				// Positional correction
+				const f32 percent = 0.2f;
+				const f32 slop = 0.01f;
+				v2 correction = V2MultiplyF32(normal, (MaximumF32(manifold.depths[0] - slop, 0.0f) / (a_body_comp->mass_data.inv_mass + b_body_comp->mass_data.inv_mass)) * percent);
+				a_pos_comp->position = V2SubtractV2(a_pos_comp->position, V2MultiplyF32(correction, a_body_comp->mass_data.inv_mass));
+				b_pos_comp->position = V2AddV2(b_pos_comp->position, V2MultiplyF32(correction, b_body_comp->mass_data.inv_mass));
+			}
 		}
 	}
 }

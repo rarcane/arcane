@@ -45,6 +45,6 @@ typedef struct BlockTimer
 } BlockTimer;
 
 internal f32 Fade(f32 alpha);
-internal v2 NormaliseV2(v2 vector);
+internal f32 PythagSolve(f32 a, f32 b);
 
 internal f32 GetPerlinNoise(f32 x_pos, f32 y_pos);

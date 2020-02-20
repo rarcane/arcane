@@ -25,6 +25,8 @@ internal void TempInitGameWorld()
 		character->physics_body_comp->mass_data.mass = 30.0f;
 		character->physics_body_comp->mass_data.inv_mass = 1.0f / 30.0f;
 		character->physics_body_comp->material.restitution = 0.4f;
+		character->physics_body_comp->material.static_friction = 0.25f;
+		character->physics_body_comp->material.dynamic_friction = 0.25f;
 		character->physics_body_comp->gravity_multiplier = 1.0f;
 
 		character->movement_comp->move_speed = 100.0f;
@@ -96,6 +98,10 @@ internal void TempInitGameWorld()
 			ground->position_comp->position = v2(floorf(x / width) * width - CHUNK_SIZE * 2, 0.0f);
 
 			c2AABB aabb = {c2V(0.0f, 0.0f), c2V(width, 100.0f)};
+
+			/* ground->physics_body_comp->shape.aabb = aabb;
+			ground->physics_body_comp->shape_type = C2_SHAPE_TYPE_aabb; */
+
 			c2Poly poly = {0};
 			poly.count = 4;
 			c2BBVerts(poly.verts, &aabb);
@@ -107,10 +113,22 @@ internal void TempInitGameWorld()
 
 			ground->physics_body_comp->shape.poly = poly;
 			ground->physics_body_comp->shape_type = C2_SHAPE_TYPE_poly;
+			ground->physics_body_comp->material.static_friction = 0.25f;
+			ground->physics_body_comp->material.dynamic_friction = 0.25f;
 
 			last_height = (f32)terrain_height;
 		}
 	}
+
+	/* GroundEntity *ground = NewGroundEntity();
+	ground->position_comp->position = v2(0, 0.0f);
+
+	c2AABB aabb = {c2V(-500.0f, 0.0f), c2V(500, 100.0f)};
+
+	ground->physics_body_comp->shape.aabb = aabb;
+	ground->physics_body_comp->shape_type = C2_SHAPE_TYPE_aabb;
+	ground->physics_body_comp->material.static_friction = 0.25f;
+	ground->physics_body_comp->material.dynamic_friction = 0.25f; */
 }
 
 internal void DrawWorld()

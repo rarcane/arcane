@@ -4,16 +4,28 @@ internal f32 Fade(f32 alpha)
 	return 6 * powf(alpha, 5) - 15 * powf(alpha, 4) + 10 * powf(alpha, 3);
 }
 
-internal v2 NormaliseV2(v2 vector)
+internal void v2Normalise(v2 *v)
 {
-	v2 normal_vector = V2DivideV2(vector, vector);
+	f32 magnitude = PythagSolve(v->x, v->y);
 
-	if (isnan(normal_vector.x) || !isfinite(normal_vector.x))
-		normal_vector.x = 0.0f;
-	if (isnan(normal_vector.y) || !isfinite(normal_vector.y))
-		normal_vector.y = 0.0f;
+	if (magnitude > 0)
+	{
+		v->x = v->x / magnitude;
+		v->y = v->y / magnitude;
+	}
+}
 
-	return normal_vector;
+internal void v2Realise(v2 *v)
+{
+	if (isnan(v->x) || !isfinite(v->x))
+		v->x = 0.0f;
+	if (isnan(v->y) || !isfinite(v->y))
+		v->y = 0.0f;
+}
+
+internal f32 PythagSolve(f32 a, f32 b)
+{
+	return SquareRoot(a * a + b * b);
 }
 
 internal i32 GetSign(f32 x)

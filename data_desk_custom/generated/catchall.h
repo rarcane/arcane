@@ -91,6 +91,8 @@ typedef struct PhysicsMaterial
 {
 f32 density;
 f32 restitution;
+f32 static_friction;
+f32 dynamic_friction;
 } PhysicsMaterial;
 
 typedef struct MassData
