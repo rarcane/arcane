@@ -1,45 +1,49 @@
 internal void InitialiseECS()
 {
-	core->world_data->entity_count = 1;
-	core->world_data->free_entity_index = 1;
+	core->world_data->free_entity_id = 1;
 }
 
 internal Entity *NewEntity(char name[], EntityType type, GeneralisedEntityType generalised_type)
 {
-	if (core->world_data->free_entity_index == core->world_data->entity_count) // Entity ID is caught up
+	R_DEV_ASSERT(core->world_data->free_entity_id != -1, "Max entities reached.");
+
+	i32 new_id = core->world_data->free_entity_id;
+
+	Entity *entity = &core->world_data->entities[new_id - 1];
+	entity->entity_id = new_id;
+	strcpy(entity->name, name);
+	entity->type = type;
+	entity->generalised_type = generalised_type;
+
+	if (core->world_data->entity_count == core->world_data->free_entity_id - 1)
 	{
-		i32 entity_id = core->world_data->entity_count;
 		core->world_data->entity_count++;
-		core->world_data->free_entity_index = core->world_data->entity_count;
-
-		core->world_data->entities[entity_id].entity_id = entity_id;
-		strcpy(core->world_data->entities[entity_id].name, name);
-		core->world_data->entities[entity_id].generalised_type = generalised_type;
-		core->world_data->entities[entity_id].type = type;
-
-		return &core->world_data->entities[entity_id];
+		core->world_data->free_entity_id++;
 	}
-	else // Avalable entity ID isn't the latest count
+
+	if (core->world_data->entity_count < MAX_ACTIVE_ENTITIES)
 	{
-		i32 entity_id = core->world_data->free_entity_index;
-
-		core->world_data->entities[entity_id].entity_id = entity_id;
-		strcpy(core->world_data->entities[entity_id].name, name);
-		core->world_data->entities[entity_id].generalised_type = generalised_type;
-		core->world_data->entities[entity_id].type = type;
-
-		// Determine the next free ID
-		for (int i = 1; i < core->world_data->entity_count + 1; i++)
+		if (core->world_data->entity_count != core->world_data->free_entity_id - 1)
 		{
-			if (core->world_data->entities[i].entity_id == 0)
+			b8 found = 0;
+			for (int i = 0; i < core->world_data->entity_count + 1; i++)
 			{
-				core->world_data->free_entity_index = i;
-				break;
+				if (core->world_data->entities[i].entity_id == 0)
+				{
+					core->world_data->free_entity_id = i + 1;
+					found = 1;
+					break;
+				}
 			}
+			R_DEV_ASSERT(found, "Couldn't find a free index?");
 		}
-
-		return &core->world_data->entities[entity_id];
 	}
+	else
+	{
+		core->world_data->free_entity_id = -1;
+	}
+
+	return entity;
 }
 
 /* --- Entity component helper functions --- */

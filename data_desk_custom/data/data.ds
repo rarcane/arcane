@@ -3,6 +3,7 @@
 MAX_ENTITIES_PER_CHUNK :: 256
 MAX_ACTIVE_ENTITIES :: 1024
 MAX_OVERLAPPING_COLLIDERS :: 50
+MAX_COLLISION_PAIRS :: 2048
 MAX_ENTITY_REFERENCES :: 10
 MAX_SUB_COLLIDERS :: 3
 MAX_STORAGE_SIZE :: 30
@@ -121,6 +122,7 @@ c2Shape :: union
 	capsule : c2Capsule;
 	circle : c2Circle;
 	poly : c2Poly;
+	line : c2h;
 }
 
 c2ShapeType :: enum
@@ -129,6 +131,7 @@ c2ShapeType :: enum
 	capsule,
 	circle,
 	poly,
+	line,
 }
 
 PhysicsMaterial :: struct
@@ -365,7 +368,7 @@ WorldData :: struct
 	@GenerateUniqueEntityArrays
 	entities : Entity[MAX_ACTIVE_ENTITIES];
 	entity_count : i32;
-	free_entity_index : i32;
+	free_entity_id : i32;
 	
 	entity_components : ComponentSet;
 }

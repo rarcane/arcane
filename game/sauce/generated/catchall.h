@@ -1,6 +1,7 @@
 #define MAX_ENTITIES_PER_CHUNK (256)
 #define MAX_ACTIVE_ENTITIES (1024)
 #define MAX_OVERLAPPING_COLLIDERS (50)
+#define MAX_COLLISION_PAIRS (2048)
 #define MAX_ENTITY_REFERENCES (10)
 #define MAX_SUB_COLLIDERS (3)
 #define MAX_STORAGE_SIZE (30)
@@ -71,6 +72,7 @@ c2AABB aabb;
 c2Capsule capsule;
 c2Circle circle;
 c2Poly poly;
+c2h line;
 };
 
 typedef enum c2ShapeType c2ShapeType;
@@ -80,6 +82,7 @@ C2_SHAPE_TYPE_aabb,
 C2_SHAPE_TYPE_capsule,
 C2_SHAPE_TYPE_circle,
 C2_SHAPE_TYPE_poly,
+C2_SHAPE_TYPE_line,
 C2_SHAPE_TYPE_MAX,
 };
 static char *Getc2ShapeTypeTypeName(c2ShapeType type);
@@ -393,7 +396,7 @@ i32 free_ground_entity_index;
 // @GenerateUniqueEntityArrays 
 Entity entities[MAX_ACTIVE_ENTITIES];
 i32 entity_count;
-i32 free_entity_index;
+i32 free_entity_id;
 ComponentSet entity_components;
 } WorldData;
 

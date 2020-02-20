@@ -7,18 +7,25 @@ internal void TempInitGameWorld()
 		character->parent_generic_entity->flags |= ENTITY_FLAGS_no_delete;
 		character->position_comp->position = v2(0.0f, -100.0f);
 
-		c2AABB aabb = {c2V(-5.0f, -40.0f), c2V(5.0f, 0.0f)};
+		c2Capsule capsule = {
+			.a = c2V(0.0f, -10.0f),
+			.b = c2V(0.0f, -50.0f),
+			.r = 10.0f,
+		};
+		character->physics_body_comp->shape.capsule = capsule;
+		character->physics_body_comp->shape_type = C2_SHAPE_TYPE_capsule;
+
+		/* c2AABB aabb = {
+			c2V(-10.0f, 0.0f),
+			c2V(10.0f, -40.0f),
+		};
 		character->physics_body_comp->shape.aabb = aabb;
+		character->physics_body_comp->shape_type = C2_SHAPE_TYPE_aabb;
+ */
 		character->physics_body_comp->mass_data.mass = 30.0f;
 		character->physics_body_comp->mass_data.inv_mass = 1.0f / 30.0f;
 		character->physics_body_comp->material.restitution = 0.4f;
 		character->physics_body_comp->gravity_multiplier = 1.0f;
-
-		/* character->collider_comp->shape.aabb = aabb;
-		character->collider_comp->shape_type = C2_SHAPE_TYPE_aabb;
-		character->collider_comp->flags = COLLIDER_FLAGS_player;
-		character->velocity_comp->acceleration = v2(250.0f, 0.0f);
-		character->velocity_comp->collide_against = COLLIDER_FLAGS_ground; */
 
 		character->movement_comp->move_speed = 100.0f;
 		character->arc_entity_comp->entity_type = ARC_ENTITY_player;
@@ -50,25 +57,9 @@ internal void TempInitGameWorld()
 		AddItemToStorage(sword_item, backpack_storage, 2);
 	}
 
-	for (int i = -10; i < 11; i++)
-	{
-		GroundEntity *ground = NewGroundEntity();
-		ground->position_comp->position = v2(i * 100.0f, -50.0f);
-		// ground->sprite_comp->sprite_data.sprite_enum = STATIC_SPRITE_ground_forest_flat;
-		// ground->sprite_comp->sprite_data.render_layer = -1.0f;
-		//ground->collider_comp->shape = GetRectangleShape(v2(100.0f, 87.0f), v2(0.0f, 87.0f));
-
-		c2AABB aabb = {c2V(-40.0f, 0.0f), c2V(40.0f, 87.0f)};
-		ground->physics_body_comp->shape.aabb = aabb;
-		ground->physics_body_comp->shape_type = C2_SHAPE_TYPE_aabb;
-		//ground->physics_body_comp->material.restitution = 0.4f;
-
-		/* ground->collider_comp->flags = COLLIDER_FLAGS_ground;
-		ground->physics_comp->restitution = 1.0f; */
-	}
-
 	ShufflePerlinNoise();
-	for (int x = 0; x < CHUNK_SIZE * 12; x++)
+	f32 last_height = 0.0f;
+	for (int x = 0; x < CHUNK_SIZE * 4; x++)
 	{
 		i32 octaves = 4;
 		f32 frequency = 0.5f;
@@ -89,10 +80,35 @@ internal void TempInitGameWorld()
 		i32 terrain_height = (i32)floorf(200.0f + 50.0f * noise);
 		for (int y = -1; y > -terrain_height - 1; y--)
 		{
-			Cell *cell = GetCellAtPosition(x - CHUNK_SIZE * 6, y + 200);
+			Cell *cell = GetCellAtPosition(x - CHUNK_SIZE * 2, y + 200);
 			CellMaterial *material = NewCellMaterial(cell);
 			material->material_type = CELL_MATERIAL_TYPE_dirt;
 			material->max_height = 4;
+		}
+
+		f32 width = ((f32)CHUNK_SIZE * 4.0f) / 16.0f;
+
+		if (x == 0)
+			last_height = (f32)terrain_height;
+		else if (((x + 1) % (i32)width) == 0)
+		{
+			GroundEntity *ground = NewGroundEntity();
+			ground->position_comp->position = v2(floorf(x / width) * width - CHUNK_SIZE * 2, 0.0f);
+
+			c2AABB aabb = {c2V(0.0f, 0.0f), c2V(width, 100.0f)};
+			c2Poly poly = {0};
+			poly.count = 4;
+			c2BBVerts(poly.verts, &aabb);
+
+			poly.verts[0].y += 200.0f - (f32)last_height;
+			poly.verts[1].y += 200.0f - (f32)terrain_height;
+
+			c2MakePoly(&poly);
+
+			ground->physics_body_comp->shape.poly = poly;
+			ground->physics_body_comp->shape_type = C2_SHAPE_TYPE_poly;
+
+			last_height = (f32)terrain_height;
 		}
 	}
 }

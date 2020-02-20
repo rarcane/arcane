@@ -75,6 +75,26 @@ internal c2AABB v2AddAABB(v2 a, c2AABB aabb)
 	return new_aabb;
 }
 
+internal void CapsuleToWorldSpace(c2Capsule *capsule, v2 world_space)
+{
+	capsule->a.x += world_space.x;
+	capsule->a.y += world_space.y;
+
+	capsule->b.x += world_space.x;
+	capsule->b.y += world_space.y;
+}
+
+internal c2Poly v2AddPoly(v2 a, c2Poly poly)
+{
+	for (int i = 0; i < poly.count; i++)
+	{
+		poly.verts[i].x += a.x;
+		poly.verts[i].y += a.y;
+	}
+
+	return poly;
+}
+
 internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v3 colour)
 {
 	switch (type)
@@ -92,6 +112,26 @@ internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v3 co
 		PushDebugLine(p3, p0, colour);
 	}
 	break;
+
+	case C2_SHAPE_TYPE_poly:
+	{
+		for (int i = 0; i < shape.poly.count; i++)
+		{
+			int secondPoint = (i == shape.poly.count - 1 ? 0 : i + 1);
+
+			v2 p1 = V2AddV2(position, v2(shape.poly.verts[i].x, shape.poly.verts[i].y));
+			v2 p2 = V2AddV2(position, v2(shape.poly.verts[secondPoint].x, shape.poly.verts[secondPoint].y));
+
+			PushDebugLine(p1,
+						  p2,
+						  colour);
+		}
+	}
+	break;
+
+	default:
+		//R_TODO;
+		break;
 	}
 }
 

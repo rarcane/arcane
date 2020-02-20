@@ -1,4 +1,4 @@
-#define MAX_DEBUG_LINES 100
+#define MAX_DEBUG_LINES 1024
 #define MAX_CLOUDS 50
 
 typedef struct Entity Entity;

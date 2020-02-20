@@ -522,8 +522,8 @@ GenerateComponentCode(void)
 			fprintf(file, "\n    i32 deleted_entity_id = entity->entity_id;\n");
 			fprintf(file, "    Entity empty_entity = {0};\n");
 			fprintf(file, "    *entity = empty_entity;\n");
-			fprintf(file, "    if (deleted_entity_id < core->world_data->free_entity_index)\n");
-			fprintf(file, "        core->world_data->free_entity_index = deleted_entity_id;\n");
+			fprintf(file, "    if (deleted_entity_id < core->world_data->free_entity_id)\n");
+			fprintf(file, "        core->world_data->free_entity_id = deleted_entity_id;\n");
 			fprintf(file, "}\n\n");
 		}
 	}

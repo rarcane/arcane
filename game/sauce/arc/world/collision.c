@@ -38,7 +38,7 @@ internal void UpdatePhysics()
 		}
 	}
 
-	CollisionPair collision_pairs[MAX_ACTIVE_ENTITIES];
+	CollisionPair collision_pairs[MAX_COLLISION_PAIRS];
 	i32 pair_count = 0;
 	GenerateCollisionPairs(collision_pairs, &pair_count);
 
@@ -50,33 +50,9 @@ internal void UpdatePhysics()
 		PositionComponent *b_pos_comp = b_body_comp->parent_entity->components[COMPONENT_position];
 
 		c2Manifold manifold = {0};
+		GenerateCollisionManifold(a_body_comp, a_pos_comp->position, b_body_comp, b_pos_comp->position, &manifold);
 
-		switch (a_body_comp->shape_type)
-		{
-		case C2_SHAPE_TYPE_aabb:
-		{
-			switch (b_body_comp->shape_type)
-			{
-			case C2_SHAPE_TYPE_aabb:
-			{
-				c2AABB a_aabb = v2AddAABB(a_pos_comp->position, a_body_comp->shape.aabb);
-				c2AABB b_aabb = v2AddAABB(b_pos_comp->position, b_body_comp->shape.aabb);
-				c2AABBtoAABBManifold(a_aabb, b_aabb, &manifold);
-			}
-			break;
-			}
-		}
-		break;
-
-		default:
-		{
-			R_TODO;
-		}
-		break;
-		}
-
-		R_DEV_ASSERT(manifold.count != 2, "What's this mean lmao?");
-		if (manifold.count == 1)
+		if (manifold.count > 0 && fabsf(manifold.depths[0]) != 0.0f)
 		{
 			R_DEV_ASSERT(!(a_body_comp->mass_data.mass == 0 && b_body_comp->mass_data.mass == 0), "Why are two static bodies colliding?");
 
@@ -127,10 +103,191 @@ internal void GenerateCollisionPairs(CollisionPair pairs[], i32 *count)
 					if (entity_a != entity_b)
 					{
 						CollisionPair new_pair = {body_comp_a, body_comp_b};
+						R_DEV_ASSERT(*count + 1 < MAX_COLLISION_PAIRS, "Too many collisions.")
 						pairs[(*count)++] = new_pair;
 					}
 				}
 			}
 		}
+	}
+}
+
+internal void GenerateCollisionManifold(PhysicsBodyComponent *a_body_comp, v2 a_body_world_pos, PhysicsBodyComponent *b_body_comp, v2 b_body_world_pos, c2Manifold *manifold)
+{
+	switch (a_body_comp->shape_type)
+	{
+	case C2_SHAPE_TYPE_aabb:
+	{
+		switch (b_body_comp->shape_type)
+		{
+		case C2_SHAPE_TYPE_aabb:
+		{
+			c2AABB a_aabb = v2AddAABB(a_body_world_pos, a_body_comp->shape.aabb);
+			c2AABB b_aabb = v2AddAABB(b_body_world_pos, b_body_comp->shape.aabb);
+			c2AABBtoAABBManifold(a_aabb, b_aabb, manifold);
+		}
+		break;
+
+		case C2_SHAPE_TYPE_capsule:
+		{
+			c2AABB a_aabb = v2AddAABB(a_body_world_pos, a_body_comp->shape.aabb);
+
+			c2Capsule b_capsule = b_body_comp->shape.capsule;
+			CapsuleToWorldSpace(&b_capsule, b_body_world_pos);
+
+			c2AABBtoCapsuleManifold(a_aabb, b_capsule, manifold);
+		}
+		break;
+
+		case C2_SHAPE_TYPE_poly:
+		{
+			c2AABB a_aabb = v2AddAABB(a_body_world_pos, a_body_comp->shape.aabb);
+
+			c2Poly b_poly = b_body_comp->shape.poly;
+			c2x world_pos = c2xIdentity();
+			world_pos.p.x = b_body_world_pos.x;
+			world_pos.p.y = b_body_world_pos.y;
+
+			c2AABBtoPolyManifold(a_aabb, &b_poly, &world_pos, manifold);
+		}
+		break;
+
+		case C2_SHAPE_TYPE_line:
+		{
+			R_TODO;
+		}
+		break;
+
+		default:
+			R_TODO;
+			break;
+		}
+	}
+	break;
+
+	case C2_SHAPE_TYPE_capsule:
+	{
+		switch (b_body_comp->shape_type)
+		{
+		case C2_SHAPE_TYPE_aabb:
+		{
+			c2Capsule a_capsule = a_body_comp->shape.capsule;
+			CapsuleToWorldSpace(&a_capsule, a_body_world_pos);
+
+			c2AABB b_aabb = v2AddAABB(b_body_world_pos, b_body_comp->shape.aabb);
+
+			c2AABBtoCapsuleManifold(b_aabb, a_capsule, manifold);
+			manifold->n.x *= -1.0f;
+			manifold->n.y *= -1.0f;
+		}
+		break;
+
+		case C2_SHAPE_TYPE_poly:
+		{
+			c2Capsule a_capsule = a_body_comp->shape.capsule;
+			CapsuleToWorldSpace(&a_capsule, a_body_world_pos);
+
+			c2Poly b_poly = b_body_comp->shape.poly;
+			c2x world_pos = c2xIdentity();
+			world_pos.p.x = b_body_world_pos.x;
+			world_pos.p.y = b_body_world_pos.y;
+
+			c2CapsuletoPolyManifold(a_capsule, &b_poly, &world_pos, manifold);
+		}
+		break;
+
+		case C2_SHAPE_TYPE_line:
+		{
+			R_TODO;
+		}
+		break;
+
+		default:
+			R_TODO;
+			break;
+		}
+	}
+	break;
+
+	case C2_SHAPE_TYPE_poly:
+	{
+		switch (b_body_comp->shape_type)
+		{
+		case C2_SHAPE_TYPE_aabb:
+		{
+			c2Poly a_poly = a_body_comp->shape.poly;
+			c2x world_pos = c2xIdentity();
+			world_pos.p.x = a_body_world_pos.x;
+			world_pos.p.y = a_body_world_pos.y;
+
+			c2AABB b_aabb = v2AddAABB(b_body_world_pos, b_body_comp->shape.aabb);
+
+			c2AABBtoPolyManifold(b_aabb, &a_poly, &world_pos, manifold);
+			manifold->n.x *= -1.0f;
+			manifold->n.y *= -1.0f;
+		}
+		break;
+
+		case C2_SHAPE_TYPE_capsule:
+		{
+			c2Poly a_poly = a_body_comp->shape.poly;
+			c2x world_pos = c2xIdentity();
+			world_pos.p.x = a_body_world_pos.x;
+			world_pos.p.y = a_body_world_pos.y;
+
+			c2Capsule b_capsule = b_body_comp->shape.capsule;
+			CapsuleToWorldSpace(&b_capsule, b_body_world_pos);
+
+			c2CapsuletoPolyManifold(b_capsule, &a_poly, &world_pos, manifold);
+			manifold->n.x *= -1.0f;
+			manifold->n.y *= -1.0f;
+		}
+		break;
+
+		case C2_SHAPE_TYPE_poly:
+		{
+			c2Poly a_poly = a_body_comp->shape.poly;
+			c2x world_pos_a = c2xIdentity();
+			world_pos_a.p.x = a_body_world_pos.x;
+			world_pos_a.p.y = a_body_world_pos.y;
+
+			c2Poly b_poly = b_body_comp->shape.poly;
+			c2x world_pos_b = c2xIdentity();
+			world_pos_b.p.x = b_body_world_pos.x;
+			world_pos_b.p.y = b_body_world_pos.y;
+
+			c2PolytoPolyManifold(&a_poly, &world_pos_a, &b_poly, &world_pos_b, manifold);
+		}
+		break;
+
+		case C2_SHAPE_TYPE_line:
+		{
+			R_TODO;
+		}
+		break;
+
+		default:
+			R_TODO;
+			break;
+		}
+	}
+	break;
+
+	case C2_SHAPE_TYPE_line:
+	{
+		switch (b_body_comp->shape_type)
+		{
+		case C2_SHAPE_TYPE_aabb:
+		{
+			R_TODO;
+		}
+		break;
+		}
+	}
+	break;
+
+	default:
+		R_TODO;
+		break;
 	}
 }

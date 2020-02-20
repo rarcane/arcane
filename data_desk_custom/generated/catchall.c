@@ -76,6 +76,9 @@ break;
 case C2_SHAPE_TYPE_poly:
 return "Poly";
 break;
+case C2_SHAPE_TYPE_line:
+return "Line";
+break;
 default:
 return "INVALID";
 break;
@@ -911,8 +914,8 @@ internal void DeleteEntity(Entity *entity)
     i32 deleted_entity_id = entity->entity_id;
     Entity empty_entity = {0};
     *entity = empty_entity;
-    if (deleted_entity_id < core->world_data->free_entity_index)
-        core->world_data->free_entity_index = deleted_entity_id;
+    if (deleted_entity_id < core->world_data->free_entity_id)
+        core->world_data->free_entity_id = deleted_entity_id;
 }
 
 static CharacterEntity *InitialiseCharacterEntity()
