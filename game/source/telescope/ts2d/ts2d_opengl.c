@@ -2016,12 +2016,6 @@ Ts2dSwapBuffers(void)
     platform->RefreshScreen();
 }
 
-#if TS2D_DEBUG
-#define TS2D_LOAD_REQUEST_DEBUG_DATA global_ts2d->active_request.file = file; global_ts2d->active_request.line = line;
-#else
-#define TS2D_LOAD_REQUEST_DEBUG_DATA
-#endif
-
 void
 Ts2dSetDefaultFont(Ts2dFont *font)
 {
@@ -2035,39 +2029,39 @@ Ts2dGetDefaultFont(void)
 }
 
 void
-_Ts2dSetClip(v4 clip TS2D_DEBUG_EXTRA_PARAMS)
+_Ts2dSetClip(v4 clip)
 {
     Ts2dInternalFinishActiveRequest();
     global_ts2d->current_clip = clip;
     Ts2dRequestType request_type = TS2D_REQUEST_set_clip;
     global_ts2d->active_request.type = request_type;
     global_ts2d->active_request.data = _Ts2dAllocateRequestMemory(sizeof(v4));
-    TS2D_LOAD_REQUEST_DEBUG_DATA;
+    
     *(v4 *)global_ts2d->active_request.data = clip;
 }
 
 void
-_Ts2dPushClip(v4 clip TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushClip(v4 clip)
 {
     if(global_ts2d->clip_stack_size < global_ts2d->clip_stack_max)
     {
         global_ts2d->clip_stack[global_ts2d->clip_stack_size++] = global_ts2d->current_clip;
-        _Ts2dSetClip(clip TS2D_DEBUG_EXTRA_ARGS);
+        _Ts2dSetClip(clip);
     }
 }
 
 void
-_Ts2dPopClip(TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPopClip(void)
 {
     if(global_ts2d->clip_stack_size > 0)
     {
         global_ts2d->current_clip = global_ts2d->clip_stack[--global_ts2d->clip_stack_size];
-        _Ts2dSetClip(global_ts2d->current_clip TS2D_DEBUG_EXTRA_ARGS);
+        _Ts2dSetClip(global_ts2d->current_clip);
     }
 }
 
 void
-_Ts2dPushClipThatIsConstrainedByCurrent(v4 clip TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushClipThatIsConstrainedByCurrent(v4 clip)
 {
     v4 parent_clip = global_ts2d->current_clip;
     v4 new_clip = v4(MaximumF32(clip.x, parent_clip.x),
@@ -2081,24 +2075,24 @@ _Ts2dPushClipThatIsConstrainedByCurrent(v4 clip TS2D_DEBUG_EXTRA_PARAMS)
     {
         new_clip.height = parent_clip.height;
     }
-    _Ts2dPushClip(new_clip TS2D_DEBUG_EXTRA_ARGS);
+    Ts2dPushClip(new_clip);
 }
 
 void
-_Ts2dPushRectangleBlur(v4 rect, f32 blur_magnitude TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushRectangleBlur(v4 rect, f32 blur_magnitude)
 {
     Ts2dInternalFinishActiveRequest();
     Ts2dRequestType request_type = TS2D_REQUEST_blur_rectangle;
     global_ts2d->active_request.type = request_type;
     global_ts2d->active_request.data = _Ts2dAllocateRequestMemory(sizeof(Ts2dBlurRequestData));
-    TS2D_LOAD_REQUEST_DEBUG_DATA;
+    
     rect.y = global_ts2d->render_height - rect.y - rect.height;
     ((Ts2dBlurRequestData *)global_ts2d->active_request.data)->clip = rect;
     ((Ts2dBlurRequestData *)global_ts2d->active_request.data)->blur_magnitude = blur_magnitude;
 }
 
 void
-_Ts2dPushLine(v4 color, v2 p1, v2 p2 TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushLine(v4 color, v2 p1, v2 p2)
 {
     HardAssert(global_ts2d->line.instance_data_alloc_pos + global_ts2d->line.instance_data_stride <= global_ts2d->line.instance_data_max);
     Ts2dRequestType request_type = TS2D_REQUEST_line;
@@ -2109,7 +2103,7 @@ _Ts2dPushLine(v4 color, v2 p1, v2 p2 TS2D_DEBUG_EXTRA_PARAMS)
         global_ts2d->active_request.instance_data_offset = global_ts2d->line.instance_data_alloc_pos;
         global_ts2d->active_request.instance_data_size = global_ts2d->line.instance_data_stride;
         global_ts2d->active_request.flags = 0;
-        TS2D_LOAD_REQUEST_DEBUG_DATA;
+        
     }
     else
     {
@@ -2128,7 +2122,7 @@ _Ts2dPushLine(v4 color, v2 p1, v2 p2 TS2D_DEBUG_EXTRA_PARAMS)
 }
 
 void
-_Ts2dPushRect(v4 color, v4 rect TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushRect(v4 color, v4 rect)
 {
     HardAssert(global_ts2d->rect.instance_data_alloc_pos + global_ts2d->rect.instance_data_stride <= global_ts2d->rect.instance_data_max);
     Ts2dRequestType request_type = TS2D_REQUEST_rect;
@@ -2139,7 +2133,7 @@ _Ts2dPushRect(v4 color, v4 rect TS2D_DEBUG_EXTRA_PARAMS)
         global_ts2d->active_request.instance_data_offset = global_ts2d->rect.instance_data_alloc_pos;
         global_ts2d->active_request.instance_data_size = global_ts2d->rect.instance_data_stride;
         global_ts2d->active_request.flags = 0;
-        TS2D_LOAD_REQUEST_DEBUG_DATA;
+        
     }
     else
     {
@@ -2158,7 +2152,7 @@ _Ts2dPushRect(v4 color, v4 rect TS2D_DEBUG_EXTRA_PARAMS)
 }
 
 void
-_Ts2dPushFilledVertexColoredRect(v4 color00, v4 color01, v4 color10, v4 color11, v4 rect TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushFilledVertexColoredRect(v4 color00, v4 color01, v4 color10, v4 color11, v4 rect)
 {
     HardAssert(global_ts2d->filled_rect.instance_data_alloc_pos + global_ts2d->filled_rect.instance_data_stride <= global_ts2d->filled_rect.instance_data_max);
     Ts2dRequestType request_type = TS2D_REQUEST_filled_rect;
@@ -2169,7 +2163,7 @@ _Ts2dPushFilledVertexColoredRect(v4 color00, v4 color01, v4 color10, v4 color11,
         global_ts2d->active_request.instance_data_offset = global_ts2d->filled_rect.instance_data_alloc_pos;
         global_ts2d->active_request.instance_data_size = global_ts2d->filled_rect.instance_data_stride;
         global_ts2d->active_request.flags = 0;
-        TS2D_LOAD_REQUEST_DEBUG_DATA;
+        
     }
     else
     {
@@ -2200,13 +2194,13 @@ _Ts2dPushFilledVertexColoredRect(v4 color00, v4 color01, v4 color10, v4 color11,
 }
 
 void
-_Ts2dPushFilledRect(v4 color, v4 rect TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushFilledRect(v4 color, v4 rect)
 {
-    _Ts2dPushFilledVertexColoredRect(color, color, color, color, rect TS2D_DEBUG_EXTRA_ARGS);
+    Ts2dPushFilledVertexColoredRect(color, color, color, color, rect);
 }
 
 void
-_Ts2dPushTintedTextureWithFlags(Ts2dTexture *texture, i32 flags, v4 source, v4 destination, v4 tint TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushTintedTextureWithFlags(Ts2dTexture *texture, i32 flags, v4 source, v4 destination, v4 tint)
 {
     if(texture && texture->id)
     {
@@ -2224,7 +2218,7 @@ _Ts2dPushTintedTextureWithFlags(Ts2dTexture *texture, i32 flags, v4 source, v4 d
             global_ts2d->active_request.flags = flags;
             global_ts2d->active_request.data = _Ts2dAllocateRequestMemory(sizeof(Ts2dTextureRequestData));
             ((Ts2dTextureRequestData *)global_ts2d->active_request.data)->texture = texture;
-            TS2D_LOAD_REQUEST_DEBUG_DATA;
+            
         }
         else
         {
@@ -2266,32 +2260,32 @@ _Ts2dPushTintedTextureWithFlags(Ts2dTexture *texture, i32 flags, v4 source, v4 d
     }
     else
     {
-        _Ts2dPushFilledRect(v4(1, 0, 0, 1), destination TS2D_DEBUG_EXTRA_ARGS);
+        Ts2dPushFilledRect(v4(1, 0, 0, 1), destination);
     }
 }
 
 void
-_Ts2dPushTintedTexture(Ts2dTexture *texture, v4 source, v4 destination, v4 tint TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushTintedTexture(Ts2dTexture *texture, v4 source, v4 destination, v4 tint)
 {
-    _Ts2dPushTintedTextureWithFlags(texture, 0, source, destination, tint TS2D_DEBUG_EXTRA_ARGS);
+    Ts2dPushTintedTextureWithFlags(texture, 0, source, destination, tint);
 }
 
 void
-_Ts2dPushTextureWithFlags(Ts2dTexture *texture, i32 flags, v4 source, v4 destination TS2D_DEBUG_EXTRA_PARAMS)
-{
-    v4 tint = {1, 1, 1, 1};
-    _Ts2dPushTintedTextureWithFlags(texture, flags, source, destination, tint TS2D_DEBUG_EXTRA_ARGS);
-}
-
-void
-_Ts2dPushTexture(Ts2dTexture *texture, v4 source, v4 destination TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushTextureWithFlags(Ts2dTexture *texture, i32 flags, v4 source, v4 destination)
 {
     v4 tint = {1, 1, 1, 1};
-    _Ts2dPushTintedTextureWithFlags(texture, 0, source, destination, tint TS2D_DEBUG_EXTRA_ARGS);
+    Ts2dPushTintedTextureWithFlags(texture, flags, source, destination, tint);
 }
 
 void
-_Ts2dPushWorldTile(Ts2dTexture *texture, iv2 source, iv2 position TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushTexture(Ts2dTexture *texture, v4 source, v4 destination)
+{
+    v4 tint = {1, 1, 1, 1};
+    Ts2dPushTintedTextureWithFlags(texture, 0, source, destination, tint);
+}
+
+void
+Ts2dPushWorldTile(Ts2dTexture *texture, iv2 source, iv2 position)
 {
     if(texture && texture->id)
     {
@@ -2308,7 +2302,7 @@ _Ts2dPushWorldTile(Ts2dTexture *texture, iv2 source, iv2 position TS2D_DEBUG_EXT
             global_ts2d->active_request.flags = 0;
             global_ts2d->active_request.data = _Ts2dAllocateRequestMemory(sizeof(Ts2dTextureRequestData));
             ((Ts2dTextureRequestData *)global_ts2d->active_request.data)->texture = texture;
-            TS2D_LOAD_REQUEST_DEBUG_DATA;
+            
         }
         else
         {
@@ -2325,9 +2319,8 @@ _Ts2dPushWorldTile(Ts2dTexture *texture, iv2 source, iv2 position TS2D_DEBUG_EXT
 }
 
 f32
-_Ts2dPushTextWithBoldnessAndSoftnessN(Ts2dFont *font, i32 flags, v4 color, v2 position,
-                                      f32 font_scale, f32 boldness, f32 softness, char *text, u32 n
-                                      TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushTextWithBoldnessAndSoftnessN(Ts2dFont *font, i32 flags, v4 color, v2 position,
+                                     f32 font_scale, f32 boldness, f32 softness, char *text, u32 n)
 {
     f32 text_width = 0;
     
@@ -2378,7 +2371,7 @@ _Ts2dPushTextWithBoldnessAndSoftnessN(Ts2dFont *font, i32 flags, v4 color, v2 po
                         global_ts2d->active_request.flags = 0;
                         global_ts2d->active_request.data = _Ts2dAllocateRequestMemory(sizeof(Ts2dTextureRequestData));
                         ((Ts2dTextureRequestData *)global_ts2d->active_request.data)->texture = &font->texture;
-                        TS2D_LOAD_REQUEST_DEBUG_DATA;
+                        
                     }
                     else
                     {
@@ -2443,29 +2436,29 @@ _Ts2dPushTextWithBoldnessAndSoftnessN(Ts2dFont *font, i32 flags, v4 color, v2 po
 }
 
 f32
-_Ts2dPushTextN(Ts2dFont *font, i32 flags, v4 color, v2 position, f32 font_scale, char *text, u32 n TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushTextN(Ts2dFont *font, i32 flags, v4 color, v2 position, f32 font_scale, char *text, u32 n)
 {
     f32 boldness = 0.62f + (0.12f * (1.f - font_scale));
     f32 softness = 0.10f + (0.22f * (1.f - font_scale));
-    return _Ts2dPushTextWithBoldnessAndSoftnessN(font, flags, color, position, font_scale, boldness,
-                                                 softness, text, n TS2D_DEBUG_EXTRA_ARGS);
+    return Ts2dPushTextWithBoldnessAndSoftnessN(font, flags, color, position, font_scale, boldness,
+                                                softness, text, n);
 }
 
 f32
-_Ts2dPushText(Ts2dFont *font, i32 flags, v4 color, v2 position, f32 font_scale, char *text TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushText(Ts2dFont *font, i32 flags, v4 color, v2 position, f32 font_scale, char *text)
 {
-    return _Ts2dPushTextN(font, flags, color, position, font_scale, text, (u32)(-1) TS2D_DEBUG_EXTRA_ARGS);
+    return Ts2dPushTextN(font, flags, color, position, font_scale, text, (u32)(-1));
 }
 
 f32
-_Ts2dPushTextWithBoldnessAndSoftness(Ts2dFont *font, i32 flags, v4 color, v2 position, f32 font_scale, f32 boldness, f32 softness, char *text TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushTextWithBoldnessAndSoftness(Ts2dFont *font, i32 flags, v4 color, v2 position, f32 font_scale, f32 boldness, f32 softness, char *text)
 {
-    return _Ts2dPushTextWithBoldnessAndSoftnessN(font, flags, color, position, font_scale, boldness,
-                                                 softness, text, (u32)(-1) TS2D_DEBUG_EXTRA_ARGS);
+    return Ts2dPushTextWithBoldnessAndSoftnessN(font, flags, color, position, font_scale, boldness,
+                                                softness, text, (u32)(-1));
 }
 
 void
-_Ts2dPushPointLight(v2 position, v3 color, f32 radius, f32 intensity TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushPointLight(v2 position, v3 color, f32 radius, f32 intensity)
 {
     HardAssert(global_ts2d->light_count < TS2D_MAX_LIGHT_COUNT);
     u32 i = global_ts2d->light_count++;
@@ -2476,12 +2469,12 @@ _Ts2dPushPointLight(v2 position, v3 color, f32 radius, f32 intensity TS2D_DEBUG_
 }
 
 void
-_Ts2dPushWorldBegin(Ts2dWorldInfo *info TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushWorldBegin(Ts2dWorldInfo *info)
 {
     Ts2dInternalFinishActiveRequest();
     Ts2dRequestType request_type = TS2D_REQUEST_begin_world;
     global_ts2d->active_request.type = request_type;
-    TS2D_LOAD_REQUEST_DEBUG_DATA;
+    
     
     // NOTE(rjf): Load data from info struct.
     {
@@ -2497,36 +2490,33 @@ _Ts2dPushWorldBegin(Ts2dWorldInfo *info TS2D_DEBUG_EXTRA_PARAMS)
 }
 
 void
-_Ts2dPushBackgroundBegin(TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushBackgroundBegin(void)
 {
     Ts2dInternalFinishActiveRequest();
     Ts2dRequestType request_type = TS2D_REQUEST_begin_background;
     global_ts2d->active_request.type = request_type;
-    TS2D_LOAD_REQUEST_DEBUG_DATA;
 }
 
 void
-_Ts2dPushWorldEnd(TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushWorldEnd(void)
 {
     Ts2dInternalFinishActiveRequest();
     Ts2dRequestType request_type = TS2D_REQUEST_end_world;
     global_ts2d->active_request.type = request_type;
-    TS2D_LOAD_REQUEST_DEBUG_DATA;
 }
 
 void
-_Ts2dPushBackgroundEnd(TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushBackgroundEnd(void)
 {
     Ts2dInternalFinishActiveRequest();
     Ts2dRequestType request_type = TS2D_REQUEST_end_background;
     global_ts2d->active_request.type = request_type;
-    TS2D_LOAD_REQUEST_DEBUG_DATA;
 }
 
 void
-_Ts2dPushReflectiveRect(v4 rect, v4 color, f32 distortion, f32 distortion_time_factor TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushReflectiveRect(v4 rect, v4 color, f32 distortion, f32 distortion_time_factor)
 {
-    _Ts2dPushFilledRect(color, rect TS2D_DEBUG_EXTRA_ARGS);
+    Ts2dPushFilledRect(color, rect);
     
     HardAssert(global_ts2d->reflective_rect.instance_data_alloc_pos + global_ts2d->reflective_rect.instance_data_stride <= global_ts2d->reflective_rect.instance_data_max);
     Ts2dRequestType request_type = TS2D_REQUEST_reflective_rect;
@@ -2537,7 +2527,7 @@ _Ts2dPushReflectiveRect(v4 rect, v4 color, f32 distortion, f32 distortion_time_f
         global_ts2d->active_request.instance_data_offset = global_ts2d->reflective_rect.instance_data_alloc_pos;
         global_ts2d->active_request.instance_data_size = global_ts2d->reflective_rect.instance_data_stride;
         global_ts2d->active_request.flags = 0;
-        TS2D_LOAD_REQUEST_DEBUG_DATA;
+        
     }
     else
     {
@@ -2561,7 +2551,7 @@ _Ts2dPushReflectiveRect(v4 rect, v4 color, f32 distortion, f32 distortion_time_f
 }
 
 void
-_Ts2dPushModel(Ts2dModel *model, v2 position, v2 size, m3 transform, float pixel_scale TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushModel(Ts2dModel *model, v2 position, v2 size, m3 transform, float pixel_scale)
 {
     Ts2dRequestType request_type = TS2D_REQUEST_model;
     Ts2dInternalFinishActiveRequest();
@@ -2577,11 +2567,10 @@ _Ts2dPushModel(Ts2dModel *model, v2 position, v2 size, m3 transform, float pixel
     request_data->transform = transform;
     request_data->pixel_scale = pixel_scale;
     global_ts2d->active_request.data = request_data;
-    TS2D_LOAD_REQUEST_DEBUG_DATA;
 }
 
 void
-_Ts2dPushModelWithSkeleton(Ts2dModel *model, Ts2dSkeleton *skeleton, v2 position, v2 size, m3 transform, float pixel_scale TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushModelWithSkeleton(Ts2dModel *model, Ts2dSkeleton *skeleton, v2 position, v2 size, m3 transform, float pixel_scale)
 {
     Ts2dRequestType request_type = TS2D_REQUEST_model;
     Ts2dInternalFinishActiveRequest();
@@ -2598,11 +2587,10 @@ _Ts2dPushModelWithSkeleton(Ts2dModel *model, Ts2dSkeleton *skeleton, v2 position
     request_data->transform = transform;
     request_data->pixel_scale = pixel_scale;
     global_ts2d->active_request.data = request_data;
-    TS2D_LOAD_REQUEST_DEBUG_DATA;
 }
 
 void
-_Ts2dPushDebugSkeleton(Ts2dSkeleton *skeleton, v2 position, v2 size, m3 transform, float pixel_scale TS2D_DEBUG_EXTRA_PARAMS)
+Ts2dPushDebugSkeleton(Ts2dSkeleton *skeleton, v2 position, v2 size, m3 transform, float pixel_scale)
 {
     Ts2dRequestType request_type = TS2D_REQUEST_debug_skeleton;
     Ts2dInternalFinishActiveRequest();
@@ -2617,5 +2605,5 @@ _Ts2dPushDebugSkeleton(Ts2dSkeleton *skeleton, v2 position, v2 size, m3 transfor
     request_data->transform = transform;
     request_data->pixel_scale = pixel_scale;
     global_ts2d->active_request.data = request_data;
-    TS2D_LOAD_REQUEST_DEBUG_DATA;
+    
 }

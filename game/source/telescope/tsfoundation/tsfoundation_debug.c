@@ -54,7 +54,7 @@ _DebugLog(i32 flags, char *file, int line, char *format, ...)
         va_start(args, format);
         vsnprintf(string, sizeof(string), format, args);
         va_end(args);
-#if TSDEVTERMINAL && TSDEVTERMINAL_H_INCLUDED
+#if TSDEVTERMINAL
         TsDevTerminalLog(flags, "%s", string);
 #endif
 #if BUILD_WIN32

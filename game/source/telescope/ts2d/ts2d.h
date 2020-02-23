@@ -42,14 +42,6 @@ typedef struct Ts2dFontGlyph        Ts2dFontGlyph;
 
 global Ts2d *global_ts2d = 0;
 
-#if TS2D_DEBUG
-#define TS2D_DEBUG_EXTRA_PARAMS , char *file, int line
-#define TS2D_DEBUG_EXTRA_ARGS   , file, line
-#else
-#define TS2D_DEBUG_EXTRA_PARAMS
-#define TS2D_DEBUG_EXTRA_ARGS
-#endif
-
 //~ NOTE(rjf): Main Procedures
 void          Ts2dInit                                    (MemoryArena *arena);
 void          Ts2dCleanUp                                 (void);
@@ -94,86 +86,30 @@ f32           Ts2dFontGetTextWidthN                       (Ts2dFont *font, char 
 f32           Ts2dFontGetTextWidth                        (Ts2dFont *font, char *text);
 
 //~ NOTE(rjf): Rendering Commands
-void          _Ts2dPushWorldBegin                         (Ts2dWorldInfo *world_info TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushBackgroundBegin                    (TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushWorldEnd                           (TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushBackgroundEnd                      (TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushClip                               (v4 clip TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushClipThatIsConstrainedByCurrent     (v4 clip TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPopClip                                (TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushRectangleBlur                      (v4 rect, f32 blur_magnitude TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushLine                               (v4 color, v2 p1, v2 p2 TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushRect                               (v4 color, v4 rect TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushFilledRect                         (v4 color, v4 rect TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushFilledVertexColoredRect            (v4 color00, v4 color01, v4 color10, v4 color11, v4 rect TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushTintedTextureWithFlags             (Ts2dTexture *texture, i32 flags, v4 source, v4 destination, v4 tint TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushTintedTexture                      (Ts2dTexture *texture, v4 source, v4 destination, v4 tint TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushTextureWithFlags                   (Ts2dTexture *texture, i32 flags, v4 source, v4 destination TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushTexture                            (Ts2dTexture *texture, v4 source, v4 destination TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushWorldTile                          (Ts2dTexture *texture, iv2 source, iv2 position TS2D_DEBUG_EXTRA_PARAMS);
-f32           _Ts2dPushTextWithBoldnessAndSoftnessN       (Ts2dFont *font, i32 flags, v4 color, v2 position, f32 font_scale, f32 boldness, f32 softness, char *text, u32 n TS2D_DEBUG_EXTRA_PARAMS);
-f32           _Ts2dPushTextN                              (Ts2dFont *font, i32 flags, v4 color, v2 position, f32 font_scale, char *text, u32 n TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushPointLight                         (v2 position, v3 color, f32 radius, f32 intensity TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushReflectiveRect                     (v4 rect, v4 color, f32 distortion, f32 distortion_time_factor TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushModel                              (Ts2dModel *model, v2 position, v2 size, m3 transform, float pixel_scale TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushModelWithSkeleton                  (Ts2dModel *model, Ts2dSkeleton *skeleton, v2 position, v2 size, m3 transform, float pixel_scale TS2D_DEBUG_EXTRA_PARAMS);
-void          _Ts2dPushDebugSkeleton                      (Ts2dSkeleton *skeleton, v2 position, v2 size, m3 transform, float pixel_scale TS2D_DEBUG_EXTRA_PARAMS);
-
-#if TS2D_DEBUG
-#define Ts2dPushWorldBegin(...)                     _Ts2dPushWorldBegin(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushBackgroundBegin(...)                _Ts2dPushBackgroundBegin(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushWorldEnd(...)                       _Ts2dPushWorldEnd(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushBackgroundEnd(...)                  _Ts2dPushBackgroundEnd(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushClip(...)                           _Ts2dPushClip(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushClipThatIsConstrainedByCurrent(...) _Ts2dPushClipThatIsConstrainedByCurrent(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPopClip(...)                            _Ts2dPopClip(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushRectangleBlur(...)                  _Ts2dPushRectangleBlur(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushLine(...)                           _Ts2dPushLine(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushRect(...)                           _Ts2dPushRect(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushFilledRect(...)                     _Ts2dPushFilledRect(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushFilledVertexColoredRect(...)        _Ts2dPushFilledVertexColoredRect(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushTintedTextureWithFlags(...)         _Ts2dPushTintedTextureWithFlags(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushTintedTexture(...)                  _Ts2dPushTintedTexture(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushTextureWithFlags(...)               _Ts2dPushTextureWithFlags(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushTexture(...)                        _Ts2dPushTexture(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushWorldTile(...)                      _Ts2dPushWorldTile(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushTextWithBoldnessAndSoftnessN(...)   _Ts2dPushTextWithBoldnessAndSoftnessN(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushTextN(...)                          _Ts2dPushTextN(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushTextWithBoldnessAndSoftness(...)    _Ts2dPushTextWithBoldnessAndSoftness(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushText(...)                           _Ts2dPushText(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushPointLight(...)                     _Ts2dPushPointLight(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushReflectiveRect(...)                 _Ts2dPushReflectiveRect(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushModel(...)                          _Ts2dPushModel(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushModelWithSkeleton(...)              _Ts2dPushModelWithSkeleton(__VA_ARGS__, __FILE__, __LINE__)
-#define Ts2dPushDebugSkeleton(...)                  _Ts2dPushDebugSkeleton(__VA_ARGS__, __FILE__, __LINE__)
-#else
-#define Ts2dPushWorldBegin(...)                     _Ts2dPushWorldBegin(__VA_ARGS__)
-#define Ts2dPushBackgroundBegin(...)                _Ts2dPushBackgroundBegin(__VA_ARGS__)
-#define Ts2dPushWorldEnd(...)                       _Ts2dPushWorldEnd(__VA_ARGS__)
-#define Ts2dPushBackgroundEnd(...)                  _Ts2dPushBackgroundEnd(__VA_ARGS__)
-#define Ts2dPushClip(...)                           _Ts2dPushClip(__VA_ARGS__)
-#define Ts2dPushClipThatIsConstrainedByCurrent(...) _Ts2dPushClipThatIsConstrainedByCurrent(__VA_ARGS__)
-#define Ts2dPopClip(...)                            _Ts2dPopClip(__VA_ARGS__)
-#define Ts2dPushRectangleBlur(...)                  _Ts2dPushRectangleBlur(__VA_ARGS__)
-#define Ts2dPushLine(...)                           _Ts2dPushLine(__VA_ARGS__)
-#define Ts2dPushRect(...)                           _Ts2dPushRect(__VA_ARGS__)
-#define Ts2dPushFilledRect(...)                     _Ts2dPushFilledRect(__VA_ARGS__)
-#define Ts2dPushFilledVertexColoredRect(...)        _Ts2dPushFilledVertexColoredRect(__VA_ARGS__)
-#define Ts2dPushTintedTextureWithFlags(...)         _Ts2dPushTintedTextureWithFlags(__VA_ARGS__)
-#define Ts2dPushTintedTexture(...)                  _Ts2dPushTintedTexture(__VA_ARGS__)
-#define Ts2dPushTextureWithFlags(...)               _Ts2dPushTextureWithFlags(__VA_ARGS__)
-#define Ts2dPushTexture(...)                        _Ts2dPushTexture(__VA_ARGS__)
-#define Ts2dPushWorldTile(...)                      _Ts2dPushWorldTile(__VA_ARGS__)
-#define Ts2dPushTextWithBoldnessAndSoftnessN(...)   _Ts2dPushTextWithBoldnessAndSoftnessN(__VA_ARGS__)
-#define Ts2dPushTextN(...)                          _Ts2dPushTextN(__VA_ARGS__)
-#define Ts2dPushTextWithBoldnessAndSoftness(...)    _Ts2dPushTextWithBoldnessAndSoftness(__VA_ARGS__)
-#define Ts2dPushText(...)                           _Ts2dPushText(__VA_ARGS__)
-#define Ts2dPushPointLight(...)                     _Ts2dPushPointLight(__VA_ARGS__)
-#define Ts2dPushReflectiveRect(...)                 _Ts2dPushReflectiveRect(__VA_ARGS__)
-#define Ts2dPushModel(...)                          _Ts2dPushModel(__VA_ARGS__)
-#define Ts2dPushModelWithSkeleton(...)              _Ts2dPushModelWithSkeleton(__VA_ARGS__)
-#define Ts2dPushDebugSkeleton(...)                  _Ts2dPushDebugSkeleton(__VA_ARGS__)
-#endif
+void          Ts2dPushWorldBegin                         (Ts2dWorldInfo *world_info);
+void          Ts2dPushBackgroundBegin                    (void);
+void          Ts2dPushWorldEnd                           (void);
+void          Ts2dPushBackgroundEnd                      (void);
+void          Ts2dPushClip                               (v4 clip);
+void          Ts2dPushClipThatIsConstrainedByCurrent     (v4 clip);
+void          Ts2dPopClip                                (void);
+void          Ts2dPushRectangleBlur                      (v4 rect, f32 blur_magnitude);
+void          Ts2dPushLine                               (v4 color, v2 p1, v2 p2);
+void          Ts2dPushRect                               (v4 color, v4 rect);
+void          Ts2dPushFilledRect                         (v4 color, v4 rect);
+void          Ts2dPushFilledVertexColoredRect            (v4 color00, v4 color01, v4 color10, v4 color11, v4 rect);
+void          Ts2dPushTintedTextureWithFlags             (Ts2dTexture *texture, i32 flags, v4 source, v4 destination, v4 tint);
+void          Ts2dPushTintedTexture                      (Ts2dTexture *texture, v4 source, v4 destination, v4 tint);
+void          Ts2dPushTextureWithFlags                   (Ts2dTexture *texture, i32 flags, v4 source, v4 destination);
+void          Ts2dPushTexture                            (Ts2dTexture *texture, v4 source, v4 destination);
+void          Ts2dPushWorldTile                          (Ts2dTexture *texture, iv2 source, iv2 position);
+f32           Ts2dPushTextWithBoldnessAndSoftnessN       (Ts2dFont *font, i32 flags, v4 color, v2 position, f32 font_scale, f32 boldness, f32 softness, char *text, u32 n);
+f32           Ts2dPushTextN                              (Ts2dFont *font, i32 flags, v4 color, v2 position, f32 font_scale, char *text, u32 n);
+void          Ts2dPushPointLight                         (v2 position, v3 color, f32 radius, f32 intensity);
+void          Ts2dPushReflectiveRect                     (v4 rect, v4 color, f32 distortion, f32 distortion_time_factor);
+void          Ts2dPushModel                              (Ts2dModel *model, v2 position, v2 size, m3 transform, float pixel_scale);
+void          Ts2dPushModelWithSkeleton                  (Ts2dModel *model, Ts2dSkeleton *skeleton, v2 position, v2 size, m3 transform, float pixel_scale);
+void          Ts2dPushDebugSkeleton                      (Ts2dSkeleton *skeleton, v2 position, v2 size, m3 transform, float pixel_scale);
 
 #define TS2D_BLUR_SHADOWS      (1<<0)
 #define TS2D_BLUR_BACKGROUNDS  (1<<1)

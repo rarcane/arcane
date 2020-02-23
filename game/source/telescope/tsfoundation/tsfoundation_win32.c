@@ -31,6 +31,7 @@
 // NOTE(rjf): Globals
 global char global_executable_path[256];
 global char global_executable_directory[256];
+global char global_working_directory[256];
 global char global_app_dll_path[256];
 global char global_temp_app_dll_path[256];
 global TsPlatform global_platform;
@@ -51,6 +52,10 @@ global Align(64) Win32WorkerThreadData global_win32_worker_threads[64] = {0};
 #include "tsfoundation_win32_threads.c"
 
 //~
+
+// HACK(rjf): // TODO(rjf): Fix this up...
+char *TsDevTerminalLog(i32 flags, char *format, ...)
+{ return 0; }
 
 typedef enum Win32CursorStyle Win32CursorStyle;
 enum Win32CursorStyle
@@ -368,6 +373,8 @@ WinMain(HINSTANCE instance, HINSTANCE prev_instance, LPSTR lp_cmd_line, int n_sh
             wsprintf(global_app_dll_path, "%s%s.dll", global_executable_directory, TS_APP_FILENAME);
             wsprintf(global_temp_app_dll_path, "%stemp_%s.dll", global_executable_directory, TS_APP_FILENAME);
         }
+        
+        GetCurrentDirectory(sizeof(global_working_directory), global_working_directory);
     }
     
     WNDCLASS window_class = {0};
@@ -433,6 +440,7 @@ WinMain(HINSTANCE instance, HINSTANCE prev_instance, LPSTR lp_cmd_line, int n_sh
     {
         global_platform.executable_folder_absolute_path = global_executable_directory;
         global_platform.executable_absolute_path = global_executable_path;
+        global_platform.working_directory_path = global_working_directory;
         
         u32 permanent_storage_size       = TS_APP_PERMANENT_STORAGE_SIZE;
         void *permanent_storage          = VirtualAlloc(0, permanent_storage_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);

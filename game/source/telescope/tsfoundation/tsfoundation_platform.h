@@ -104,6 +104,7 @@ struct TsPlatform
     // NOTE(rjf): Application Metadata
     char *executable_folder_absolute_path;
     char *executable_absolute_path;
+    char *working_directory_path;
     
     // NOTE(rjf): Application Memory
     MemoryArena permanent_arena;

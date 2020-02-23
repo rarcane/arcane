@@ -27,7 +27,7 @@ GetNextTsProjectTokenFromBuffer(char *buffer)
         if(CharIsAlpha(buffer[i]))
         {
             int j = i+1;
-            for(; buffer[j] && (CharIsAlpha(buffer[j]) || CharIsDigit(buffer[j]) || buffer[j] == '_'); ++j);
+            for(; buffer[j] && (CharIsAlpha(buffer[j]) || CharIsDigit(buffer[j]) || buffer[j] == '_' || buffer[j] == ' '); ++j);
             token.string = buffer + i;
             token.string_length = j - i;
             token.type = TSPROJECT_TOKEN_identifier;

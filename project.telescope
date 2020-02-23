@@ -1,4 +1,5 @@
 Project: "Arcane"
+Short Name: "arcane"
 Module: "Ts2d"
 Module: "TsAssets"
 Module: "TsDevTerminal"
