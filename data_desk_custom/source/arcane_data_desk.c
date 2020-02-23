@@ -20,658 +20,658 @@ static void GeneratePrintUICodeForAST(FILE *file, DataDeskNode *root, char *acce
 DATA_DESK_FUNC void
 DataDeskCustomInitCallback(void)
 {
-	global_catchall_header = fopen("catchall.h", "w");
-	global_catchall_implementation = fopen("catchall.c", "w");
+    global_catchall_header = fopen("catchall.h", "w");
+    global_catchall_implementation = fopen("catchall.c", "w");
 }
 
 DATA_DESK_FUNC void
 DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 {
-	FILE *file = global_catchall_header;
-
-	if (DataDeskNodeHasTag(root, "Component"))
-	{
-		components[component_count++] = root;
-	}
-	else if (DataDeskNodeHasTag(root, "UniqueEntity"))
-	{
-		unique_entities[unique_entity_count++] = root;
-
-		DataDeskNode *tag = DataDeskGetNodeTag(root, "UniqueEntity");
-		fprintf(file, "#define MAX_%s_ENTITIES (%s)\n", root->name_uppercase_with_underscores, DataDeskGetTagParameter(tag, 0)->name);
-		fprintf(file, "typedef struct %sEntity\n", root->name);
-		fprintf(file, "{\n");
-
-		fprintf(file, "Entity *parent_generic_entity;\n");
-		if (atoi(DataDeskGetTagParameter(tag, 0)->name) > 1)
-		{
-			fprintf(file, "i32 unique_entity_id;\n");
-		}
-
-		for (DataDeskNode *member = root->struct_declaration.first_member; member; member = member->next)
-		{
-			DataDeskNode *component_list_tag = DataDeskGetNodeTag(member, "ComponentList");
-			if (component_list_tag)
-			{
-				int tag_index = 0;
-				DataDeskNode *tag_param = DataDeskGetTagParameter(component_list_tag, tag_index);
-				while (tag_param)
-				{
-					fprintf(file, "    %sComponent *%s_comp;\n", tag_param->name, tag_param->name_lowercase_with_underscores);
-					tag_param = DataDeskGetTagParameter(component_list_tag, ++tag_index);
-				}
-			}
-			else
-			{
-				DataDeskFWriteGraphAsC(file, member, 0);
-				fprintf(file, ";\n");
-			}
-		}
-
-		fprintf(file, "} %sEntity;\n\n", root->name);
-	}
-	else if (DataDeskNodeHasTag(root, "GenerateComponentCode"))
-	{
-		GenerateComponentCode();
-	}
-	else if (DataDeskNodeHasTag(root, "GenerateEntityCode"))
-	{
-		GenerateEntityCode();
-	}
-	else if (DataDeskNodeHasTag(root, "ForwardDeclare"))
-	{
-		DataDeskNode *tag = DataDeskGetNodeTag(root, "ForwardDeclare");
-		fprintf(file, "typedef struct %s %s;\n\n", DataDeskGetTagParameter(tag, 0)->name, DataDeskGetTagParameter(tag, 0)->name);
-	}
-	else
-	{
-		switch (root->type)
-		{
-		default:
-		{
-			DataDeskFWriteGraphAsC(file, root, 0);
-			break;
-		}
-
-		case DATA_DESK_NODE_TYPE_struct_declaration:
-		{
-			fprintf(file, "typedef struct %s\n", root->string);
-			fprintf(file, "{\n");
-			for (DataDeskNode *member = root->struct_declaration.first_member;
-				 member; member = member->next)
-			{
-				if (DataDeskNodeHasTag(member, "GenerateUniqueEntityArrays"))
-				{
-					GenerateUniqueEntityArrays();
-				}
-
-				_DataDeskFWriteGraphAsC(file, member, 0, 1);
-				fprintf(file, ";\n");
-			}
-			fprintf(file, "} %s;\n\n", root->string);
-
-			break;
-		}
-
-		case DATA_DESK_NODE_TYPE_enum_declaration:
-		{
-
-			// MOTE(tjr): Generate styled enum.
-			{
-				FILE *file = global_catchall_header;
-				if (file)
-				{
-					fprintf(file, "typedef enum %s %s;\n", root->name, root->name);
-					//DataDeskFWriteEnumAsC(global_catchall_header, enum_info);
-					fprintf(file, "enum %s\n", root->name);
-					fprintf(file, "{\n");
-					for (DataDeskNode *field = root->enum_declaration.first_constant; field; field = field->next)
-					{
-						fprintf(file, "%s_%s,\n", root->name_uppercase_with_underscores, field->string);
-					}
-					fprintf(file, "%s_MAX,\n", root->name_uppercase_with_underscores);
-					fprintf(file, "};\n");
-
-					fprintf(file, "static char *Get%sTypeName(%s type);\n\n", root->name, root->name);
-				}
-			}
-
-			// NOTE(tjr): Generate enum print function implementation.
-			{
-				FILE *file = global_catchall_implementation;
-				if (file)
-				{
-					fprintf(file, "static char *Get%sName(%s type)\n", root->name, root->name);
-					fprintf(file, "{\n");
-					fprintf(file, "switch(type)\n");
-					fprintf(file, "{\n");
-					for (DataDeskNode *field = root->enum_declaration.first_constant; field; field = field->next)
-					{
-						fprintf(file, "case %s_%s:\n", root->name_uppercase_with_underscores, field->string);
-						fprintf(file, "return \"");
-
-						// NOTE(tjr): Make enum name look pretty.
-						int string_length = 0;
-						for (; field->string[string_length]; ++string_length)
-							;
-						for (int i = 0; i < string_length && field->string[i]; ++i)
-						{
-							if (field->string[i] != '_')
-							{
-								if (i == 0)
-								{
-									fprintf(file, "%c", DataDeskCharToUpper(field->string[i]));
-								}
-								else
-								{
-									fprintf(file, "%c", field->string[i]);
-									if (field->string[i + 1] == '_')
-									{
-										fprintf(file, " ");
-										fprintf(file, "%c", DataDeskCharToUpper(field->string[i + 2]));
-										i = i + 2;
-									}
-								}
-							}
-						}
-
-						fprintf(file, "\";\n");
-						fprintf(file, "break;\n");
-					}
-					fprintf(file, "default:\n");
-					fprintf(file, "return \"INVALID\";\n");
-					fprintf(file, "break;\n");
-					fprintf(file, "}\n");
-					fprintf(file, "}\n\n");
-				}
-			}
-
-			break;
-		}
-
-		case DATA_DESK_NODE_TYPE_flags_declaration:
-		{
-			FILE *file = global_catchall_header;
-			if (file)
-			{
-				int count = 0;
-				for (DataDeskNode *field = root->flags_declaration.first_flag; field; field = field->next)
-				{
-					fprintf(file, "#define %s_%s (1<<%i)\n", root->name_uppercase_with_underscores, field->string, count);
-					count++;
-				}
-				fprintf(file, "typedef unsigned int %s;\n\n", root->name);
-			}
-			break;
-		}
-		}
-	}
+    FILE *file = global_catchall_header;
+    
+    if (DataDeskNodeHasTag(root, "Component"))
+    {
+        components[component_count++] = root;
+    }
+    else if (DataDeskNodeHasTag(root, "UniqueEntity"))
+    {
+        unique_entities[unique_entity_count++] = root;
+        
+        DataDeskNode *tag = DataDeskGetNodeTag(root, "UniqueEntity");
+        fprintf(file, "#define MAX_%s_ENTITIES (%s)\n", root->name_uppercase_with_underscores, DataDeskGetTagParameter(tag, 0)->name);
+        fprintf(file, "typedef struct %sEntity\n", root->name);
+        fprintf(file, "{\n");
+        
+        fprintf(file, "Entity *parent_generic_entity;\n");
+        if (atoi(DataDeskGetTagParameter(tag, 0)->name) > 1)
+        {
+            fprintf(file, "i32 unique_entity_id;\n");
+        }
+        
+        for (DataDeskNode *member = root->struct_declaration.first_member; member; member = member->next)
+        {
+            DataDeskNode *component_list_tag = DataDeskGetNodeTag(member, "ComponentList");
+            if (component_list_tag)
+            {
+                int tag_index = 0;
+                DataDeskNode *tag_param = DataDeskGetTagParameter(component_list_tag, tag_index);
+                while (tag_param)
+                {
+                    fprintf(file, "    %sComponent *%s_comp;\n", tag_param->name, tag_param->name_lowercase_with_underscores);
+                    tag_param = DataDeskGetTagParameter(component_list_tag, ++tag_index);
+                }
+            }
+            else
+            {
+                DataDeskFWriteGraphAsC(file, member, 0);
+                fprintf(file, ";\n");
+            }
+        }
+        
+        fprintf(file, "} %sEntity;\n\n", root->name);
+    }
+    else if (DataDeskNodeHasTag(root, "GenerateComponentCode"))
+    {
+        GenerateComponentCode();
+    }
+    else if (DataDeskNodeHasTag(root, "GenerateEntityCode"))
+    {
+        GenerateEntityCode();
+    }
+    else if (DataDeskNodeHasTag(root, "ForwardDeclare"))
+    {
+        DataDeskNode *tag = DataDeskGetNodeTag(root, "ForwardDeclare");
+        fprintf(file, "typedef struct %s %s;\n\n", DataDeskGetTagParameter(tag, 0)->name, DataDeskGetTagParameter(tag, 0)->name);
+    }
+    else
+    {
+        switch (root->type)
+        {
+            default:
+            {
+                DataDeskFWriteGraphAsC(file, root, 0);
+                break;
+            }
+            
+            case DATA_DESK_NODE_TYPE_struct_declaration:
+            {
+                fprintf(file, "typedef struct %s\n", root->string);
+                fprintf(file, "{\n");
+                for (DataDeskNode *member = root->struct_declaration.first_member;
+                     member; member = member->next)
+                {
+                    if (DataDeskNodeHasTag(member, "GenerateUniqueEntityArrays"))
+                    {
+                        GenerateUniqueEntityArrays();
+                    }
+                    
+                    _DataDeskFWriteGraphAsC(file, member, 0, 1);
+                    fprintf(file, ";\n");
+                }
+                fprintf(file, "} %s;\n\n", root->string);
+                
+                break;
+            }
+            
+            case DATA_DESK_NODE_TYPE_enum_declaration:
+            {
+                
+                // MOTE(tjr): Generate styled enum.
+                {
+                    FILE *file = global_catchall_header;
+                    if (file)
+                    {
+                        fprintf(file, "typedef enum %s %s;\n", root->name, root->name);
+                        //DataDeskFWriteEnumAsC(global_catchall_header, enum_info);
+                        fprintf(file, "enum %s\n", root->name);
+                        fprintf(file, "{\n");
+                        for (DataDeskNode *field = root->enum_declaration.first_constant; field; field = field->next)
+                        {
+                            fprintf(file, "%s_%s,\n", root->name_uppercase_with_underscores, field->string);
+                        }
+                        fprintf(file, "%s_MAX,\n", root->name_uppercase_with_underscores);
+                        fprintf(file, "};\n");
+                        
+                        fprintf(file, "static char *Get%sTypeName(%s type);\n\n", root->name, root->name);
+                    }
+                }
+                
+                // NOTE(tjr): Generate enum print function implementation.
+                {
+                    FILE *file = global_catchall_implementation;
+                    if (file)
+                    {
+                        fprintf(file, "static char *Get%sName(%s type)\n", root->name, root->name);
+                        fprintf(file, "{\n");
+                        fprintf(file, "switch(type)\n");
+                        fprintf(file, "{\n");
+                        for (DataDeskNode *field = root->enum_declaration.first_constant; field; field = field->next)
+                        {
+                            fprintf(file, "case %s_%s:\n", root->name_uppercase_with_underscores, field->string);
+                            fprintf(file, "return \"");
+                            
+                            // NOTE(tjr): Make enum name look pretty.
+                            int string_length = 0;
+                            for (; field->string[string_length]; ++string_length)
+                                ;
+                            for (int i = 0; i < string_length && field->string[i]; ++i)
+                            {
+                                if (field->string[i] != '_')
+                                {
+                                    if (i == 0)
+                                    {
+                                        fprintf(file, "%c", DataDeskCharToUpper(field->string[i]));
+                                    }
+                                    else
+                                    {
+                                        fprintf(file, "%c", field->string[i]);
+                                        if (field->string[i + 1] == '_')
+                                        {
+                                            fprintf(file, " ");
+                                            fprintf(file, "%c", DataDeskCharToUpper(field->string[i + 2]));
+                                            i = i + 2;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            fprintf(file, "\";\n");
+                            fprintf(file, "break;\n");
+                        }
+                        fprintf(file, "default:\n");
+                        fprintf(file, "return \"INVALID\";\n");
+                        fprintf(file, "break;\n");
+                        fprintf(file, "}\n");
+                        fprintf(file, "}\n\n");
+                    }
+                }
+                
+                break;
+            }
+            
+            case DATA_DESK_NODE_TYPE_flags_declaration:
+            {
+                FILE *file = global_catchall_header;
+                if (file)
+                {
+                    int count = 0;
+                    for (DataDeskNode *field = root->flags_declaration.first_flag; field; field = field->next)
+                    {
+                        fprintf(file, "#define %s_%s (1<<%i)\n", root->name_uppercase_with_underscores, field->string, count);
+                        count++;
+                    }
+                    fprintf(file, "typedef unsigned int %s;\n\n", root->name);
+                }
+                break;
+            }
+        }
+    }
 }
 
 DATA_DESK_FUNC void
 DataDeskCustomCleanUpCallback(void)
 {
-	fclose(global_catchall_header);
-	fclose(global_catchall_implementation);
+    fclose(global_catchall_header);
+    fclose(global_catchall_implementation);
 }
 
 static void GeneratePrintUICodeForAST(FILE *file, DataDeskNode *root, char *access_string)
 {
-	if (!DataDeskNodeHasTag(root, "NoPrint"))
-	{
-		switch (root->type)
-		{
-		case DATA_DESK_NODE_TYPE_struct_declaration:
-		{
-			fprintf(file, "        char title[100];\n");
-			fprintf(file, "        sprintf(title, \"%s #%%i\", component->component_id);\n", root->string);
-			fprintf(file, "        if (TsUICollapsable(core->ui, title))");
-			fprintf(file, "        {\n");
-			for (DataDeskNode *field = root->struct_declaration.first_member; field; field = field->next)
-			{
-				GeneratePrintUICodeForAST(file, field, access_string);
-			}
-			fprintf(file, "\n            TsUICollapsableEnd(core->ui);\n");
-			fprintf(file, "        }\n");
-			break;
-		}
-
-		case DATA_DESK_NODE_TYPE_declaration:
-		{
-			if (DataDeskDeclarationIsType(root, "int") ||
-				DataDeskDeclarationIsType(root, "i32") || DataDeskDeclarationIsType(root, "u32") ||
-				DataDeskDeclarationIsType(root, "i16") || DataDeskDeclarationIsType(root, "u16") ||
-				DataDeskDeclarationIsType(root, "i8") || DataDeskDeclarationIsType(root, "u8"))
-			{
-				DataDeskNode *editable_tag = DataDeskGetNodeTag(root, "Editable");
-				if (editable_tag)
-				{
-					DataDeskNode *param1 = DataDeskGetTagParameter(editable_tag, 0);
-					DataDeskNode *param2 = DataDeskGetTagParameter(editable_tag, 1);
-
-					fprintf(file, "            ");
-					fprintf(file, "%s%s = TsUIIntSlider(core->ui, \"%s\", %s%s, %s, %s);\n",
-							access_string, root->string,
-							root->string,
-							access_string, root->string,
-							param1->string,
-							param2->string);
-				}
-				else
-				{
-					fprintf(file, "            ");
-					fprintf(file, "TsUIPushAutoWidth(core->ui);\n");
-					fprintf(file, "            ");
-					fprintf(file, "{ char label[100]; ");
-					fprintf(file, "sprintf(label, \"%s: %%i\", %s%s); ", root->string, access_string, root->string);
-					fprintf(file, "TsUILabel(core->ui, label); }\n");
-					fprintf(file, "            ");
-					fprintf(file, "TsUIPopWidth(core->ui);\n");
-				}
-			}
-			else if (DataDeskDeclarationIsType(root, "float") || DataDeskDeclarationIsType(root, "f32") ||
-					 DataDeskDeclarationIsType(root, "f64"))
-			{
-				DataDeskNode *editable_tag = DataDeskGetNodeTag(root, "Editable");
-				if (editable_tag)
-				{
-					DataDeskNode *param1 = DataDeskGetTagParameter(editable_tag, 0);
-					DataDeskNode *param2 = DataDeskGetTagParameter(editable_tag, 1);
-
-					fprintf(file, "            ");
-					fprintf(file, "%s%s = TsUISlider(core->ui, \"%s\", %s%s, %s, %s);\n",
-							access_string, root->string,
-							root->string,
-							access_string, root->string,
-							param1->string,
-							param2->string);
-				}
-				else
-				{
-					fprintf(file, "            ");
-					fprintf(file, "TsUIPushAutoWidth(core->ui);\n");
-					fprintf(file, "            ");
-					fprintf(file, "{ char label[100]; ");
-					fprintf(file, "sprintf(label, \"%s: %%f\", %s%s); ", root->string, access_string, root->string);
-					fprintf(file, "TsUILabel(core->ui, label); }\n");
-					fprintf(file, "            ");
-					fprintf(file, "TsUIPopWidth(core->ui);\n");
-				}
-			}
-			else if (DataDeskDeclarationIsType(root, "b32") || DataDeskDeclarationIsType(root, "b16") ||
-					 DataDeskDeclarationIsType(root, "b8"))
-			{
-				DataDeskNode *editable_tag = DataDeskGetNodeTag(root, "Editable");
-				if (editable_tag)
-				{
-					fprintf(file, "            ");
-					fprintf(file, "%s%s = TsUIToggler(core->ui, \"%s\", %s%s);\n",
-							access_string, root->string,
-							root->string,
-							access_string, root->string);
-				}
-				else
-				{
-					fprintf(file, "            ");
-					fprintf(file, "TsUIPushAutoWidth(core->ui);\n");
-					fprintf(file, "            ");
-					fprintf(file, "{ char label[100]; ");
-					fprintf(file, "sprintf(label, %s%s ? \"%s: true\" : \"%s: false\"); ", access_string, root->string, root->string, root->string);
-					fprintf(file, "TsUILabel(core->ui, label); }\n");
-					fprintf(file, "            ");
-					fprintf(file, "TsUIPopWidth(core->ui);\n");
-				}
-			}
-			else if (DataDeskDeclarationIsType(root, "v2"))
-			{
-				/* DataDeskNode *editable_tag = DataDeskGetNodeTag(root, "Editable");
-				if (editable_tag)
-				{
-					DataDeskNode *param1 = DataDeskGetTagParameter(editable_tag, 0);
-					DataDeskNode *param2 = DataDeskGetTagParameter(editable_tag, 1);
-
-					fprintf(file, "            ");
-					fprintf(file, "%s%s = TsUISlider(core->ui, \"%s\", %s%s, %s, %s);\n",
-							access_string, root->string,
-							root->string,
-							access_string, root->string,
-							param1->string,
-							param2->string);
-				} */
-
-				fprintf(file, "            ");
-				fprintf(file, "TsUIPushAutoWidth(core->ui);\n");
-				fprintf(file, "            ");
-				fprintf(file, "{ char label[100]; ");
-				fprintf(file, "sprintf(label, \"%s: %%f, %%f\", %s%s.x, %s%s.y); ", root->string, access_string, root->string, access_string, root->string);
-				fprintf(file, "TsUILabel(core->ui, label); }\n");
-				fprintf(file, "            ");
-				fprintf(file, "TsUIPopWidth(core->ui);\n");
-			}
-			else if (DataDeskDeclarationIsType(root, "*char"))
-			{
-				fprintf(file, "            ");
-				fprintf(file, "TsUIPushAutoWidth(core->ui);\n");
-				fprintf(file, "            ");
-				fprintf(file, "{ char label[100]; ");
-				fprintf(file, "sprintf(label, \"%s: %%s\", %s%s); ", root->string, access_string, root->string);
-				fprintf(file, "TsUILabel(core->ui, label); }\n");
-				fprintf(file, "            ");
-				fprintf(file, "TsUIPopWidth(core->ui);\n");
-			}
-			else
-			{
-				fprintf(file, "            ");
-				fprintf(file, "// TODO: Don't know how to generate UI print for variable '%s'\n", root->string);
-			}
-
-			break;
-		}
-
-		default:
-			break;
-		}
-	}
+    if (!DataDeskNodeHasTag(root, "NoPrint"))
+    {
+        switch (root->type)
+        {
+            case DATA_DESK_NODE_TYPE_struct_declaration:
+            {
+                fprintf(file, "        char title[100];\n");
+                fprintf(file, "        sprintf(title, \"%s #%%i\", component->component_id);\n", root->string);
+                fprintf(file, "        if (TsUICollapsable(title))");
+                fprintf(file, "        {\n");
+                for (DataDeskNode *field = root->struct_declaration.first_member; field; field = field->next)
+                {
+                    GeneratePrintUICodeForAST(file, field, access_string);
+                }
+                fprintf(file, "\n            TsUICollapsableEnd();\n");
+                fprintf(file, "        }\n");
+                break;
+            }
+            
+            case DATA_DESK_NODE_TYPE_declaration:
+            {
+                if (DataDeskDeclarationIsType(root, "int") ||
+                    DataDeskDeclarationIsType(root, "i32") || DataDeskDeclarationIsType(root, "u32") ||
+                    DataDeskDeclarationIsType(root, "i16") || DataDeskDeclarationIsType(root, "u16") ||
+                    DataDeskDeclarationIsType(root, "i8") || DataDeskDeclarationIsType(root, "u8"))
+                {
+                    DataDeskNode *editable_tag = DataDeskGetNodeTag(root, "Editable");
+                    if (editable_tag)
+                    {
+                        DataDeskNode *param1 = DataDeskGetTagParameter(editable_tag, 0);
+                        DataDeskNode *param2 = DataDeskGetTagParameter(editable_tag, 1);
+                        
+                        fprintf(file, "            ");
+                        fprintf(file, "%s%s = TsUIIntSlider(\"%s\", %s%s, %s, %s);\n",
+                                access_string, root->string,
+                                root->string,
+                                access_string, root->string,
+                                param1->string,
+                                param2->string);
+                    }
+                    else
+                    {
+                        fprintf(file, "            ");
+                        fprintf(file, "TsUIPushAutoWidth();\n");
+                        fprintf(file, "            ");
+                        fprintf(file, "{ char label[100]; ");
+                        fprintf(file, "sprintf(label, \"%s: %%i\", %s%s); ", root->string, access_string, root->string);
+                        fprintf(file, "TsUILabel(label); }\n");
+                        fprintf(file, "            ");
+                        fprintf(file, "TsUIPopWidth();\n");
+                    }
+                }
+                else if (DataDeskDeclarationIsType(root, "float") || DataDeskDeclarationIsType(root, "f32") ||
+                         DataDeskDeclarationIsType(root, "f64"))
+                {
+                    DataDeskNode *editable_tag = DataDeskGetNodeTag(root, "Editable");
+                    if (editable_tag)
+                    {
+                        DataDeskNode *param1 = DataDeskGetTagParameter(editable_tag, 0);
+                        DataDeskNode *param2 = DataDeskGetTagParameter(editable_tag, 1);
+                        
+                        fprintf(file, "            ");
+                        fprintf(file, "%s%s = TsUISlider(\"%s\", %s%s, %s, %s);\n",
+                                access_string, root->string,
+                                root->string,
+                                access_string, root->string,
+                                param1->string,
+                                param2->string);
+                    }
+                    else
+                    {
+                        fprintf(file, "            ");
+                        fprintf(file, "TsUIPushAutoWidth();\n");
+                        fprintf(file, "            ");
+                        fprintf(file, "{ char label[100]; ");
+                        fprintf(file, "sprintf(label, \"%s: %%f\", %s%s); ", root->string, access_string, root->string);
+                        fprintf(file, "TsUILabel(label); }\n");
+                        fprintf(file, "            ");
+                        fprintf(file, "TsUIPopWidth();\n");
+                    }
+                }
+                else if (DataDeskDeclarationIsType(root, "b32") || DataDeskDeclarationIsType(root, "b16") ||
+                         DataDeskDeclarationIsType(root, "b8"))
+                {
+                    DataDeskNode *editable_tag = DataDeskGetNodeTag(root, "Editable");
+                    if (editable_tag)
+                    {
+                        fprintf(file, "            ");
+                        fprintf(file, "%s%s = TsUIToggler(\"%s\", %s%s);\n",
+                                access_string, root->string,
+                                root->string,
+                                access_string, root->string);
+                    }
+                    else
+                    {
+                        fprintf(file, "            ");
+                        fprintf(file, "TsUIPushAutoWidth();\n");
+                        fprintf(file, "            ");
+                        fprintf(file, "{ char label[100]; ");
+                        fprintf(file, "sprintf(label, %s%s ? \"%s: true\" : \"%s: false\"); ", access_string, root->string, root->string, root->string);
+                        fprintf(file, "TsUILabel(label); }\n");
+                        fprintf(file, "            ");
+                        fprintf(file, "TsUIPopWidth();\n");
+                    }
+                }
+                else if (DataDeskDeclarationIsType(root, "v2"))
+                {
+                    /* DataDeskNode *editable_tag = DataDeskGetNodeTag(root, "Editable");
+                    if (editable_tag)
+                    {
+                       DataDeskNode *param1 = DataDeskGetTagParameter(editable_tag, 0);
+                       DataDeskNode *param2 = DataDeskGetTagParameter(editable_tag, 1);
+        
+                       fprintf(file, "            ");
+                       fprintf(file, "%s%s = TsUISlider(\"%s\", %s%s, %s, %s);\n",
+                             access_string, root->string,
+                             root->string,
+                             access_string, root->string,
+                             param1->string,
+                             param2->string);
+                    } */
+                    
+                    fprintf(file, "            ");
+                    fprintf(file, "TsUIPushAutoWidth();\n");
+                    fprintf(file, "            ");
+                    fprintf(file, "{ char label[100]; ");
+                    fprintf(file, "sprintf(label, \"%s: %%f, %%f\", %s%s.x, %s%s.y); ", root->string, access_string, root->string, access_string, root->string);
+                    fprintf(file, "TsUILabel(label); }\n");
+                    fprintf(file, "            ");
+                    fprintf(file, "TsUIPopWidth();\n");
+                }
+                else if (DataDeskDeclarationIsType(root, "*char"))
+                {
+                    fprintf(file, "            ");
+                    fprintf(file, "TsUIPushAutoWidth();\n");
+                    fprintf(file, "            ");
+                    fprintf(file, "{ char label[100]; ");
+                    fprintf(file, "sprintf(label, \"%s: %%s\", %s%s); ", root->string, access_string, root->string);
+                    fprintf(file, "TsUILabel(label); }\n");
+                    fprintf(file, "            ");
+                    fprintf(file, "TsUIPopWidth();\n");
+                }
+                else
+                {
+                    fprintf(file, "            ");
+                    fprintf(file, "// TODO: Don't know how to generate UI print for variable '%s'\n", root->string);
+                }
+                
+                break;
+            }
+            
+            default:
+            break;
+        }
+    }
 }
 
 static void
 GenerateComponentCode(void)
 {
-	// NOTE(tjr): Generate component struct declarations
-	{
-		FILE *file = global_catchall_header;
-		for (int i = 0; i < component_count; ++i)
-		{
-			DataDeskNode *root = components[i];
-			fprintf(file, "typedef struct %sComponent\n", root->name);
-			fprintf(file, "{\n");
-			fprintf(file, "Entity *parent_entity;\n");
-			fprintf(file, "i32 component_id;\n");
-
-			for (DataDeskNode *member = root->struct_declaration.first_member; member; member = member->next)
-			{
-				DataDeskFWriteGraphAsC(file, member, 0);
-				fprintf(file, ";\n");
-			}
-
-			fprintf(file, "} %sComponent;\n\n", root->name);
-		}
-	}
-
-	// NOTE(rjf): Generate component enums
-	{
-		FILE *file = global_catchall_header;
-
-		fprintf(file, "typedef enum ComponentType\n");
-		fprintf(file, "{\n");
-		fprintf(file, "COMPONENT_INVALID,\n");
-		for (int i = 0; i < component_count; i++)
-		{
-			fprintf(file, "COMPONENT_%s,\n", components[i]->name_lowercase_with_underscores);
-		}
-		fprintf(file, "COMPONENT_MAX,\n");
-		fprintf(file, "} ComponentType;\n\n");
-	}
-
-	// NOTE(tjr): Generate component set structure.
-	{
-		FILE *file = global_catchall_header;
-
-		fprintf(file, "typedef struct ComponentSet\n");
-		fprintf(file, "{\n");
-		for (int i = 0; i < component_count; i++)
-		{
-			fprintf(file, "%sComponent %s_components[MAX_ACTIVE_ENTITIES];\n", components[i]->name, components[i]->name_lowercase_with_underscores);
-			fprintf(file, "i32 %s_component_count;\n", components[i]->name_lowercase_with_underscores);
-			fprintf(file, "i32 %s_free_component_id;\n", components[i]->name_lowercase_with_underscores);
-		}
-		fprintf(file, "} ComponentSet;\n\n");
-	}
-
-	{
-		FILE *file = global_catchall_implementation;
-		if (file)
-		{
-			// NOTE(tjr): Generate Component UI print function.
-			{
-				fprintf(file, "internal void PrintComponentDataUI(void *component_data, ComponentType type)\n");
-				fprintf(file, "{\n");
-				fprintf(file, "    switch (type)\n");
-				fprintf(file, "    {\n");
-				fprintf(file, "    case COMPONENT_INVALID :\n");
-				fprintf(file, "    case COMPONENT_MAX :\n");
-				fprintf(file, "        R_BREAK(\"Invalid component.\")\n");
-				fprintf(file, "        break;\n\n");
-				for (int i = 0; i < component_count; i++)
-				{
-					fprintf(file, "    case COMPONENT_%s :\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "    {\n");
-					fprintf(file, "        %sComponent *component = (%sComponent*)component_data;\n", components[i]->name, components[i]->name);
-					GeneratePrintUICodeForAST(file, components[i], "component->");
-					fprintf(file, "        break;\n");
-					fprintf(file, "    }\n\n");
-				}
-				fprintf(file, "    }\n");
-				fprintf(file, "}\n\n");
-			}
-
-			for (int i = 0; i < component_count; i++)
-			{
-				// NOTE(tjr): Add Component function.
-				{
-					fprintf(file, "internal %sComponent *Add%sComponent(Entity *entity)\n", components[i]->name, components[i]->name);
-					fprintf(file, "{\n");
-					fprintf(file, "    i32 component_id;\n");
-					fprintf(file, "    if (core->world_data->entity_components.%s_free_component_id == core->world_data->entity_components.%s_component_count)\n", components[i]->name_lowercase_with_underscores, components[i]->name_lowercase_with_underscores);
-					fprintf(file, "    {\n");
-					fprintf(file, "        component_id = core->world_data->entity_components.%s_component_count;\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "        core->world_data->entity_components.%s_component_count++;\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "        core->world_data->entity_components.%s_free_component_id = component_id + 1;\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "    }\n");
-					fprintf(file, "    else\n");
-					fprintf(file, "    {\n");
-					fprintf(file, "        component_id = core->world_data->entity_components.%s_free_component_id;\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "    }\n\n");
-
-					fprintf(file, "    core->world_data->entity_components.%s_components[component_id] = GetDefault%sComponent();\n", components[i]->name_lowercase_with_underscores, components[i]->name);
-					fprintf(file, "    entity->components[COMPONENT_%s] = &core->world_data->entity_components.%s_components[component_id];\n", components[i]->name_lowercase_with_underscores, components[i]->name_lowercase_with_underscores);
-					fprintf(file, "    core->world_data->entity_components.%s_components[component_id].parent_entity = entity;\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "    core->world_data->entity_components.%s_components[component_id].component_id = component_id;\n\n", components[i]->name_lowercase_with_underscores);
-
-					fprintf(file, "    for (int i = 0; i < core->world_data->entity_components.%s_component_count + 1; i++)\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "    {\n");
-					fprintf(file, "        if (!core->world_data->entity_components.%s_components[i].parent_entity)\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "        {\n");
-					fprintf(file, "            core->world_data->entity_components.%s_free_component_id = i;\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "            break;\n");
-					fprintf(file, "        }\n");
-					fprintf(file, "    }\n\n");
-
-					fprintf(file, "    return &core->world_data->entity_components.%s_components[component_id];\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "}\n\n");
-				}
-
-				// NOTE(tjr): Remove Component function.
-				{
-					fprintf(file, "internal void Remove%sComponent(Entity *entity)\n", components[i]->name);
-					fprintf(file, "{\n");
-					fprintf(file, "    %sComponent *component = entity->components[COMPONENT_%s];\n", components[i]->name, components[i]->name_lowercase_with_underscores);
-					fprintf(file, "    R_DEV_ASSERT(component, \"Entity does not a %sComponent attached, so it can't remove it.\");\n\n", components[i]->name);
-
-					fprintf(file, "    i32 deleted_component_id = component->component_id;\n");
-					fprintf(file, "    %sComponent empty_comp = {0};\n", components[i]->name);
-					fprintf(file, "    core->world_data->entity_components.%s_components[deleted_component_id] = empty_comp;\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "    entity->components[COMPONENT_%s] = 0;\n\n", components[i]->name_lowercase_with_underscores);
-
-					fprintf(file, "    if (deleted_component_id < core->world_data->entity_components.%s_free_component_id)\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "        core->world_data->entity_components.%s_free_component_id = deleted_component_id;\n", components[i]->name_lowercase_with_underscores);
-					fprintf(file, "}\n\n");
-				}
-			}
-
-			// NOTE(tjr): ECS delete entity.
-			fprintf(file, "internal void DeleteEntity(Entity *entity)\n");
-			fprintf(file, "{\n");
-			for (int i = 0; i < component_count; i++)
-			{
-				fprintf(file, "    %sComponent *%s_component = entity->components[%i];\n", components[i]->name, components[i]->name_lowercase_with_underscores, i + 1);
-				fprintf(file, "    if (%s_component)\n", components[i]->name_lowercase_with_underscores);
-				fprintf(file, "        Remove%sComponent(entity);\n", components[i]->name);
-			}
-
-			fprintf(file, "\n    i32 deleted_entity_id = entity->entity_id;\n");
-			fprintf(file, "    Entity empty_entity = {0};\n");
-			fprintf(file, "    *entity = empty_entity;\n");
-			fprintf(file, "    if (deleted_entity_id < core->world_data->free_entity_id)\n");
-			fprintf(file, "        core->world_data->free_entity_id = deleted_entity_id;\n");
-			fprintf(file, "}\n\n");
-		}
-	}
+    // NOTE(tjr): Generate component struct declarations
+    {
+        FILE *file = global_catchall_header;
+        for (int i = 0; i < component_count; ++i)
+        {
+            DataDeskNode *root = components[i];
+            fprintf(file, "typedef struct %sComponent\n", root->name);
+            fprintf(file, "{\n");
+            fprintf(file, "Entity *parent_entity;\n");
+            fprintf(file, "i32 component_id;\n");
+            
+            for (DataDeskNode *member = root->struct_declaration.first_member; member; member = member->next)
+            {
+                DataDeskFWriteGraphAsC(file, member, 0);
+                fprintf(file, ";\n");
+            }
+            
+            fprintf(file, "} %sComponent;\n\n", root->name);
+        }
+    }
+    
+    // NOTE(rjf): Generate component enums
+    {
+        FILE *file = global_catchall_header;
+        
+        fprintf(file, "typedef enum ComponentType\n");
+        fprintf(file, "{\n");
+        fprintf(file, "COMPONENT_INVALID,\n");
+        for (int i = 0; i < component_count; i++)
+        {
+            fprintf(file, "COMPONENT_%s,\n", components[i]->name_lowercase_with_underscores);
+        }
+        fprintf(file, "COMPONENT_MAX,\n");
+        fprintf(file, "} ComponentType;\n\n");
+    }
+    
+    // NOTE(tjr): Generate component set structure.
+    {
+        FILE *file = global_catchall_header;
+        
+        fprintf(file, "typedef struct ComponentSet\n");
+        fprintf(file, "{\n");
+        for (int i = 0; i < component_count; i++)
+        {
+            fprintf(file, "%sComponent %s_components[MAX_ACTIVE_ENTITIES];\n", components[i]->name, components[i]->name_lowercase_with_underscores);
+            fprintf(file, "i32 %s_component_count;\n", components[i]->name_lowercase_with_underscores);
+            fprintf(file, "i32 %s_free_component_id;\n", components[i]->name_lowercase_with_underscores);
+        }
+        fprintf(file, "} ComponentSet;\n\n");
+    }
+    
+    {
+        FILE *file = global_catchall_implementation;
+        if (file)
+        {
+            // NOTE(tjr): Generate Component UI print function.
+            {
+                fprintf(file, "internal void PrintComponentDataUI(void *component_data, ComponentType type)\n");
+                fprintf(file, "{\n");
+                fprintf(file, "    switch (type)\n");
+                fprintf(file, "    {\n");
+                fprintf(file, "    case COMPONENT_INVALID :\n");
+                fprintf(file, "    case COMPONENT_MAX :\n");
+                fprintf(file, "        R_BREAK(\"Invalid component.\")\n");
+                fprintf(file, "        break;\n\n");
+                for (int i = 0; i < component_count; i++)
+                {
+                    fprintf(file, "    case COMPONENT_%s :\n", components[i]->name_lowercase_with_underscores);
+                    fprintf(file, "    {\n");
+                    fprintf(file, "        %sComponent *component = (%sComponent*)component_data;\n", components[i]->name, components[i]->name);
+                    GeneratePrintUICodeForAST(file, components[i], "component->");
+                    fprintf(file, "        break;\n");
+                    fprintf(file, "    }\n\n");
+                }
+                fprintf(file, "    }\n");
+                fprintf(file, "}\n\n");
+            }
+            
+            for (int i = 0; i < component_count; i++)
+            {
+                // NOTE(tjr): Add Component function.
+                {
+                    fprintf(file, "internal %sComponent *Add%sComponent(Entity *entity)\n", components[i]->name, components[i]->name);
+                    fprintf(file, "{\n");
+                    fprintf(file, "    i32 component_id;\n");
+                    fprintf(file, "    if (core->world_data->entity_components.%s_free_component_id == core->world_data->entity_components.%s_component_count)\n", components[i]->name_lowercase_with_underscores, components[i]->name_lowercase_with_underscores);
+                    fprintf(file, "    {\n");
+                    fprintf(file, "        component_id = core->world_data->entity_components.%s_component_count;\n", components[i]->name_lowercase_with_underscores);
+                    fprintf(file, "        core->world_data->entity_components.%s_component_count++;\n", components[i]->name_lowercase_with_underscores);
+                    fprintf(file, "        core->world_data->entity_components.%s_free_component_id = component_id + 1;\n", components[i]->name_lowercase_with_underscores);
+                    fprintf(file, "    }\n");
+                    fprintf(file, "    else\n");
+                    fprintf(file, "    {\n");
+                    fprintf(file, "        component_id = core->world_data->entity_components.%s_free_component_id;\n", components[i]->name_lowercase_with_underscores);
+                    fprintf(file, "    }\n\n");
+                    
+                    fprintf(file, "    core->world_data->entity_components.%s_components[component_id] = GetDefault%sComponent();\n", components[i]->name_lowercase_with_underscores, components[i]->name);
+                    fprintf(file, "    entity->components[COMPONENT_%s] = &core->world_data->entity_components.%s_components[component_id];\n", components[i]->name_lowercase_with_underscores, components[i]->name_lowercase_with_underscores);
+                    fprintf(file, "    core->world_data->entity_components.%s_components[component_id].parent_entity = entity;\n", components[i]->name_lowercase_with_underscores);
+                    fprintf(file, "    core->world_data->entity_components.%s_components[component_id].component_id = component_id;\n\n", components[i]->name_lowercase_with_underscores);
+                    
+                    fprintf(file, "    for (int i = 0; i < core->world_data->entity_components.%s_component_count + 1; i++)\n", components[i]->name_lowercase_with_underscores);
+                    fprintf(file, "    {\n");
+                    fprintf(file, "        if (!core->world_data->entity_components.%s_components[i].parent_entity)\n", components[i]->name_lowercase_with_underscores);
+                    fprintf(file, "        {\n");
+                    fprintf(file, "            core->world_data->entity_components.%s_free_component_id = i;\n", components[i]->name_lowercase_with_underscores);
+                    fprintf(file, "            break;\n");
+                    fprintf(file, "        }\n");
+                    fprintf(file, "    }\n\n");
+                    
+                    fprintf(file, "    return &core->world_data->entity_components.%s_components[component_id];\n", components[i]->name_lowercase_with_underscores);
+                    fprintf(file, "}\n\n");
+                }
+                
+                // NOTE(tjr): Remove Component function.
+                {
+                    fprintf(file, "internal void Remove%sComponent(Entity *entity)\n", components[i]->name);
+                    fprintf(file, "{\n");
+                    fprintf(file, "    %sComponent *component = entity->components[COMPONENT_%s];\n", components[i]->name, components[i]->name_lowercase_with_underscores);
+                    fprintf(file, "    R_DEV_ASSERT(component, \"Entity does not a %sComponent attached, so it can't remove it.\");\n\n", components[i]->name);
+                    
+                    fprintf(file, "    i32 deleted_component_id = component->component_id;\n");
+                    fprintf(file, "    %sComponent empty_comp = {0};\n", components[i]->name);
+                    fprintf(file, "    core->world_data->entity_components.%s_components[deleted_component_id] = empty_comp;\n", components[i]->name_lowercase_with_underscores);
+                    fprintf(file, "    entity->components[COMPONENT_%s] = 0;\n\n", components[i]->name_lowercase_with_underscores);
+                    
+                    fprintf(file, "    if (deleted_component_id < core->world_data->entity_components.%s_free_component_id)\n", components[i]->name_lowercase_with_underscores);
+                    fprintf(file, "        core->world_data->entity_components.%s_free_component_id = deleted_component_id;\n", components[i]->name_lowercase_with_underscores);
+                    fprintf(file, "}\n\n");
+                }
+            }
+            
+            // NOTE(tjr): ECS delete entity.
+            fprintf(file, "internal void DeleteEntity(Entity *entity)\n");
+            fprintf(file, "{\n");
+            for (int i = 0; i < component_count; i++)
+            {
+                fprintf(file, "    %sComponent *%s_component = entity->components[%i];\n", components[i]->name, components[i]->name_lowercase_with_underscores, i + 1);
+                fprintf(file, "    if (%s_component)\n", components[i]->name_lowercase_with_underscores);
+                fprintf(file, "        Remove%sComponent(entity);\n", components[i]->name);
+            }
+            
+            fprintf(file, "\n    i32 deleted_entity_id = entity->entity_id;\n");
+            fprintf(file, "    Entity empty_entity = {0};\n");
+            fprintf(file, "    *entity = empty_entity;\n");
+            fprintf(file, "    if (deleted_entity_id < core->world_data->free_entity_id)\n");
+            fprintf(file, "        core->world_data->free_entity_id = deleted_entity_id;\n");
+            fprintf(file, "}\n\n");
+        }
+    }
 }
 
 static void GenerateUniqueEntityArrays()
 {
-	FILE *file = global_catchall_header;
-	fprintf(file, "\n");
-	for (int i = 0; i < unique_entity_count; i++)
-	{
-		DataDeskNode *entity_node = unique_entities[i];
-		DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
-
-		if (atoi(DataDeskGetTagParameter(entity_node_tag, 0)->name) > 1)
-		{
-			fprintf(file, "%sEntity %s_entities[MAX_%s_ENTITIES];\n",
-					entity_node->name,
-					entity_node->name_lowercase_with_underscores,
-					entity_node->name_uppercase_with_underscores);
-			fprintf(file, "i32 %s_entity_count;\n", entity_node->name_lowercase_with_underscores);
-			fprintf(file, "i32 free_%s_entity_index;\n", entity_node->name_lowercase_with_underscores);
-		}
-		else
-		{
-			fprintf(file, "%sEntity %s_entity;\n", entity_node->name, entity_node->name_lowercase_with_underscores);
-		}
-	}
-	fprintf(file, "\n");
+    FILE *file = global_catchall_header;
+    fprintf(file, "\n");
+    for (int i = 0; i < unique_entity_count; i++)
+    {
+        DataDeskNode *entity_node = unique_entities[i];
+        DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
+        
+        if (atoi(DataDeskGetTagParameter(entity_node_tag, 0)->name) > 1)
+        {
+            fprintf(file, "%sEntity %s_entities[MAX_%s_ENTITIES];\n",
+                    entity_node->name,
+                    entity_node->name_lowercase_with_underscores,
+                    entity_node->name_uppercase_with_underscores);
+            fprintf(file, "i32 %s_entity_count;\n", entity_node->name_lowercase_with_underscores);
+            fprintf(file, "i32 free_%s_entity_index;\n", entity_node->name_lowercase_with_underscores);
+        }
+        else
+        {
+            fprintf(file, "%sEntity %s_entity;\n", entity_node->name, entity_node->name_lowercase_with_underscores);
+        }
+    }
+    fprintf(file, "\n");
 }
 
 static void GenerateEntityCode()
 {
-	{
-		FILE *file = global_catchall_header;
-
-		// NOTE(tjr): Unique entity type enum.
-		fprintf(file, "typedef enum EntityType\n");
-		fprintf(file, "{\n");
-		fprintf(file, "    ENTITY_TYPE_generic,\n");
-		for (int i = 0; i < unique_entity_count; i++)
-		{
-			DataDeskNode *entity_node = unique_entities[i];
-			DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
-
-			fprintf(file, "    ENTITY_TYPE_%s,\n", entity_node->name_lowercase_with_underscores);
-		}
-		fprintf(file, "    ENTITY_TYPE_MAX\n");
-		fprintf(file, "} EntityType;\n\n");
-	}
-
-	{
-		FILE *file = global_catchall_implementation;
-
-		// NOTE(tjr): New entity function.
-		for (int i = 0; i < unique_entity_count; i++)
-		{
-			DataDeskNode *entity_node = unique_entities[i];
-			DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
-
-			if (atoi(DataDeskGetTagParameter(entity_node_tag, 0)->name) > 1)
-			{
-				fprintf(file, "static %sEntity *New%sEntity()\n", entity_node->name, entity_node->name);
-				fprintf(file, "{\n");
-
-				fprintf(file, "    R_DEV_ASSERT(core->world_data->free_%s_entity_index + 1 < MAX_%s_ENTITIES, \"Maximum amount of %s entites reached\");\n\n", entity_node->name_lowercase_with_underscores, entity_node->name_uppercase_with_underscores, entity_node->name);
-
-				fprintf(file, "    i32 new_unique_id = core->world_data->free_%s_entity_index;\n", entity_node->name_lowercase_with_underscores);
-				fprintf(file, "    if (core->world_data->free_%s_entity_index == core->world_data->%s_entity_count)\n", entity_node->name_lowercase_with_underscores, entity_node->name_lowercase_with_underscores);
-				fprintf(file, "    {\n");
-				fprintf(file, "        core->world_data->%s_entity_count++;\n", entity_node->name_lowercase_with_underscores);
-				fprintf(file, "        core->world_data->free_%s_entity_index++;\n", entity_node->name_lowercase_with_underscores);
-				fprintf(file, "    }\n");
-				fprintf(file, "    core->world_data->%s_entities[new_unique_id].unique_entity_id = new_unique_id;\n\n", entity_node->name_lowercase_with_underscores);
-
-				fprintf(file, "    Entity *generic_entity = NewEntity(\"%s\", ENTITY_TYPE_%s, GENERALISED_ENTITY_TYPE_%s);\n", entity_node->name, entity_node->name_lowercase_with_underscores, DataDeskGetTagParameter(entity_node_tag, 1)->name);
-				fprintf(file, "    %sEntity *unique_entity = &core->world_data->%s_entities[new_unique_id];\n", entity_node->name, entity_node->name_lowercase_with_underscores);
-				fprintf(file, "    generic_entity->unique_entity = unique_entity;\n");
-				fprintf(file, "    unique_entity->parent_generic_entity = generic_entity;\n");
-				fprintf(file, "    unique_entity->unique_entity_id = new_unique_id;\n\n");
-
-				DataDeskNode *component_list_tag = DataDeskGetNodeTag(entity_node->struct_declaration.first_member, "ComponentList");
-				int tag_index = 0;
-				DataDeskNode *tag_param = DataDeskGetTagParameter(component_list_tag, tag_index);
-				while (tag_param)
-				{
-					fprintf(file, "    unique_entity->%s_comp = Add%sComponent(generic_entity);\n", tag_param->name_lowercase_with_underscores, tag_param->name);
-					tag_param = DataDeskGetTagParameter(component_list_tag, ++tag_index);
-				}
-
-				fprintf(file, "\n    return unique_entity;\n");
-				fprintf(file, "}\n\n");
-			}
-			else
-			{
-				fprintf(file, "static %sEntity *Initialise%sEntity()\n", entity_node->name, entity_node->name);
-				fprintf(file, "{\n");
-
-				fprintf(file, "    Entity *generic_entity = NewEntity(\"%s\", ENTITY_TYPE_%s, GENERALISED_ENTITY_TYPE_%s);\n", entity_node->name, entity_node->name_lowercase_with_underscores, DataDeskGetTagParameter(entity_node_tag, 1)->name);
-				fprintf(file, "    %sEntity *unique_entity = &core->world_data->%s_entity;\n", entity_node->name, entity_node->name_lowercase_with_underscores);
-				fprintf(file, "    generic_entity->unique_entity = unique_entity;\n");
-				fprintf(file, "    unique_entity->parent_generic_entity = generic_entity;\n\n");
-
-				DataDeskNode *component_list_tag = DataDeskGetNodeTag(entity_node->struct_declaration.first_member, "ComponentList");
-				int tag_index = 0;
-				DataDeskNode *tag_param = DataDeskGetTagParameter(component_list_tag, tag_index);
-				while (tag_param)
-				{
-					fprintf(file, "    unique_entity->%s_comp = Add%sComponent(generic_entity);\n", tag_param->name_lowercase_with_underscores, tag_param->name);
-					tag_param = DataDeskGetTagParameter(component_list_tag, ++tag_index);
-				}
-
-				fprintf(file, "\n    return unique_entity;\n");
-				fprintf(file, "}\n\n");
-			}
-		}
-
-		// NOTE(tjr): Entity print function.
-		fprintf(file, "static void PrintEntityDataUI(Entity *entity)\n");
-		fprintf(file, "{\n");
-		fprintf(file, "    switch(entity->type)\n");
-		fprintf(file, "    {\n");
-		for (int i = 0; i < unique_entity_count; i++)
-		{
-			DataDeskNode *entity_node = unique_entities[i];
-			DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
-
-			fprintf(file, "    case ENTITY_TYPE_%s :\n", entity_node->name_lowercase_with_underscores);
-			fprintf(file, "    {\n");
-			fprintf(file, "        %sEntity *unique_entity = entity->unique_entity;\n", entity_node->name);
-
-			for (DataDeskNode *member = entity_node->struct_declaration.first_member->next;
-				 member; member = member->next)
-			{
-				GeneratePrintUICodeForAST(file, member, "unique_entity->");
-			}
-
-			fprintf(file, "        break;\n");
-			fprintf(file, "    }\n");
-		}
-		fprintf(file, "    }\n\n");
-		fprintf(file, "    for (int i = 1; i < COMPONENT_MAX; i++)\n");
-		fprintf(file, "    {\n");
-		fprintf(file, "        if (entity->components[i])\n");
-		fprintf(file, "        {\n");
-		fprintf(file, "            PrintComponentDataUI(entity->components[i], i);\n");
-		fprintf(file, "        }\n");
-		fprintf(file, "    }\n");
-		fprintf(file, "}\n");
-	}
+    {
+        FILE *file = global_catchall_header;
+        
+        // NOTE(tjr): Unique entity type enum.
+        fprintf(file, "typedef enum EntityType\n");
+        fprintf(file, "{\n");
+        fprintf(file, "    ENTITY_TYPE_generic,\n");
+        for (int i = 0; i < unique_entity_count; i++)
+        {
+            DataDeskNode *entity_node = unique_entities[i];
+            DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
+            
+            fprintf(file, "    ENTITY_TYPE_%s,\n", entity_node->name_lowercase_with_underscores);
+        }
+        fprintf(file, "    ENTITY_TYPE_MAX\n");
+        fprintf(file, "} EntityType;\n\n");
+    }
+    
+    {
+        FILE *file = global_catchall_implementation;
+        
+        // NOTE(tjr): New entity function.
+        for (int i = 0; i < unique_entity_count; i++)
+        {
+            DataDeskNode *entity_node = unique_entities[i];
+            DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
+            
+            if (atoi(DataDeskGetTagParameter(entity_node_tag, 0)->name) > 1)
+            {
+                fprintf(file, "static %sEntity *New%sEntity()\n", entity_node->name, entity_node->name);
+                fprintf(file, "{\n");
+                
+                fprintf(file, "    R_DEV_ASSERT(core->world_data->free_%s_entity_index + 1 < MAX_%s_ENTITIES, \"Maximum amount of %s entites reached\");\n\n", entity_node->name_lowercase_with_underscores, entity_node->name_uppercase_with_underscores, entity_node->name);
+                
+                fprintf(file, "    i32 new_unique_id = core->world_data->free_%s_entity_index;\n", entity_node->name_lowercase_with_underscores);
+                fprintf(file, "    if (core->world_data->free_%s_entity_index == core->world_data->%s_entity_count)\n", entity_node->name_lowercase_with_underscores, entity_node->name_lowercase_with_underscores);
+                fprintf(file, "    {\n");
+                fprintf(file, "        core->world_data->%s_entity_count++;\n", entity_node->name_lowercase_with_underscores);
+                fprintf(file, "        core->world_data->free_%s_entity_index++;\n", entity_node->name_lowercase_with_underscores);
+                fprintf(file, "    }\n");
+                fprintf(file, "    core->world_data->%s_entities[new_unique_id].unique_entity_id = new_unique_id;\n\n", entity_node->name_lowercase_with_underscores);
+                
+                fprintf(file, "    Entity *generic_entity = NewEntity(\"%s\", ENTITY_TYPE_%s, GENERALISED_ENTITY_TYPE_%s);\n", entity_node->name, entity_node->name_lowercase_with_underscores, DataDeskGetTagParameter(entity_node_tag, 1)->name);
+                fprintf(file, "    %sEntity *unique_entity = &core->world_data->%s_entities[new_unique_id];\n", entity_node->name, entity_node->name_lowercase_with_underscores);
+                fprintf(file, "    generic_entity->unique_entity = unique_entity;\n");
+                fprintf(file, "    unique_entity->parent_generic_entity = generic_entity;\n");
+                fprintf(file, "    unique_entity->unique_entity_id = new_unique_id;\n\n");
+                
+                DataDeskNode *component_list_tag = DataDeskGetNodeTag(entity_node->struct_declaration.first_member, "ComponentList");
+                int tag_index = 0;
+                DataDeskNode *tag_param = DataDeskGetTagParameter(component_list_tag, tag_index);
+                while (tag_param)
+                {
+                    fprintf(file, "    unique_entity->%s_comp = Add%sComponent(generic_entity);\n", tag_param->name_lowercase_with_underscores, tag_param->name);
+                    tag_param = DataDeskGetTagParameter(component_list_tag, ++tag_index);
+                }
+                
+                fprintf(file, "\n    return unique_entity;\n");
+                fprintf(file, "}\n\n");
+            }
+            else
+            {
+                fprintf(file, "static %sEntity *Initialise%sEntity()\n", entity_node->name, entity_node->name);
+                fprintf(file, "{\n");
+                
+                fprintf(file, "    Entity *generic_entity = NewEntity(\"%s\", ENTITY_TYPE_%s, GENERALISED_ENTITY_TYPE_%s);\n", entity_node->name, entity_node->name_lowercase_with_underscores, DataDeskGetTagParameter(entity_node_tag, 1)->name);
+                fprintf(file, "    %sEntity *unique_entity = &core->world_data->%s_entity;\n", entity_node->name, entity_node->name_lowercase_with_underscores);
+                fprintf(file, "    generic_entity->unique_entity = unique_entity;\n");
+                fprintf(file, "    unique_entity->parent_generic_entity = generic_entity;\n\n");
+                
+                DataDeskNode *component_list_tag = DataDeskGetNodeTag(entity_node->struct_declaration.first_member, "ComponentList");
+                int tag_index = 0;
+                DataDeskNode *tag_param = DataDeskGetTagParameter(component_list_tag, tag_index);
+                while (tag_param)
+                {
+                    fprintf(file, "    unique_entity->%s_comp = Add%sComponent(generic_entity);\n", tag_param->name_lowercase_with_underscores, tag_param->name);
+                    tag_param = DataDeskGetTagParameter(component_list_tag, ++tag_index);
+                }
+                
+                fprintf(file, "\n    return unique_entity;\n");
+                fprintf(file, "}\n\n");
+            }
+        }
+        
+        // NOTE(tjr): Entity print function.
+        fprintf(file, "static void PrintEntityDataUI(Entity *entity)\n");
+        fprintf(file, "{\n");
+        fprintf(file, "    switch(entity->type)\n");
+        fprintf(file, "    {\n");
+        for (int i = 0; i < unique_entity_count; i++)
+        {
+            DataDeskNode *entity_node = unique_entities[i];
+            DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
+            
+            fprintf(file, "    case ENTITY_TYPE_%s :\n", entity_node->name_lowercase_with_underscores);
+            fprintf(file, "    {\n");
+            fprintf(file, "        %sEntity *unique_entity = entity->unique_entity;\n", entity_node->name);
+            
+            for (DataDeskNode *member = entity_node->struct_declaration.first_member->next;
+                 member; member = member->next)
+            {
+                GeneratePrintUICodeForAST(file, member, "unique_entity->");
+            }
+            
+            fprintf(file, "        break;\n");
+            fprintf(file, "    }\n");
+        }
+        fprintf(file, "    }\n\n");
+        fprintf(file, "    for (int i = 1; i < COMPONENT_MAX; i++)\n");
+        fprintf(file, "    {\n");
+        fprintf(file, "        if (entity->components[i])\n");
+        fprintf(file, "        {\n");
+        fprintf(file, "            PrintComponentDataUI(entity->components[i], i);\n");
+        fprintf(file, "        }\n");
+        fprintf(file, "    }\n");
+        fprintf(file, "}\n");
+    }
 }

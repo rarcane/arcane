@@ -1,0 +1,2 @@
+internal void ArcaneUIRenderWidget(i32 style_flags, TsUIWidget *widget, v4 clip, void *user_data, b32 widget_is_hot, b32 widget_is_active);
+internal void ArcaneUIRenderWindow(i32 style_flags, TsUIWindow *window, void *user_data);
