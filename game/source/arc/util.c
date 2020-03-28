@@ -28,6 +28,11 @@ internal f32 PythagSolve(f32 a, f32 b)
 	return SquareRoot(a * a + b * b);
 }
 
+internal f32 Square(f32 a)
+{
+	return a * a;
+}
+
 internal i32 GetSign(f32 x)
 {
 	return (x > 0.0f) - (x < 0.0f);
@@ -96,6 +101,12 @@ internal void CapsuleToWorldSpace(c2Capsule *capsule, v2 world_space)
 	capsule->b.y += world_space.y;
 }
 
+internal void LineToWorldSpace(c2Ray *line, v2 world_space)
+{
+	line->p.x += world_space.x;
+	line->p.y += world_space.y;
+}
+
 internal c2Poly v2AddPoly(v2 a, c2Poly poly)
 {
 	for (int i = 0; i < poly.count; i++)
@@ -138,6 +149,14 @@ internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v3 co
 						  p2,
 						  colour);
 		}
+	}
+	break;
+
+	case C2_SHAPE_TYPE_line:
+	{
+		PushDebugLine(V2AddV2(position, shape.line.p1),
+					  V2AddV2(position, shape.line.p2),
+					  colour);
 	}
 	break;
 

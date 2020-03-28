@@ -9,7 +9,7 @@ internal void RenderColliders()
 			PositionComponent *pos_comp = entity->components[COMPONENT_position];
 			R_DEV_ASSERT(pos_comp, "Physics entity doesn't have a position component.");
 
-			PushDebugShape(body_comp->shape, body_comp->shape_type, pos_comp->position, v3(1.0f, 1.0f, 1.0f));
+			PushDebugShape(body_comp->shape, body_comp->shape_type, pos_comp->position, v3(1.0f, 0.0f, 0.0f));
 		}
 	}
 }
@@ -85,14 +85,14 @@ internal void UpdatePhysics()
 				f32 jt = -(new_rv.x * tangent.x + new_rv.y * tangent.y);
 				jt = jt / (a_body_comp->mass_data.inv_mass + b_body_comp->mass_data.inv_mass);
 
-				f32 mu = PythagSolve(a_body_comp->material.static_friction, b_body_comp->material.static_friction);
+				f32 mu = MinimumF32(a_body_comp->material.static_friction, b_body_comp->material.static_friction); //PythagSolve(a_body_comp->material.static_friction, b_body_comp->material.static_friction);
 
 				v2 friction_impulse;
 				if (fabsf(jt) < j * mu)
 					friction_impulse = V2MultiplyF32(tangent, jt);
 				else
 				{
-					f32 dynamic_friction = PythagSolve(a_body_comp->material.dynamic_friction, b_body_comp->material.dynamic_friction);
+					f32 dynamic_friction = MinimumF32(a_body_comp->material.dynamic_friction, b_body_comp->material.dynamic_friction); //PythagSolve(a_body_comp->material.dynamic_friction, b_body_comp->material.dynamic_friction);
 					friction_impulse = V2MultiplyF32(tangent, -j * dynamic_friction);
 				}
 
@@ -225,7 +225,55 @@ internal void GenerateCollisionManifold(PhysicsBodyComponent *a_body_comp, v2 a_
 
 		case C2_SHAPE_TYPE_line:
 		{
-			R_TODO;
+			/* f32 m = b_line.d.y / b_line.d.x;
+			f32 c = -m * p1.x + p1.y;
+			f32 perp_segment = -m * capsule_point_a.x + capsule_point_a.y - c;
+			f32 dist_from_segment = fabsf(perp_segment) / SquareRoot(-m * -m + 1); */
+
+			/* f32 side = (p2.x - p1.x) * (capsule_point_a.y - p1.y) - (p2.y - p1.y) * (capsule_point_a.x - p1.x);
+			if (side > 0.0f)
+			{
+				manifold->n = c2V(-b_line.d.y, b_line.d.x);
+				manifold->count = 1;
+				manifold->depths[0] = dist_from_segment;
+			} */
+
+			/* v2 dist_vector = V2SubtractV2(capsule_point_a, p1);
+				f32 dist = PythagSolve(dist_vector.x, dist_vector.y);
+				if (dist < a_capsule.r)
+				{
+					manifold->n = c2V(-dist_vector.x / dist, -dist_vector.y / dist);
+					manifold->count = 1;
+					manifold->depths[0] = a_capsule.r - dist;
+				} */
+
+			c2Capsule a_capsule = a_body_comp->shape.capsule;
+			CapsuleToWorldSpace(&a_capsule, a_body_world_pos);
+
+			Line b_line = b_body_comp->shape.line;
+
+			v2 p1 = V2AddV2(b_line.p1, b_body_world_pos);
+			v2 p2 = V2AddV2(b_line.p2, b_body_world_pos);
+			v2 line_vector = V2SubtractV2(p2, p1);
+			v2 capsule_point_a = v2(a_capsule.a.x, a_capsule.a.y);
+
+			v2 point_a_vector_from_line = V2SubtractV2(capsule_point_a, p1);
+			f32 dot = point_a_vector_from_line.x * line_vector.x + point_a_vector_from_line.y * line_vector.y;
+			v2 proj = V2MultiplyF32(line_vector, dot / (line_vector.x * line_vector.x + line_vector.y * line_vector.y)); // proj a->b = (a dot b / mag^2) * b
+
+			v2 collision_normal = V2SubtractV2(capsule_point_a, V2AddV2(p1, proj));
+			f32 collision_distance = PythagSolve(collision_normal.x, collision_normal.y);
+			v2 normalised_collision_normal = v2(collision_normal.x / collision_distance, collision_normal.y / collision_distance);
+			v2Realise(&normalised_collision_normal);
+
+			PushDebugLine(p1, V2AddV2(p1, collision_normal), v3(1.0f, 0.0f, 0.0f));
+
+			if (collision_distance < a_capsule.r && capsule_point_a.x >= p1.x && capsule_point_a.x <= p2.x)
+			{
+				manifold->n = c2V(-normalised_collision_normal.x, -normalised_collision_normal.y);
+				manifold->count = 1;
+				manifold->depths[0] = a_capsule.r - collision_distance;
+			}
 		}
 		break;
 
@@ -304,11 +352,44 @@ internal void GenerateCollisionManifold(PhysicsBodyComponent *a_body_comp, v2 a_
 	{
 		switch (b_body_comp->shape_type)
 		{
-		case C2_SHAPE_TYPE_aabb:
+		case C2_SHAPE_TYPE_capsule:
 		{
-			R_TODO;
+			Line a_line = a_body_comp->shape.line;
+
+			c2Capsule b_capsule = b_body_comp->shape.capsule;
+			CapsuleToWorldSpace(&b_capsule, b_body_world_pos);
+
+			v2 p1 = V2AddV2(a_line.p1, a_body_world_pos);
+			v2 p2 = V2AddV2(a_line.p2, a_body_world_pos);
+			v2 line_vector = V2SubtractV2(p2, p1);
+			v2 capsule_point_a = v2(b_capsule.a.x, b_capsule.a.y);
+
+			v2 point_a_vector_from_line = V2SubtractV2(capsule_point_a, p1);
+			f32 dot = point_a_vector_from_line.x * line_vector.x + point_a_vector_from_line.y * line_vector.y;
+			v2 proj = V2MultiplyF32(line_vector, dot / (line_vector.x * line_vector.x + line_vector.y * line_vector.y));
+
+			v2 collision_normal = V2SubtractV2(capsule_point_a, V2AddV2(p1, proj));
+			f32 collision_distance = PythagSolve(collision_normal.x, collision_normal.y);
+			v2 normalised_collision_normal = v2(collision_normal.x / collision_distance, collision_normal.y / collision_distance);
+			v2Realise(&normalised_collision_normal);
+
+			if (collision_distance < b_capsule.r && capsule_point_a.x >= p1.x && capsule_point_a.x <= p2.x)
+			{
+				manifold->n = c2V(normalised_collision_normal.x, normalised_collision_normal.y);
+				manifold->count = 1;
+				manifold->depths[0] = b_capsule.r - collision_distance;
+			}
 		}
 		break;
+
+		case C2_SHAPE_TYPE_line:
+		{
+		}
+		break;
+
+		default:
+			R_TODO;
+			break;
 		}
 	}
 	break;

@@ -65,6 +65,12 @@ typedef unsigned int CellFlags;
 
 typedef struct Entity Entity;
 
+typedef struct Line
+{
+v2 p1;
+v2 p2;
+} Line;
+
 typedef union c2Shape c2Shape;
 union c2Shape
 {
@@ -72,7 +78,7 @@ c2AABB aabb;
 c2Capsule capsule;
 c2Circle circle;
 c2Poly poly;
-c2h line;
+Line line;
 };
 
 typedef enum c2ShapeType c2ShapeType;

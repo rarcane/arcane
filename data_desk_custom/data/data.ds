@@ -116,13 +116,19 @@ Animation :: struct
 	frame_start_time : f32;
 }
 
+Line :: struct
+{
+	p1 : v2;
+	p2 : v2;
+}
+
 c2Shape :: union
 {
 	aabb : c2AABB;
 	capsule : c2Capsule;
 	circle : c2Circle;
 	poly : c2Poly;
-	line : c2h;
+	line : Line;
 }
 
 c2ShapeType :: enum
@@ -159,33 +165,6 @@ PhysicsBody :: struct
 	force : v2;
 	gravity_multiplier : f32;
 }
-
-/*@Component
-Collider :: struct
-{
-	shape : c2Shape;
-	shape_type : c2ShapeType;
-	
-	flags : ColliderFlags;
-}
-
-@Component
-Velocity :: struct
-{
-	velocity : v2;
-	ideal_velocity : v2;
-	acceleration : v2; // You'd have this be dynamic depending on the alpha of the ideal/current velocity to have a multi-phased acceleration function.
-	acceleration_mult : v2;
-	previous_friction : f32;
-	collide_against : b8;
-}
-
-@Component
-Physics :: struct
-{
-	restitution : f32;
-	mass : f32;
-}*/
 
 @Component
 Movement :: struct
