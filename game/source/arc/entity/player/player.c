@@ -17,7 +17,7 @@ internal void PreMoveUpdatePlayer()
 		{
 			if (IsActionDown(ACTION_sprint))
 			{
-				movement_comp->axis_x = -1.2f;
+				movement_comp->axis_x = -1.5;
 				is_sprinting = 1;
 			}
 			else
@@ -34,7 +34,7 @@ internal void PreMoveUpdatePlayer()
 		{
 			if (IsActionDown(ACTION_sprint))
 			{
-				movement_comp->axis_x = 1.2f;
+				movement_comp->axis_x = 1.5;
 				is_sprinting = 1;
 			}
 			else
@@ -48,8 +48,8 @@ internal void PreMoveUpdatePlayer()
 		movement_comp->axis_x = 0.0f;
 	}
 
-	//if (fabsf(body_comp->velocity.x) < movement_comp->move_speed)
-	body_comp->force.x = movement_comp->axis_x * (1200 / body_comp->mass_data.inv_mass);
+	if (fabsf(body_comp->velocity.x) < fabsf(movement_comp->move_speed * movement_comp->axis_x))
+		body_comp->force.x = movement_comp->axis_x * (1200 / body_comp->mass_data.inv_mass);
 
 	if (IsActionPressed(ACTION_jump))
 	{

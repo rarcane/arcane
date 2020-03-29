@@ -52,54 +52,6 @@ internal void TempInitGameWorld()
 		AddItemToStorage(sword_item, backpack_storage, 2);
 	}
 
-	/* {
-		Line line = {0};
-		line.p2.x = 100.0f;
-		line.p2.y = 0.0f;
-
-		GroundEntity *ground = NewGroundEntity();
-		ground->position_comp->position = v2(0.0f, 0.0f); // Any change in position kills it
-
-		ground->physics_body_comp->shape.line = line;
-		ground->physics_body_comp->shape_type = C2_SHAPE_TYPE_line;
-		ground->physics_body_comp->material.static_friction = 0.3f;
-		ground->physics_body_comp->material.dynamic_friction = 0.3f;
-		ground->physics_body_comp->mass_data.mass = 0.0f;
-		ground->physics_body_comp->mass_data.inv_mass = 0.0f;
-	}
-
-	{
-		Line line = {0};
-		line.p2.x = 100.0f;
-		line.p2.y = -50.0f;
-
-		GroundEntity *ground = NewGroundEntity();
-		ground->position_comp->position = v2(100.0f, 0.0f); // Any change in position kills it
-
-		ground->physics_body_comp->shape.line = line;
-		ground->physics_body_comp->shape_type = C2_SHAPE_TYPE_line;
-		ground->physics_body_comp->material.static_friction = 0.3f;
-		ground->physics_body_comp->material.dynamic_friction = 0.3f;
-		ground->physics_body_comp->mass_data.mass = 0.0f;
-		ground->physics_body_comp->mass_data.inv_mass = 0.0f;
-	} */
-
-	/* {
-		Line line = {0};
-		line.p2.x = 200.0f;
-		line.p2.y = 200.0f;
-
-		GroundEntity *ground = NewGroundEntity();
-		ground->position_comp->position = v2(0.0f, 0.0f);
-
-		ground->physics_body_comp->shape.line = line;
-		ground->physics_body_comp->shape_type = C2_SHAPE_TYPE_line;
-		ground->physics_body_comp->material.static_friction = 0.3f;
-		ground->physics_body_comp->material.dynamic_friction = 0.3f;
-		ground->physics_body_comp->mass_data.mass = 0.0f;
-		ground->physics_body_comp->mass_data.inv_mass = 0.0f;
-	} */
-
 	ShufflePerlinNoise();
 	f32 last_height = 0.0f;
 	for (int x = 0; x < CHUNK_SIZE * 4; x++)
@@ -129,7 +81,7 @@ internal void TempInitGameWorld()
 			material->max_height = 4;
 		}
 
-		f32 width = ((f32)CHUNK_SIZE * 4.0f) / 16.0f;
+		f32 width = ((f32)CHUNK_SIZE * 4.0f) / 32.0f;
 
 		if (x == 0)
 			last_height = (f32)terrain_height;
@@ -145,24 +97,14 @@ internal void TempInitGameWorld()
 
 			ground->physics_body_comp->shape.line = line;
 			ground->physics_body_comp->shape_type = C2_SHAPE_TYPE_line;
-			ground->physics_body_comp->material.static_friction = 0.3f;
-			ground->physics_body_comp->material.dynamic_friction = 0.3f;
+			ground->physics_body_comp->material.static_friction = 0.2f;
+			ground->physics_body_comp->material.dynamic_friction = 0.2f;
 			ground->physics_body_comp->mass_data.mass = 0.0f;
 			ground->physics_body_comp->mass_data.inv_mass = 0.0f;
 
 			last_height = (f32)terrain_height;
 		}
 	}
-
-	/* GroundEntity *ground = NewGroundEntity();
-    ground->position_comp->position = v2(0, 0.0f);
- 
-    c2AABB aabb = {c2V(-500.0f, 0.0f), c2V(500, 100.0f)};
- 
-    ground->physics_body_comp->shape.aabb = aabb;
-    ground->physics_body_comp->shape_type = C2_SHAPE_TYPE_aabb;
-    ground->physics_body_comp->material.static_friction = 0.25f;
-    ground->physics_body_comp->material.dynamic_friction = 0.25f; */
 }
 
 internal void DrawWorld()
@@ -193,9 +135,8 @@ internal void DrawWorld()
 	{
 		world_info.flags |= TS2D_BLUR_SHADOWS;
 		world_info.flags |= TS2D_BLUR_BACKGROUNDS;
-		if (core->bloom)
-			world_info.flags |= TS2D_BLOOM;
-		world_info.shadow_opacity = core->shadow_opacity;
+		//world_info.flags |= TS2D_BLOOM;
+		//world_info.shadow_opacity = core->shadow_opacity;
 		world_info.shadow_vector = v2(32.0f, 64.0f);
 		world_info.camera_pos = core->camera_position;
 		world_info.camera_zoom = core->camera_zoom;
@@ -210,12 +151,6 @@ internal void DrawWorld()
 		UpdateAnimations();
 		PostUpdateWorldAnimations();
 		RenderForegroundSprites();
-	}
-
-	// NOTE(tjr): Collision bounds rendering.
-	if (core->draw_colliders)
-	{
-		RenderColliders();
 	}
 
 	/* v2 pos = v2view(v2(-350.0f, 35.0f));

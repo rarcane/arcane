@@ -28,6 +28,12 @@ GENERALISED_ENTITY_TYPE_MAX,
 };
 static char *GetGeneralisedEntityTypeTypeName(GeneralisedEntityType type);
 
+typedef struct CellMaterialTypeData
+{
+f32 mass;
+f32 restitution;
+} CellMaterialTypeData;
+
 typedef enum CellMaterialType CellMaterialType;
 enum CellMaterialType
 {
@@ -38,6 +44,17 @@ CELL_MATERIAL_TYPE_water,
 CELL_MATERIAL_TYPE_MAX,
 };
 static char *GetCellMaterialTypeTypeName(CellMaterialType type);
+
+typedef enum EditorState EditorState;
+enum EditorState
+{
+EDITOR_STATE_none,
+EDITOR_STATE_entity,
+EDITOR_STATE_terrain,
+EDITOR_STATE_collision,
+EDITOR_STATE_MAX,
+};
+static char *GetEditorStateTypeName(EditorState type);
 
 #define ENTITY_FLAGS_no_delete (1<<0)
 typedef unsigned int EntityFlags;
@@ -62,6 +79,10 @@ typedef unsigned int PixelFlags;
 
 #define CELL_FLAGS_no_gravity (1<<0)
 typedef unsigned int CellFlags;
+
+#define EDITOR_FLAGS_draw_world (1<<0)
+#define EDITOR_FLAGS_draw_collision (1<<1)
+typedef unsigned int EditorFlags;
 
 typedef struct Entity Entity;
 
@@ -337,6 +358,35 @@ ChunkData *active_chunk;
 
 typedef struct Cell Cell;
 
+typedef struct SolidMaterial
+{
+v2 position;
+v2 velocity;
+f32 hardness;
+} SolidMaterial;
+
+typedef struct FluidMatieral
+{
+v2 flow;
+f32 pressure;
+} FluidMatieral;
+
+typedef union CellProperties CellProperties;
+union CellProperties
+{
+SolidMaterial solid;
+FluidMatieral fuild;
+};
+
+typedef enum CellPropertiesType CellPropertiesType;
+enum CellPropertiesType
+{
+CELL_PROPERTIES_TYPE_solid,
+CELL_PROPERTIES_TYPE_fluid,
+CELL_PROPERTIES_TYPE_MAX,
+};
+static char *GetCellPropertiesTypeTypeName(CellPropertiesType type);
+
 typedef struct CellMaterial
 {
 i32 id;
@@ -346,8 +396,8 @@ CellFlags flags;
 f32 mass;
 f32 restitution;
 i32 max_height;
-v2 position;
-v2 velocity;
+CellPropertiesType properties_type;
+CellProperties properties;
 b8 is_material_dynamic;
 b8 has_been_updated;
 } CellMaterial;
@@ -407,4 +457,11 @@ i32 entity_count;
 i32 free_entity_id;
 ComponentSet entity_components;
 } WorldData;
+
+typedef struct ClientData
+{
+EditorState editor_state;
+EditorFlags editor_flags;
+Entity *selected_entity;
+} ClientData;
 

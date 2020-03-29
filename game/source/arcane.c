@@ -75,10 +75,10 @@ GameInit(void)
 				{
 					{"camera_zoom", TSDEVTERMINAL_VARIABLE_TYPE_f32, &core->camera_zoom},
 					{"camera_offset", TSDEVTERMINAL_VARIABLE_TYPE_v2, &core->camera_offset},
-					{"shadow_opacity", TSDEVTERMINAL_VARIABLE_TYPE_f32, &core->shadow_opacity},
-					{"bloom", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->bloom},
-					{"draw_colliders", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->draw_colliders},
-					{"draw_velocity", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->draw_velocity},
+					//{"shadow_opacity", TSDEVTERMINAL_VARIABLE_TYPE_f32, &core->shadow_opacity},
+					//{"bloom", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->bloom},
+					//{"draw_colliders", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->draw_colliders},
+					//{"draw_velocity", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->draw_velocity},
 					{"fullscreen", TSDEVTERMINAL_VARIABLE_TYPE_b32, &platform->fullscreen},
 				};
 
@@ -120,16 +120,17 @@ GameInit(void)
 			InitialiseSpriteData();
 			InitialiseItemData();
 
+			core->client_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(ClientData));
+			R_DEV_ASSERT(core->client_data, "Failed to allocate memory for WorldData.");
+			core->client_data->editor_flags |= EDITOR_FLAGS_draw_world;
+
 			core->world_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(WorldData));
 			R_DEV_ASSERT(core->world_data, "Failed to allocate memory for WorldData.");
 			core->world_data->floating_chunk.is_valid = 1;
 
 			InitialiseECS();
 
-			core->draw_colliders = 1;
-
 			core->camera_zoom = DEFAULT_CAMERA_ZOOM;
-			core->shadow_opacity = 0.0f;
 
 			core->delta_mult = 1.0f;
 			core->world_delta_mult = 1.0f;
@@ -168,20 +169,38 @@ GameUpdate(void)
 		if (platform->key_pressed[KEY_f11])
 			platform->fullscreen = !platform->fullscreen;
 
-		// NOTE(tjr): Toggle editor mode
+		// NOTE(tjr): Enter editor mode
 		if (platform->key_pressed[KEY_f1])
 		{
-			local_persist f32 editor_world_delta_mult = 0.05f;
-			if (core->is_in_editor)
+			if (core->client_data->editor_state == EDITOR_STATE_entity)
 			{
-				editor_world_delta_mult = core->world_delta_mult;
-				core->world_delta_mult = 1.0f;
-				core->is_in_editor = 0;
+				core->client_data->editor_state = EDITOR_STATE_none;
 			}
 			else
 			{
-				core->world_delta_mult = editor_world_delta_mult;
-				core->is_in_editor = 1;
+				core->client_data->editor_state = EDITOR_STATE_entity;
+			}
+		}
+		else if (platform->key_pressed[KEY_f2])
+		{
+			if (core->client_data->editor_state == EDITOR_STATE_terrain)
+			{
+				core->client_data->editor_state = EDITOR_STATE_none;
+			}
+			else
+			{
+				core->client_data->editor_state = EDITOR_STATE_terrain;
+			}
+		}
+		else if (platform->key_pressed[KEY_f3])
+		{
+			if (core->client_data->editor_state == EDITOR_STATE_collision)
+			{
+				core->client_data->editor_state = EDITOR_STATE_none;
+			}
+			else
+			{
+				core->client_data->editor_state = EDITOR_STATE_collision;
 			}
 		}
 
@@ -325,7 +344,7 @@ GameUpdate(void)
             PushDebugLine(v2(world_mouse_pos.x, world_mouse_pos.y - 10.0f), v2(world_mouse_pos.x, world_mouse_pos.y + 10.0f), v3(1, 0, 0)); */
 
 			DrawEditorUI();
-			if (core->is_in_editor)
+			if (core->client_data->editor_state)
 				TransformEditorCamera();
 
 			core->performance_timer_count = 0;
@@ -342,7 +361,7 @@ GameUpdate(void)
 				UpdateChunks();
 				UpdatePhysics();
 
-				if (!core->is_in_editor)
+				if (!core->client_data->editor_state)
 					TransformInGameCamera();
 
 				PostMoveUpdatePlayer();
@@ -351,28 +370,20 @@ GameUpdate(void)
 			UpdateClouds();
 			UpdateParallax();
 
-			DrawWorld();
+			if (core->client_data->editor_flags & EDITOR_FLAGS_draw_world)
+			{
+				DrawWorld();
+				RenderCells();
+			}
+
+			if (core->client_data->editor_flags & EDITOR_FLAGS_draw_collision)
+			{
+				RenderColliders();
+			}
+
 			UpdateParticleEmitters();
 			DrawGameUI();
-			RenderCells();
 			DrawDebugLines();
-
-			if (platform->left_mouse_down)
-			{
-				v2 mouse_pos = GetMousePositionInWorldSpace();
-
-				Cell *cell = GetCellAtPosition((i32)roundf(mouse_pos.x), (i32)roundf(mouse_pos.y));
-				if (!cell->material)
-				{
-					// Create a new dirt cell
-					CellMaterial *material = NewCellMaterial(cell);
-					material->material_type = CELL_MATERIAL_TYPE_dirt;
-					material->mass = 5.0f;
-					material->max_height = 4;
-
-					MakeMaterialDynamic(material);
-				}
-			}
 
 			END_PERF_TIMER;
 		}

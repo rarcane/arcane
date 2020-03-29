@@ -129,9 +129,12 @@ internal void GenerateCollisionPairs(CollisionPair pairs[], i32 *count)
 				{
 					if (entity_a != entity_b)
 					{
-						CollisionPair new_pair = {body_comp_a, body_comp_b};
-						R_DEV_ASSERT(*count + 1 < MAX_COLLISION_PAIRS, "Too many collisions.")
-						pairs[(*count)++] = new_pair;
+						if (!(body_comp_a->mass_data.mass == 0.0f && body_comp_b->mass_data.mass == 0.0f))
+						{
+							CollisionPair new_pair = {body_comp_a, body_comp_b};
+							R_DEV_ASSERT(*count + 1 < MAX_COLLISION_PAIRS, "Too many collisions.")
+							pairs[(*count)++] = new_pair;
+						}
 					}
 				}
 			}
@@ -266,7 +269,7 @@ internal void GenerateCollisionManifold(PhysicsBodyComponent *a_body_comp, v2 a_
 			v2 normalised_collision_normal = v2(collision_normal.x / collision_distance, collision_normal.y / collision_distance);
 			v2Realise(&normalised_collision_normal);
 
-			PushDebugLine(p1, V2AddV2(p1, collision_normal), v3(1.0f, 0.0f, 0.0f));
+			//PushDebugLine(p1, V2AddV2(p1, collision_normal), v3(1.0f, 0.0f, 0.0f));
 
 			if (collision_distance < a_capsule.r && capsule_point_a.x >= p1.x && capsule_point_a.x <= p2.x)
 			{

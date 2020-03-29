@@ -60,6 +60,28 @@ break;
 }
 }
 
+static char *GetEditorStateName(EditorState type)
+{
+switch(type)
+{
+case EDITOR_STATE_none:
+return "None";
+break;
+case EDITOR_STATE_entity:
+return "Entity";
+break;
+case EDITOR_STATE_terrain:
+return "Terrain";
+break;
+case EDITOR_STATE_collision:
+return "Collision";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
 static char *Getc2ShapeTypeName(c2ShapeType type)
 {
 switch(type)
@@ -1013,3 +1035,19 @@ static void PrintEntityDataUI(Entity *entity)
         }
     }
 }
+static char *GetCellPropertiesTypeName(CellPropertiesType type)
+{
+switch(type)
+{
+case CELL_PROPERTIES_TYPE_solid:
+return "Solid";
+break;
+case CELL_PROPERTIES_TYPE_fluid:
+return "Fluid";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+

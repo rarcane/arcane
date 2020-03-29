@@ -31,14 +31,31 @@ GeneralisedEntityType :: enum
 	pixel_object,
 }
 
+@XMacro
+CellMaterialTypeData :: struct
+{
+	mass : f32;
+	restitution : f32;
+}
 CellMaterialType :: enum
 {
-	air,
-	dirt,
-	sand,
-	water,
+	@Data(0.0f, 0.5f)
+		air,
+	@Data(5.0f, 1.0f)
+		dirt,
+	@Data(20.0f, 0.20f)
+		sand,
+	@Data(10.0f, 1.50f)
+		water,
 }
 
+EditorState :: enum
+{
+	none,
+	entity,
+	terrain,
+	collision,
+}
 
 /* --- FLAGS --- */
 
@@ -76,6 +93,12 @@ PixelFlags :: flags
 CellFlags :: flags
 {
 	no_gravity,
+}
+
+EditorFlags :: flags
+{
+	draw_world,
+	draw_collision,
 }
 
 @ForwardDeclare(Entity)
@@ -279,6 +302,29 @@ Entity :: struct
 @ForwardDeclare(Cell)
 ForwardCell :: _;
 
+SolidMaterial :: struct
+{
+	position : v2;
+	velocity : v2;
+	hardness : f32;
+}
+FluidMatieral :: struct
+{
+	flow : v2;
+	pressure : f32;
+	//mass : f32;
+}
+CellProperties :: union
+{
+	solid : SolidMaterial;
+	fuild : FluidMatieral;
+}
+CellPropertiesType :: enum
+{
+	solid,
+	fluid,
+}
+
 CellMaterial :: struct
 {
 	id : i32;
@@ -290,8 +336,8 @@ CellMaterial :: struct
 	restitution : f32;
 	max_height : i32;
 	
-	position : v2;
-	velocity : v2;
+	properties_type : CellPropertiesType;
+	properties : CellProperties;
 	
 	is_material_dynamic : b8;
 	has_been_updated : b8;
@@ -338,6 +384,7 @@ ChunkData :: struct
 	dynamic_cell_material_count : i32;
 }
 
+// NOTE(tjr): World-save specific data
 WorldData :: struct
 {
 	elapsed_world_time : f32;
@@ -352,4 +399,17 @@ WorldData :: struct
 	free_entity_id : i32;
 	
 	entity_components : ComponentSet;
+}
+
+// NOTE(tjr): Game client data
+ClientData :: struct
+{
+	/* ~ Player-controlled options ~ */
+	// ...graphics options, sound settings, etc.
+
+	/* ~ Editor ~ */
+	editor_state : EditorState;
+	editor_flags : EditorFlags;
+	// Entity Editor
+	selected_entity : *Entity;
 }

@@ -2,13 +2,12 @@
 #define MAX_CLOUDS 50
 
 typedef struct Entity Entity;
-//typedef struct EntitySet EntitySet;
-//typedef struct ComponentSet ComponentSet;
 typedef struct CollisionInfo CollisionInfo;
 typedef struct ItemComponent ItemComponent;
 typedef struct StorageComponent StorageComponent;
 
 typedef struct WorldData WorldData;
+typedef struct ClientData ClientData;
 typedef struct CellChunk CellChunk;
 
 typedef struct DebugLine
@@ -46,16 +45,6 @@ struct Core
 	Entity *hotbar;
 	i32 active_hotbar_slot;
 
-	// NOTE(tjr): Developer debug
-	b32 draw_colliders;
-	b32 draw_velocity;
-	b32 bloom;
-	f32 shadow_opacity;
-
-	// NOTE(tjr): Editor
-	b32 is_in_editor;
-	Entity *selected_entity;
-
 	// Temp
 	b32 is_ingame;
 	Entity *clouds[MAX_CLOUDS];
@@ -63,8 +52,8 @@ struct Core
 
 	v2 random_field[256][256];
 
-	// NOTE(tjr): World stuff
 	WorldData *world_data;
+	ClientData *client_data;
 
 	i32 queued_cell_chunk_count;
 	CellChunk *queued_cell_chunks_for_update[512];
