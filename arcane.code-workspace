@@ -40,7 +40,8 @@
 			"ecs.h": "c",
 			"old_ecs.h": "c",
 			"data_desk.h": "c",
-			"tsassets.h": "c"
+			"tsassets.h": "c",
+			"sprite.h": "c"
 		},
 		"editor.formatOnSave": true,
 		"editor.find.autoFindInSelection": true,

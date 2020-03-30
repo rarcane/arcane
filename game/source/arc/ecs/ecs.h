@@ -16,17 +16,6 @@ internal SpriteComponent GetDefaultSpriteComponent()
 	return comp;
 }
 
-internal SubSpriteComponent GetDefaultSubSpriteComponent()
-{
-	SubSpriteComponent comp = {0};
-	for (int i = 0; i < MAX_SUB_SPRITES; i++)
-	{
-		comp.sub_sprites[i].scale = v2(1.0f, 1.0f);
-		comp.sub_sprites[i].tint = v4u(1.0f);
-	}
-	return comp;
-}
-
 internal AnimationComponent GetDefaultAnimationComponent()
 {
 	AnimationComponent comp = {0};
@@ -41,25 +30,6 @@ internal PhysicsBodyComponent GetDefaultPhysicsBodyComponent()
 	PhysicsBodyComponent comp = {0};
 	return comp;
 }
-
-/* internal ColliderComponent GetDefaultColliderComponent()
-{
-	ColliderComponent comp = {0};
-	return comp;
-}
-
-internal VelocityComponent GetDefaultVelocityComponent()
-{
-	VelocityComponent comp = {0};
-	comp.acceleration_mult = v2(1.0f, 1.0f);
-	return comp;
-}
-
-internal PhysicsComponent GetDefaultPhysicsComponent()
-{
-	PhysicsComponent comp = {0};
-	return comp;
-} */
 
 internal MovementComponent GetDefaultMovementComponent()
 {

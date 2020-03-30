@@ -28,23 +28,6 @@ GENERALISED_ENTITY_TYPE_MAX,
 };
 static char *GetGeneralisedEntityTypeTypeName(GeneralisedEntityType type);
 
-typedef struct CellMaterialTypeData
-{
-f32 mass;
-f32 restitution;
-} CellMaterialTypeData;
-
-typedef enum CellMaterialType CellMaterialType;
-enum CellMaterialType
-{
-CELL_MATERIAL_TYPE_air,
-CELL_MATERIAL_TYPE_dirt,
-CELL_MATERIAL_TYPE_sand,
-CELL_MATERIAL_TYPE_water,
-CELL_MATERIAL_TYPE_MAX,
-};
-static char *GetCellMaterialTypeTypeName(CellMaterialType type);
-
 typedef enum EditorState EditorState;
 enum EditorState
 {
@@ -83,6 +66,257 @@ typedef unsigned int CellFlags;
 #define EDITOR_FLAGS_draw_world (1<<0)
 #define EDITOR_FLAGS_draw_collision (1<<1)
 typedef unsigned int EditorFlags;
+
+#define ITEM_FLAGS_resource (1<<0)
+#define ITEM_FLAGS_sword (1<<1)
+#define ITEM_FLAGS_bouncy (1<<2)
+typedef unsigned int ItemFlags;
+
+#define ITEM_FLAGS_HOTBARABLE (ITEM_FLAGS_sword)
+typedef struct StaticSpriteData
+{
+char texture_path[50];
+v4 source;
+v2 offset;
+// @Ignore 
+Ts2dTexture *texture_atlas;
+} StaticSpriteData;
+
+typedef enum StaticSprite StaticSprite;
+enum StaticSprite
+{
+STATIC_SPRITE_INVALID,
+STATIC_SPRITE_ground_arctic,
+STATIC_SPRITE_ground_desert,
+STATIC_SPRITE_ground_plains,
+STATIC_SPRITE_player,
+STATIC_SPRITE_flint_sword_icon,
+STATIC_SPRITE_flint_sword_ground,
+STATIC_SPRITE_far_mountains,
+STATIC_SPRITE_mid_mountains,
+STATIC_SPRITE_cloud_v1,
+STATIC_SPRITE_cloud_v2,
+STATIC_SPRITE_cloud_v3,
+STATIC_SPRITE_cloud_v4,
+STATIC_SPRITE_cloud_v5,
+STATIC_SPRITE_cloud_v6,
+STATIC_SPRITE_ground_forest_flat,
+STATIC_SPRITE_ground_forest_10_degree,
+STATIC_SPRITE_ground_rocks_v1,
+STATIC_SPRITE_ground_rocks_v2,
+STATIC_SPRITE_pine_tree_v1,
+STATIC_SPRITE_hills_1_v1,
+STATIC_SPRITE_bg1_shrub_v1,
+STATIC_SPRITE_bg1_shrub_v2,
+STATIC_SPRITE_bg1_shrub_v3,
+STATIC_SPRITE_bg1_sapling_v1,
+STATIC_SPRITE_bg1_sapling_v2,
+STATIC_SPRITE_bg1_sapling_v3,
+STATIC_SPRITE_bg1_pine_tree_v1,
+STATIC_SPRITE_bg1_pine_tree_v2,
+STATIC_SPRITE_bg2_hills_v1,
+STATIC_SPRITE_bg2_hills_v2,
+STATIC_SPRITE_bg2_shrub_v1,
+STATIC_SPRITE_bg2_shrub_v2,
+STATIC_SPRITE_bg2_shrub_v3,
+STATIC_SPRITE_bg2_pine_tree_v1,
+STATIC_SPRITE_bg2_pine_tree_v2,
+STATIC_SPRITE_bg3_hills_v1,
+STATIC_SPRITE_bg3_shrub_v1,
+STATIC_SPRITE_bg3_shrub_v2,
+STATIC_SPRITE_bg3_shrub_v3,
+STATIC_SPRITE_bg3_shrub_v4,
+STATIC_SPRITE_bg3_pine_tree_v1,
+STATIC_SPRITE_bg3_pine_tree_v2,
+STATIC_SPRITE_bg3_pine_tree_v3,
+STATIC_SPRITE_bg3_pine_tree_v4,
+STATIC_SPRITE_bg3_pine_tree_v5,
+STATIC_SPRITE_bg3_pine_tree_v6,
+STATIC_SPRITE_bg3_pine_tree_v7,
+STATIC_SPRITE_bg3_pine_tree_v8,
+STATIC_SPRITE_y_axis_arrow_icon,
+STATIC_SPRITE_x_axis_arrow_icon,
+STATIC_SPRITE_middle_axis_icon,
+STATIC_SPRITE_MAX,
+};
+static char *GetStaticSpriteTypeName(StaticSprite type);
+
+global StaticSpriteData static_sprite_data[STATIC_SPRITE_MAX] = {
+    { "invalid_texture", {0.0f, 0.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, },
+    { "scenic/biome_ground", {0.0f, 0.0f, 100.0f, 150.0f}, {0.0f, 147.0f}, },
+    { "scenic/biome_ground", {100.0f, 0.0f, 100.0f, 150.0f}, {0.0f, 147.0f}, },
+    { "scenic/biome_ground", {200.0f, 0.0f, 100.0f, 150.0f}, {0.0f, 147.0f}, },
+    { "entity/player/temp_player", {0.0f, 0.0f, 14.0f, 35.0f}, {0.0f, 0.0f}, },
+    { "item/flint_sword", {0.0f, 0.0f, 16.0f, 16.0f}, {6.0f, 2.0f}, },
+    { "item/flint_sword_ground", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, },
+    { "scenic/mountains", {0.0f, 0.0f, 600.0f, 160.0f}, {0.0f, 5.0f}, },
+    { "scenic/mountains", {0.0f, 160.0f, 600.0f, 90.0f}, {0.0f, 10.0f}, },
+    { "scenic/clouds", {0.0f, 0.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, },
+    { "scenic/clouds", {80.0f, 0.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, },
+    { "scenic/clouds", {160.0f, 0.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, },
+    { "scenic/clouds", {0.0f, 25.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, },
+    { "scenic/clouds", {80.0f, 25.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, },
+    { "scenic/clouds", {160.0f, 25.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, },
+    { "scenic/forest_ground", {0.0f, 40.0f, 100.0f, 90.0f }, {20.0f, 87.0f}, },
+    { "scenic/forest_ground", {100.0f, 25.0f, 100.0f, 105.0f}, {0.0f, 87.0f}, },
+    { "scenic/forest_ground", {0.0f, 0.0f, 100.0f, 4.0f}, {0.0f, 0.0f}, },
+    { "scenic/forest_ground", {0.0f, 4.0f, 100.0f, 4.0f}, {0.0f, 0.0f}, },
+    { "scenic/trees/pine_tree", {0.0f, 0.0f, 90.0f, 170.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/bg1_hills", {0.0f, 0.0f, 200.0f, 35.0f}, {0.0f, 20.0f}, },
+    { "scenic/background/vegetation", {0.0f, 0.0f, 50.0f, 25.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/vegetation", {50.0f, 0.0f, 50.0f, 25.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/vegetation", {100.0f, 0.0f, 50.0f, 25.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/vegetation", {75.0f, 25.0f, 20.0f, 40.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/vegetation", {95.0f, 25.0f, 20.0f, 40.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/vegetation", {115.0f, 25.0f, 20.0f, 40.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/bg1_pine_tree", {0.0f, 0.0f, 90.0f, 170.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/bg1_pine_tree", {90.0f, 0.0f, 90.0f, 170.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/bg2_hills", {0.0f, 0.0f, 200.0f, 40.0f}, {0.0f, 21.0f}, },
+    { "scenic/background/bg2_hills", {0.0f, 40.0f, 200.0f, 40.0f}, {0.0f, 21.0f}, },
+    { "scenic/background/vegetation", {0.0f, 25.0f, 25.0f, 20.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/vegetation", {25.0f, 25.0f, 25.0f, 20.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/vegetation", {50.0f, 25.0f, 25.0f, 20.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/bg2_pine_tree", {0.0f, 0.0f, 40.0f, 110.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/bg2_pine_tree", {40.0f, 0.0f, 40.0f, 110.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/bg3_hills", {0.0f, 0.0f, 200.0f, 40.0f}, {0.0f, 17.0f}, },
+    { "scenic/background/vegetation", {0.0f, 45.0f, 15.0f, 10.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/vegetation", {15.0f, 45.0f, 15.0f, 10.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/vegetation", {30.0f, 45.0f, 15.0f, 10.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/vegetation", {45.0f, 45.0f, 15.0f, 10.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/bg3_pine_tree", {0.0f, 0.0f, 20.0f, 50.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/bg3_pine_tree", {20.0f, 0.0f, 20.0f, 50.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/bg3_pine_tree", {40.0f, 0.0f, 20.0f, 50.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/bg3_pine_tree", {60.0f, 0.0f, 20.0f, 50.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/bg3_pine_tree", {80.0f, 0.0f, 20.0f, 50.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/bg3_pine_tree", {100.0f, 0.0f, 20.0f, 50.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/bg3_pine_tree", {120.0f, 0.0f, 20.0f, 50.0f}, {0.0f, 0.0f}, },
+    { "scenic/background/bg3_pine_tree", {140.0f, 0.0f, 20.0f, 50.0f}, {0.0f, 0.0f}, },
+    { "icon/axis_icons", {0.0f, 0.0f, 7.0f, 40.0f}, {0.0f, 0.0f}, },
+    { "icon/axis_icons", {0.0f, 33.0f, 40.0f, 7.0f}, {0.0f, 0.0f}, },
+    { "icon/axis_icons", {33.0f, 0.0f, 7.0f, 7.0f}, {0.0f, 0.0f}, },
+};
+
+typedef struct DynamicSpriteData
+{
+char texture_path[50];
+v4 source;
+v2 offset;
+i32 frames;
+f32 frame_interval;
+// @Ignore 
+Ts2dTexture *texture_atlas;
+} DynamicSpriteData;
+
+typedef enum DynamicSprite DynamicSprite;
+enum DynamicSprite
+{
+DYNAMIC_SPRITE_INVALID,
+DYNAMIC_SPRITE_player_idle,
+DYNAMIC_SPRITE_player_walking,
+DYNAMIC_SPRITE_player_sprinting,
+DYNAMIC_SPRITE_birch_tree1,
+DYNAMIC_SPRITE_birch_tree2,
+DYNAMIC_SPRITE_birch_tree3,
+DYNAMIC_SPRITE_birch_tree4,
+DYNAMIC_SPRITE_MAX,
+};
+static char *GetDynamicSpriteTypeName(DynamicSprite type);
+
+global DynamicSpriteData dynamic_sprite_data[DYNAMIC_SPRITE_MAX] = {
+    { "invalid_texture", {0.0f, 0.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "entity/player/player_animations", {0.0f, 192.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 4, 0.15f, },
+    { "entity/player/player_animations", {0.0f, 256.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 8, 0.1f, },
+    { "entity/player/player_animations", {0.0f, 320.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 8, 0.1f, },
+    { "scenic/trees/birch_idle", {0.0f, 0.0f, 120.0f, 160.0f}, {0.0f, 0.0f}, 6, 0.1f, },
+    { "scenic/trees/birch_idle", {0.0f, 160.0f, 120.0f, 160.0f}, {0.0f, 0.0f}, 6, 0.1f, },
+    { "scenic/trees/birch_idle", {0.0f, 320.0f, 120.0f, 160.0f}, {0.0f, 0.0f}, 6, 0.1f, },
+    { "scenic/trees/birch_idle", {0.0f, 480.0f, 120.0f, 160.0f}, {0.0f, 0.0f}, 6, 0.1f, },
+};
+
+#define MAX_SUB_SPRITES (5)
+typedef struct ArcEntityAnimationStateData
+{
+DynamicSprite dynamic_sprite;
+} ArcEntityAnimationStateData;
+
+typedef enum ArcEntityAnimationState ArcEntityAnimationState;
+enum ArcEntityAnimationState
+{
+ARC_ENTITY_ANIMATION_STATE_player_idle,
+ARC_ENTITY_ANIMATION_STATE_player_walking,
+ARC_ENTITY_ANIMATION_STATE_player_sprinting,
+ARC_ENTITY_ANIMATION_STATE_MAX,
+};
+static char *GetArcEntityAnimationStateTypeName(ArcEntityAnimationState type);
+
+global ArcEntityAnimationStateData arc_entity_animation_state_data[ARC_ENTITY_ANIMATION_STATE_MAX] = {
+    { DYNAMIC_SPRITE_player_idle, },
+    { DYNAMIC_SPRITE_player_walking, },
+    { DYNAMIC_SPRITE_player_sprinting, },
+};
+
+typedef struct ArcEntityTypeData
+{
+char *general_states[10];
+ArcEntityAnimationState animation_states[20];
+} ArcEntityTypeData;
+
+typedef enum ArcEntityType ArcEntityType;
+enum ArcEntityType
+{
+ARC_ENTITY_TYPE_player,
+ARC_ENTITY_TYPE_MAX,
+};
+static char *GetArcEntityTypeTypeName(ArcEntityType type);
+
+global ArcEntityTypeData arc_entity_type_data[ARC_ENTITY_TYPE_MAX] = {
+    { {"Idle", "Walking", "Sprinting"}, {ARC_ENTITY_ANIMATION_STATE_player_idle, ARC_ENTITY_ANIMATION_STATE_player_walking, ARC_ENTITY_ANIMATION_STATE_player_sprinting}, },
+};
+
+typedef struct ItemTypeData
+{
+char print_name[20];
+StaticSprite icon_sprite;
+StaticSprite ground_sprite;
+i32 max_stack_size;
+ItemFlags flags;
+} ItemTypeData;
+
+typedef enum ItemType ItemType;
+enum ItemType
+{
+ITEM_TYPE_flint_sword,
+ITEM_TYPE_MAX,
+};
+static char *GetItemTypeTypeName(ItemType type);
+
+global ItemTypeData item_type_data[ITEM_TYPE_MAX] = {
+    { "Flint Sword", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_FLAGS_sword, },
+};
+
+typedef struct CellMaterialTypeData
+{
+f32 mass;
+f32 restitution;
+} CellMaterialTypeData;
+
+typedef enum CellMaterialType CellMaterialType;
+enum CellMaterialType
+{
+CELL_MATERIAL_TYPE_air,
+CELL_MATERIAL_TYPE_dirt,
+CELL_MATERIAL_TYPE_sand,
+CELL_MATERIAL_TYPE_water,
+CELL_MATERIAL_TYPE_MAX,
+};
+static char *GetCellMaterialTypeTypeName(CellMaterialType type);
+
+global CellMaterialTypeData cell_material_type_data[CELL_MATERIAL_TYPE_MAX] = {
+    { 0.0f, 0.5f, },
+    { 5.0f, 1.0f, },
+    { 20.0f, 0.20f, },
+    { 10.0f, 1.50f, },
+};
 
 typedef struct Entity Entity;
 
@@ -147,15 +381,6 @@ b8 is_flipped;
 b8 is_background_sprite;
 } SpriteComponent;
 
-typedef struct SubSpriteComponent
-{
-Entity *parent_entity;
-i32 component_id;
-SpriteData sub_sprites[MAX_SUB_SPRITES];
-i32 sub_sprite_count;
-b8 is_flipped;
-} SubSpriteComponent;
-
 typedef struct AnimationComponent
 {
 Entity *parent_entity;
@@ -194,7 +419,7 @@ Entity *parent_entity;
 i32 component_id;
 ArcEntityType entity_type;
 char *current_general_state;
-AnimationStateType current_animation_state;
+ArcEntityAnimationState current_animation_state;
 } ArcEntityComponent;
 
 typedef struct ItemComponent
@@ -251,7 +476,6 @@ typedef enum ComponentType
 COMPONENT_INVALID,
 COMPONENT_position,
 COMPONENT_sprite,
-COMPONENT_sub_sprite,
 COMPONENT_animation,
 COMPONENT_physics_body,
 COMPONENT_movement,
@@ -272,9 +496,6 @@ i32 position_free_component_id;
 SpriteComponent sprite_components[MAX_ACTIVE_ENTITIES];
 i32 sprite_component_count;
 i32 sprite_free_component_id;
-SubSpriteComponent sub_sprite_components[MAX_ACTIVE_ENTITIES];
-i32 sub_sprite_component_count;
-i32 sub_sprite_free_component_id;
 AnimationComponent animation_components[MAX_ACTIVE_ENTITIES];
 i32 animation_component_count;
 i32 animation_free_component_id;
@@ -309,7 +530,7 @@ typedef struct CharacterEntity
 {
 Entity *parent_generic_entity;
     PositionComponent *position_comp;
-    SubSpriteComponent *sub_sprite_comp;
+    SpriteComponent *sprite_comp;
     AnimationComponent *animation_comp;
     PhysicsBodyComponent *physics_body_comp;
     MovementComponent *movement_comp;

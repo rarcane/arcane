@@ -1,21 +1,3 @@
-internal void InitialiseItemData(){
-#define Item(item_name,                                                   \
-			 item_print_name,                                             \
-			 item_icon_sprite,                                            \
-			 item_ground_sprite,                                          \
-			 item_max_stack_size,                                         \
-			 item_flags)                                                  \
-	{                                                                     \
-		strcpy(item_data[ITEM_##item_name].print_name, item_print_name);  \
-		item_data[ITEM_##item_name].icon_sprite = item_icon_sprite;       \
-		item_data[ITEM_##item_name].ground_sprite = item_ground_sprite;   \
-		item_data[ITEM_##item_name].max_stack_size = item_max_stack_size; \
-		item_data[ITEM_##item_name].flags = item_flags;                   \
-	}
-#include "items.inc"
-#undef Item
-}
-
 // NOTE(tjr): Adds item into a storage component at the desired slot. Returns false if there is already an existing item there.
 internal void AddItemToStorage(ItemComponent *item_comp, StorageComponent *storage_comp, i32 storage_slot)
 {
@@ -32,15 +14,15 @@ internal void ConvertToGroundItem(ItemComponent *item_comp)
 	Entity *item = item_comp->parent_entity;
 
 	PositionComponent *player_pos = core->world_data->character_entity.position_comp;
-	SubSpriteComponent *player_sub_sprite = core->world_data->character_entity.sub_sprite_comp;
+	SpriteComponent *player_sprite = core->world_data->character_entity.sprite_comp;
 
-	StaticSprite *ground_sprite = GetStaticSprite(item_data[item_comp->item_type].ground_sprite);
+	StaticSpriteData *ground_sprite = &static_sprite_data[item_type_data[item_comp->item_type].ground_sprite];
 
 	PositionComponent *item_pos = AddPositionComponent(item);
-	item_pos->position = v2(player_pos->position.x + 10 * (player_sub_sprite->is_flipped ? -1 : 1), player_pos->position.y - 20);
+	item_pos->position = v2(player_pos->position.x + 10 * (player_sprite->is_flipped ? -1 : 1), player_pos->position.y - 20);
 
 	SpriteComponent *item_sprite = AddSpriteComponent(item);
-	item_sprite->sprite_data.sprite_enum = item_data[item_comp->item_type].ground_sprite;
+	item_sprite->sprite_data.static_sprite = item_type_data[item_comp->item_type].ground_sprite;
 	item_sprite->sprite_data.render_layer = 1.0f;
 
 	/* VelocityComponent *item_velocity = AddVelocityComponent(item);

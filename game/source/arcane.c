@@ -14,10 +14,7 @@
 #include "arcane.h"
 #include "core.h"
 // NOTE(tjr): Game Header Code
-#include "arc/entity/player/action.h"
 #include "arc/sprite/sprite.h"
-#include "arc/entity/arc_entity.h"
-#include "arc/item/item.h"
 #include "arc/world/particle.h"
 #include "generated/catchall.h"
 #include "arc/ecs/ecs.h"
@@ -35,7 +32,6 @@
 // NOTE(tjr): Game Implementation Code
 #include "arc/util.c"
 #include "tsarcane/terminalcommands.c"
-#include "arc/entity/player/action.c"
 #include "arc/sprite/sprite.c"
 #include "arc/entity/arc_entity.c"
 #include "arc/world/particle.c"
@@ -116,9 +112,7 @@ GameInit(void)
 
 		// NOTE(tjr): Initialise Arcane data.
 		{
-			InitialiseActions();
 			InitialiseSpriteData();
-			InitialiseItemData();
 
 			core->client_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(ClientData));
 			R_DEV_ASSERT(core->client_data, "Failed to allocate memory for WorldData.");

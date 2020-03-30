@@ -38,28 +38,6 @@ break;
 }
 }
 
-static char *GetCellMaterialTypeName(CellMaterialType type)
-{
-switch(type)
-{
-case CELL_MATERIAL_TYPE_air:
-return "Air";
-break;
-case CELL_MATERIAL_TYPE_dirt:
-return "Dirt";
-break;
-case CELL_MATERIAL_TYPE_sand:
-return "Sand";
-break;
-case CELL_MATERIAL_TYPE_water:
-return "Water";
-break;
-default:
-return "INVALID";
-break;
-}
-}
-
 static char *GetEditorStateName(EditorState type)
 {
 switch(type)
@@ -75,6 +53,273 @@ return "Terrain";
 break;
 case EDITOR_STATE_collision:
 return "Collision";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
+static char *GetStaticSpriteName(StaticSprite type)
+{
+switch(type)
+{
+case STATIC_SPRITE_INVALID:
+return "INVALID";
+break;
+case STATIC_SPRITE_ground_arctic:
+return "Ground Arctic";
+break;
+case STATIC_SPRITE_ground_desert:
+return "Ground Desert";
+break;
+case STATIC_SPRITE_ground_plains:
+return "Ground Plains";
+break;
+case STATIC_SPRITE_player:
+return "Player";
+break;
+case STATIC_SPRITE_flint_sword_icon:
+return "Flint Sword Icon";
+break;
+case STATIC_SPRITE_flint_sword_ground:
+return "Flint Sword Ground";
+break;
+case STATIC_SPRITE_far_mountains:
+return "Far Mountains";
+break;
+case STATIC_SPRITE_mid_mountains:
+return "Mid Mountains";
+break;
+case STATIC_SPRITE_cloud_v1:
+return "Cloud V1";
+break;
+case STATIC_SPRITE_cloud_v2:
+return "Cloud V2";
+break;
+case STATIC_SPRITE_cloud_v3:
+return "Cloud V3";
+break;
+case STATIC_SPRITE_cloud_v4:
+return "Cloud V4";
+break;
+case STATIC_SPRITE_cloud_v5:
+return "Cloud V5";
+break;
+case STATIC_SPRITE_cloud_v6:
+return "Cloud V6";
+break;
+case STATIC_SPRITE_ground_forest_flat:
+return "Ground Forest Flat";
+break;
+case STATIC_SPRITE_ground_forest_10_degree:
+return "Ground Forest 10 Degree";
+break;
+case STATIC_SPRITE_ground_rocks_v1:
+return "Ground Rocks V1";
+break;
+case STATIC_SPRITE_ground_rocks_v2:
+return "Ground Rocks V2";
+break;
+case STATIC_SPRITE_pine_tree_v1:
+return "Pine Tree V1";
+break;
+case STATIC_SPRITE_hills_1_v1:
+return "Hills 1v1";
+break;
+case STATIC_SPRITE_bg1_shrub_v1:
+return "Bg1 Shrub V1";
+break;
+case STATIC_SPRITE_bg1_shrub_v2:
+return "Bg1 Shrub V2";
+break;
+case STATIC_SPRITE_bg1_shrub_v3:
+return "Bg1 Shrub V3";
+break;
+case STATIC_SPRITE_bg1_sapling_v1:
+return "Bg1 Sapling V1";
+break;
+case STATIC_SPRITE_bg1_sapling_v2:
+return "Bg1 Sapling V2";
+break;
+case STATIC_SPRITE_bg1_sapling_v3:
+return "Bg1 Sapling V3";
+break;
+case STATIC_SPRITE_bg1_pine_tree_v1:
+return "Bg1 Pine Tree V1";
+break;
+case STATIC_SPRITE_bg1_pine_tree_v2:
+return "Bg1 Pine Tree V2";
+break;
+case STATIC_SPRITE_bg2_hills_v1:
+return "Bg2 Hills V1";
+break;
+case STATIC_SPRITE_bg2_hills_v2:
+return "Bg2 Hills V2";
+break;
+case STATIC_SPRITE_bg2_shrub_v1:
+return "Bg2 Shrub V1";
+break;
+case STATIC_SPRITE_bg2_shrub_v2:
+return "Bg2 Shrub V2";
+break;
+case STATIC_SPRITE_bg2_shrub_v3:
+return "Bg2 Shrub V3";
+break;
+case STATIC_SPRITE_bg2_pine_tree_v1:
+return "Bg2 Pine Tree V1";
+break;
+case STATIC_SPRITE_bg2_pine_tree_v2:
+return "Bg2 Pine Tree V2";
+break;
+case STATIC_SPRITE_bg3_hills_v1:
+return "Bg3 Hills V1";
+break;
+case STATIC_SPRITE_bg3_shrub_v1:
+return "Bg3 Shrub V1";
+break;
+case STATIC_SPRITE_bg3_shrub_v2:
+return "Bg3 Shrub V2";
+break;
+case STATIC_SPRITE_bg3_shrub_v3:
+return "Bg3 Shrub V3";
+break;
+case STATIC_SPRITE_bg3_shrub_v4:
+return "Bg3 Shrub V4";
+break;
+case STATIC_SPRITE_bg3_pine_tree_v1:
+return "Bg3 Pine Tree V1";
+break;
+case STATIC_SPRITE_bg3_pine_tree_v2:
+return "Bg3 Pine Tree V2";
+break;
+case STATIC_SPRITE_bg3_pine_tree_v3:
+return "Bg3 Pine Tree V3";
+break;
+case STATIC_SPRITE_bg3_pine_tree_v4:
+return "Bg3 Pine Tree V4";
+break;
+case STATIC_SPRITE_bg3_pine_tree_v5:
+return "Bg3 Pine Tree V5";
+break;
+case STATIC_SPRITE_bg3_pine_tree_v6:
+return "Bg3 Pine Tree V6";
+break;
+case STATIC_SPRITE_bg3_pine_tree_v7:
+return "Bg3 Pine Tree V7";
+break;
+case STATIC_SPRITE_bg3_pine_tree_v8:
+return "Bg3 Pine Tree V8";
+break;
+case STATIC_SPRITE_y_axis_arrow_icon:
+return "Yaxis Arrow Icon";
+break;
+case STATIC_SPRITE_x_axis_arrow_icon:
+return "Xaxis Arrow Icon";
+break;
+case STATIC_SPRITE_middle_axis_icon:
+return "Middle Axis Icon";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
+static char *GetDynamicSpriteName(DynamicSprite type)
+{
+switch(type)
+{
+case DYNAMIC_SPRITE_INVALID:
+return "INVALID";
+break;
+case DYNAMIC_SPRITE_player_idle:
+return "Player Idle";
+break;
+case DYNAMIC_SPRITE_player_walking:
+return "Player Walking";
+break;
+case DYNAMIC_SPRITE_player_sprinting:
+return "Player Sprinting";
+break;
+case DYNAMIC_SPRITE_birch_tree1:
+return "Birch Tree1";
+break;
+case DYNAMIC_SPRITE_birch_tree2:
+return "Birch Tree2";
+break;
+case DYNAMIC_SPRITE_birch_tree3:
+return "Birch Tree3";
+break;
+case DYNAMIC_SPRITE_birch_tree4:
+return "Birch Tree4";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
+static char *GetArcEntityAnimationStateName(ArcEntityAnimationState type)
+{
+switch(type)
+{
+case ARC_ENTITY_ANIMATION_STATE_player_idle:
+return "Player Idle";
+break;
+case ARC_ENTITY_ANIMATION_STATE_player_walking:
+return "Player Walking";
+break;
+case ARC_ENTITY_ANIMATION_STATE_player_sprinting:
+return "Player Sprinting";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
+static char *GetArcEntityTypeName(ArcEntityType type)
+{
+switch(type)
+{
+case ARC_ENTITY_TYPE_player:
+return "Player";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
+static char *GetItemTypeName(ItemType type)
+{
+switch(type)
+{
+case ITEM_TYPE_flint_sword:
+return "Flint Sword";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
+static char *GetCellMaterialTypeName(CellMaterialType type)
+{
+switch(type)
+{
+case CELL_MATERIAL_TYPE_air:
+return "Air";
+break;
+case CELL_MATERIAL_TYPE_dirt:
+return "Dirt";
+break;
+case CELL_MATERIAL_TYPE_sand:
+return "Sand";
+break;
+case CELL_MATERIAL_TYPE_water:
+return "Water";
 break;
 default:
 return "INVALID";
@@ -141,25 +386,6 @@ internal void PrintComponentDataUI(void *component_data, ComponentType type)
             component->is_flipped = TsUIToggler("is_flipped", component->is_flipped);
             TsUIPushAutoWidth();
             { char label[100]; sprintf(label, component->is_background_sprite ? "is_background_sprite: true" : "is_background_sprite: false"); TsUILabel(label); }
-            TsUIPopWidth();
-
-            TsUICollapsableEnd();
-        }
-        break;
-    }
-
-    case COMPONENT_sub_sprite :
-    {
-        SubSpriteComponent *component = (SubSpriteComponent*)component_data;
-        char title[100];
-        sprintf(title, "SubSprite #%i", component->component_id);
-        if (TsUICollapsable(title))        {
-            // TODO: Don't know how to generate UI print for variable 'sub_sprites'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "sub_sprite_count: %i", component->sub_sprite_count); TsUILabel(label); }
-            TsUIPopWidth();
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, component->is_flipped ? "is_flipped: true" : "is_flipped: false"); TsUILabel(label); }
             TsUIPopWidth();
 
             TsUICollapsableEnd();
@@ -442,51 +668,6 @@ internal void RemoveSpriteComponent(Entity *entity)
 
     if (deleted_component_id < core->world_data->entity_components.sprite_free_component_id)
         core->world_data->entity_components.sprite_free_component_id = deleted_component_id;
-}
-
-internal SubSpriteComponent *AddSubSpriteComponent(Entity *entity)
-{
-    i32 component_id;
-    if (core->world_data->entity_components.sub_sprite_free_component_id == core->world_data->entity_components.sub_sprite_component_count)
-    {
-        component_id = core->world_data->entity_components.sub_sprite_component_count;
-        core->world_data->entity_components.sub_sprite_component_count++;
-        core->world_data->entity_components.sub_sprite_free_component_id = component_id + 1;
-    }
-    else
-    {
-        component_id = core->world_data->entity_components.sub_sprite_free_component_id;
-    }
-
-    core->world_data->entity_components.sub_sprite_components[component_id] = GetDefaultSubSpriteComponent();
-    entity->components[COMPONENT_sub_sprite] = &core->world_data->entity_components.sub_sprite_components[component_id];
-    core->world_data->entity_components.sub_sprite_components[component_id].parent_entity = entity;
-    core->world_data->entity_components.sub_sprite_components[component_id].component_id = component_id;
-
-    for (int i = 0; i < core->world_data->entity_components.sub_sprite_component_count + 1; i++)
-    {
-        if (!core->world_data->entity_components.sub_sprite_components[i].parent_entity)
-        {
-            core->world_data->entity_components.sub_sprite_free_component_id = i;
-            break;
-        }
-    }
-
-    return &core->world_data->entity_components.sub_sprite_components[component_id];
-}
-
-internal void RemoveSubSpriteComponent(Entity *entity)
-{
-    SubSpriteComponent *component = entity->components[COMPONENT_sub_sprite];
-    R_DEV_ASSERT(component, "Entity does not a SubSpriteComponent attached, so it can't remove it.");
-
-    i32 deleted_component_id = component->component_id;
-    SubSpriteComponent empty_comp = {0};
-    core->world_data->entity_components.sub_sprite_components[deleted_component_id] = empty_comp;
-    entity->components[COMPONENT_sub_sprite] = 0;
-
-    if (deleted_component_id < core->world_data->entity_components.sub_sprite_free_component_id)
-        core->world_data->entity_components.sub_sprite_free_component_id = deleted_component_id;
 }
 
 internal AnimationComponent *AddAnimationComponent(Entity *entity)
@@ -902,34 +1083,31 @@ internal void DeleteEntity(Entity *entity)
     SpriteComponent *sprite_component = entity->components[2];
     if (sprite_component)
         RemoveSpriteComponent(entity);
-    SubSpriteComponent *sub_sprite_component = entity->components[3];
-    if (sub_sprite_component)
-        RemoveSubSpriteComponent(entity);
-    AnimationComponent *animation_component = entity->components[4];
+    AnimationComponent *animation_component = entity->components[3];
     if (animation_component)
         RemoveAnimationComponent(entity);
-    PhysicsBodyComponent *physics_body_component = entity->components[5];
+    PhysicsBodyComponent *physics_body_component = entity->components[4];
     if (physics_body_component)
         RemovePhysicsBodyComponent(entity);
-    MovementComponent *movement_component = entity->components[6];
+    MovementComponent *movement_component = entity->components[5];
     if (movement_component)
         RemoveMovementComponent(entity);
-    ArcEntityComponent *arc_entity_component = entity->components[7];
+    ArcEntityComponent *arc_entity_component = entity->components[6];
     if (arc_entity_component)
         RemoveArcEntityComponent(entity);
-    ItemComponent *item_component = entity->components[8];
+    ItemComponent *item_component = entity->components[7];
     if (item_component)
         RemoveItemComponent(entity);
-    TriggerComponent *trigger_component = entity->components[9];
+    TriggerComponent *trigger_component = entity->components[8];
     if (trigger_component)
         RemoveTriggerComponent(entity);
-    StorageComponent *storage_component = entity->components[10];
+    StorageComponent *storage_component = entity->components[9];
     if (storage_component)
         RemoveStorageComponent(entity);
-    ParallaxComponent *parallax_component = entity->components[11];
+    ParallaxComponent *parallax_component = entity->components[10];
     if (parallax_component)
         RemoveParallaxComponent(entity);
-    ParticleEmitterComponent *particle_emitter_component = entity->components[12];
+    ParticleEmitterComponent *particle_emitter_component = entity->components[11];
     if (particle_emitter_component)
         RemoveParticleEmitterComponent(entity);
 
@@ -948,7 +1126,7 @@ static CharacterEntity *InitialiseCharacterEntity()
     unique_entity->parent_generic_entity = generic_entity;
 
     unique_entity->position_comp = AddPositionComponent(generic_entity);
-    unique_entity->sub_sprite_comp = AddSubSpriteComponent(generic_entity);
+    unique_entity->sprite_comp = AddSpriteComponent(generic_entity);
     unique_entity->animation_comp = AddAnimationComponent(generic_entity);
     unique_entity->physics_body_comp = AddPhysicsBodyComponent(generic_entity);
     unique_entity->movement_comp = AddMovementComponent(generic_entity);

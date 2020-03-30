@@ -4,18 +4,18 @@ internal void PreMoveUpdatePlayer()
 	PhysicsBodyComponent *body_comp = core->world_data->character_entity.physics_body_comp;
 	MovementComponent *movement_comp = core->world_data->character_entity.movement_comp;
 	ArcEntityComponent *arc_entity_comp = core->world_data->character_entity.arc_entity_comp;
-	SubSpriteComponent *sub_sprite_comp = core->world_data->character_entity.sub_sprite_comp;
+	SpriteComponent *sprite_comp = core->world_data->character_entity.sprite_comp;
 	AnimationComponent *animation_comp = core->world_data->character_entity.animation_comp;
-	R_DEV_ASSERT(movement_comp && arc_entity_comp && animation_comp && sub_sprite_comp, "Entity does not have the required components.");
+	R_DEV_ASSERT(movement_comp && arc_entity_comp && animation_comp && sprite_comp, "Entity does not have the required components.");
 
 	b8 is_sprinting = 0;
-	if (IsActionDown(ACTION_move_left))
+	if (platform->key_down[KEY_a])
 	{
-		if (IsActionDown(ACTION_move_right))
+		if (platform->key_down[KEY_d])
 			movement_comp->axis_x = 0.0f;
 		else
 		{
-			if (IsActionDown(ACTION_sprint))
+			if (platform->key_down[KEY_shift])
 			{
 				movement_comp->axis_x = -1.5;
 				is_sprinting = 1;
@@ -26,13 +26,13 @@ internal void PreMoveUpdatePlayer()
 			}
 		}
 	}
-	else if (IsActionDown(ACTION_move_right))
+	else if (platform->key_down[KEY_d])
 	{
-		if (IsActionDown(ACTION_move_left))
+		if (platform->key_down[KEY_a])
 			movement_comp->axis_x = 0.0f;
 		else
 		{
-			if (IsActionDown(ACTION_sprint))
+			if (platform->key_down[KEY_shift])
 			{
 				movement_comp->axis_x = 1.5;
 				is_sprinting = 1;
@@ -51,7 +51,7 @@ internal void PreMoveUpdatePlayer()
 	if (fabsf(body_comp->velocity.x) < fabsf(movement_comp->move_speed * movement_comp->axis_x))
 		body_comp->force.x = movement_comp->axis_x * (1200 / body_comp->mass_data.inv_mass);
 
-	if (IsActionPressed(ACTION_jump))
+	if (platform->key_pressed[KEY_space])
 	{
 		body_comp->force.y = -10000.0f / body_comp->mass_data.inv_mass;
 	}
@@ -60,26 +60,26 @@ internal void PreMoveUpdatePlayer()
 	{
 		if (movement_comp->axis_x < 0.0f)
 		{
-			sub_sprite_comp->is_flipped = 1;
+			sprite_comp->is_flipped = 1;
 		}
 		else if (movement_comp->axis_x > 0.0f)
 		{
-			sub_sprite_comp->is_flipped = 0;
+			sprite_comp->is_flipped = 0;
 		}
 
 		if (movement_comp->axis_x == 0)
 		{
-			SetArcEntityAnimationState(arc_entity_comp, ANIMATION_STATE_player_idle, ANIMATION_FLAGS_playing | ANIMATION_FLAGS_repeat, 0);
+			SetArcEntityAnimationState(arc_entity_comp, ARC_ENTITY_ANIMATION_STATE_player_idle, ANIMATION_FLAGS_playing | ANIMATION_FLAGS_repeat, 0);
 		}
 		else
 		{
 			if (is_sprinting)
 			{
-				SetArcEntityAnimationState(arc_entity_comp, ANIMATION_STATE_player_sprinting, ANIMATION_FLAGS_playing | ANIMATION_FLAGS_repeat, 0);
+				SetArcEntityAnimationState(arc_entity_comp, ARC_ENTITY_ANIMATION_STATE_player_sprinting, ANIMATION_FLAGS_playing | ANIMATION_FLAGS_repeat, 0);
 			}
 			else
 			{
-				SetArcEntityAnimationState(arc_entity_comp, ANIMATION_STATE_player_walking, ANIMATION_FLAGS_playing | ANIMATION_FLAGS_repeat, 0);
+				SetArcEntityAnimationState(arc_entity_comp, ARC_ENTITY_ANIMATION_STATE_player_walking, ANIMATION_FLAGS_playing | ANIMATION_FLAGS_repeat, 0);
 			}
 		}
 	}
@@ -196,7 +196,7 @@ internal void PostMoveUpdatePlayer()
 
 						AddPositionComponent(new_held_item);
 						SpriteComponent *new_held_item_sprite = AddSpriteComponent(new_held_item);
-						new_held_item_sprite->sprite_data.sprite_enum = item_data[new_held_item_comp->item_type].icon_sprite;
+						new_held_item_sprite->sprite_data.static_sprite = item_type_data[new_held_item_comp->item_type].icon_sprite;
 						new_held_item_sprite->sprite_data.render_layer = -0.025f;
 
 						core->held_item = new_held_item;

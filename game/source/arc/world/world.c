@@ -23,20 +23,16 @@ internal void TempInitGameWorld()
 		character->physics_body_comp->gravity_multiplier = 1.0f;
 
 		character->movement_comp->move_speed = 100.0f;
-		character->arc_entity_comp->entity_type = ARC_ENTITY_player;
-		character->arc_entity_comp->current_animation_state = ANIMATION_STATE_player_idle;
-		character->sub_sprite_comp->sub_sprites[0].sprite_enum = arc_entity_animation_state_data[ANIMATION_STATE_player_idle].dynamic_sprites[0];
-		character->sub_sprite_comp->sub_sprites[0].render_layer = 0.0f;
-		character->sub_sprite_comp->sub_sprites[1].sprite_enum = arc_entity_animation_state_data[ANIMATION_STATE_player_idle].dynamic_sprites[1];
-		character->sub_sprite_comp->sub_sprites[1].render_layer = -0.05f;
-		character->sub_sprite_comp->sub_sprite_count = 2;
+		character->arc_entity_comp->entity_type = ARC_ENTITY_TYPE_player;
+		character->arc_entity_comp->current_animation_state = ARC_ENTITY_ANIMATION_STATE_player_idle;
+		character->sprite_comp->sprite_data.dynamic_sprite = DYNAMIC_SPRITE_player_idle;
 	}
 
 	{
 		core->sword = NewEntity("Sword", ENTITY_TYPE_generic, GENERALISED_ENTITY_TYPE_item);
 		core->sword->flags |= ENTITY_FLAGS_no_delete;
 		ItemComponent *sword_item = AddItemComponent(core->sword);
-		sword_item->item_type = ITEM_flint_sword;
+		sword_item->item_type = ITEM_TYPE_flint_sword;
 		sword_item->stack_size = 1;
 
 		core->backpack = NewEntity("Backpack", ENTITY_TYPE_generic, GENERALISED_ENTITY_TYPE_storage);
@@ -182,27 +178,6 @@ internal void DrawWorld()
 
 internal void PostUpdateWorldAnimations()
 {
-	// NOTE(tjr): Update held item to player hand socket.
-	if (core->held_item)
-	{
-		PositionComponent *position_comp = core->world_data->character_entity.position_comp;
-		AnimationComponent *animation_comp = core->world_data->character_entity.animation_comp;
-		SubSpriteComponent *sub_sprite_comp = core->world_data->character_entity.sub_sprite_comp;
-
-		PositionComponent *held_item_pos_comp = core->held_item->components[COMPONENT_position];
-		// TODO: Extract into some sort of socket finding function?
-		for (int i = 0; i < sub_sprite_comp->sub_sprite_count; i++)
-		{
-			DynamicSprite *sprite = GetDynamicSprite(sub_sprite_comp->sub_sprites[i].sprite_enum);
-			SpriteSocket *sprite_socket = &sprite->sockets[animation_comp->current_frame];
-
-			if (strcmp(sprite_socket->name, "Hand") == 0)
-				held_item_pos_comp->position = V2AddV2(position_comp->position, v2((sub_sprite_comp->is_flipped ? -sprite_socket->position.x : sprite_socket->position.x), sprite_socket->position.y));
-		}
-
-		SpriteComponent *held_item_sprite_comp = core->held_item->components[COMPONENT_sprite];
-		held_item_sprite_comp->is_flipped = sub_sprite_comp->is_flipped;
-	}
 }
 
 internal void UpdateParallax()

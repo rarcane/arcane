@@ -10,5 +10,5 @@ typedef struct InventoryIconCanvasData
 
 typedef struct GrabbedIconCanvasData
 {
-	StaticSprite *static_sprite;
+	StaticSpriteData *static_sprite;
 } GrabbedIconCanvasData;

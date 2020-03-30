@@ -44,7 +44,7 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 					StorageComponent *hotbar_storage_comp = core->hotbar->components[COMPONENT_storage];
 					if (core->grabbed_inv_item_origin_storage_comp == hotbar_storage_comp) // If this incoming swap is from the hotbar.
 					{
-						if (item_data[icon_data->item_comp->item_type].flags & ITEM_FLAGS_HOTBARABLE) // Swap is allowed.
+						if (item_type_data[icon_data->item_comp->item_type].flags & ITEM_FLAGS_HOTBARABLE) // Swap is allowed.
 						{
 							AddItemToStorage(icon_data->item_comp, core->grabbed_inv_item_origin_storage_comp, core->grabbed_inv_item_origin_slot);
 							icon_data->storage_comp->items[icon_data->slot] = 0;
@@ -62,7 +62,7 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 						if (core->grabbed_inv_item_comp->item_type == icon_data->item_comp->item_type)
 						{
 							if (core->grabbed_inv_item_comp->stack_size + icon_data->item_comp->stack_size <=
-								item_data[icon_data->item_comp->item_type].max_stack_size)
+								item_type_data[icon_data->item_comp->item_type].max_stack_size)
 							{
 								// Combine stack
 								icon_data->item_comp->stack_size += core->grabbed_inv_item_comp->stack_size;
@@ -77,12 +77,12 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 								// Calculate leftover item stack size.
 								core->grabbed_inv_item_comp->stack_size = core->grabbed_inv_item_comp->stack_size +
 																		  icon_data->item_comp->stack_size -
-																		  item_data[icon_data->item_comp->item_type].max_stack_size;
+																		  item_type_data[icon_data->item_comp->item_type].max_stack_size;
 								// Move leftover item back where it came from.
 								AddItemToStorage(core->grabbed_inv_item_comp, core->grabbed_inv_item_origin_storage_comp, core->grabbed_inv_item_origin_slot);
 								core->grabbed_inv_item_comp = 0;
 								// Max the stack size of the released item.
-								icon_data->item_comp->stack_size = item_data[icon_data->item_comp->item_type].max_stack_size;
+								icon_data->item_comp->stack_size = item_type_data[icon_data->item_comp->item_type].max_stack_size;
 							}
 						}
 						else // Swap
@@ -155,7 +155,7 @@ internal void inventory_icon_canvas_render_callback(char *name, v4 rect, v2 mous
 	if (icon_data->item_comp)
 	{
 		f32 padding = 15;
-		StaticSprite *sprite = GetStaticSprite(item_data[icon_data->item_comp->item_type].icon_sprite);
+		StaticSpriteData *sprite = &static_sprite_data[item_type_data[icon_data->item_comp->item_type].icon_sprite];
 		Ts2dPushTexture(sprite->texture_atlas, sprite->source, v4(rect.x + padding / 2, rect.y + padding / 2, rect.z - padding, rect.w - padding));
 
 		if (icon_data->item_comp->stack_size > 1)
@@ -229,7 +229,7 @@ internal void hotbar_icon_canvas_update_callback(char *name, v4 rect, v2 mouse, 
 
 			if (core->grabbed_inv_item_comp)
 			{
-				if (item_data[core->grabbed_inv_item_comp->item_type].flags & ITEM_FLAGS_HOTBARABLE)
+				if (item_type_data[core->grabbed_inv_item_comp->item_type].flags & ITEM_FLAGS_HOTBARABLE)
 				{
 					if (icon_data->storage_comp->items[icon_data->slot])
 					{
@@ -263,7 +263,7 @@ internal void hotbar_icon_canvas_render_callback(char *name, v4 rect, v2 mouse, 
 	if (icon_data->item_comp)
 	{
 		f32 padding = 15;
-		StaticSprite *sprite = GetStaticSprite(item_data[icon_data->item_comp->item_type].icon_sprite);
+		StaticSpriteData *sprite = &static_sprite_data[item_type_data[icon_data->item_comp->item_type].icon_sprite];
 		Ts2dPushTexture(sprite->texture_atlas, sprite->source, v4(rect.x + padding / 2, rect.y + padding / 2, rect.z - padding, rect.w - padding));
 
 		R_DEV_ASSERT(icon_data->item_comp->stack_size == 1, "Don't support hotbar items with stacks. Is this intentional?");
@@ -324,7 +324,7 @@ internal void DrawGameUI()
 	}
 
 	// NOTE(tjr): Draw backpack UI.
-	if (is_backpack_open)
+	/* if (is_backpack_open)
 	{
 		TsUIBeginInputGroup();
 		{
@@ -410,20 +410,20 @@ internal void DrawGameUI()
 			TsUIPushSize(v2(60, 60));
 
 			GrabbedIconCanvasData *grabbed_icon_data = MemoryArenaAllocateAndZero(core->frame_arena, sizeof(GrabbedIconCanvasData));
-			grabbed_icon_data->static_sprite = GetStaticSprite(item_data[core->grabbed_inv_item_comp->item_type].icon_sprite);
+			grabbed_icon_data->static_sprite = GetStaticSprite(item_type_data[core->grabbed_inv_item_comp->item_type].icon_sprite);
 			TsUICanvas("Texture", &grabbed_icon_canvas_update_callback, 0, &grabbed_icon_canvas_render_callback, grabbed_icon_data);
 
 			TsUIPopSize();
 			TsUIPopPosition();
 		}
-	}
+	} */
 
 	// NOTE(tjr): Move arrows for editor.
 	if (core->client_data->editor_state && core->client_data->selected_entity)
 	{
-		StaticSprite *x_arrow = GetStaticSprite(STATIC_SPRITE_x_axis_arrow_icon);
-		StaticSprite *y_arrow = GetStaticSprite(STATIC_SPRITE_y_axis_arrow_icon);
-		StaticSprite *middle = GetStaticSprite(STATIC_SPRITE_middle_axis_icon);
+		StaticSpriteData *x_arrow = &static_sprite_data[STATIC_SPRITE_x_axis_arrow_icon];
+		StaticSpriteData *y_arrow = &static_sprite_data[STATIC_SPRITE_y_axis_arrow_icon];
+		StaticSpriteData *middle = &static_sprite_data[STATIC_SPRITE_middle_axis_icon];
 
 		b8 entity_has_position = 0;
 		v2 position = {0};

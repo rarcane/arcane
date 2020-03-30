@@ -38,13 +38,18 @@
 		"path": "$ROOTPATH$\\data_desk_custom\\source\\arcane_data_desk.c",
 		"bookmarks": [
 			{
-				"line": 35,
-				"column": 51,
+				"line": 32,
+				"column": 63,
 				"label": ""
 			},
 			{
-				"line": 555,
+				"line": 467,
 				"column": 32,
+				"label": ""
+			},
+			{
+				"line": 587,
+				"column": 39,
 				"label": ""
 			}
 		]
