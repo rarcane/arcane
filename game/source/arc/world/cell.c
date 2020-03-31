@@ -230,10 +230,17 @@ internal void ProcessCellMaterial(CellMaterial *material)
 		i32 y_cell_steps = (i32)floorf(next_position.y);
 		i32 x_is_larger = abs(x_cell_steps) >= abs(y_cell_steps);
 
+		f32 integration_magnitude = SquareRoot((f32)x_cell_steps * (f32)x_cell_steps + (f32)y_cell_steps * (f32)y_cell_steps);
+		v2 integration_normal = v2(x_cell_steps / integration_magnitude, y_cell_steps / integration_magnitude);
+
 		if (abs(x_cell_steps) > 0 || abs(y_cell_steps) > 0)
 		{
+			b8 break_loop = 0;
 			for (int j = 1; j < (x_is_larger ? abs(x_cell_steps) : abs(y_cell_steps)) + 1; j++)
 			{
+				if (break_loop)
+					break;
+
 				// TODO: Crossing into different chunks
 				Cell *next_cell = GetCellAtRelativePosition(cell, GetSign((f32)x_cell_steps), GetSign((f32)y_cell_steps));
 
@@ -279,12 +286,52 @@ internal void ProcessCellMaterial(CellMaterial *material)
 						{
 						case CELL_PROPERTIES_TYPE_solid: // Solid on solid
 						{
-							// Exchange immpulses
-							f32 collision_magnitude = SquareRoot((f32)x_cell_steps * (f32)x_cell_steps + (f32)y_cell_steps * (f32)y_cell_steps);
-							v2 collision_normal = v2(x_cell_steps / collision_magnitude, y_cell_steps / collision_magnitude);
+							i32 distance = 1;
+							b8 is_at_ground = 0;
+							while (1)
+							{
+								Cell *cell_below = GetCellAtRelativePosition(material->parent_cell, 0, distance);
+								if (cell_below->material)
+								{
+									if (cell_below->material->mass == 0.0f)
+									{
+										is_at_ground = 1;
+										break;
+									}
+								}
+								else
+								{
+									break;
+								}
 
+								distance++;
+							}
+
+							if (material_data->max_height == 1 && integration_normal.y > 0.0f)
+							{
+								Cell *below = GetCellAtRelativePosition(cell, 0, 1);
+								R_DEV_ASSERT(below->material, "uhh");
+
+								Cell *below_l = GetCellAtRelativePosition(cell, -1, 1);
+								Cell *below_r = GetCellAtRelativePosition(cell, 1, 1);
+
+								if (!below_l->material)
+								{
+									material = MoveMaterialToCell(material, below_l);
+									cell = below_l;
+									break_loop = 1;
+								}
+								else if (!below_r->material)
+								{
+									material = MoveMaterialToCell(material, below_r);
+									cell = below_r;
+									break_loop = 1;
+								}
+							}
+
+							// Exchange immpulses
 							v2 relative_velocity = V2SubtractV2(collided_material->properties.solid.velocity, material->properties.solid.velocity);
-							f32 velocity_along_normal = relative_velocity.x * collision_normal.x + relative_velocity.y * collision_normal.y;
+							f32 velocity_along_normal = relative_velocity.x * integration_normal.x + relative_velocity.y * integration_normal.y;
 
 							f32 restitution = MinimumF32(material_data->restitution, collided_material_data->restitution);
 
@@ -303,7 +350,7 @@ internal void ProcessCellMaterial(CellMaterial *material)
 							f32 impulse_scalar = -(1 + restitution) * velocity_along_normal;
 							impulse_scalar = impulse_scalar / (a_inv_mass + b_inv_mass);
 
-							v2 impulse = V2MultiplyF32(collision_normal, impulse_scalar);
+							v2 impulse = V2MultiplyF32(integration_normal, impulse_scalar);
 
 							v2 impulse_a = V2MultiplyF32(impulse, a_inv_mass);
 							material->properties.solid.velocity.x -= impulse_a.x;
@@ -330,58 +377,6 @@ internal void ProcessCellMaterial(CellMaterial *material)
 						R_TODO;
 						break;
 					}
-
-					/* 
-					Height limiting
-					
-					b8 bake_material = 0;
-						if (collided_material->max_height == -1)
-						{
-							bake_material = 1;
-						}
-						else
-						{
-							for (int i = 1; i < collided_material->max_height + 1; i++)
-							{
-								Cell *bottom_left_cell = GetCellAtRelativePosition(cell, -1, i);
-								Cell *bottom_right_cell = GetCellAtRelativePosition(cell, 1, i);
-								if (bottom_left_cell->material && bottom_right_cell->material)
-								{
-									bake_material = 1;
-									break;
-								}
-							}
-						}
-
-						if (bake_material)
-						{
-							material->mass = 0;
-							no_longer_dynamic = 1;
-
-							material->properties.solid.position = collided_material->properties.solid.position;
-							material->properties.solid.velocity.y = 0.0f;
-						}
-						else
-						{
-							Cell *bottom_left_cell = GetCellAtRelativePosition(cell, -1, 1);
-							Cell *bottom_right_cell = GetCellAtRelativePosition(cell, 1, 1);
-
-							i32 go_left = RandomI32(0, 1);
-							if (go_left && bottom_left_cell->material)
-								go_left = 0;
-							if (!go_left && bottom_right_cell->material)
-								go_left = 1;
-							//R_DEV_ASSERT(!cell_to_move->material, "Somehow still a material in this cell.");
-
-							Cell *cell_to_move = 0;
-							if (go_left)
-								cell_to_move = bottom_left_cell;
-							else
-								cell_to_move = bottom_right_cell;
-
-							material = MoveMaterialToCell(material, cell_to_move);
-							cell = cell_to_move;
-						} */
 				}
 			}
 		}
@@ -463,11 +458,6 @@ internal void UpdateCellMaterials()
 						if (material->properties.solid.velocity.y > 980.0f)
 							material->properties.solid.velocity.y = 980.0f;
 					}
-					else
-					{
-						material->properties.solid.velocity.x = 0.0f;
-						material->properties.solid.velocity.y = 0.0f;
-					}
 				}
 			}
 		}
@@ -545,14 +535,44 @@ internal void UpdateCellChunkTexture(CellChunk *chunk)
 				switch (cell->material->material_type)
 				{
 				case CELL_MATERIAL_TYPE_air:
+				{
 					colour = v4u(0.0f);
 					break;
+				}
 				case CELL_MATERIAL_TYPE_dirt:
+				{
+					v3 dirt_colour = {14.0f / 360.0f, 0.36f, 0.31f};
+
 					if (cell->material->properties.solid.hardness > 0.0f)
-						colour = V4MultiplyV4(v4(80.0f / 255.0f, 58.0f / 255.0f, 51.0f / 255.0f, 1.0f), v4(0.5f, 0.5f, 0.5f, 1.0f));
+					{
+						v3 col = HSVToRGB(v3(dirt_colour.x, dirt_colour.y - 0.1f, dirt_colour.z - 0.05f));
+						colour = v4(col.r, col.g, col.b, 1.0f);
+					}
 					else
-						colour = v4(80.0f / 255.0f, 58.0f / 255.0f, 51.0f / 255.0f, 1.0f);
+					{
+						v3 col = HSVToRGB(v3(dirt_colour.x, dirt_colour.y, dirt_colour.z));
+						colour = v4(col.r, col.g, col.b, 1.0f);
+					}
+
 					break;
+				}
+				case CELL_MATERIAL_TYPE_sand:
+				{
+					v3 sand_colour = {55.0f / 360.0f, 0.43f, 1.0f};
+
+					if (cell->material->properties.solid.hardness > 0.0f)
+					{
+						v3 col = HSVToRGB(v3(sand_colour.x, sand_colour.y - 0.1f, sand_colour.z - 0.05f));
+						colour = v4(col.r, col.g, col.b, 1.0f);
+					}
+					else
+					{
+						v3 col = HSVToRGB(v3(sand_colour.x, sand_colour.y, sand_colour.z));
+						colour = v4(col.r, col.g, col.b, 1.0f);
+					}
+
+					break;
+				}
 				default:
 					colour = v4u(1.0f);
 					break;

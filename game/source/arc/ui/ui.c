@@ -747,84 +747,89 @@ internal void DrawEditorUI()
 		}
 		TsUIWindowEnd();
 
-		//R_DEV_ASSERT(!platform->mouse_buttons_captured, "Already captured");
-
-		// NOTE(tjr): Brush
-		switch (selected_material)
+		if (!platform->mouse_position_captured && platform->left_mouse_down)
 		{
-		case CELL_MATERIAL_TYPE_air:
-		{
+			v2 mouse_pos = GetMousePositionInWorldSpace();
 
-			break;
-		}
-
-		case CELL_MATERIAL_TYPE_dirt:
-		{
-			if (!platform->mouse_position_captured && platform->left_mouse_down)
+			// Centre cell
+			Cell *cell = GetCellAtPosition((i32)roundf(mouse_pos.x),
+										   (i32)roundf(mouse_pos.y));
+			if (!cell->material)
 			{
-				v2 mouse_pos = GetMousePositionInWorldSpace();
+				switch (selected_material)
+				{
+				case CELL_MATERIAL_TYPE_air:
+				{
 
-				// Create a new dirt cell
-				Cell *cell = GetCellAtPosition((i32)roundf(mouse_pos.x),
-											   (i32)roundf(mouse_pos.y));
-				if (!cell->material)
+					break;
+				}
+
+				case CELL_MATERIAL_TYPE_dirt:
 				{
 					CellMaterial *material = NewCellMaterial(cell, CELL_MATERIAL_TYPE_dirt);
 					MakeMaterialDynamic(material);
+
+					break;
 				}
 
-				for (f32 brush_radius = 1; brush_radius <= brush_size - 1; brush_radius++)
+				case CELL_MATERIAL_TYPE_sand:
 				{
-					for (f32 angle = 0; angle <= 360; angle += 0.05f)
-					{
-						f32 x = brush_radius * cosf(angle);
-						f32 y = brush_radius * sinf(angle);
+					CellMaterial *material = NewCellMaterial(cell, CELL_MATERIAL_TYPE_sand);
+					MakeMaterialDynamic(material);
 
-						Cell *cell = GetCellAtPosition((i32)roundf(mouse_pos.x) + (i32)roundf(x),
-													   (i32)roundf(mouse_pos.y) + (i32)roundf(y));
-						if (!cell->material)
+					break;
+				}
+
+				case CELL_MATERIAL_TYPE_water:
+				{
+					break;
+				}
+				}
+			}
+
+			for (f32 brush_radius = 1; brush_radius <= brush_size - 1; brush_radius++)
+			{
+				for (f32 angle = 0; angle <= 360; angle += 0.05f)
+				{
+					f32 x = brush_radius * cosf(angle);
+					f32 y = brush_radius * sinf(angle);
+
+					Cell *cell = GetCellAtPosition((i32)roundf(mouse_pos.x) + (i32)roundf(x),
+												   (i32)roundf(mouse_pos.y) + (i32)roundf(y));
+					if (!cell->material)
+					{
+						switch (selected_material)
+						{
+						case CELL_MATERIAL_TYPE_air:
+						{
+
+							break;
+						}
+
+						case CELL_MATERIAL_TYPE_dirt:
 						{
 							CellMaterial *material = NewCellMaterial(cell, CELL_MATERIAL_TYPE_dirt);
 							MakeMaterialDynamic(material);
+
+							break;
+						}
+
+						case CELL_MATERIAL_TYPE_sand:
+						{
+							CellMaterial *material = NewCellMaterial(cell, CELL_MATERIAL_TYPE_sand);
+							MakeMaterialDynamic(material);
+							break;
+						}
+
+						case CELL_MATERIAL_TYPE_water:
+						{
+							break;
+						}
 						}
 					}
 				}
 			}
-
-			break;
 		}
-
-		case CELL_MATERIAL_TYPE_sand:
-		{
-			break;
-		}
-
-		case CELL_MATERIAL_TYPE_water:
-		{
-			break;
-		}
-
-		default:
-			R_TODO;
-			break;
-		}
-
-		/* if (platform->left_mouse_down)
-		{
-			v2 mouse_pos = GetMousePositionInWorldSpace();
-
-			Cell *cell = GetCellAtPosition((i32)roundf(mouse_pos.x), (i32)roundf(mouse_pos.y));
-			if (!cell->material)
-			{
-				// Create a new dirt cell
-				CellMaterial *material = NewCellMaterial(cell);
-				material->material_type = CELL_MATERIAL_TYPE_dirt;
-				material->mass = 5.0f;
-				material->max_height = 4;
-
-				MakeMaterialDynamic(material);
-			}
-		} */
 
 		break;
 	}

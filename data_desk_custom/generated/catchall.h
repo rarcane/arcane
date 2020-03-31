@@ -314,9 +314,9 @@ CELL_MATERIAL_TYPE_MAX,
 static char *GetCellMaterialTypeTypeName(CellMaterialType type);
 
 global CellMaterialTypeData cell_material_type_data[CELL_MATERIAL_TYPE_MAX] = {
-    { 0.0f, 0.5f, 0, 0, },
+    { 0.0f, 0.0f, 0, 0, },
     { 5.0f, 0.0f, 3, 3, },
-    { 20.0f, 0.20f, 1, 5, },
+    { 3.0f, 0.0f, 1, 5, },
     { 10.0f, 1.50f, 0, 0, },
 };
 
