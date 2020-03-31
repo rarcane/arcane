@@ -725,9 +725,13 @@ internal void DrawEditorUI()
 						Cell *cell = GetCellAtPosition((i32)selection_start.x + x * GetSign(selection_bounds.x), (i32)selection_start.y + y * GetSign(selection_bounds.y));
 						if (cell->material && cell->material->properties_type == CELL_PROPERTIES_TYPE_solid)
 						{
-							cell->material->properties.solid.hardness = 1.0f;
-							cell->material->is_material_dynamic = 0;
-							cell->material->properties.solid.velocity = v2(0.0f, 0.0f);
+							if (ShouldMaterialHarden(cell->material))
+							{
+								cell->material->properties.solid.hardness = 1.0f;
+								cell->material->is_material_dynamic = 0;
+								cell->material->properties.solid.velocity = v2(0.0f, 0.0f);
+								cell->material->mass = 0;
+							}
 						}
 					}
 				}
@@ -766,10 +770,7 @@ internal void DrawEditorUI()
 				if (!cell->material)
 				{
 					// Create a new dirt cell
-					CellMaterial *material = NewCellMaterial(cell);
-					material->material_type = CELL_MATERIAL_TYPE_dirt;
-					material->mass = 5.0f;
-					material->max_height = 4;
+					CellMaterial *material = NewCellMaterial(cell, CELL_MATERIAL_TYPE_dirt);
 
 					MakeMaterialDynamic(material);
 				}

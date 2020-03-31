@@ -10,7 +10,7 @@
 #define CHUNK_SIZE (256)
 #define CELL_CHUNK_SIZE (128)
 #define MAX_PIXEL_CLUSTER_LENGTH (64)
-#define MAX_DYNAMIC_CELLS (256)
+#define MAX_DYNAMIC_CELLS (1024)
 typedef enum GeneralisedEntityType GeneralisedEntityType;
 enum GeneralisedEntityType
 {
@@ -296,8 +296,10 @@ global ItemTypeData item_type_data[ITEM_TYPE_MAX] = {
 
 typedef struct CellMaterialTypeData
 {
-f32 mass;
+f32 default_mass;
 f32 restitution;
+i32 max_height;
+i32 crust_depth;
 } CellMaterialTypeData;
 
 typedef enum CellMaterialType CellMaterialType;
@@ -312,10 +314,10 @@ CELL_MATERIAL_TYPE_MAX,
 static char *GetCellMaterialTypeTypeName(CellMaterialType type);
 
 global CellMaterialTypeData cell_material_type_data[CELL_MATERIAL_TYPE_MAX] = {
-    { 0.0f, 0.5f, },
-    { 5.0f, 1.0f, },
-    { 20.0f, 0.20f, },
-    { 10.0f, 1.50f, },
+    { 0.0f, 0.5f, 0, 0, },
+    { 5.0f, 0.0f, 3, 3, },
+    { 20.0f, 0.20f, 1, 5, },
+    { 10.0f, 1.50f, 0, 0, },
 };
 
 typedef struct Entity Entity;
@@ -615,12 +617,11 @@ Cell *parent_cell;
 CellMaterialType material_type;
 CellFlags flags;
 f32 mass;
-f32 restitution;
-i32 max_height;
 CellPropertiesType properties_type;
 CellProperties properties;
 b8 is_material_dynamic;
 b8 has_been_updated;
+f32 idle_start;
 } CellMaterial;
 
 typedef struct CellChunk CellChunk;

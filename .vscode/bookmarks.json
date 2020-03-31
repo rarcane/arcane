@@ -53,5 +53,20 @@
 				"label": ""
 			}
 		]
+	},
+	{
+		"path": "$ROOTPATH$\\data_desk_custom\\data\\data.ds",
+		"bookmarks": [
+			{
+				"line": 320,
+				"column": 30,
+				"label": ""
+			},
+			{
+				"line": 555,
+				"column": 22,
+				"label": ""
+			}
+		]
 	}
 ]

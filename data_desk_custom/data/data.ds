@@ -12,7 +12,7 @@ MAX_WORLD_CHUNKS :: 128
 CHUNK_SIZE :: 256
 CELL_CHUNK_SIZE :: 128
 MAX_PIXEL_CLUSTER_LENGTH :: 64
-MAX_DYNAMIC_CELLS :: 256
+MAX_DYNAMIC_CELLS :: 1024
 
 
 /* --- ENUMS --- */
@@ -320,19 +320,21 @@ ItemType :: enum
 @XMacro
 CellMaterialTypeData :: struct
 {
-	mass : f32;
+	default_mass : f32;
 	restitution : f32;
+	max_height : i32;
+	crust_depth : i32;
 }
 @XMacro
 CellMaterialType :: enum
 {
-	@Data(0.0f, 0.5f)
+	@Data(0.0f, 0.5f, 0, 0)
 		air,
-	@Data(5.0f, 1.0f)
+	@Data(5.0f, 0.0f, 3, 3)
 		dirt,
-	@Data(20.0f, 0.20f)
+	@Data(20.0f, 0.20f, 1, 5)
 		sand,
-	@Data(10.0f, 1.50f)
+	@Data(10.0f, 1.50f, 0, 0)
 		water,
 }
 
@@ -558,15 +560,15 @@ CellMaterial :: struct
 	material_type : CellMaterialType;
 	flags : CellFlags;
 	
-	mass : f32; // TODO: Extract these out into material lookup data
-	restitution : f32;
-	max_height : i32;
+	mass : f32;
 	
 	properties_type : CellPropertiesType;
 	properties : CellProperties;
 	
 	is_material_dynamic : b8;
 	has_been_updated : b8;
+	
+	idle_start : f32;
 }
 
 @ForwardDeclare(CellChunk)
@@ -581,7 +583,7 @@ Cell :: struct
 	material : *CellMaterial;
 }
 
-CellChunk :: struct
+CellChunk :: struct // Why tf did I create these and organise cells into them? The textures should be a separate division thing entirely and not be bound to the resolution of any given chunk size.
 {
 	parent_chunk : *ChunkData;
 	x_index : i32;

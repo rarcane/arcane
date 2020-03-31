@@ -1,4 +1,4 @@
-internal CellMaterial *NewCellMaterial(Cell *cell)
+internal CellMaterial *NewCellMaterial(Cell *cell, CellMaterialType material_type)
 {
 	ChunkData *chunk = cell->parent_cell_chunk->parent_chunk;
 	R_DEV_ASSERT(!cell->material, "There's already a material in this cell.");
@@ -15,6 +15,8 @@ internal CellMaterial *NewCellMaterial(Cell *cell)
 	cell_material->id = new_id;
 	cell_material->parent_cell = cell;
 	cell_material->properties.solid.position = v2(0.5f, 0.5f);
+	cell_material->material_type = material_type;
+	cell_material->mass = cell_material_type_data[material_type].default_mass;
 	cell->material = cell_material;
 	AddCellChunkToUpdateQueue(cell->parent_cell_chunk);
 
@@ -69,7 +71,7 @@ internal CellMaterial *MoveMaterialToCell(CellMaterial *material, Cell *new_cell
 		// Move across chunk
 		CellMaterial material_data = *material;
 		DeleteMaterialFromChunk(original_cell->parent_cell_chunk->parent_chunk, material);
-		CellMaterial *new_material = NewCellMaterial(new_cell);
+		CellMaterial *new_material = NewCellMaterial(new_cell, material_data.material_type);
 		i32 new_id = new_material->id;
 		*new_material = material_data;
 
@@ -170,13 +172,46 @@ internal void AddCellChunkToUpdateQueue(CellChunk *cell_chunk)
 internal void MakeMaterialDynamic(CellMaterial *material)
 {
 	R_DEV_ASSERT(!material->is_material_dynamic, "Material is already dynamic.");
+	R_DEV_ASSERT(material->parent_cell->parent_cell_chunk->parent_chunk->dynamic_cell_material_count + 1 < MAX_DYNAMIC_CELLS, "Too many dynamic cells.");
 	material->is_material_dynamic = 1;
 	material->parent_cell->parent_cell_chunk->parent_chunk->dynamic_cell_materials[material->parent_cell->parent_cell_chunk->parent_chunk->dynamic_cell_material_count++] = material;
 }
 
 internal b8 ShouldMaterialHarden(CellMaterial *material)
 {
-	// if the minimum hardness height is met and it is a set amount of pixels away from air above.
+	Cell *cell = material->parent_cell;
+	CellMaterialTypeData *material_type_data = &cell_material_type_data[material->material_type];
+
+	i32 distance_from_air_above = 0;
+	for (int i = 1; i <= material_type_data->crust_depth; i++)
+	{
+		Cell *neighbour_cell = GetCellAtRelativePosition(cell, 0, -i);
+		if (!neighbour_cell->material)
+		{
+			distance_from_air_above = i;
+			break;
+		}
+	}
+
+	if (distance_from_air_above)
+	{
+		b8 is_support_below = 0;
+		for (int i = 1; i <= material_type_data->crust_depth + 1 - distance_from_air_above; i++)
+		{
+			Cell *neighbour_cell = GetCellAtRelativePosition(cell, 0, i);
+			if (neighbour_cell->material)
+			{
+				is_support_below = 1;
+				break;
+			}
+		}
+
+		return !is_support_below;
+	}
+	else
+	{
+		return 1;
+	}
 }
 
 internal void ProcessCellMaterial(CellMaterial *material)
@@ -214,7 +249,8 @@ internal void ProcessCellMaterial(CellMaterial *material)
 					next_cell = GetCellAtRelativePosition(cell, GetSign((f32)x_cell_steps), GetSign((f32)y_cell_steps));
 				}
 
-				if (!next_cell->material)
+				CellMaterial *collided_material = next_cell->material;
+				if (!collided_material)
 				{
 					// Next cell is empty, so just move the material into it
 					material = MoveMaterialToCell(material, next_cell);
@@ -232,12 +268,73 @@ internal void ProcessCellMaterial(CellMaterial *material)
 				}
 				else
 				{
-					// Cell already has a material in it. Process interaction accordingly.
-					CellMaterial *collided_material = next_cell->material;
+					CellMaterialTypeData *material_data = &cell_material_type_data[material->material_type];
+					CellMaterialTypeData *collided_material_data = &cell_material_type_data[collided_material->material_type];
 
-					if (collided_material->mass == 0.0f)
+					switch (material->properties_type)
 					{
-						b8 bake_material = 0;
+					case CELL_PROPERTIES_TYPE_solid:
+					{
+						switch (collided_material->properties_type)
+						{
+						case CELL_PROPERTIES_TYPE_solid: // Solid on solid
+						{
+							// Exchange immpulses
+							f32 collision_magnitude = SquareRoot((f32)x_cell_steps * (f32)x_cell_steps + (f32)y_cell_steps * (f32)y_cell_steps);
+							v2 collision_normal = v2(x_cell_steps / collision_magnitude, y_cell_steps / collision_magnitude);
+
+							v2 relative_velocity = V2SubtractV2(collided_material->properties.solid.velocity, material->properties.solid.velocity);
+							f32 velocity_along_normal = relative_velocity.x * collision_normal.x + relative_velocity.y * collision_normal.y;
+
+							f32 restitution = MinimumF32(material_data->restitution, collided_material_data->restitution);
+
+							f32 a_inv_mass;
+							if (material->mass == 0)
+								a_inv_mass = 0;
+							else
+								a_inv_mass = 1.0f / material->mass;
+
+							f32 b_inv_mass;
+							if (collided_material->mass == 0)
+								b_inv_mass = 0;
+							else
+								b_inv_mass = 1.0f / collided_material->mass;
+
+							f32 impulse_scalar = -(1 + restitution) * velocity_along_normal;
+							impulse_scalar = impulse_scalar / (a_inv_mass + b_inv_mass);
+
+							v2 impulse = V2MultiplyF32(collision_normal, impulse_scalar);
+
+							v2 impulse_a = V2MultiplyF32(impulse, a_inv_mass);
+							material->properties.solid.velocity.x -= impulse_a.x;
+							if (fabsf(material->properties.solid.velocity.y - impulse_a.y) <= 1.0f)
+								material->properties.solid.velocity.y = 0.0f;
+							else
+								material->properties.solid.velocity.y -= impulse_a.y;
+
+							v2 impulse_b = V2MultiplyF32(impulse, b_inv_mass);
+							collided_material->properties.solid.velocity = V2AddV2(collided_material->properties.solid.velocity, impulse_b);
+
+							material->properties.solid.position = collided_material->properties.solid.position;
+
+							break;
+						}
+						default:
+							R_TODO;
+							break;
+						}
+
+						break;
+					}
+					default:
+						R_TODO;
+						break;
+					}
+
+					/* 
+					Height limiting
+					
+					b8 bake_material = 0;
 						if (collided_material->max_height == -1)
 						{
 							bake_material = 1;
@@ -284,49 +381,7 @@ internal void ProcessCellMaterial(CellMaterial *material)
 
 							material = MoveMaterialToCell(material, cell_to_move);
 							cell = cell_to_move;
-						}
-					}
-					else
-					{
-						f32 collision_magnitude = SquareRoot((f32)x_cell_steps * (f32)x_cell_steps + (f32)y_cell_steps * (f32)y_cell_steps);
-						v2 collision_normal = v2(x_cell_steps / collision_magnitude, y_cell_steps / collision_magnitude);
-
-						v2 relative_velocity = V2SubtractV2(collided_material->properties.solid.velocity, material->properties.solid.velocity);
-						f32 velocity_along_normal = relative_velocity.x * collision_normal.x + relative_velocity.y * collision_normal.y;
-
-						f32 restitution = MinimumF32(material->restitution, collided_material->restitution);
-
-						f32 a_inv_mass;
-						if (material->mass == 0)
-							a_inv_mass = 0;
-						else
-							a_inv_mass = 1.0f / material->mass;
-
-						f32 b_inv_mass;
-						if (collided_material->mass == 0)
-							b_inv_mass = 0;
-						else
-							b_inv_mass = 1.0f / collided_material->mass;
-
-						f32 impulse_scalar = -(1 + restitution) * velocity_along_normal;
-						impulse_scalar = impulse_scalar / (a_inv_mass + b_inv_mass);
-
-						v2 impulse = V2MultiplyF32(collision_normal, impulse_scalar);
-
-						v2 impulse_a = V2MultiplyF32(impulse, a_inv_mass);
-						material->properties.solid.velocity.x -= impulse_a.x;
-						if (fabsf(material->properties.solid.velocity.y - impulse_a.y) <= 1.0f)
-							material->properties.solid.velocity.y = 0.0f;
-						else
-							material->properties.solid.velocity.y -= impulse_a.y;
-
-						v2 impulse_b = V2MultiplyF32(impulse, b_inv_mass);
-						collided_material->properties.solid.velocity = V2AddV2(collided_material->properties.solid.velocity, impulse_b);
-
-						material->properties.solid.position = collided_material->properties.solid.position;
-					}
-
-					break;
+						} */
 				}
 			}
 		}
@@ -336,10 +391,18 @@ internal void ProcessCellMaterial(CellMaterial *material)
 			material->properties.solid.position = next_position;
 		}
 	}
-	else
+
+	if (material->properties.solid.velocity.x != 0.0f || material->properties.solid.velocity.y != 0.0f)
+		material->idle_start = 0;
+
+	// Check how long this material has been in idle for.
+	if (material->idle_start > 0)
 	{
-		/* R_BREAK("Why is this material being processed?"); */
+		if ((GetCurrentWorldTime() - material->idle_start) > 2.0f)
+			no_longer_dynamic = 1;
 	}
+	else
+		material->idle_start = GetCurrentWorldTime();
 
 	material->has_been_updated = 1;
 	if (!no_longer_dynamic)
@@ -373,13 +436,38 @@ internal void UpdateCellMaterials()
 			{
 				if (!(material->flags & CELL_FLAGS_no_gravity) && material->properties.solid.hardness == 0.0f)
 				{
-					/* Cell *cell_below = GetCellAtRelativePosition(material->parent_cell, 0, 1);
-             if (!cell_below->material)
-             { */
-					material->properties.solid.velocity.y += 50.0f * core->world_delta_t;
-					if (material->properties.solid.velocity.y > 980.0f)
-						material->properties.solid.velocity.y = 980.0f;
-					/* } */
+					i32 distance = 1;
+					b8 apply_gravity = 1;
+					while (1)
+					{
+						Cell *cell_below = GetCellAtRelativePosition(material->parent_cell, 0, distance);
+						if (cell_below->material)
+						{
+							if (cell_below->material->mass == 0.0f)
+							{
+								apply_gravity = 0;
+								break;
+							}
+						}
+						else
+						{
+							break;
+						}
+
+						distance++;
+					}
+
+					if (apply_gravity)
+					{
+						material->properties.solid.velocity.y += 50.0f * core->world_delta_t;
+						if (material->properties.solid.velocity.y > 980.0f)
+							material->properties.solid.velocity.y = 980.0f;
+					}
+					else
+					{
+						material->properties.solid.velocity.x = 0.0f;
+						material->properties.solid.velocity.y = 0.0f;
+					}
 				}
 			}
 		}

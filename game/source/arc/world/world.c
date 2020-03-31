@@ -72,9 +72,8 @@ internal void TempInitGameWorld()
 		for (int y = -1; y > -terrain_height - 1; y--)
 		{
 			Cell *cell = GetCellAtPosition(x - CHUNK_SIZE * 2, y + 200);
-			CellMaterial *material = NewCellMaterial(cell);
-			material->material_type = CELL_MATERIAL_TYPE_dirt;
-			material->max_height = 4;
+			CellMaterial *material = NewCellMaterial(cell, CELL_MATERIAL_TYPE_dirt);
+			material->mass = 0.0f;
 		}
 
 		f32 width = ((f32)CHUNK_SIZE * 4.0f) / 32.0f;
