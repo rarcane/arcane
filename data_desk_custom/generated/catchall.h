@@ -10,7 +10,7 @@
 #define CHUNK_SIZE (256)
 #define CELL_CHUNK_SIZE (128)
 #define MAX_PIXEL_CLUSTER_LENGTH (64)
-#define MAX_DYNAMIC_CELLS (1024)
+#define MAX_DYNAMIC_CELLS (16384)
 typedef enum GeneralisedEntityType GeneralisedEntityType;
 enum GeneralisedEntityType
 {

@@ -747,6 +747,8 @@ internal void DrawEditorUI()
 		}
 		TsUIWindowEnd();
 
+		//R_DEV_ASSERT(!platform->mouse_buttons_captured, "Already captured");
+
 		// NOTE(tjr): Brush
 		switch (selected_material)
 		{
@@ -758,21 +760,34 @@ internal void DrawEditorUI()
 
 		case CELL_MATERIAL_TYPE_dirt:
 		{
-			/* v2 mouse_pos = v2(0.0f, 0.0f); //GetMousePositionInWorldSpace();
-			Ts2dPushFilledRect(v4u(1.0f), v4(mouse_pos.x, mouse_pos.y, 1.0f, 1.0f)); */
-			// TODO: Brush preview & size impl
-
-			if (platform->left_mouse_down)
+			if (!platform->mouse_position_captured && platform->left_mouse_down)
 			{
 				v2 mouse_pos = GetMousePositionInWorldSpace();
 
-				Cell *cell = GetCellAtPosition((i32)roundf(mouse_pos.x), (i32)roundf(mouse_pos.y));
+				// Create a new dirt cell
+				Cell *cell = GetCellAtPosition((i32)roundf(mouse_pos.x),
+											   (i32)roundf(mouse_pos.y));
 				if (!cell->material)
 				{
-					// Create a new dirt cell
 					CellMaterial *material = NewCellMaterial(cell, CELL_MATERIAL_TYPE_dirt);
-
 					MakeMaterialDynamic(material);
+				}
+
+				for (f32 brush_radius = 1; brush_radius <= brush_size - 1; brush_radius++)
+				{
+					for (f32 angle = 0; angle <= 360; angle += 0.05f)
+					{
+						f32 x = brush_radius * cosf(angle);
+						f32 y = brush_radius * sinf(angle);
+
+						Cell *cell = GetCellAtPosition((i32)roundf(mouse_pos.x) + (i32)roundf(x),
+													   (i32)roundf(mouse_pos.y) + (i32)roundf(y));
+						if (!cell->material)
+						{
+							CellMaterial *material = NewCellMaterial(cell, CELL_MATERIAL_TYPE_dirt);
+							MakeMaterialDynamic(material);
+						}
+					}
 				}
 			}
 
