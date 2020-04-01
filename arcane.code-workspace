@@ -41,7 +41,11 @@
 			"old_ecs.h": "c",
 			"data_desk.h": "c",
 			"tsassets.h": "c",
-			"sprite.h": "c"
+			"sprite.h": "c",
+			"unistd.h": "c",
+			"stat.h": "c",
+			"fcntl.h": "c",
+			"glu.h": "c"
 		},
 		"editor.formatOnSave": true,
 		"editor.find.autoFindInSelection": true,
