@@ -305,6 +305,22 @@ break;
 }
 }
 
+static char *GetCellPropertiesTypeName(CellPropertiesType type)
+{
+switch(type)
+{
+case CELL_PROPERTIES_TYPE_solid:
+return "Solid";
+break;
+case CELL_PROPERTIES_TYPE_fluid:
+return "Fluid";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
 static char *GetCellMaterialTypeName(CellMaterialType type)
 {
 switch(type)
@@ -1213,19 +1229,3 @@ static void PrintEntityDataUI(Entity *entity)
         }
     }
 }
-static char *GetCellPropertiesTypeName(CellPropertiesType type)
-{
-switch(type)
-{
-case CELL_PROPERTIES_TYPE_solid:
-return "Solid";
-break;
-case CELL_PROPERTIES_TYPE_fluid:
-return "Fluid";
-break;
-default:
-return "INVALID";
-break;
-}
-}
-

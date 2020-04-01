@@ -59,6 +59,13 @@ GameInit(void)
 
 	// NOTE(rjf): Initialize core systems.
 	{
+		core->client_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(ClientData));
+		R_DEV_ASSERT(core->client_data, "Failed to allocate memory for ClientData.");
+		core->client_data->editor_flags |= EDITOR_FLAGS_draw_world;
+
+		core->world_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(WorldData));
+		R_DEV_ASSERT(core->world_data, "Failed to allocate memory for WorldData.");
+		core->world_data->floating_chunk.is_valid = 1;
 
 		// NOTE(rjf): Initialize TsDevTerminal.
 		{
@@ -71,11 +78,8 @@ GameInit(void)
 				{
 					{"camera_zoom", TSDEVTERMINAL_VARIABLE_TYPE_f32, &core->camera_zoom},
 					{"camera_offset", TSDEVTERMINAL_VARIABLE_TYPE_v2, &core->camera_offset},
-					//{"shadow_opacity", TSDEVTERMINAL_VARIABLE_TYPE_f32, &core->shadow_opacity},
-					//{"bloom", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->bloom},
-					//{"draw_colliders", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->draw_colliders},
-					//{"draw_velocity", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->draw_velocity},
 					{"fullscreen", TSDEVTERMINAL_VARIABLE_TYPE_b32, &platform->fullscreen},
+					{"bloom", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->client_data->bloom},
 				};
 
 			TsDevTerminalSetCommands(ArrayCount(commands), commands, core->permanent_arena);
@@ -113,14 +117,6 @@ GameInit(void)
 		// NOTE(tjr): Initialise Arcane data.
 		{
 			InitialiseSpriteData();
-
-			core->client_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(ClientData));
-			R_DEV_ASSERT(core->client_data, "Failed to allocate memory for WorldData.");
-			core->client_data->editor_flags |= EDITOR_FLAGS_draw_world;
-
-			core->world_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(WorldData));
-			R_DEV_ASSERT(core->world_data, "Failed to allocate memory for WorldData.");
-			core->world_data->floating_chunk.is_valid = 1;
 
 			InitialiseECS();
 

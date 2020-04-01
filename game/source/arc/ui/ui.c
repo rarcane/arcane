@@ -662,6 +662,7 @@ internal void DrawEditorUI()
 	{
 		local_persist CellMaterialType selected_material = 0;
 		local_persist i32 brush_size = 1;
+		local_persist f32 pressure = 100.0f;
 		local_persist v2 selection_start = {0};
 		local_persist v2 selection_end = {0};
 
@@ -699,6 +700,11 @@ internal void DrawEditorUI()
 					selected_material = CELL_MATERIAL_TYPE_water;
 
 				TsUICollapsableEnd();
+			}
+
+			if (selected_material == CELL_MATERIAL_TYPE_air)
+			{
+				pressure = TsUISlider("Pressure", pressure, 0.0f, 250.0f);
 			}
 
 			core->world_delta_mult = TsUISlider("Simulation Speed", core->world_delta_mult, 0.0f, 1.0f);
@@ -760,7 +766,9 @@ internal void DrawEditorUI()
 				{
 				case CELL_MATERIAL_TYPE_air:
 				{
-
+					CellMaterial *material = NewCellMaterial(cell, CELL_MATERIAL_TYPE_air);
+					material->properties.fluid.pressure = pressure;
+					MakeMaterialDynamic(material);
 					break;
 				}
 
@@ -768,7 +776,6 @@ internal void DrawEditorUI()
 				{
 					CellMaterial *material = NewCellMaterial(cell, CELL_MATERIAL_TYPE_dirt);
 					MakeMaterialDynamic(material);
-
 					break;
 				}
 
@@ -776,15 +783,21 @@ internal void DrawEditorUI()
 				{
 					CellMaterial *material = NewCellMaterial(cell, CELL_MATERIAL_TYPE_sand);
 					MakeMaterialDynamic(material);
-
 					break;
 				}
 
 				case CELL_MATERIAL_TYPE_water:
 				{
+					CellMaterial *material = NewCellMaterial(cell, CELL_MATERIAL_TYPE_water);
+					material->properties.fluid.pressure = pressure;
+					MakeMaterialDynamic(material);
 					break;
 				}
 				}
+			}
+			else if (cell->material->material_type == CELL_MATERIAL_TYPE_air && selected_material == CELL_MATERIAL_TYPE_air)
+			{
+				cell->material->properties.fluid.pressure = pressure;
 			}
 
 			for (f32 brush_radius = 1; brush_radius <= brush_size - 1; brush_radius++)
@@ -802,7 +815,9 @@ internal void DrawEditorUI()
 						{
 						case CELL_MATERIAL_TYPE_air:
 						{
-
+							CellMaterial *material = NewCellMaterial(cell, CELL_MATERIAL_TYPE_air);
+							material->properties.fluid.pressure = pressure;
+							MakeMaterialDynamic(material);
 							break;
 						}
 
@@ -823,6 +838,8 @@ internal void DrawEditorUI()
 
 						case CELL_MATERIAL_TYPE_water:
 						{
+							CellMaterial *material = NewCellMaterial(cell, CELL_MATERIAL_TYPE_water);
+							MakeMaterialDynamic(material);
 							break;
 						}
 						}

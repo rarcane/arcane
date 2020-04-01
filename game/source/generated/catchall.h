@@ -294,12 +294,43 @@ global ItemTypeData item_type_data[ITEM_TYPE_MAX] = {
     { "Flint Sword", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_FLAGS_sword, },
 };
 
+typedef struct SolidMaterial
+{
+v2 position;
+v2 velocity;
+f32 hardness;
+} SolidMaterial;
+
+typedef struct FluidMatieral
+{
+f32 pressure;
+f32 new_pressure;
+f32 mass;
+} FluidMatieral;
+
+typedef union CellProperties CellProperties;
+union CellProperties
+{
+SolidMaterial solid;
+FluidMatieral fluid;
+};
+
+typedef enum CellPropertiesType CellPropertiesType;
+enum CellPropertiesType
+{
+CELL_PROPERTIES_TYPE_solid,
+CELL_PROPERTIES_TYPE_fluid,
+CELL_PROPERTIES_TYPE_MAX,
+};
+static char *GetCellPropertiesTypeTypeName(CellPropertiesType type);
+
 typedef struct CellMaterialTypeData
 {
 f32 default_mass;
 f32 restitution;
 i32 max_height;
 i32 crust_depth;
+CellPropertiesType properties_type;
 } CellMaterialTypeData;
 
 typedef enum CellMaterialType CellMaterialType;
@@ -314,10 +345,10 @@ CELL_MATERIAL_TYPE_MAX,
 static char *GetCellMaterialTypeTypeName(CellMaterialType type);
 
 global CellMaterialTypeData cell_material_type_data[CELL_MATERIAL_TYPE_MAX] = {
-    { 0.0f, 0.0f, 0, 0, },
-    { 5.0f, 0.0f, 3, 3, },
-    { 3.0f, 0.0f, 1, 5, },
-    { 10.0f, 1.50f, 0, 0, },
+    { 0.0f, 0.0f, 0, 0, CELL_PROPERTIES_TYPE_fluid, },
+    { 5.0f, 0.0f, 3, 3, CELL_PROPERTIES_TYPE_solid, },
+    { 3.0f, 0.0f, 1, 5, CELL_PROPERTIES_TYPE_solid, },
+    { 10.0f, 1.50f, 0, 0, CELL_PROPERTIES_TYPE_fluid, },
 };
 
 typedef struct Entity Entity;
@@ -581,35 +612,6 @@ ChunkData *active_chunk;
 
 typedef struct Cell Cell;
 
-typedef struct SolidMaterial
-{
-v2 position;
-v2 velocity;
-f32 hardness;
-} SolidMaterial;
-
-typedef struct FluidMatieral
-{
-v2 flow;
-f32 pressure;
-} FluidMatieral;
-
-typedef union CellProperties CellProperties;
-union CellProperties
-{
-SolidMaterial solid;
-FluidMatieral fuild;
-};
-
-typedef enum CellPropertiesType CellPropertiesType;
-enum CellPropertiesType
-{
-CELL_PROPERTIES_TYPE_solid,
-CELL_PROPERTIES_TYPE_fluid,
-CELL_PROPERTIES_TYPE_MAX,
-};
-static char *GetCellPropertiesTypeTypeName(CellPropertiesType type);
-
 typedef struct CellMaterial
 {
 i32 id;
@@ -682,6 +684,7 @@ ComponentSet entity_components;
 
 typedef struct ClientData
 {
+b32 bloom;
 EditorState editor_state;
 EditorFlags editor_flags;
 Entity *selected_entity;

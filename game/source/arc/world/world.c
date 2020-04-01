@@ -130,7 +130,8 @@ internal void DrawWorld()
 	{
 		world_info.flags |= TS2D_BLUR_SHADOWS;
 		world_info.flags |= TS2D_BLUR_BACKGROUNDS;
-		//world_info.flags |= TS2D_BLOOM;
+		if (core->client_data->bloom)
+			world_info.flags |= TS2D_BLOOM;
 		//world_info.shadow_opacity = core->shadow_opacity;
 		world_info.shadow_vector = v2(32.0f, 64.0f);
 		world_info.camera_pos = core->camera_position;

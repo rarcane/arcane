@@ -317,6 +317,30 @@ ItemType :: enum
 		flint_sword,
 }
 
+SolidMaterial :: struct
+{
+	position : v2;
+	velocity : v2;
+	hardness : f32;
+}
+FluidMatieral :: struct
+{
+	//flow : v2;
+	pressure : f32;
+	new_pressure : f32;
+	mass : f32;
+}
+CellProperties :: union
+{
+	solid : SolidMaterial;
+	fluid : FluidMatieral;
+}
+CellPropertiesType :: enum
+{
+	solid,
+	fluid,
+}
+
 @XMacro
 CellMaterialTypeData :: struct
 {
@@ -324,17 +348,18 @@ CellMaterialTypeData :: struct
 	restitution : f32;
 	max_height : i32;
 	crust_depth : i32;
+	properties_type : CellPropertiesType;
 }
 @XMacro
 CellMaterialType :: enum
 {
-	@Data(0.0f, 0.0f, 0, 0)
+	@Data(0.0f, 0.0f, 0, 0, CELL_PROPERTIES_TYPE_fluid)
 		air,
-	@Data(5.0f, 0.0f, 3, 3)
+	@Data(5.0f, 0.0f, 3, 3, CELL_PROPERTIES_TYPE_solid)
 		dirt,
-	@Data(3.0f, 0.0f, 1, 5)
+	@Data(3.0f, 0.0f, 1, 5, CELL_PROPERTIES_TYPE_solid)
 		sand,
-	@Data(10.0f, 1.50f, 0, 0)
+	@Data(10.0f, 1.50f, 0, 0, CELL_PROPERTIES_TYPE_fluid)
 		water,
 }
 
@@ -530,29 +555,6 @@ Entity :: struct
 @ForwardDeclare(Cell)
 ForwardCell :: _;
 
-SolidMaterial :: struct
-{
-	position : v2;
-	velocity : v2;
-	hardness : f32;
-}
-FluidMatieral :: struct
-{
-	flow : v2;
-	pressure : f32;
-	//mass : f32;
-}
-CellProperties :: union
-{
-	solid : SolidMaterial;
-	fuild : FluidMatieral;
-}
-CellPropertiesType :: enum
-{
-	solid,
-	fluid,
-}
-
 CellMaterial :: struct
 {
 	id : i32;
@@ -633,7 +635,7 @@ WorldData :: struct
 ClientData :: struct
 {
 	/* ~ Player-controlled options ~ */
-	// ...graphics options, sound settings, etc.
+	bloom : b32;
 
 	/* ~ Editor ~ */
 	editor_state : EditorState;
