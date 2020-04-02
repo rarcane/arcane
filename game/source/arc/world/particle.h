@@ -12,4 +12,5 @@ typedef struct ParticleEmitterComponent ParticleEmitterComponent;
 typedef void (*EmitterBeginCallback)(ParticleEmitterComponent *);
 typedef void (*EmitterFinishCallback)(ParticleEmitterComponent *);
 
-internal void DeleteParticle(ParticleEmitterComponent *emitter, i32 particle_index);
+internal void
+DeleteParticle(ParticleEmitterComponent *emitter, i32 particle_index);

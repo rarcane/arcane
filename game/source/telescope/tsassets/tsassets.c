@@ -10,6 +10,9 @@ void _TsAssetsRefreshDirectory(int type_id);
 #if TSASSETS_WIN32
 #include "tsassets_win32.c"
 #endif
+#if TSASSETS_LINUX
+#include "tsassets_linux.c"
+#endif
 
 #define TsAssetsHashAssetName CStringCRC32
 

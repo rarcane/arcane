@@ -1,11 +1,11 @@
-typedef void (*TriggerCallback)(OverlappedColliderInfo);
-
 typedef struct Entity Entity;
 typedef struct OverlappedColliderInfo
 {
 	Entity *overlapped_entity;
 	// direction or some shit idk?
 } OverlappedColliderInfo;
+
+typedef void (*TriggerCallback)(OverlappedColliderInfo);
 
 /* typedef struct Shape
 {
