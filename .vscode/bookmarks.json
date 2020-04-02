@@ -58,13 +58,23 @@
 		"path": "$ROOTPATH$\\data_desk_custom\\data\\data.ds",
 		"bookmarks": [
 			{
-				"line": 344,
+				"line": 346,
 				"column": 30,
 				"label": ""
 			},
 			{
-				"line": 557,
+				"line": 559,
 				"column": 22,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$\\game\\source\\arc\\world\\cell.c",
+		"bookmarks": [
+			{
+				"line": 428,
+				"column": 33,
 				"label": ""
 			}
 		]

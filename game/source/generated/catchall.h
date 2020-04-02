@@ -294,6 +294,7 @@ global ItemTypeData item_type_data[ITEM_TYPE_MAX] = {
     { "Flint Sword", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_FLAGS_sword, },
 };
 
+#define FLUID_COMPRESSION (0.01f)
 typedef struct SolidMaterial
 {
 v2 position;
@@ -304,8 +305,8 @@ f32 hardness;
 typedef struct FluidMatieral
 {
 f32 pressure;
-f32 new_pressure;
 f32 mass;
+f32 new_mass;
 } FluidMatieral;
 
 typedef union CellProperties CellProperties;

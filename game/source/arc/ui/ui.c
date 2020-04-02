@@ -789,7 +789,7 @@ internal void DrawEditorUI()
 				case CELL_MATERIAL_TYPE_water:
 				{
 					CellMaterial *material = NewCellMaterial(cell, CELL_MATERIAL_TYPE_water);
-					material->properties.fluid.pressure = pressure;
+					material->properties.fluid.mass = 1.0f;
 					MakeMaterialDynamic(material);
 					break;
 				}
@@ -798,6 +798,10 @@ internal void DrawEditorUI()
 			else if (cell->material->material_type == CELL_MATERIAL_TYPE_air && selected_material == CELL_MATERIAL_TYPE_air)
 			{
 				cell->material->properties.fluid.pressure = pressure;
+			}
+			else if (cell->material->material_type == CELL_MATERIAL_TYPE_water && selected_material == CELL_MATERIAL_TYPE_water)
+			{
+				cell->material->properties.fluid.mass = 1.0f;
 			}
 
 			for (f32 brush_radius = 1; brush_radius <= brush_size - 1; brush_radius++)
@@ -839,10 +843,15 @@ internal void DrawEditorUI()
 						case CELL_MATERIAL_TYPE_water:
 						{
 							CellMaterial *material = NewCellMaterial(cell, CELL_MATERIAL_TYPE_water);
+							material->properties.fluid.mass = 1.0f;
 							MakeMaterialDynamic(material);
 							break;
 						}
 						}
+					}
+					else if (cell->material->material_type == CELL_MATERIAL_TYPE_water && selected_material == CELL_MATERIAL_TYPE_water)
+					{
+						cell->material->properties.fluid.mass = 1.0f;
 					}
 				}
 			}

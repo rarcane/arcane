@@ -317,6 +317,8 @@ ItemType :: enum
 		flint_sword,
 }
 
+FLUID_COMPRESSION :: 0.01f
+
 SolidMaterial :: struct
 {
 	position : v2;
@@ -327,8 +329,8 @@ FluidMatieral :: struct
 {
 	//flow : v2;
 	pressure : f32;
-	new_pressure : f32;
 	mass : f32;
+	new_mass : f32;
 }
 CellProperties :: union
 {

@@ -58,6 +58,8 @@ internal void DeleteMaterialFromChunk(ChunkData *chunk, CellMaterial *material)
 		CellMaterial *existing = &chunk->cell_materials[i];
 		if (existing == material)
 		{
+			material->parent_cell->material = 0;
+
 			CellMaterial empty = {0};
 			chunk->cell_materials[i] = empty;
 
@@ -222,6 +224,16 @@ internal b8 ShouldMaterialHarden(CellMaterial *material)
 	{
 		return 1;
 	}
+}
+
+f32 GetStableFlowState(f32 total_mass)
+{
+	if (total_mass <= 1.0f)
+		return 1.0f;
+	else if (total_mass < 2 * 1.0f + FLUID_COMPRESSION)
+		return (1.0f + total_mass * FLUID_COMPRESSION) / (1.0f + FLUID_COMPRESSION);
+	else
+		return (total_mass + FLUID_COMPRESSION) / 2.0f;
 }
 
 internal void ProcessCellMaterial(CellMaterial *material)
@@ -480,15 +492,100 @@ internal void ProcessCellMaterial(CellMaterial *material)
 					}
 				}
 			}
-
-			material->has_been_updated = 1;
-			MakeMaterialDynamic(material);
-			AddCellChunkToUpdateQueue(cell->parent_cell_chunk);
 		}
 		else
 		{
 			FluidMatieral *material_properties = &material->properties.fluid;
+
+			f32 remaining_mass = material_properties->mass;
+			f32 flow = 0.0f;
+
+			Cell *cell_below = GetCellAtRelativePosition(cell, 0, 1);
+			CellMaterial *cell_below_material = cell_below->material;
+			if (!cell_below_material)
+			{
+				cell_below_material = NewCellMaterial(cell_below, CELL_MATERIAL_TYPE_water);
+				MakeMaterialDynamic(cell_below_material);
+			}
+			if (cell_below_material->material_type == CELL_MATERIAL_TYPE_water)
+			{
+				flow = GetStableFlowState(remaining_mass + cell_below_material->properties.fluid.mass) - cell_below_material->properties.fluid.mass;
+				flow *= 0.5f;
+				flow = ClampF32(flow, 0.0f, remaining_mass);
+
+				material_properties->new_mass -= flow;
+				cell_below_material->properties.fluid.new_mass += flow;
+				remaining_mass -= flow;
+			}
+
+			if (remaining_mass > 0.0f)
+			{
+				Cell *cell_left = GetCellAtRelativePosition(cell, -1, 0);
+				CellMaterial *cell_left_material = cell_left->material;
+				if (!cell_left_material)
+				{
+					cell_left_material = NewCellMaterial(cell_left, CELL_MATERIAL_TYPE_water);
+					MakeMaterialDynamic(cell_left_material);
+				}
+				if (cell_left_material && cell_left_material->material_type == CELL_MATERIAL_TYPE_water)
+				{
+					flow = (material_properties->mass - cell_left_material->properties.fluid.mass) / 4.0f;
+					flow *= 0.5;
+					flow = ClampF32(flow, 0.0f, remaining_mass);
+
+					material_properties->new_mass -= flow;
+					cell_left_material->properties.fluid.new_mass += flow;
+					remaining_mass -= flow;
+				}
+			}
+
+			if (remaining_mass > 0.0f)
+			{
+				Cell *cell_right = GetCellAtRelativePosition(cell, 1, 0);
+				CellMaterial *cell_right_material = cell_right->material;
+				if (!cell_right_material)
+				{
+					cell_right_material = NewCellMaterial(cell_right, CELL_MATERIAL_TYPE_water);
+					MakeMaterialDynamic(cell_right_material);
+				}
+				if (cell_right_material && cell_right_material->material_type == CELL_MATERIAL_TYPE_water)
+				{
+					flow = (material_properties->mass - cell_right_material->properties.fluid.mass) / 4.0f;
+					flow *= 0.5;
+					flow = ClampF32(flow, 0.0f, remaining_mass);
+
+					material_properties->new_mass -= flow;
+					cell_right_material->properties.fluid.new_mass += flow;
+					remaining_mass -= flow;
+				}
+			}
+
+			if (remaining_mass > 0.0f)
+			{
+				Cell *cell_above = GetCellAtRelativePosition(cell, 0, -1);
+				CellMaterial *cell_above_material = cell_above->material;
+				if (!cell_above_material)
+				{
+					cell_above_material = NewCellMaterial(cell_above, CELL_MATERIAL_TYPE_water);
+					MakeMaterialDynamic(cell_above_material);
+				}
+				if (cell_above_material && cell_above_material->material_type == CELL_MATERIAL_TYPE_water)
+				{
+					flow = remaining_mass - GetStableFlowState(remaining_mass + cell_above_material->properties.fluid.mass);
+					flow *= 0.5f;
+					flow = ClampF32(flow, 0.0f, remaining_mass);
+
+					material_properties->new_mass -= flow;
+					cell_above_material->properties.fluid.new_mass += flow;
+					remaining_mass -= flow;
+				}
+			}
 		}
+
+		material->has_been_updated = 1;
+		if (!no_longer_dynamic)
+			MakeMaterialDynamic(material);
+		AddCellChunkToUpdateQueue(cell->parent_cell_chunk);
 
 		break;
 	}
@@ -564,14 +661,14 @@ internal void UpdateCellMaterials()
 				ProcessCellMaterial(material);
 		}
 
-		// Temp pressure update
+		// New mass values
 		for (int i = 0; i < chunk->dynamic_cell_material_count; i++)
 		{
 			CellMaterial *material = chunk->dynamic_cell_materials[i];
-			if (material->properties_type == CELL_PROPERTIES_TYPE_fluid)
+			if (material->material_type == CELL_MATERIAL_TYPE_water)
 			{
-				material->properties.fluid.pressure += material->properties.fluid.new_pressure;
-				material->properties.fluid.new_pressure = 0.0f;
+				material->properties.fluid.mass += material->properties.fluid.new_mass;
+				material->properties.fluid.new_mass = 0.0f;
 			}
 		}
 	}
@@ -684,9 +781,10 @@ internal void UpdateCellChunkTexture(CellChunk *chunk)
 				case CELL_MATERIAL_TYPE_water:
 				{
 					v3 water_colour = {218.0f / 360.0f, 0.58f, 0.91f};
+					f32 mass = cell->material->properties.fluid.mass;
 
 					v3 col = HSVToRGB(v3(water_colour.x, water_colour.y, water_colour.z));
-					colour = v4(col.r, col.g, col.b, 1.0f);
+					colour = v4(col.r, col.g, col.b, mass);
 					colour = V4MultiplyF32(colour, 0.7f);
 
 					break;
