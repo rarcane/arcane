@@ -16,7 +16,7 @@ rem  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 pushd data_desk_custom
 pushd build
 echo --- Building Data Desk custom layer.
-start /b /wait "" "cl.exe" -nologo /Zi /FC -I../../tools/data_desk/source/ ../source/arcane_data_desk.c /LD
+start /b /wait "" "cl.exe" -nologo /Zi /FC -I../../tools/data_desk/source/ ../../data_desk_custom/source/arcane_data_desk.c /LD
 popd
 popd
 
