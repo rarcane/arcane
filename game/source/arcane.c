@@ -120,6 +120,7 @@ GameInit(void)
 
 			InitialiseECS();
 
+			core->client_data->editor_flags |= EDITOR_FLAGS_draw_collision;
 			core->camera_zoom = DEFAULT_CAMERA_ZOOM;
 
 			core->delta_mult = 1.0f;

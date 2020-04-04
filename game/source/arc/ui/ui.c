@@ -660,7 +660,7 @@ internal void DrawEditorUI()
 
 	case EDITOR_STATE_terrain:
 	{
-		local_persist CellMaterialType selected_material = 0;
+		local_persist CellMaterialType selected_material = -1;
 		local_persist i32 brush_size = 1;
 		local_persist f32 pressure = 100.0f;
 		local_persist v2 selection_start = {0};
@@ -690,6 +690,8 @@ internal void DrawEditorUI()
 
 			if (TsUICollapsable("Material Select"))
 			{
+				if (TsUIToggler("Erase", selected_material == -1))
+					selected_material = -1;
 				if (TsUIToggler("Air", selected_material == CELL_MATERIAL_TYPE_air))
 					selected_material = CELL_MATERIAL_TYPE_air;
 				if (TsUIToggler("Dirt", selected_material == CELL_MATERIAL_TYPE_dirt))
@@ -795,6 +797,11 @@ internal void DrawEditorUI()
 				}
 				}
 			}
+			else if (selected_material == -1)
+			{
+				// Erase
+				DeleteMaterialFromChunk(cell->parent_cell_chunk->parent_chunk, cell->material);
+			}
 			else if (cell->material->material_type == CELL_MATERIAL_TYPE_air && selected_material == CELL_MATERIAL_TYPE_air)
 			{
 				cell->material->properties.fluid.pressure = pressure;
@@ -848,6 +855,11 @@ internal void DrawEditorUI()
 							break;
 						}
 						}
+					}
+					else if (selected_material == -1)
+					{
+						// Erase
+						DeleteMaterialFromChunk(cell->parent_cell_chunk->parent_chunk, cell->material);
 					}
 					else if (cell->material->material_type == CELL_MATERIAL_TYPE_water && selected_material == CELL_MATERIAL_TYPE_water)
 					{

@@ -9,7 +9,7 @@ internal void RenderColliders()
 			PositionComponent *pos_comp = entity->components[COMPONENT_position];
 			R_DEV_ASSERT(pos_comp, "Physics entity doesn't have a position component.");
 
-			PushDebugShape(body_comp->shape, body_comp->shape_type, pos_comp->position, v3(1.0f, 0.0f, 0.0f));
+			PushDebugShape(body_comp->shape, body_comp->shape_type, pos_comp->position, v3(1.0f, 1.0f, 1.0f));
 		}
 	}
 }

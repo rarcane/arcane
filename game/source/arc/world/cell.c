@@ -58,6 +58,8 @@ internal void DeleteMaterialFromChunk(ChunkData *chunk, CellMaterial *material)
 		CellMaterial *existing = &chunk->cell_materials[i];
 		if (existing == material)
 		{
+			AddCellChunkToUpdateQueue(material->parent_cell->parent_cell_chunk);
+
 			material->parent_cell->material = 0;
 
 			CellMaterial empty = {0};
