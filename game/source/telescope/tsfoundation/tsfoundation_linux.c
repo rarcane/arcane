@@ -147,7 +147,9 @@ int main(int argc, char *argv[])
 	global_platform.samples_per_second = 48000;
 
 	global_display = XOpenDisplay(0);
+
 	LinuxInitOpenGL();
+	LinuxTimerInit(&global_linux_timer);
 
 	global_platform.OutputError = LinuxOutputError;
 	global_platform.HeapAlloc = LinuxHeapAlloc;
@@ -165,8 +167,8 @@ int main(int argc, char *argv[])
 	// global_platform.CopyDirectoryRecursively = Win32CopyDirectoryRecursively;
 	global_platform.PlatformDirectoryListLoad = LinuxPlatformDirectoryListLoad;
 	// global_platform.PlatformDirectoryListCleanUp = Win32PlatformDirectoryListCleanUp;
-	// global_platform.QueueJob = Win32QueueJob;
-	// global_platform.WaitForJob = Win32WaitForJob;
+	global_platform.QueueJob = LinuxQueueJob;
+	global_platform.WaitForJob = LinuxWaitForJob;
 	global_platform.GetTime = LinuxGetTime;
 	global_platform.GetCycles = LinuxGetCycles;
 	global_platform.ResetCursor = LinuxResetCursor;
@@ -188,11 +190,14 @@ int main(int argc, char *argv[])
 
 		// NOTE(rjf): Update Windows events
 		{
-			XEvent xev;
-			XNextEvent(global_display, &xev);
+			if (XPending(global_display))
+			{
+				XEvent xev;
+				XNextEvent(global_display, &xev);
 
-			if (xev.type == MapNotify)
-				continue;
+				if (xev.type == MapNotify)
+					printf("X Window Mapped!\n");
+			}
 		}
 
 		// NOTE(rjf): Update window size

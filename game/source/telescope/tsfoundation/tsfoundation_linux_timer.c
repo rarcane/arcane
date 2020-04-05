@@ -1,29 +1,23 @@
-/*
-* Copyright (C) Ryan Fleury - All Rights Reserved
-* Unauthorized copying of this file, via any medium is strictly prohibited
-* Proprietary and confidential
-* Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2020
-*/
+#include <time.h>
+
+#define NANOS 1000000000LL
 
 internal b32
 LinuxTimerInit(LinuxTimer *timer)
 {
-	// IMPLEMENT THIS
-	// b32 result = 0;
-
-	// if (QueryPerformanceFrequency(&timer->counts_per_second))
-	// {
-	// 	result = 1;
-	// }
-
-	// timer->sleep_is_granular = (timeBeginPeriod(1) == TIMERR_NOERROR);
-
-	// return result;
+	// TODO: Find a way to actually check if clock frequency is granular enough
+	struct timespec t_spec = {0};
+	clock_getres(CLOCK_MONOTONIC, &t_spec);
+	timer->sleep_is_granular = 1;
+	return 1;
 }
 
 internal void
 LinuxTimerBeginFrame(LinuxTimer *timer)
 {
+	struct timespec t_spec = {0};
+	clock_gettime(CLOCK_MONOTONIC, &t_spec);
+	timer->begin_frame = t_spec.tv_sec * NANOS + t_spec.tv_nsec;
 	// IMPLEMENT THIS
 	// QueryPerformanceCounter(&timer->begin_frame);
 }
@@ -35,29 +29,41 @@ LinuxTimerEndFrame(LinuxTimer *timer, f64 milliseconds_per_frame)
 	// LARGE_INTEGER end_frame;
 	// QueryPerformanceCounter(&end_frame);
 
-	// f64 desired_seconds_per_frame = (milliseconds_per_frame / 1000.0);
-	// i64 elapsed_counts = end_frame.QuadPart - timer->begin_frame.QuadPart;
-	// i64 desired_counts = (i64)(desired_seconds_per_frame * timer->counts_per_second.QuadPart);
-	// i64 counts_to_wait = desired_counts - elapsed_counts;
+	struct timespec t_spec = {0};
+	clock_gettime(CLOCK_MONOTONIC, &t_spec);
 
-	// LARGE_INTEGER start_wait;
-	// LARGE_INTEGER end_wait;
+	long elapsed_milliseconds = ((t_spec.tv_sec * NANOS + t_spec.tv_nsec) - timer->begin_frame) / 1000000;
+	long milliseconds_to_sleep = milliseconds_per_frame - elapsed_milliseconds;
 
-	// QueryPerformanceCounter(&start_wait);
+	struct timespec start_spec = {0};
+	struct timespec end_spec = {0};
 
-	// while (counts_to_wait > 0)
-	// {
-	// 	if (timer->sleep_is_granular)
-	// 	{
-	// 		DWORD milliseconds_to_sleep = (DWORD)(1000.0 * ((f64)(counts_to_wait) / timer->counts_per_second.QuadPart));
-	// 		if (milliseconds_to_sleep > 0)
-	// 		{
-	// 			Sleep(milliseconds_to_sleep);
-	// 		}
-	// 	}
+	clock_gettime(CLOCK_MONOTONIC, &start_spec);
+	long start_t = start_spec.tv_sec * NANOS + start_spec.tv_nsec;
 
-	// 	QueryPerformanceCounter(&end_wait);
-	// 	counts_to_wait -= end_wait.QuadPart - start_wait.QuadPart;
-	// 	start_wait = end_wait;
-	// }
+	long end_t = 0;
+
+	while (milliseconds_to_sleep > 0)
+	{
+
+		if (timer->sleep_is_granular)
+		{
+			if (milliseconds_to_sleep > 0)
+			{
+				// clock_nanosleep(CLOCK_MONOTONIC);
+				sleep(milliseconds_to_sleep / 1000);
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		clock_gettime(CLOCK_MONOTONIC, &end_spec);
+		end_t = end_spec.tv_sec * NANOS + end_spec.tv_nsec;
+
+		long nanoseconds_to_sleep = milliseconds_to_sleep * 1000000;
+		milliseconds_to_sleep = (nanoseconds_to_sleep - (end_t - start_t)) / 1000000;
+		start_t = end_t;
+	}
 }

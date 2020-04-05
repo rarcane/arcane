@@ -3,6 +3,7 @@
 internal void
 LinuxDispatchJob(TsWorkQueueJob *job)
 {
+	job->DoWork(job->job_data);
 	// IMPLEMENT THIS
 	// // NOTE(rjf): Get a free thread.
 	// Win32WorkerThreadData *thread_data = 0;
@@ -23,6 +24,13 @@ LinuxDispatchJob(TsWorkQueueJob *job)
 
 internal i32
 LinuxQueueJob(void *job_data, TsWorkerThreadDoJobWorkCallback *DoWork, TsWorkerThreadJobCompleteCallback *JobComplete)
+{
+	// IMPLEMENT THIS
+	return 0;
+}
+
+internal b32
+LinuxWaitForJob(i32 index, u32 milliseconds)
 {
 	// IMPLEMENT THIS
 	return 0;

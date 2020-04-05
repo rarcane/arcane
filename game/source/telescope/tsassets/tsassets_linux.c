@@ -14,7 +14,6 @@
 
 void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_ptr)
 {
-	return;
 	int item_count = 0;
 	int item_capacity = 0;
 	char **items = 0;
@@ -59,13 +58,26 @@ void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_
 			char find_file_path[MAX_PATH] = {0};
 			snprintf(search_pattern, MAX_PATH, "%s\\%s\\%s*", path, path, task->sub_search_pattern);
 
+			char r_path[sizeof(path) + 2];
+			strcpy(r_path, "./../res/");
+			strcat(r_path, path);
+			printf(r_path);
+			printf("\n");
+
+			char *dir = opendir(r_path);
 			struct dirent *pEntry;
-			do
+			while ((pEntry = readdir(dir)) != 0)
 			{
+				if (pEntry == 0 || !strcmp(pEntry->d_name, ".") || !strcmp(pEntry->d_name, ".."))
+				{
+					continue;
+				}
 				char full_path[MAX_PATH] = {0};
 				strcpy(full_path, path);
 				strcat(full_path, "/");
 				strcat(full_path, pEntry->d_name);
+
+				printf("Loading Asset: %s\n", full_path);
 
 				FILE *fp;
 				struct stat path_stat;
@@ -148,7 +160,8 @@ void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_
 						items[item_count++] = new_item;
 					}
 				}
-			} while (pEntry = readdir(path));
+			}
+			closedir(dir);
 		}
 	}
 

@@ -1,10 +1,10 @@
 #include "stdint.h"
 #include "tsfoundation.h"
+#include "time.h"
 
 typedef struct LinuxTimer
 {
-	int64_t counts_per_second;
-	int64_t begin_frame;
+	long begin_frame;
 	b32 sleep_is_granular;
 } LinuxTimer;
 
