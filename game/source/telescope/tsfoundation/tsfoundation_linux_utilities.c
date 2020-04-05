@@ -13,6 +13,7 @@ LinuxOutputError(char *title, char *format, ...)
 	fprintf(stderr, title);
 	fprintf(stderr, ": ");
 	fprintf(stderr, format);
+	fprintf(stderr, "\n");
 }
 
 internal void *

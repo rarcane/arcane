@@ -1,6 +1,5 @@
 GLProc(USEPROGRAM, UseProgram)
 
-// GLProc(ACTIVETEXTURE, ActiveTexture)
 GLProc(GENERATEMIPMAP, GenerateMipmap)
 
 GLProc(GENFRAMEBUFFERS, GenFramebuffers)
@@ -51,5 +50,5 @@ GLProc(DELETESHADER, DeleteShader)
 GLProc(VALIDATEPROGRAM, ValidateProgram)
 
 GLProc(BLENDFUNCSEPARATE, BlendFuncSeparate)
-// GLProc(BLENDEQUATION, BlendEquation)
+
 #undef GLProc

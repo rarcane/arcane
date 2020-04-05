@@ -14,6 +14,7 @@
 
 void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_ptr)
 {
+	return;
 	int item_count = 0;
 	int item_capacity = 0;
 	char **items = 0;
@@ -61,7 +62,7 @@ void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_
 			struct dirent *pEntry;
 			do
 			{
-				char full_path[MAX_PATH];
+				char full_path[MAX_PATH] = {0};
 				strcpy(full_path, path);
 				strcat(full_path, "/");
 				strcat(full_path, pEntry->d_name);
@@ -76,7 +77,7 @@ void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_
 						!CStringMatchCaseSensitive(pEntry->d_name, ".."))
 					{
 						char directory_name[MAX_PATH] = {0};
-						TsAssetsMemoryCopy(directory_name, pEntry->d_name, sizeof(directory_name));
+						MemoryCopy(directory_name, pEntry->d_name, sizeof(directory_name));
 						QueueTask(MakeCStringOnMemoryArena(arena, "%s%s\\", task->sub_search_pattern, directory_name));
 					}
 				}
@@ -94,11 +95,11 @@ void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_
 							{
 								item_capacity <<= 1;
 							}
-							char **new_items = TsAssetsHeapAllocate(item_capacity * sizeof(char *));
-							TsAssetsMemoryCopy(new_items, items, sizeof(char *) * item_count);
+							char **new_items = platform->HeapAlloc(item_capacity * sizeof(char *));
+							MemoryCopy(new_items, items, sizeof(char *) * item_count);
 							if (items)
 							{
-								TsAssetsHeapFree(items);
+								platform->HeapFree(items);
 							}
 							items = new_items;
 						}
@@ -107,9 +108,9 @@ void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_
 					// NOTE(rjf): Allocate new item.
 					char *new_item = 0;
 					{
-						TsAssetsMemoryCopy(find_file_path, pEntry->d_name, sizeof(find_file_path));
+						MemoryCopy(find_file_path, pEntry->d_name, sizeof(find_file_path));
 						unsigned int needed_bytes = CalculateCStringLength(find_file_path) + CalculateCStringLength(task->sub_search_pattern) + 1;
-						new_item = TsAssetsHeapAllocate(needed_bytes + 1);
+						new_item = platform->HeapAlloc(needed_bytes + 1);
 						snprintf(new_item, needed_bytes, "%s%s", task->sub_search_pattern, find_file_path);
 						new_item[needed_bytes] = 0;
 					}
@@ -159,7 +160,7 @@ void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_
 
 void _TsAssetsFreeDirectoryItems(char **items)
 {
-	TsAssetsHeapFree(items);
+	platform->HeapFree(items);
 }
 
 void _TsAssetsInitWatchDirectories(void)

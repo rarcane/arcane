@@ -1,11 +1,10 @@
 // TODO: Properly organise for Ts integration with asserts & logging
-#define R_TODO __debugbreak()
-
+// #define R_TODO __debugbreak()
+#define R_TODO 0
 // NOTE(tjr): Breaks excecution with a error message
 #define R_BREAK(...)           \
 	{                          \
 		LogError(__VA_ARGS__); \
-		__debugbreak();        \
 	}
 
 // NOTE(tjr): Shipped with release build. Should be used sparingly for critical system failure.
@@ -29,7 +28,8 @@
 #define R_DEBUG_BREAK_KEY(x)                 \
 	{                                        \
 		if (platform->key_down[KEY_f2] && x) \
-			__debugbreak();                  \
+		{                                    \
+		}                                    \
 	}
 
 #define START_PERF_TIMER(name) BlockTimer block_timer = {name, platform->GetTime(), 0}
