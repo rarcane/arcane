@@ -108,6 +108,186 @@ LinuxSetCursorToVerticalResize()
 	global_cursor_style = Linux_CURSOR_vertical_resize;
 }
 
+internal void X11WindowProc(XEvent event)
+{
+	if (event.type == ButtonPress)
+	{
+		switch (event.xbutton.button)
+		{
+		case Button1:
+			if (!global_platform.left_mouse_down)
+			{
+				global_platform.left_mouse_pressed = 1;
+			}
+			global_platform.left_mouse_down = 1;
+			break;
+		case Button2:
+			if (!global_platform.right_mouse_down)
+			{
+				global_platform.right_mouse_pressed = 1;
+			}
+			global_platform.right_mouse_down = 1;
+			break;
+		}
+	}
+	else if (event.type == KeyPress || event.type == KeyRelease)
+	{
+		int is_down = event.type == KeyPress;
+
+		int keycode = event.xkey.keycode;
+
+		int vkeycode;
+		KeySym keysym;
+		XComposeStatus status;
+		XLookupString(&event.xkey, &vkeycode, sizeof(vkeycode), &keysym, &status);
+
+		// TODO: Figure out why not all virtual keys seem to map with the modifiers
+		keycode = vkeycode;
+
+		int key_input = 0;
+		if ((vkeycode >= 'A' && vkeycode <= 'Z') ||
+			(vkeycode >= '0' && vkeycode <= '9'))
+		{
+			// NOTE(rjf): Letter/number buttons
+			printf("%c\n", vkeycode);
+			key_input = (vkeycode >= 'A' && vkeycode <= 'Z') ? KEY_a + (vkeycode - 'A') : KEY_0 + (vkeycode - '0');
+		}
+		else
+		{
+			printf("HERE\n");
+			if (keycode == XK_Escape)
+			{
+				printf("ESCAPE\n");
+				key_input = KEY_esc;
+			}
+			else if (keycode >= XK_F1 && keycode <= XK_F12)
+			{
+				key_input = KEY_f1 + keycode - XK_F1;
+			}
+			else if (keycode == XK_3)
+			{
+				key_input = KEY_grave_accent;
+			}
+			else if (keycode == XK_minus)
+			{
+				key_input = KEY_minus;
+			}
+			else if (keycode == XK_plus)
+			{
+				key_input = KEY_equal;
+			}
+			else if (keycode == XK_BackSpace)
+			{
+				key_input = KEY_backspace;
+			}
+			else if (keycode == XK_Tab)
+			{
+				key_input = KEY_tab;
+			}
+			else if (keycode == XK_space)
+			{
+				printf("SPACE\n");
+				key_input = KEY_space;
+			}
+			else if (keycode == XK_Return)
+			{
+				key_input = KEY_enter;
+			}
+			else if (keycode == XK_Control_L)
+			{
+				key_input = KEY_ctrl;
+			}
+			else if (keycode == XK_Shift_L)
+			{
+				key_input = KEY_shift;
+			}
+			else if (keycode == XK_Menu)
+			{
+				key_input = KEY_alt;
+			}
+			else if (keycode == XK_Up)
+			{
+				key_input = KEY_up;
+			}
+			else if (keycode == XK_Left)
+			{
+				printf("LEFT\n");
+				key_input = KEY_left;
+			}
+			else if (keycode == XK_Down)
+			{
+				key_input = KEY_down;
+			}
+			else if (keycode == XK_Right)
+			{
+				key_input = KEY_right;
+			}
+			else if (keycode == XK_Delete)
+			{
+				key_input = KEY_delete;
+			}
+			else if (keycode == XK_Prior)
+			{
+				key_input = KEY_page_up;
+			}
+			else if (keycode == XK_Next)
+			{
+				key_input = KEY_page_down;
+			}
+		}
+
+		if (is_down)
+		{
+			if (!global_platform.key_down[key_input])
+			{
+				++global_platform.key_pressed[key_input];
+			}
+			++global_platform.key_down[key_input];
+			global_platform.last_key = (i32)key_input;
+
+			if (key_input == KEY_backspace && global_platform.target_text)
+			{
+				if (global_platform.key_down[KEY_ctrl])
+				{
+					for (u32 i = global_platform.target_text_edit_pos - 2;
+						 i >= 0 && i < global_platform.target_text_max_characters;
+						 --i)
+					{
+						if (!i || global_platform.target_text[i - 1] == ' ')
+						{
+							global_platform.target_text[i] = 0;
+							global_platform.target_text_edit_pos = i;
+							break;
+						}
+					}
+				}
+				else
+				{
+					if (global_platform.target_text_edit_pos)
+					{
+						// NOTE(rjf): This assumes editing only takes place at
+						//            the end of the string!!!
+						global_platform.target_text[--global_platform.target_text_edit_pos] = 0;
+					}
+				}
+			}
+			else if (key_input == KEY_f4 && global_platform.key_down[KEY_alt])
+			{
+				global_platform.quit = 1;
+			}
+		}
+		else
+		{
+			// if (was_down)
+			// {
+			// 	global_platform.key_released[key_input] = 1;
+			// }
+			global_platform.key_down[key_input] = 0;
+			global_platform.key_pressed[key_input] = 0;
+		}
+	}
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -194,13 +374,11 @@ int main(int argc, char *argv[])
 			{
 				XEvent xev;
 				XNextEvent(global_display, &xev);
-
-				if (xev.type == MapNotify)
-					printf("X Window Mapped!\n");
+				X11WindowProc(xev);
 			}
 		}
 
-		// NOTE(rjf): Update window size
+		// NOTE(rjf): Update window sizeXNextEvent(global_display, &xev)
 		{
 			unsigned int x;
 			unsigned int y;
@@ -290,8 +468,4 @@ int main(int argc, char *argv[])
 
 		LinuxTimerEndFrame(&global_linux_timer, 1000.0 * (1.0 / (f64)global_platform.target_frames_per_second));
 	}
-}
-
-internal void X11WindowProc()
-{
 }

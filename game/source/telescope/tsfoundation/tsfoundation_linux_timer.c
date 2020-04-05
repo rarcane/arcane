@@ -5,9 +5,8 @@
 internal b32
 LinuxTimerInit(LinuxTimer *timer)
 {
-	// TODO: Find a way to actually check if clock frequency is granular enough
+	// Find a way to get clock resolution
 	struct timespec t_spec = {0};
-	clock_getres(CLOCK_MONOTONIC, &t_spec);
 	timer->sleep_is_granular = 1;
 	return 1;
 }
@@ -18,17 +17,11 @@ LinuxTimerBeginFrame(LinuxTimer *timer)
 	struct timespec t_spec = {0};
 	clock_gettime(CLOCK_MONOTONIC, &t_spec);
 	timer->begin_frame = t_spec.tv_sec * NANOS + t_spec.tv_nsec;
-	// IMPLEMENT THIS
-	// QueryPerformanceCounter(&timer->begin_frame);
 }
 
 internal void
 LinuxTimerEndFrame(LinuxTimer *timer, f64 milliseconds_per_frame)
 {
-	// IMPLEMENT THIS
-	// LARGE_INTEGER end_frame;
-	// QueryPerformanceCounter(&end_frame);
-
 	struct timespec t_spec = {0};
 	clock_gettime(CLOCK_MONOTONIC, &t_spec);
 
@@ -50,12 +43,7 @@ LinuxTimerEndFrame(LinuxTimer *timer, f64 milliseconds_per_frame)
 		{
 			if (milliseconds_to_sleep > 0)
 			{
-				// clock_nanosleep(CLOCK_MONOTONIC);
 				sleep(milliseconds_to_sleep / 1000);
-			}
-			else
-			{
-				break;
 			}
 		}
 

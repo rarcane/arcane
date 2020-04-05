@@ -39,7 +39,7 @@ LinuxInitOpenGL()
 	XSetWindowAttributes wa;
 	wa.colormap = XCreateColormap(global_display, RootWindow(global_display, vi->screen), vi->visual, AllocNone);
 	wa.border_pixel = 0;
-	wa.event_mask = StructureNotifyMask;
+	wa.event_mask = StructureNotifyMask | KeyPressMask | ButtonPressMask | KeyReleaseMask | ButtonReleaseMask;
 
 	global_window = XCreateWindow(global_display,
 								  RootWindow(global_display, vi->screen),
