@@ -154,7 +154,6 @@ internal void X11WindowProc(XEvent event)
 		}
 		else
 		{
-			printf("HERE\n");
 			if (keycode == XK_Escape)
 			{
 				printf("ESCAPE\n");
@@ -356,6 +355,12 @@ int main(int argc, char *argv[])
 	global_platform.SetCursorToVerticalResize = LinuxSetCursorToVerticalResize;
 	global_platform.LoadOpenGLProcedure = LinuxLoadOpenGLProcedure;
 	global_platform.RefreshScreen = LinuxOpenGLRefreshScreen;
+
+	global_platform.work_queue_free_index_count = TS_MAX_WORK_QUEUE_JOBS;
+	for (i32 i = 0; i < TS_MAX_WORK_QUEUE_JOBS; ++i)
+	{
+		global_platform.work_queue_free_indices[i] = i;
+	}
 
 	platform = &global_platform;
 

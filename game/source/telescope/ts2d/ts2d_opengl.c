@@ -740,7 +740,6 @@ _Ts2dSetOpenGLInstancedFloatAttributeData(int index, int stride, int size, int o
 void Ts2dInit(MemoryArena *arena)
 {
 	Ts2dLoadAllOpenGLProcedures();
-	printf("Here\n");
 
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_BLEND);

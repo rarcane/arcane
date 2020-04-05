@@ -52,10 +52,6 @@ LinuxAppCodeLoad(LinuxAppCode *app_code)
 		result = 0;
 		goto end;
 	}
-	else
-	{
-		printf("HELLOW!\n");
-	}
 
 end:;
 	return result;
