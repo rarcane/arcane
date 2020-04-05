@@ -136,7 +136,7 @@ STATIC_SPRITE_bg3_pine_tree_v7,
 STATIC_SPRITE_bg3_pine_tree_v8,
 STATIC_SPRITE_y_axis_arrow_icon,
 STATIC_SPRITE_x_axis_arrow_icon,
-STATIC_SPRITE_middle_axis_icon,
+STATIC_SPRITE_circle_icon,
 STATIC_SPRITE_MAX,
 };
 static char *GetStaticSpriteTypeName(StaticSprite type);
@@ -581,21 +581,21 @@ i32 unique_entity_id;
     ParallaxComponent *parallax_comp;
 } CloudEntity;
 
-#define MAX_GROUND_ENTITIES (1024)
-typedef struct GroundEntity
+#define MAX_GROUND_SEGMENT_ENTITIES (1024)
+typedef struct GroundSegmentEntity
 {
 Entity *parent_generic_entity;
 i32 unique_entity_id;
     PositionComponent *position_comp;
     PhysicsBodyComponent *physics_body_comp;
-} GroundEntity;
+} GroundSegmentEntity;
 
 typedef enum EntityType
 {
     ENTITY_TYPE_generic,
     ENTITY_TYPE_character,
     ENTITY_TYPE_cloud,
-    ENTITY_TYPE_ground,
+    ENTITY_TYPE_ground_segment,
     ENTITY_TYPE_MAX
 } EntityType;
 
@@ -672,9 +672,9 @@ CharacterEntity character_entity;
 CloudEntity cloud_entities[MAX_CLOUD_ENTITIES];
 i32 cloud_entity_count;
 i32 free_cloud_entity_index;
-GroundEntity ground_entities[MAX_GROUND_ENTITIES];
-i32 ground_entity_count;
-i32 free_ground_entity_index;
+GroundSegmentEntity ground_segment_entities[MAX_GROUND_SEGMENT_ENTITIES];
+i32 ground_segment_entity_count;
+i32 free_ground_segment_entity_index;
 
 // @GenerateUniqueEntityArrays 
 Entity entities[MAX_ACTIVE_ENTITIES];
@@ -689,5 +689,6 @@ b32 bloom;
 EditorState editor_state;
 EditorFlags editor_flags;
 Entity *selected_entity;
+GroundSegmentEntity *selected_ground_seg;
 } ClientData;
 

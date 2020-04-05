@@ -9,7 +9,12 @@ internal void RenderColliders()
 			PositionComponent *pos_comp = entity->components[COMPONENT_position];
 			R_DEV_ASSERT(pos_comp, "Physics entity doesn't have a position component.");
 
-			PushDebugShape(body_comp->shape, body_comp->shape_type, pos_comp->position, v3(1.0f, 1.0f, 1.0f));
+			v3 col = {1.0f, 1.0f, 1.0f};
+			if (core->client_data->selected_ground_seg)
+				if (entity == core->client_data->selected_ground_seg->parent_generic_entity)
+					col = v3(1.0f, 0.0f, 0.0f);
+
+			PushDebugShape(body_comp->shape, body_comp->shape_type, pos_comp->position, col);
 		}
 	}
 }
@@ -401,4 +406,26 @@ internal void GenerateCollisionManifold(PhysicsBodyComponent *a_body_comp, v2 a_
 		R_TODO;
 		break;
 	}
+}
+
+b32 IsMouseOverlappingShape(v2 mouse_pos, c2Shape shape, c2ShapeType shape_type)
+{
+	switch (shape_type)
+	{
+	case C2_SHAPE_TYPE_aabb:
+	{
+		if (mouse_pos.x >= shape.aabb.min.x && mouse_pos.x < shape.aabb.max.x &&
+			mouse_pos.y >= shape.aabb.min.y && mouse_pos.y < shape.aabb.max.y)
+			return 1;
+		else
+			return 0;
+
+		break;
+	}
+	default:
+		R_TODO;
+		break;
+	}
+
+	return 0;
 }

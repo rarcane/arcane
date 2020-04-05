@@ -418,29 +418,32 @@ internal void DrawGameUI()
 		}
 	} */
 
-	// NOTE(tjr): Move arrows for editor.
-	if (core->client_data->editor_state && core->client_data->selected_entity)
+	switch (core->client_data->editor_state)
 	{
-		StaticSpriteData *x_arrow = &static_sprite_data[STATIC_SPRITE_x_axis_arrow_icon];
-		StaticSpriteData *y_arrow = &static_sprite_data[STATIC_SPRITE_y_axis_arrow_icon];
-		StaticSpriteData *middle = &static_sprite_data[STATIC_SPRITE_middle_axis_icon];
-
-		b8 entity_has_position = 0;
-		v2 position = {0};
-		PositionComponent *position_comp = core->client_data->selected_entity->components[COMPONENT_position];
-		ParallaxComponent *parallax_comp = core->client_data->selected_entity->components[COMPONENT_parallax];
-		if (parallax_comp)
+	case EDITOR_STATE_entity:
+	{
+		if (core->client_data->selected_entity)
 		{
-			position = parallax_comp->desired_position;
-			entity_has_position = 1;
-		}
-		else if (position_comp)
-		{
-			position = position_comp->position;
-			entity_has_position = 1;
-		}
+			StaticSpriteData *x_arrow = &static_sprite_data[STATIC_SPRITE_x_axis_arrow_icon];
+			StaticSpriteData *y_arrow = &static_sprite_data[STATIC_SPRITE_y_axis_arrow_icon];
+			StaticSpriteData *middle = &static_sprite_data[STATIC_SPRITE_circle_icon];
 
-		/* if (entity_has_position)
+			b8 entity_has_position = 0;
+			v2 position = {0};
+			PositionComponent *position_comp = core->client_data->selected_entity->components[COMPONENT_position];
+			ParallaxComponent *parallax_comp = core->client_data->selected_entity->components[COMPONENT_parallax];
+			if (parallax_comp)
+			{
+				position = parallax_comp->desired_position;
+				entity_has_position = 1;
+			}
+			else if (position_comp)
+			{
+				position = position_comp->position;
+				entity_has_position = 1;
+			}
+
+			/* if (entity_has_position)
         {
            Shape x_arrow_bounds = GetRectangleShape(v2(32.5f, 7.0f), v2(19.75f, 3.5f));
            Shape y_arrow_bounds = GetRectangleShape(v2(7.0f, 32.5f), v2(0.0f, -3.5f));
@@ -553,6 +556,72 @@ internal void DrawGameUI()
                             v4(middle_pos.x, middle_pos.y, middle_size.x, middle_size.y),
                             v4(1.0f * middle_tint, 1.0f * middle_tint, 1.0f * middle_tint, 1.0f));
         } */
+		}
+		break;
+	}
+
+	case EDITOR_STATE_collision:
+	{
+		if (core->client_data->selected_ground_seg)
+		{
+			PositionComponent *ground_seg_position = core->client_data->selected_ground_seg->position_comp;
+			PhysicsBodyComponent *ground_seg_body = core->client_data->selected_ground_seg->physics_body_comp;
+
+			StaticSpriteData *circle_sprite = &static_sprite_data[STATIC_SPRITE_circle_icon];
+			f32 circle_size = 4.0f;
+
+			local_persist b8 is_p1_grabbed = 0;
+			if (is_p1_grabbed)
+				ground_seg_body->shape.line.p1 = V2SubtractV2(GetMousePositionInWorldSpace(), ground_seg_position->position);
+			v4 p1_tint = {0.9f, 0.9f, 0.9f, 1.0f};
+			v2 p1 = V2AddV2(ground_seg_position->position, ground_seg_body->shape.line.p1);
+			c2Shape p1_box;
+			p1_box.aabb.min = c2V(p1.x - circle_size / 2.0f, p1.y - circle_size / 2.0f);
+			p1_box.aabb.max = c2V(p1.x + circle_size / 2.0f, p1.y + circle_size / 2.0f);
+			if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), p1_box, C2_SHAPE_TYPE_aabb))
+			{
+				p1_tint = v4u(1.0f);
+
+				if (platform->left_mouse_pressed)
+				{
+					is_p1_grabbed = 1;
+					TsPlatformCaptureMouseButtons();
+				}
+			}
+
+			local_persist b8 is_p2_grabbed = 0;
+			if (is_p2_grabbed)
+				ground_seg_body->shape.line.p2 = V2SubtractV2(GetMousePositionInWorldSpace(), ground_seg_position->position);
+			v4 p2_tint = {0.9f, 0.9f, 0.9f, 1.0f};
+			v2 p2 = V2AddV2(ground_seg_position->position, ground_seg_body->shape.line.p2);
+			c2Shape p2_box;
+			p2_box.aabb.min = c2V(p2.x - circle_size / 2.0f, p2.y - circle_size / 2.0f);
+			p2_box.aabb.max = c2V(p2.x + circle_size / 2.0f, p2.y + circle_size / 2.0f);
+			if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), p2_box, C2_SHAPE_TYPE_aabb))
+			{
+				p2_tint = v4u(1.0f);
+
+				if (platform->left_mouse_pressed)
+				{
+					is_p2_grabbed = 1;
+					TsPlatformCaptureMouseButtons();
+				}
+			}
+
+			if (core->left_mouse_released)
+			{
+				is_p1_grabbed = 0;
+				is_p2_grabbed = 0;
+			}
+
+			v2 p1_render = v2view(V2SubtractF32(p1, circle_size / 2.0f));
+			v2 p2_render = v2view(V2SubtractF32(p2, circle_size / 2.0f));
+
+			Ts2dPushTintedTexture(circle_sprite->texture_atlas, circle_sprite->source, v4(p1_render.x, p1_render.y, circle_size * core->camera_zoom, circle_size * core->camera_zoom), p1_tint);
+			Ts2dPushTintedTexture(circle_sprite->texture_atlas, circle_sprite->source, v4(p2_render.x, p2_render.y, circle_size * core->camera_zoom, circle_size * core->camera_zoom), p2_tint);
+		}
+		break;
+	}
 	}
 }
 
@@ -874,6 +943,40 @@ internal void DrawEditorUI()
 
 	case EDITOR_STATE_collision:
 	{
+		v2 window_size = {300.0f, 400.0f};
+		TsUIWindowBegin("Ground Segments", v4(core->render_w - window_size.x - 10.0f, 10.0f, window_size.x, window_size.y), 0, 0);
+		{
+			TsUIPushColumn(v2(10, 10), v2(150, 30));
+			TsUIPushWidth(270.0f);
+
+			// List segments
+			for (int i = 0; i < core->world_data->ground_segment_entity_count; i++)
+			{
+				GroundSegmentEntity *ground_seg = &core->world_data->ground_segment_entities[i];
+
+				char label[50];
+				sprintf(label, "Segment #%i", ground_seg->unique_entity_id);
+				if (core->client_data->selected_ground_seg)
+				{
+					if (TsUIToggler(label, ground_seg->unique_entity_id == core->client_data->selected_ground_seg->unique_entity_id))
+						core->client_data->selected_ground_seg = ground_seg;
+					else if (core->client_data->selected_ground_seg->unique_entity_id == ground_seg->unique_entity_id)
+						core->client_data->selected_ground_seg = 0;
+				}
+				else
+				{
+					if (TsUIToggler(label, 0))
+						core->client_data->selected_ground_seg = ground_seg;
+				}
+
+				if (core->client_data->selected_ground_seg && core->client_data->selected_ground_seg->unique_entity_id == ground_seg->unique_entity_id)
+					PrintEntityDataUI(core->client_data->selected_ground_seg->parent_generic_entity);
+			}
+
+			TsUIPopColumn();
+			TsUIPopWidth();
+		}
+		TsUIWindowEnd();
 
 		break;
 	}

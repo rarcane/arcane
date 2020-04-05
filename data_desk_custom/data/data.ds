@@ -232,7 +232,7 @@ StaticSprite :: enum
 	@Data("'icon/axis_icons'", "{0.0f, 33.0f, 40.0f, 7.0f}", "{0.0f, 0.0f}")
 		x_axis_arrow_icon,
 	@Data("'icon/axis_icons'", "{33.0f, 0.0f, 7.0f, 7.0f}", "{0.0f, 0.0f}")
-		middle_axis_icon,
+		circle_icon,
 }
 
 @XMacro
@@ -528,7 +528,7 @@ Cloud :: struct
 }
 
 @UniqueEntity(1024, ground)
-Ground :: struct
+GroundSegment :: struct
 {
 	@ComponentList(Position, PhysicsBody)
 	dummy : Dummy;
@@ -644,4 +644,5 @@ ClientData :: struct
 	editor_flags : EditorFlags;
 	// Entity Editor
 	selected_entity : *Entity;
+	selected_ground_seg : *GroundSegmentEntity;
 }

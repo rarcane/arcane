@@ -217,8 +217,8 @@ break;
 case STATIC_SPRITE_x_axis_arrow_icon:
 return "Xaxis Arrow Icon";
 break;
-case STATIC_SPRITE_middle_axis_icon:
-return "Middle Axis Icon";
+case STATIC_SPRITE_circle_icon:
+return "Circle Icon";
 break;
 default:
 return "INVALID";
@@ -1176,20 +1176,20 @@ static CloudEntity *NewCloudEntity()
     return unique_entity;
 }
 
-static GroundEntity *NewGroundEntity()
+static GroundSegmentEntity *NewGroundSegmentEntity()
 {
-    R_DEV_ASSERT(core->world_data->free_ground_entity_index + 1 < MAX_GROUND_ENTITIES, "Maximum amount of Ground entites reached");
+    R_DEV_ASSERT(core->world_data->free_ground_segment_entity_index + 1 < MAX_GROUND_SEGMENT_ENTITIES, "Maximum amount of GroundSegment entites reached");
 
-    i32 new_unique_id = core->world_data->free_ground_entity_index;
-    if (core->world_data->free_ground_entity_index == core->world_data->ground_entity_count)
+    i32 new_unique_id = core->world_data->free_ground_segment_entity_index;
+    if (core->world_data->free_ground_segment_entity_index == core->world_data->ground_segment_entity_count)
     {
-        core->world_data->ground_entity_count++;
-        core->world_data->free_ground_entity_index++;
+        core->world_data->ground_segment_entity_count++;
+        core->world_data->free_ground_segment_entity_index++;
     }
-    core->world_data->ground_entities[new_unique_id].unique_entity_id = new_unique_id;
+    core->world_data->ground_segment_entities[new_unique_id].unique_entity_id = new_unique_id;
 
-    Entity *generic_entity = NewEntity("Ground", ENTITY_TYPE_ground, GENERALISED_ENTITY_TYPE_ground);
-    GroundEntity *unique_entity = &core->world_data->ground_entities[new_unique_id];
+    Entity *generic_entity = NewEntity("GroundSegment", ENTITY_TYPE_ground_segment, GENERALISED_ENTITY_TYPE_ground);
+    GroundSegmentEntity *unique_entity = &core->world_data->ground_segment_entities[new_unique_id];
     generic_entity->unique_entity = unique_entity;
     unique_entity->parent_generic_entity = generic_entity;
     unique_entity->unique_entity_id = new_unique_id;
@@ -1214,9 +1214,9 @@ static void PrintEntityDataUI(Entity *entity)
         CloudEntity *unique_entity = entity->unique_entity;
         break;
     }
-    case ENTITY_TYPE_ground :
+    case ENTITY_TYPE_ground_segment :
     {
-        GroundEntity *unique_entity = entity->unique_entity;
+        GroundSegmentEntity *unique_entity = entity->unique_entity;
         break;
     }
     }

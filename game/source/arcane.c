@@ -358,7 +358,6 @@ GameUpdate(void)
 				PostMoveUpdatePlayer();
 			}
 
-			UpdateClouds();
 			UpdateParallax();
 
 			if (core->client_data->editor_flags & EDITOR_FLAGS_draw_world)

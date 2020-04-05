@@ -82,7 +82,7 @@ internal void TempInitGameWorld()
 			last_height = (f32)terrain_height;
 		else if (((x + 1) % (i32)width) == 0)
 		{
-			GroundEntity *ground = NewGroundEntity();
+			GroundSegmentEntity *ground = NewGroundSegmentEntity();
 			ground->position_comp->position = v2(floorf(x / width) * width - CHUNK_SIZE * 2, 0.0f);
 
 			Line line = {0};
@@ -201,39 +201,6 @@ internal void UpdateParallax()
 	}
 }
 
-internal void UpdateClouds()
-{
-	/* for (int i = 0; i < core->cloud_count; i++)
-    {
-       Entity *cloud = core->clouds[i];
-       if (cloud)
-       {
-          ParallaxComponent *cloud_parallax = cloud->components[COMPONENT_parallax];
-          PositionComponent *cloud_pos = cloud->components[COMPONENT_position];
-          cloud_parallax->desired_position.x += core->world_delta_t * 1.0f;
- 
-          f32 bound = (-core->camera_position.x + 300.0f) / cloud_parallax->parallax_amount.x; // Temp fix
- 
-          if (-core->camera_position.x + cloud_parallax->desired_position.x >= bound)
-          {
-             DeleteEntity(cloud);
-             core->clouds[i] = 0;
- 
-             Entity *new_cloud = NewEntity("Cloud", ENTITY_TYPE_scenic);
-             SetupBackgroundEntity(new_cloud,
-                              v2(-300.0f, RandomF32(-55.0f, -70.0f)),
-                              STATIC_SPRITE_cloud_v1 + RandomI32(0, 5),
-                              RandomI32(0, 3) != 0 ? 8.5f : 9.5f,
-                              v2(0.95f, 0.7f));
-             SpriteComponent *sprite_comp = new_cloud->components[COMPONENT_sprite];
-             sprite_comp->sprite_data.tint = v4u(0.5f);
- 
-             core->clouds[i] = new_cloud;
-          }
-       }
-    } */
-}
-
 internal i32 FloatToChunkIndex(f32 position)
 {
 	return (i32)floorf(position / CHUNK_SIZE);
@@ -291,6 +258,91 @@ internal ChunkData *GetChunkAtPosition(v2 position)
 
 		return chunk;
 	}
+}
+
+internal ChunkData *GetChunkAtIndex(i32 x, i32 y)
+{
+	for (int i = 0; i < core->world_data->active_chunk_count; i++)
+	{
+		ChunkData *chunk = &core->world_data->active_chunks[i];
+		if (chunk->is_valid)
+		{
+			if (x == chunk->x_index &&
+				y == chunk->y_index)
+			{
+				return chunk;
+			}
+		}
+	}
+
+	// Chunk doesn't exist yet, so just initialise a new one at this positon
+	{
+		R_DEV_ASSERT(core->world_data->active_chunk_count + 1 < MAX_WORLD_CHUNKS, "Too many chunccs bruh");
+
+		ChunkData *chunk = &core->world_data->active_chunks[core->world_data->active_chunk_count++];
+		chunk->is_valid = 1;
+		chunk->x_index = x;
+		chunk->y_index = y;
+		chunk->free_cell_material_id = 1;
+
+		for (int i = 0; i < CHUNK_SIZE / CELL_CHUNK_SIZE; i++)
+		{
+			for (int j = 0; j < CHUNK_SIZE / CELL_CHUNK_SIZE; j++)
+			{
+				CellChunk *cell_chunk = &chunk->cell_chunks[i][j];
+				cell_chunk->x_index = j;
+				cell_chunk->y_index = i;
+				cell_chunk->parent_chunk = chunk;
+
+				// Initialise cells
+				for (int y = 0; y < CELL_CHUNK_SIZE; y++)
+				{
+					for (int x = 0; x < CELL_CHUNK_SIZE; x++)
+					{
+						Cell *cell = &cell_chunk->cells[y][x];
+						cell->parent_cell_chunk = cell_chunk;
+						cell->x_index = x;
+						cell->y_index = y;
+					}
+				}
+			}
+		}
+
+		UpdateChunkTextures(chunk);
+
+		return chunk;
+	}
+}
+
+internal void GetVisibleChunks(ChunkData **chunks, i32 *chunk_count)
+{
+	v2 top_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
+	v2 top_right = {-core->camera_position.x + core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
+	v2 bottom_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y + core->render_h / (2.0f * core->camera_zoom)};
+	v2 bottom_right = {-core->camera_position.x + core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y + core->render_h / (2.0f * core->camera_zoom)};
+
+	ChunkData *tl_chunk = GetChunkAtPosition(top_left);
+	chunks[(*chunk_count)++] = tl_chunk;
+	ChunkData *tr_chunk = GetChunkAtPosition(top_right);
+	ChunkData *bl_chunk = GetChunkAtPosition(bottom_left);
+	ChunkData *br_chunk = GetChunkAtPosition(bottom_right);
+
+	i32 width = tr_chunk->x_index - tl_chunk->x_index;
+	i32 height = bl_chunk->y_index - tl_chunk->y_index;
+
+	for (int y = 0; y <= height; y++)
+	{
+		for (int x = 0; x <= width; x++)
+		{
+			if (!(x == 0 && y == 0))
+			{
+				ChunkData *chunk = GetChunkAtIndex(tl_chunk->x_index + x, tl_chunk->y_index + y);
+				chunks[(*chunk_count)++] = chunk;
+			}
+		}
+	}
+
+	R_DEV_ASSERT(*chunk_count < MAX_WORLD_CHUNKS, "Too many visible chunks.");
 }
 
 // NOTE(tjr): Returns 9 surrounding chunks (including the central chunk) in relation to a position
