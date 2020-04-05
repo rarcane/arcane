@@ -34,22 +34,17 @@ LinuxLoadEntireFile(char *path, void **data, u32 *data_len, b32 error_on_non_exi
 	getcwd(cwd, sizeof(cwd));
 
 	char *full_path[sizeof(path) + 2];
-	strcpy(full_path, ".");
+	strcpy(full_path, "..");
 	strcat(full_path, path);
 
-	printf("%s\n", full_path);
-
-	if (access(full_path, F_OK) != -1)
-	{
-		fclose(fopen(full_path, "w"));
-	}
+	// printf("%s\n", full_path);
 
 	FILE *fp;
 	fp = fopen(full_path, "r");
 	if (fp == 0)
 	{
-		printf("Failed to load file\n");
-		printf("ERROR: %s\n", strerror(errno));
+		// printf("Failed to load file\n");
+		// printf("ERROR: %s\n", strerror(errno));
 		return 0;
 	}
 	else
@@ -73,19 +68,14 @@ internal char *
 LinuxLoadEntireFileAndNullTerminate(char *path)
 {
 	char *full_path[sizeof(path) + 1];
-	strcpy(full_path, ".");
+	strcpy(full_path, "..");
 	strcat(full_path, path);
-
-	if (access(full_path, F_OK) != -1)
-	{
-		fclose(fopen(full_path, "w"));
-	}
 
 	FILE *fp;
 	fp = fopen(full_path, "r");
 	if (fp == 0)
 	{
-		printf("Failed to load file\n");
+		// printf("Failed to load file\n");
 		return 0;
 	}
 

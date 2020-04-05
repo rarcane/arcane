@@ -4,7 +4,6 @@ internal void
 LinuxDispatchJob(TsWorkQueueJob *job)
 {
 	// IMPLEMENT THIS AND HAVE IT ACTUALLY DISPATCH ON ANOTHER THREAD
-	printf("DOING WORK!\n");
 	job->DoWork(job->job_data);
 	// // NOTE(rjf): Get a free thread.
 	// Win32WorkerThreadData *thread_data = 0;
