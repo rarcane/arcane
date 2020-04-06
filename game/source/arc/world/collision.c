@@ -17,6 +17,25 @@ internal void RenderColliders()
 			PushDebugShape(body_comp->shape, body_comp->shape_type, pos_comp->position, col);
 		}
 	}
+
+	if (core->client_data->editor_flags & EDITOR_FLAGS_draw_chunk_grid)
+		for (int i = 0; i < core->world_data->active_chunk_count; i++)
+		{
+			ChunkData *chunk = &core->world_data->active_chunks[i];
+
+			PushDebugLine(v2(CHUNK_SIZE * chunk->x_index, CHUNK_SIZE * chunk->y_index),
+						  v2(CHUNK_SIZE * chunk->x_index, CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
+						  v3(1.0f, 1.0f, 1.0f));
+			PushDebugLine(v2(CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, CHUNK_SIZE * chunk->y_index),
+						  v2(CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
+						  v3(1.0f, 1.0f, 1.0f));
+			PushDebugLine(v2(CHUNK_SIZE * chunk->x_index, CHUNK_SIZE * chunk->y_index),
+						  v2(CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, CHUNK_SIZE * chunk->y_index),
+						  v3(1.0f, 1.0f, 1.0f));
+			PushDebugLine(v2(CHUNK_SIZE * chunk->x_index, CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
+						  v2(CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
+						  v3(1.0f, 1.0f, 1.0f));
+		}
 }
 
 internal void UpdatePhysics()

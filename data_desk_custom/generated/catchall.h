@@ -65,6 +65,7 @@ typedef unsigned int CellFlags;
 
 #define EDITOR_FLAGS_draw_world (1<<0)
 #define EDITOR_FLAGS_draw_collision (1<<1)
+#define EDITOR_FLAGS_draw_chunk_grid (1<<2)
 typedef unsigned int EditorFlags;
 
 #define ITEM_FLAGS_resource (1<<0)

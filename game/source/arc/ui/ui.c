@@ -572,7 +572,53 @@ internal void DrawGameUI()
 
 			local_persist b8 is_p1_grabbed = 0;
 			if (is_p1_grabbed)
-				ground_seg_body->shape.line.p1 = V2SubtractV2(GetMousePositionInWorldSpace(), ground_seg_position->position);
+			{
+				b8 pos_snapped = 0;
+
+				ChunkData *surrounding_chunks[9];
+				GetSurroundingChunks(surrounding_chunks, V2AddV2(ground_seg_position->position, ground_seg_body->shape.line.p1));
+				for (int i = 0; i < 9; i++)
+				{
+					ChunkData *chunk = surrounding_chunks[i];
+					for (int j = 0; j < chunk->entity_count; j++)
+					{
+						Entity *nearby_entity = &core->world_data->entities[chunk->entity_ids[j]];
+						if (nearby_entity->type == ENTITY_TYPE_ground_segment && nearby_entity != core->client_data->selected_ground_seg->parent_generic_entity)
+						{
+							PositionComponent *nearby_pos = nearby_entity->components[COMPONENT_position];
+							PhysicsBodyComponent *nearby_body = nearby_entity->components[COMPONENT_physics_body];
+
+							v2 nearby_p1 = V2AddV2(nearby_pos->position, nearby_body->shape.line.p1);
+							c2Shape nearby_p1_box;
+							nearby_p1_box.aabb.min = c2V(nearby_p1.x - circle_size / 2.0f, nearby_p1.y - circle_size / 2.0f);
+							nearby_p1_box.aabb.max = c2V(nearby_p1.x + circle_size / 2.0f, nearby_p1.y + circle_size / 2.0f);
+							if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), nearby_p1_box, C2_SHAPE_TYPE_aabb))
+							{
+								ground_seg_body->shape.line.p1 = V2SubtractV2(nearby_p1, ground_seg_position->position);
+								pos_snapped = 1;
+								break;
+							}
+
+							v2 nearby_p2 = V2AddV2(nearby_pos->position, nearby_body->shape.line.p2);
+							c2Shape nearby_p2_box;
+							nearby_p2_box.aabb.min = c2V(nearby_p2.x - circle_size / 2.0f, nearby_p2.y - circle_size / 2.0f);
+							nearby_p2_box.aabb.max = c2V(nearby_p2.x + circle_size / 2.0f, nearby_p2.y + circle_size / 2.0f);
+							if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), nearby_p2_box, C2_SHAPE_TYPE_aabb))
+							{
+								ground_seg_body->shape.line.p1 = V2SubtractV2(nearby_p2, ground_seg_position->position);
+								pos_snapped = 1;
+								break;
+							}
+						}
+					}
+
+					if (pos_snapped)
+						break;
+				}
+
+				if (!pos_snapped)
+					ground_seg_body->shape.line.p1 = V2SubtractV2(GetMousePositionInWorldSpace(), ground_seg_position->position);
+			}
 			v4 p1_tint = {0.9f, 0.9f, 0.9f, 1.0f};
 			v2 p1 = V2AddV2(ground_seg_position->position, ground_seg_body->shape.line.p1);
 			c2Shape p1_box;
@@ -591,7 +637,53 @@ internal void DrawGameUI()
 
 			local_persist b8 is_p2_grabbed = 0;
 			if (is_p2_grabbed)
-				ground_seg_body->shape.line.p2 = V2SubtractV2(GetMousePositionInWorldSpace(), ground_seg_position->position);
+			{
+				b8 pos_snapped = 0;
+
+				ChunkData *surrounding_chunks[9];
+				GetSurroundingChunks(surrounding_chunks, V2AddV2(ground_seg_position->position, ground_seg_body->shape.line.p2));
+				for (int i = 0; i < 9; i++)
+				{
+					ChunkData *chunk = surrounding_chunks[i];
+					for (int j = 0; j < chunk->entity_count; j++)
+					{
+						Entity *nearby_entity = &core->world_data->entities[chunk->entity_ids[j]];
+						if (nearby_entity->type == ENTITY_TYPE_ground_segment && nearby_entity != core->client_data->selected_ground_seg->parent_generic_entity)
+						{
+							PositionComponent *nearby_pos = nearby_entity->components[COMPONENT_position];
+							PhysicsBodyComponent *nearby_body = nearby_entity->components[COMPONENT_physics_body];
+
+							v2 nearby_p1 = V2AddV2(nearby_pos->position, nearby_body->shape.line.p1);
+							c2Shape nearby_p1_box;
+							nearby_p1_box.aabb.min = c2V(nearby_p1.x - circle_size / 2.0f, nearby_p1.y - circle_size / 2.0f);
+							nearby_p1_box.aabb.max = c2V(nearby_p1.x + circle_size / 2.0f, nearby_p1.y + circle_size / 2.0f);
+							if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), nearby_p1_box, C2_SHAPE_TYPE_aabb))
+							{
+								ground_seg_body->shape.line.p2 = V2SubtractV2(nearby_p1, ground_seg_position->position);
+								pos_snapped = 1;
+								break;
+							}
+
+							v2 nearby_p2 = V2AddV2(nearby_pos->position, nearby_body->shape.line.p2);
+							c2Shape nearby_p2_box;
+							nearby_p2_box.aabb.min = c2V(nearby_p2.x - circle_size / 2.0f, nearby_p2.y - circle_size / 2.0f);
+							nearby_p2_box.aabb.max = c2V(nearby_p2.x + circle_size / 2.0f, nearby_p2.y + circle_size / 2.0f);
+							if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), nearby_p2_box, C2_SHAPE_TYPE_aabb))
+							{
+								ground_seg_body->shape.line.p2 = V2SubtractV2(nearby_p2, ground_seg_position->position);
+								pos_snapped = 1;
+								break;
+							}
+						}
+					}
+
+					if (pos_snapped)
+						break;
+				}
+
+				if (!pos_snapped)
+					ground_seg_body->shape.line.p2 = V2SubtractV2(GetMousePositionInWorldSpace(), ground_seg_position->position);
+			}
 			v4 p2_tint = {0.9f, 0.9f, 0.9f, 1.0f};
 			v2 p2 = V2AddV2(ground_seg_position->position, ground_seg_body->shape.line.p2);
 			c2Shape p2_box;
@@ -684,6 +776,11 @@ internal void DrawEditorUI()
 					core->client_data->editor_flags |= EDITOR_FLAGS_draw_collision;
 				else
 					core->client_data->editor_flags &= ~EDITOR_FLAGS_draw_collision;
+
+				if (TsUIToggler("Draw Chunk Grid", core->client_data->editor_flags & EDITOR_FLAGS_draw_chunk_grid))
+					core->client_data->editor_flags |= EDITOR_FLAGS_draw_chunk_grid;
+				else
+					core->client_data->editor_flags &= ~EDITOR_FLAGS_draw_chunk_grid;
 			}
 			TsUIDropdownEnd();
 
@@ -970,7 +1067,20 @@ internal void DrawEditorUI()
 				}
 
 				if (core->client_data->selected_ground_seg && core->client_data->selected_ground_seg->unique_entity_id == ground_seg->unique_entity_id)
+				{
+					{
+						char label[50];
+						sprintf(label, "Point 1: %f, %f", ground_seg->physics_body_comp->shape.line.p1.x, ground_seg->physics_body_comp->shape.line.p1.y);
+						TsUILabel(label);
+					}
+					{
+						char label[50];
+						sprintf(label, "Point 2: %f, %f", ground_seg->physics_body_comp->shape.line.p2.x, ground_seg->physics_body_comp->shape.line.p2.y);
+						TsUILabel(label);
+					}
+
 					PrintEntityDataUI(core->client_data->selected_ground_seg->parent_generic_entity);
+				}
 			}
 
 			TsUIPopColumn();

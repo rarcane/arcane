@@ -82,6 +82,7 @@ EditorFlags :: flags
 {
 	draw_world,
 	draw_collision,
+	draw_chunk_grid,
 }
 
 ItemFlags :: flags
