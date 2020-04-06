@@ -27,8 +27,6 @@ static void TransformEditorCamera()
 	{
 		core->camera_position.y -= 600.0f * transform_mult / core->camera_zoom * core->delta_t;
 	}
-
-	TsPlatformCaptureKeyboard();
 }
 
 static void TransformInGameCamera()

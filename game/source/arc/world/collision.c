@@ -23,17 +23,17 @@ internal void RenderColliders()
 		{
 			ChunkData *chunk = &core->world_data->active_chunks[i];
 
-			PushDebugLine(v2(CHUNK_SIZE * chunk->x_index, CHUNK_SIZE * chunk->y_index),
-						  v2(CHUNK_SIZE * chunk->x_index, CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
+			PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index),
+						  v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
 						  v3(1.0f, 1.0f, 1.0f));
-			PushDebugLine(v2(CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, CHUNK_SIZE * chunk->y_index),
-						  v2(CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
+			PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk->y_index),
+						  v2((f32)CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
 						  v3(1.0f, 1.0f, 1.0f));
-			PushDebugLine(v2(CHUNK_SIZE * chunk->x_index, CHUNK_SIZE * chunk->y_index),
-						  v2(CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, CHUNK_SIZE * chunk->y_index),
+			PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index),
+						  v2((f32)CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk->y_index),
 						  v3(1.0f, 1.0f, 1.0f));
-			PushDebugLine(v2(CHUNK_SIZE * chunk->x_index, CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
-						  v2(CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
+			PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
+						  v2((f32)CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
 						  v3(1.0f, 1.0f, 1.0f));
 		}
 }
@@ -448,3 +448,15 @@ b32 IsMouseOverlappingShape(v2 mouse_pos, c2Shape shape, c2ShapeType shape_type)
 
 	return 0;
 }
+
+// https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html
+/* int pnpoly(int nvert, float *vertx, float *verty, float testx, float testy)
+{
+  int i, j, c = 0;
+  for (i = 0, j = nvert-1; i < nvert; j = i++) {
+    if ( ((verty[i]>testy) != (verty[j]>testy)) &&
+	 (testx < (vertx[j]-vertx[i]) * (testy-verty[i]) / (verty[j]-verty[i]) + vertx[i]) )
+       c = !c;
+  }
+  return c;
+} */

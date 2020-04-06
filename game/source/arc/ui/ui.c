@@ -562,7 +562,7 @@ internal void DrawGameUI()
 
 	case EDITOR_STATE_collision:
 	{
-		if (core->client_data->selected_ground_seg)
+		/* if (core->client_data->selected_ground_seg)
 		{
 			PositionComponent *ground_seg_position = core->client_data->selected_ground_seg->position_comp;
 			PhysicsBodyComponent *ground_seg_body = core->client_data->selected_ground_seg->physics_body_comp;
@@ -711,7 +711,100 @@ internal void DrawGameUI()
 
 			Ts2dPushTintedTexture(circle_sprite->texture_atlas, circle_sprite->source, v4(p1_render.x, p1_render.y, circle_size * core->camera_zoom, circle_size * core->camera_zoom), p1_tint);
 			Ts2dPushTintedTexture(circle_sprite->texture_atlas, circle_sprite->source, v4(p2_render.x, p2_render.y, circle_size * core->camera_zoom, circle_size * core->camera_zoom), p2_tint);
+		} */
+
+		for (int i = 0; i < core->world_data->ground_segment_entity_count; i++)
+		{
+			GroundSegmentEntity *seg_entity = &core->world_data->ground_segment_entities[i];
+			if (seg_entity->parent_generic_entity)
+			{
+				PhysicsBodyComponent *seg_body = seg_entity->physics_body_comp;
+				PositionComponent *seg_pos = seg_entity->position_comp;
+
+				StaticSpriteData *circle_sprite = &static_sprite_data[STATIC_SPRITE_circle_icon];
+				f32 circle_size = 4.0f;
+
+				v4 p1_tint = {0.9f, 0.9f, 0.9f, 1.0f};
+				v2 p1 = V2AddV2(seg_pos->position, seg_body->shape.line.p1);
+				v2 p2 = V2AddV2(seg_pos->position, seg_body->shape.line.p2);
+
+				if (core->client_data->grabbed_seg_pos.x == p1.x && core->client_data->grabbed_seg_pos.y == p1.y)
+				{
+					p1 = GetMousePositionInWorldSpace();
+					seg_body->shape.line.p1 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
+				}
+				else if (core->client_data->grabbed_seg_pos.x == p2.x && core->client_data->grabbed_seg_pos.y == p2.y)
+				{
+					p2 = GetMousePositionInWorldSpace();
+					seg_body->shape.line.p2 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
+				}
+
+				c2Shape p1_box;
+				p1_box.aabb.min = c2V(p1.x - circle_size / 2.0f, p1.y - circle_size / 2.0f);
+				p1_box.aabb.max = c2V(p1.x + circle_size / 2.0f, p1.y + circle_size / 2.0f);
+				if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), p1_box, C2_SHAPE_TYPE_aabb))
+				{
+					p1_tint = v4u(1.0f);
+
+					if (platform->left_mouse_pressed)
+					{
+						if (platform->key_down[KEY_alt])
+						{
+							v2 mid_point = V2DivideF32(V2SubtractV2(p2, p1), 2.0f);
+							seg_body->shape.line.p2 = V2AddV2(mid_point, seg_body->shape.line.p1);
+
+							GroundSegmentEntity *new_segment = NewGroundSegmentEntity();
+							new_segment->physics_body_comp->shape_type = C2_SHAPE_TYPE_line;
+							new_segment->physics_body_comp->mass_data = seg_body->mass_data;
+							new_segment->physics_body_comp->material = seg_body->material;
+							new_segment->position_comp->position = V2AddV2(V2AddV2(mid_point, seg_body->shape.line.p1), seg_pos->position);
+							new_segment->physics_body_comp->shape.line.p2 = mid_point;
+						}
+						else
+						{
+							core->client_data->grabbed_seg_pos = p1;
+							TsPlatformCaptureMouseButtons();
+						}
+					}
+					else if (platform->key_pressed[KEY_delete])
+					{
+						DeleteGroundSegmentEntity(seg_entity);
+						for (int j = 0; j < core->world_data->ground_segment_entity_count; j++)
+						{
+							GroundSegmentEntity *seg_entity_2 = &core->world_data->ground_segment_entities[j];
+							if (seg_entity_2->parent_generic_entity)
+							{
+								PhysicsBodyComponent *seg_body_2 = seg_entity_2->physics_body_comp;
+								PositionComponent *seg_pos_2 = seg_entity_2->position_comp;
+
+								v2 p2_2 = V2AddV2(seg_body_2->shape.line.p2, seg_pos_2->position);
+								if (p2_2.x == p1.x && p2_2.y == p1.y)
+								{
+									seg_body_2->shape.line.p2 = V2SubtractV2(p2, seg_pos_2->position);
+									break;
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+				}
+
+				v2 p1_render = v2view(V2SubtractF32(p1, circle_size / 2.0f));
+				Ts2dPushTintedTexture(circle_sprite->texture_atlas, circle_sprite->source, v4(p1_render.x, p1_render.y, circle_size * core->camera_zoom, circle_size * core->camera_zoom), p1_tint);
+			}
 		}
+
+		if (core->left_mouse_released)
+		{
+			core->client_data->grabbed_seg_pos = v2(0.0f, 0.0f);
+		}
+		else if (platform->left_mouse_down)
+		{
+			core->client_data->grabbed_seg_pos = GetMousePositionInWorldSpace();
+		}
+
 		break;
 	}
 	}

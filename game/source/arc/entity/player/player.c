@@ -9,7 +9,7 @@ internal void PreMoveUpdatePlayer()
 	R_DEV_ASSERT(movement_comp && arc_entity_comp && animation_comp && sprite_comp, "Entity does not have the required components.");
 
 	b8 is_sprinting = 0;
-	if (platform->key_down[KEY_a])
+	if (core->client_data->editor_state == EDITOR_STATE_none && platform->key_down[KEY_a])
 	{
 		if (platform->key_down[KEY_d])
 			movement_comp->axis_x = 0.0f;
@@ -26,7 +26,7 @@ internal void PreMoveUpdatePlayer()
 			}
 		}
 	}
-	else if (platform->key_down[KEY_d])
+	else if (core->client_data->editor_state == EDITOR_STATE_none && platform->key_down[KEY_d])
 	{
 		if (platform->key_down[KEY_a])
 			movement_comp->axis_x = 0.0f;
@@ -51,7 +51,7 @@ internal void PreMoveUpdatePlayer()
 	if (fabsf(body_comp->velocity.x) < fabsf(movement_comp->move_speed * movement_comp->axis_x))
 		body_comp->force.x = movement_comp->axis_x * (1200 / body_comp->mass_data.inv_mass);
 
-	if (platform->key_pressed[KEY_space])
+	if (core->client_data->editor_state == EDITOR_STATE_none && platform->key_pressed[KEY_space])
 	{
 		body_comp->force.y = -10000.0f / body_comp->mass_data.inv_mass;
 	}

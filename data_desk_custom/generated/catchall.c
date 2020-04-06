@@ -1176,6 +1176,15 @@ static CloudEntity *NewCloudEntity()
     return unique_entity;
 }
 
+static void DeleteCloudEntity(CloudEntity *entity)
+{
+    DeleteEntity(entity->parent_generic_entity);
+    if (entity->unique_entity_id < core->world_data->free_cloud_entity_index);
+        core->world_data->free_cloud_entity_index = entity->unique_entity_id;
+    CloudEntity empty_entity = {0};
+    *entity = empty_entity;
+}
+
 static GroundSegmentEntity *NewGroundSegmentEntity()
 {
     R_DEV_ASSERT(core->world_data->free_ground_segment_entity_index + 1 < MAX_GROUND_SEGMENT_ENTITIES, "Maximum amount of GroundSegment entites reached");
@@ -1198,6 +1207,15 @@ static GroundSegmentEntity *NewGroundSegmentEntity()
     unique_entity->physics_body_comp = AddPhysicsBodyComponent(generic_entity);
 
     return unique_entity;
+}
+
+static void DeleteGroundSegmentEntity(GroundSegmentEntity *entity)
+{
+    DeleteEntity(entity->parent_generic_entity);
+    if (entity->unique_entity_id < core->world_data->free_ground_segment_entity_index);
+        core->world_data->free_ground_segment_entity_index = entity->unique_entity_id;
+    GroundSegmentEntity empty_entity = {0};
+    *entity = empty_entity;
 }
 
 static void PrintEntityDataUI(Entity *entity)
