@@ -562,157 +562,6 @@ internal void DrawGameUI()
 
 	case EDITOR_STATE_collision:
 	{
-		/* if (core->client_data->selected_ground_seg)
-		{
-			PositionComponent *ground_seg_position = core->client_data->selected_ground_seg->position_comp;
-			PhysicsBodyComponent *ground_seg_body = core->client_data->selected_ground_seg->physics_body_comp;
-
-			StaticSpriteData *circle_sprite = &static_sprite_data[STATIC_SPRITE_circle_icon];
-			f32 circle_size = 4.0f;
-
-			local_persist b8 is_p1_grabbed = 0;
-			if (is_p1_grabbed)
-			{
-				b8 pos_snapped = 0;
-
-				ChunkData *surrounding_chunks[9];
-				GetSurroundingChunks(surrounding_chunks, V2AddV2(ground_seg_position->position, ground_seg_body->shape.line.p1));
-				for (int i = 0; i < 9; i++)
-				{
-					ChunkData *chunk = surrounding_chunks[i];
-					for (int j = 0; j < chunk->entity_count; j++)
-					{
-						Entity *nearby_entity = &core->world_data->entities[chunk->entity_ids[j]];
-						if (nearby_entity->type == ENTITY_TYPE_ground_segment && nearby_entity != core->client_data->selected_ground_seg->parent_generic_entity)
-						{
-							PositionComponent *nearby_pos = nearby_entity->components[COMPONENT_position];
-							PhysicsBodyComponent *nearby_body = nearby_entity->components[COMPONENT_physics_body];
-
-							v2 nearby_p1 = V2AddV2(nearby_pos->position, nearby_body->shape.line.p1);
-							c2Shape nearby_p1_box;
-							nearby_p1_box.aabb.min = c2V(nearby_p1.x - circle_size / 2.0f, nearby_p1.y - circle_size / 2.0f);
-							nearby_p1_box.aabb.max = c2V(nearby_p1.x + circle_size / 2.0f, nearby_p1.y + circle_size / 2.0f);
-							if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), nearby_p1_box, C2_SHAPE_TYPE_aabb))
-							{
-								ground_seg_body->shape.line.p1 = V2SubtractV2(nearby_p1, ground_seg_position->position);
-								pos_snapped = 1;
-								break;
-							}
-
-							v2 nearby_p2 = V2AddV2(nearby_pos->position, nearby_body->shape.line.p2);
-							c2Shape nearby_p2_box;
-							nearby_p2_box.aabb.min = c2V(nearby_p2.x - circle_size / 2.0f, nearby_p2.y - circle_size / 2.0f);
-							nearby_p2_box.aabb.max = c2V(nearby_p2.x + circle_size / 2.0f, nearby_p2.y + circle_size / 2.0f);
-							if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), nearby_p2_box, C2_SHAPE_TYPE_aabb))
-							{
-								ground_seg_body->shape.line.p1 = V2SubtractV2(nearby_p2, ground_seg_position->position);
-								pos_snapped = 1;
-								break;
-							}
-						}
-					}
-
-					if (pos_snapped)
-						break;
-				}
-
-				if (!pos_snapped)
-					ground_seg_body->shape.line.p1 = V2SubtractV2(GetMousePositionInWorldSpace(), ground_seg_position->position);
-			}
-			v4 p1_tint = {0.9f, 0.9f, 0.9f, 1.0f};
-			v2 p1 = V2AddV2(ground_seg_position->position, ground_seg_body->shape.line.p1);
-			c2Shape p1_box;
-			p1_box.aabb.min = c2V(p1.x - circle_size / 2.0f, p1.y - circle_size / 2.0f);
-			p1_box.aabb.max = c2V(p1.x + circle_size / 2.0f, p1.y + circle_size / 2.0f);
-			if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), p1_box, C2_SHAPE_TYPE_aabb))
-			{
-				p1_tint = v4u(1.0f);
-
-				if (platform->left_mouse_pressed)
-				{
-					is_p1_grabbed = 1;
-					TsPlatformCaptureMouseButtons();
-				}
-			}
-
-			local_persist b8 is_p2_grabbed = 0;
-			if (is_p2_grabbed)
-			{
-				b8 pos_snapped = 0;
-
-				ChunkData *surrounding_chunks[9];
-				GetSurroundingChunks(surrounding_chunks, V2AddV2(ground_seg_position->position, ground_seg_body->shape.line.p2));
-				for (int i = 0; i < 9; i++)
-				{
-					ChunkData *chunk = surrounding_chunks[i];
-					for (int j = 0; j < chunk->entity_count; j++)
-					{
-						Entity *nearby_entity = &core->world_data->entities[chunk->entity_ids[j]];
-						if (nearby_entity->type == ENTITY_TYPE_ground_segment && nearby_entity != core->client_data->selected_ground_seg->parent_generic_entity)
-						{
-							PositionComponent *nearby_pos = nearby_entity->components[COMPONENT_position];
-							PhysicsBodyComponent *nearby_body = nearby_entity->components[COMPONENT_physics_body];
-
-							v2 nearby_p1 = V2AddV2(nearby_pos->position, nearby_body->shape.line.p1);
-							c2Shape nearby_p1_box;
-							nearby_p1_box.aabb.min = c2V(nearby_p1.x - circle_size / 2.0f, nearby_p1.y - circle_size / 2.0f);
-							nearby_p1_box.aabb.max = c2V(nearby_p1.x + circle_size / 2.0f, nearby_p1.y + circle_size / 2.0f);
-							if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), nearby_p1_box, C2_SHAPE_TYPE_aabb))
-							{
-								ground_seg_body->shape.line.p2 = V2SubtractV2(nearby_p1, ground_seg_position->position);
-								pos_snapped = 1;
-								break;
-							}
-
-							v2 nearby_p2 = V2AddV2(nearby_pos->position, nearby_body->shape.line.p2);
-							c2Shape nearby_p2_box;
-							nearby_p2_box.aabb.min = c2V(nearby_p2.x - circle_size / 2.0f, nearby_p2.y - circle_size / 2.0f);
-							nearby_p2_box.aabb.max = c2V(nearby_p2.x + circle_size / 2.0f, nearby_p2.y + circle_size / 2.0f);
-							if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), nearby_p2_box, C2_SHAPE_TYPE_aabb))
-							{
-								ground_seg_body->shape.line.p2 = V2SubtractV2(nearby_p2, ground_seg_position->position);
-								pos_snapped = 1;
-								break;
-							}
-						}
-					}
-
-					if (pos_snapped)
-						break;
-				}
-
-				if (!pos_snapped)
-					ground_seg_body->shape.line.p2 = V2SubtractV2(GetMousePositionInWorldSpace(), ground_seg_position->position);
-			}
-			v4 p2_tint = {0.9f, 0.9f, 0.9f, 1.0f};
-			v2 p2 = V2AddV2(ground_seg_position->position, ground_seg_body->shape.line.p2);
-			c2Shape p2_box;
-			p2_box.aabb.min = c2V(p2.x - circle_size / 2.0f, p2.y - circle_size / 2.0f);
-			p2_box.aabb.max = c2V(p2.x + circle_size / 2.0f, p2.y + circle_size / 2.0f);
-			if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), p2_box, C2_SHAPE_TYPE_aabb))
-			{
-				p2_tint = v4u(1.0f);
-
-				if (platform->left_mouse_pressed)
-				{
-					is_p2_grabbed = 1;
-					TsPlatformCaptureMouseButtons();
-				}
-			}
-
-			if (core->left_mouse_released)
-			{
-				is_p1_grabbed = 0;
-				is_p2_grabbed = 0;
-			}
-
-			v2 p1_render = v2view(V2SubtractF32(p1, circle_size / 2.0f));
-			v2 p2_render = v2view(V2SubtractF32(p2, circle_size / 2.0f));
-
-			Ts2dPushTintedTexture(circle_sprite->texture_atlas, circle_sprite->source, v4(p1_render.x, p1_render.y, circle_size * core->camera_zoom, circle_size * core->camera_zoom), p1_tint);
-			Ts2dPushTintedTexture(circle_sprite->texture_atlas, circle_sprite->source, v4(p2_render.x, p2_render.y, circle_size * core->camera_zoom, circle_size * core->camera_zoom), p2_tint);
-		} */
-
 		for (int i = 0; i < core->world_data->ground_segment_entity_count; i++)
 		{
 			GroundSegmentEntity *seg_entity = &core->world_data->ground_segment_entities[i];
@@ -728,15 +577,18 @@ internal void DrawGameUI()
 				v2 p1 = V2AddV2(seg_pos->position, seg_body->shape.line.p1);
 				v2 p2 = V2AddV2(seg_pos->position, seg_body->shape.line.p2);
 
-				if (core->client_data->grabbed_seg_pos.x == p1.x && core->client_data->grabbed_seg_pos.y == p1.y)
+				if (core->client_data->is_seg_grabbed)
 				{
-					p1 = GetMousePositionInWorldSpace();
-					seg_body->shape.line.p1 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
-				}
-				else if (core->client_data->grabbed_seg_pos.x == p2.x && core->client_data->grabbed_seg_pos.y == p2.y)
-				{
-					p2 = GetMousePositionInWorldSpace();
-					seg_body->shape.line.p2 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
+					if (EqualV2(core->client_data->grabbed_seg_pos, p1, 1.0f))
+					{
+						p1 = GetMousePositionInWorldSpace();
+						seg_body->shape.line.p1 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
+					}
+					else if (EqualV2(core->client_data->grabbed_seg_pos, p2, 1.0f))
+					{
+						p2 = GetMousePositionInWorldSpace();
+						seg_body->shape.line.p2 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
+					}
 				}
 
 				c2Shape p1_box;
@@ -758,11 +610,12 @@ internal void DrawGameUI()
 							new_segment->physics_body_comp->mass_data = seg_body->mass_data;
 							new_segment->physics_body_comp->material = seg_body->material;
 							new_segment->position_comp->position = V2AddV2(V2AddV2(mid_point, seg_body->shape.line.p1), seg_pos->position);
-							new_segment->physics_body_comp->shape.line.p2 = mid_point;
+							new_segment->physics_body_comp->shape.line.p2 = V2SubtractV2(p2, new_segment->position_comp->position);
 						}
 						else
 						{
 							core->client_data->grabbed_seg_pos = p1;
+							core->client_data->is_seg_grabbed = 1;
 							TsPlatformCaptureMouseButtons();
 						}
 					}
@@ -778,17 +631,17 @@ internal void DrawGameUI()
 								PositionComponent *seg_pos_2 = seg_entity_2->position_comp;
 
 								v2 p2_2 = V2AddV2(seg_body_2->shape.line.p2, seg_pos_2->position);
-								if (p2_2.x == p1.x && p2_2.y == p1.y)
+								if (EqualV2(p2_2, p1, 1.0f))
 								{
 									seg_body_2->shape.line.p2 = V2SubtractV2(p2, seg_pos_2->position);
 									break;
 								}
 							}
 						}
+
+						if (core->client_data->selected_ground_seg == seg_entity)
+							core->client_data->selected_ground_seg = 0;
 					}
-				}
-				else
-				{
 				}
 
 				v2 p1_render = v2view(V2SubtractF32(p1, circle_size / 2.0f));
@@ -799,6 +652,7 @@ internal void DrawGameUI()
 		if (core->left_mouse_released)
 		{
 			core->client_data->grabbed_seg_pos = v2(0.0f, 0.0f);
+			core->client_data->is_seg_grabbed = 0;
 		}
 		else if (platform->left_mouse_down)
 		{
@@ -1143,36 +997,38 @@ internal void DrawEditorUI()
 			for (int i = 0; i < core->world_data->ground_segment_entity_count; i++)
 			{
 				GroundSegmentEntity *ground_seg = &core->world_data->ground_segment_entities[i];
-
-				char label[50];
-				sprintf(label, "Segment #%i", ground_seg->unique_entity_id);
-				if (core->client_data->selected_ground_seg)
+				if (ground_seg->parent_generic_entity)
 				{
-					if (TsUIToggler(label, ground_seg->unique_entity_id == core->client_data->selected_ground_seg->unique_entity_id))
-						core->client_data->selected_ground_seg = ground_seg;
-					else if (core->client_data->selected_ground_seg->unique_entity_id == ground_seg->unique_entity_id)
-						core->client_data->selected_ground_seg = 0;
-				}
-				else
-				{
-					if (TsUIToggler(label, 0))
-						core->client_data->selected_ground_seg = ground_seg;
-				}
-
-				if (core->client_data->selected_ground_seg && core->client_data->selected_ground_seg->unique_entity_id == ground_seg->unique_entity_id)
-				{
+					char label[50];
+					sprintf(label, "Segment #%i", ground_seg->unique_entity_id);
+					if (core->client_data->selected_ground_seg)
 					{
-						char label[50];
-						sprintf(label, "Point 1: %f, %f", ground_seg->physics_body_comp->shape.line.p1.x, ground_seg->physics_body_comp->shape.line.p1.y);
-						TsUILabel(label);
+						if (TsUIToggler(label, ground_seg->unique_entity_id == core->client_data->selected_ground_seg->unique_entity_id))
+							core->client_data->selected_ground_seg = ground_seg;
+						else if (core->client_data->selected_ground_seg->unique_entity_id == ground_seg->unique_entity_id)
+							core->client_data->selected_ground_seg = 0;
 					}
+					else
 					{
-						char label[50];
-						sprintf(label, "Point 2: %f, %f", ground_seg->physics_body_comp->shape.line.p2.x, ground_seg->physics_body_comp->shape.line.p2.y);
-						TsUILabel(label);
+						if (TsUIToggler(label, 0))
+							core->client_data->selected_ground_seg = ground_seg;
 					}
 
-					PrintEntityDataUI(core->client_data->selected_ground_seg->parent_generic_entity);
+					if (core->client_data->selected_ground_seg && core->client_data->selected_ground_seg->unique_entity_id == ground_seg->unique_entity_id)
+					{
+						{
+							char label[50];
+							sprintf(label, "Point 1: %f, %f", ground_seg->physics_body_comp->shape.line.p1.x, ground_seg->physics_body_comp->shape.line.p1.y);
+							TsUILabel(label);
+						}
+						{
+							char label[50];
+							sprintf(label, "Point 2: %f, %f", ground_seg->physics_body_comp->shape.line.p2.x, ground_seg->physics_body_comp->shape.line.p2.y);
+							TsUILabel(label);
+						}
+
+						PrintEntityDataUI(core->client_data->selected_ground_seg->parent_generic_entity);
+					}
 				}
 			}
 

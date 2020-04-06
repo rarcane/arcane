@@ -691,6 +691,7 @@ EditorState editor_state;
 EditorFlags editor_flags;
 Entity *selected_entity;
 GroundSegmentEntity *selected_ground_seg;
+b8 is_seg_grabbed;
 v2 grabbed_seg_pos;
 } ClientData;
 

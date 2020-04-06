@@ -38,6 +38,16 @@ internal i32 GetSign(f32 x)
 	return (x > 0.0f) - (x < 0.0f);
 }
 
+internal b8 EqualF32(f32 a, f32 b, f32 leeway)
+{
+	return (fabsf(a - b) <= leeway);
+}
+
+internal b8 EqualV2(v2 a, v2 b, f32 leeway)
+{
+	return (EqualF32(a.x, b.x, leeway) && EqualF32(a.y, b.y, leeway));
+}
+
 internal void ShufflePerlinNoise()
 {
 	for (int i = 0; i < 256; i++)

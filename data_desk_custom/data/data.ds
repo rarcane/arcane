@@ -646,5 +646,6 @@ ClientData :: struct
 	// Entity Editor
 	selected_entity : *Entity;
 	selected_ground_seg : *GroundSegmentEntity;
+	is_seg_grabbed : b8;
 	grabbed_seg_pos : v2;
 }
