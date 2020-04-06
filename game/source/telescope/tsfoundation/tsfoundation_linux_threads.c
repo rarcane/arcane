@@ -50,7 +50,7 @@ LinuxWaitForJob(i32 index, u32 milliseconds)
 {
 	// IMPLEMENT THIS
 	global_platform.work_queue_jobs[index].DoWork(global_platform.work_queue_jobs[index].job_data);
-	return 1;
+	return 0;
 }
 
 internal void

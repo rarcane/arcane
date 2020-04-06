@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <errno.h>
 #define MAX_PATH 4096
 
 void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_ptr)
@@ -34,6 +35,7 @@ void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_
 #define QueueTask(path)                                                                \
 	{                                                                                  \
 		DirectorySearchTask *new_task = MemoryArenaAllocate(arena, sizeof(*new_task)); \
+		printf("For Path: %s\n", path);                                                \
 		if (new_task != 0)                                                             \
 		{                                                                              \
 			new_task->sub_search_pattern = path;                                       \
@@ -56,15 +58,22 @@ void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_
 			int32_t error = 0;
 			char search_pattern[MAX_PATH] = {0};
 			char find_file_path[MAX_PATH] = {0};
-			snprintf(search_pattern, MAX_PATH, "%s\\%s\\%s*", path, path, task->sub_search_pattern);
 
-			char r_path[sizeof(path) + 2];
-			strcpy(r_path, "./../res/");
-			strcat(r_path, path);
-			printf(r_path);
-			printf("\n");
+			strcpy(search_pattern, "/home/parker/Documents/opensource/arcane/game/res/");
+			strcat(search_pattern, path);
+			strcat(search_pattern, "/");
+			strcat(search_pattern, task->sub_search_pattern);
 
-			char *dir = opendir(r_path);
+			// snprintf(search_pattern, MAX_PATH, "%s\/%s\/%s", "/home/parker/Documents/opensource/arcane/game/res/texture/", path, task->sub_search_pattern);
+
+			char *dir = opendir(search_pattern);
+
+			if (dir == 0)
+			{
+				printf("Failed to open directory\n");
+				printf("Error: %s\n", strerror(errno));
+				exit(1);
+			}
 			struct dirent *pEntry;
 			while ((pEntry = readdir(dir)) != 0)
 			{
@@ -73,24 +82,29 @@ void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_
 					continue;
 				}
 				char full_path[MAX_PATH] = {0};
-				strcpy(full_path, path);
-				strcat(full_path, "/");
+				strcpy(full_path, search_pattern);
 				strcat(full_path, pEntry->d_name);
 
-				printf("Loading Asset: %s\n", full_path);
+				// printf("Evaluating CHAR: %c\n", search_pattern[strlen(search_pattern) - 1]);
+				// printf("Evaluating Path: %s\n", full_path);
+				// printf("Evaluation Entry: %s\n", pEntry->d_name);
 
-				FILE *fp;
 				struct stat path_stat;
-				stat(full_path, &path_stat);
+				int result = stat(full_path, &path_stat);
 
-				if (S_ISREG(path_stat.st_mode) == 1)
+				if (result != 0)
 				{
-					if (!CStringMatchCaseSensitive(pEntry->d_name, ".") &&
-						!CStringMatchCaseSensitive(pEntry->d_name, ".."))
+					printf("Asset could not be loaded!\n");
+					exit(1);
+				}
+
+				if (S_ISDIR(path_stat.st_mode))
+				{
+					if (pEntry->d_name != "." && pEntry->d_name != "..")
 					{
 						char directory_name[MAX_PATH] = {0};
 						MemoryCopy(directory_name, pEntry->d_name, sizeof(directory_name));
-						QueueTask(MakeCStringOnMemoryArena(arena, "%s%s\\", task->sub_search_pattern, directory_name));
+						QueueTask(MakeCStringOnMemoryArena(arena, "%s%s\/", task->sub_search_pattern, directory_name));
 					}
 				}
 				else
@@ -121,9 +135,10 @@ void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_
 					char *new_item = 0;
 					{
 						MemoryCopy(find_file_path, pEntry->d_name, sizeof(find_file_path));
-						unsigned int needed_bytes = CalculateCStringLength(find_file_path) + CalculateCStringLength(task->sub_search_pattern) + 1;
+						unsigned int needed_bytes = sizeof(find_file_path) + sizeof(task->sub_search_pattern) + 1;
 						new_item = platform->HeapAlloc(needed_bytes + 1);
 						snprintf(new_item, needed_bytes, "%s%s", task->sub_search_pattern, find_file_path);
+						printf("--------new item: %s\n", new_item);
 						new_item[needed_bytes] = 0;
 					}
 
@@ -157,6 +172,7 @@ void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_
 
 					// NOTE(rjf): Add item.
 					{
+						printf("ITEM: %s\n", new_item);
 						items[item_count++] = new_item;
 					}
 				}

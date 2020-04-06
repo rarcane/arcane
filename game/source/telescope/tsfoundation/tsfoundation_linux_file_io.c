@@ -25,19 +25,16 @@ LinuxAppendToFile(char *path, void *data, u32 data_len)
 	fclose(fp);
 }
 
+// Path is coming in with strange escaped codes
 // THIS IS NOT WORKING
 // TODO: ADD NON EXISTENCE ERROR HANDLING
 internal void
 LinuxLoadEntireFile(char *path, void **data, u32 *data_len, b32 error_on_non_existence)
 {
-	char cwd[1024];
-	getcwd(cwd, sizeof(cwd));
-
-	char *full_path[sizeof(path) + 2];
-	strcpy(full_path, "..");
+	char full_path[4096] = {0};
+	strcpy(full_path, "/home/parker/Documents/opensource/arcane/game/res/");
 	strcat(full_path, path);
-
-	// printf("%s\n", full_path);
+	printf("File right here: %s\n", full_path);
 
 	FILE *fp;
 	fp = fopen(full_path, "r");
@@ -47,14 +44,11 @@ LinuxLoadEntireFile(char *path, void **data, u32 *data_len, b32 error_on_non_exi
 		// printf("ERROR: %s\n", strerror(errno));
 		return 0;
 	}
-	else
-	{
-		printf("SUCCESS\n");
-	}
 	fseek(fp, 0, SEEK_END);
 	long fsize = ftell(fp);
 	rewind(fp);
 
+	printf("FILE SIZE: %d\n", fsize);
 	*data_len = fsize;
 
 	char *read_data = malloc(fsize + 1);
@@ -67,8 +61,8 @@ LinuxLoadEntireFile(char *path, void **data, u32 *data_len, b32 error_on_non_exi
 internal char *
 LinuxLoadEntireFileAndNullTerminate(char *path)
 {
-	char *full_path[sizeof(path) + 1];
-	strcpy(full_path, "..");
+	char full_path[4096] = {0};
+	strcpy(full_path, "/home/parker/Documents/opensource/arcane/game/res/");
 	strcat(full_path, path);
 
 	FILE *fp;

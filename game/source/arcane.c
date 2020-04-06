@@ -105,8 +105,12 @@ GameInit(void)
 #undef TsAssetsAssetType
 
 				};
+			char root_path[sizeof(platform->executable_absolute_path) + 6];
+			strcpy(root_path, platform->executable_absolute_path);
+			strcat(root_path, "/res/");
 
-			TsAssetsSetAssetRootPath(MakeCStringOnMemoryArena(core->permanent_arena, "%s/res/", platform->executable_folder_absolute_path));
+			// If parker leaves this here it will be sad and pathetic
+			TsAssetsSetAssetRootPath(root_path);
 			TsAssetsSetAssetTypes(ArrayCount(asset_types), asset_types, core->permanent_arena);
 		}
 

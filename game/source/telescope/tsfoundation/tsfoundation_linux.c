@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <tcl.h>
+#include <sys/mman.h>
 
 #include "tsfoundation_linux_timer.h"
 
@@ -73,6 +74,7 @@ internal void setup_absolute_paths()
 
 	// TODO: Take another look at this to ensure accuracy
 	global_platform.executable_absolute_path = path;
+	printf("Path: %s\n", path);
 	global_platform.executable_folder_absolute_path = folder_path;
 	global_platform.working_directory_path = cwd;
 }
@@ -149,14 +151,12 @@ internal void X11WindowProc(XEvent event)
 			(vkeycode >= '0' && vkeycode <= '9'))
 		{
 			// NOTE(rjf): Letter/number buttons
-			printf("%c\n", vkeycode);
 			key_input = (vkeycode >= 'A' && vkeycode <= 'Z') ? KEY_a + (vkeycode - 'A') : KEY_0 + (vkeycode - '0');
 		}
 		else
 		{
 			if (keycode == XK_Escape)
 			{
-				printf("ESCAPE\n");
 				key_input = KEY_esc;
 			}
 			else if (keycode >= XK_F1 && keycode <= XK_F12)
@@ -185,8 +185,8 @@ internal void X11WindowProc(XEvent event)
 			}
 			else if (keycode == XK_space)
 			{
-				printf("SPACE\n");
 				key_input = KEY_space;
+				key_input = KEY_f1;
 			}
 			else if (keycode == XK_Return)
 			{
@@ -290,6 +290,7 @@ internal void X11WindowProc(XEvent event)
 int main(int argc, char *argv[])
 {
 
+	LinuxTimerInit(&global_linux_timer);
 	global_platform.quit = 0;
 
 	// Get Absolute Paths
@@ -297,18 +298,11 @@ int main(int argc, char *argv[])
 
 	sprintf(global_app_so_path, "./%s.so\n", TS_APP_FILENAME);
 	printf(global_app_so_path);
-	printf("\n");
 	// swprintf(global_app_so_path, sizeof(global_executable_directory) / sizeof(*global_executable_directory), L"%s%s.so", TS_APP_FILENAME);
 	// swprintf(global_temp_app_so_path, sizeof(global_executable_directory) / sizeof(*global_executable_directory), L"%stemp_%s.so", TS_APP_FILENAME);
 
 	u32 permanent_storage_size = TS_APP_PERMANENT_STORAGE_SIZE;
 	u32 scratch_storage_size = TS_APP_SCRATCH_STORAGE_SIZE;
-
-	void *permanent_storage = malloc(permanent_storage_size);
-	global_platform.permanent_arena = MemoryArenaInit(permanent_storage, permanent_storage_size);
-
-	void *scratch_storage = malloc(scratch_storage_size);
-	global_platform.scratch_arena = MemoryArenaInit(scratch_storage, scratch_storage_size);
 
 	global_platform.vsync = 1;
 	global_platform.fullscreen = 0;
@@ -327,8 +321,13 @@ int main(int argc, char *argv[])
 
 	global_display = XOpenDisplay(0);
 
-	LinuxInitOpenGL();
-	LinuxTimerInit(&global_linux_timer);
+	void *permanent_storage = malloc(permanent_storage_size);
+	memset(permanent_storage, 0, permanent_storage_size);
+	global_platform.permanent_arena = MemoryArenaInit(permanent_storage, permanent_storage_size);
+
+	void *scratch_storage = malloc(scratch_storage_size);
+	memset(scratch_storage, 0, scratch_storage_size);
+	global_platform.scratch_arena = MemoryArenaInit(scratch_storage, scratch_storage_size);
 
 	global_platform.OutputError = LinuxOutputError;
 	global_platform.HeapAlloc = LinuxHeapAlloc;
@@ -362,12 +361,15 @@ int main(int argc, char *argv[])
 		global_platform.work_queue_free_indices[i] = i;
 	}
 
+	LinuxInitOpenGL();
+
 	platform = &global_platform;
 
 	LinuxAppCode linux_app_code = {0};
 	LinuxAppCodeLoad(&linux_app_code);
 
 	linux_app_code.PermanentLoad(&global_platform);
+	linux_app_code.HotLoad(&global_platform);
 
 	while (!global_platform.quit)
 	{
