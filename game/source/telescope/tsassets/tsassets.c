@@ -288,9 +288,10 @@ void *
 TsAssetsGetAssetByName(int type_id, char *name)
 {
     void *asset = 0;
+	
     if(type_id >= 0 && type_id < global_tsassets->asset_type_count)
     {
-        TsAssetsTypeData *type = global_tsassets->asset_types + type_id;
+        TsAssetsTypeData *type = global_tsassets->asset_types + type_id;	
         uint32_t hash = TsAssetsHashAssetName(name) % type->max_count;
         uint32_t original_hash = hash;
         
@@ -516,6 +517,8 @@ _TsAssetsRefreshDirectory(int type_id)
             if(type->count < type->max_count)
             {
                 uint32_t hash = TsAssetsHashAssetName(items[i]) % type->max_count;
+				printf("Hash %d\n", hash);
+				printf("Name %s\n", items[i]);
                 uint32_t original_hash = hash;
                 uint32_t slot_index = 0;
                 uint32_t slot_found = 0;
@@ -572,7 +575,6 @@ _TsAssetsRefreshDirectory(int type_id)
                         // TODO(rjf): Proper error reporting/assertion
                         name_length = type->name_memory_size - name_memory_alloc_position;
                     }
-                    
                     type->name_to_index_keys[hash].name = type->name_memory + name_memory_alloc_position;
                     MemoryCopy(type->name_to_index_keys[hash].name, name, name_length+1);
                     type->name_to_index_keys[hash].name[name_length] = 0;

@@ -31,13 +31,8 @@ LinuxAppendToFile(char *path, void *data, u32 data_len)
 internal void
 LinuxLoadEntireFile(char *path, void **data, u32 *data_len, b32 error_on_non_existence)
 {
-	char full_path[4096] = {0};
-	strcpy(full_path, "/home/parker/Documents/opensource/arcane/game/res/");
-	strcat(full_path, path);
-	printf("File right here: %s\n", full_path);
-
 	FILE *fp;
-	fp = fopen(full_path, "r");
+	fp = fopen(path, "r");
 	if (fp == 0)
 	{
 		// printf("Failed to load file\n");
@@ -48,25 +43,24 @@ LinuxLoadEntireFile(char *path, void **data, u32 *data_len, b32 error_on_non_exi
 	long fsize = ftell(fp);
 	rewind(fp);
 
-	printf("FILE SIZE: %d\n", fsize);
-	*data_len = fsize;
+	// printf("FILE SIZE: %d\n", fsize);
 
 	char *read_data = malloc(fsize + 1);
 	fread(read_data, 1, fsize, fp);
-	fclose(fp);
+
+	read_data[fsize] = 0;
 
 	*data = read_data;
+	*data_len = fsize;
+
+	fclose(fp);
 }
 
 internal char *
 LinuxLoadEntireFileAndNullTerminate(char *path)
 {
-	char full_path[4096] = {0};
-	strcpy(full_path, "/home/parker/Documents/opensource/arcane/game/res/");
-	strcat(full_path, path);
-
 	FILE *fp;
-	fp = fopen(full_path, "r");
+	fp = fopen(path, "r");
 	if (fp == 0)
 	{
 		// printf("Failed to load file\n");

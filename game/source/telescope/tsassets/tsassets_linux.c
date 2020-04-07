@@ -135,7 +135,7 @@ void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_
 					char *new_item = 0;
 					{
 						MemoryCopy(find_file_path, pEntry->d_name, sizeof(find_file_path));
-						unsigned int needed_bytes = sizeof(find_file_path) + sizeof(task->sub_search_pattern) + 1;
+						unsigned int needed_bytes = strlen(find_file_path) + strlen(search_pattern) + 1;
 						new_item = platform->HeapAlloc(needed_bytes + 1);
 						snprintf(new_item, needed_bytes, "%s%s", task->sub_search_pattern, find_file_path);
 						printf("--------new item: %s\n", new_item);
@@ -172,7 +172,6 @@ void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_
 
 					// NOTE(rjf): Add item.
 					{
-						printf("ITEM: %s\n", new_item);
 						items[item_count++] = new_item;
 					}
 				}

@@ -5,6 +5,11 @@ LinuxDispatchJob(TsWorkQueueJob *job)
 {
 	// IMPLEMENT THIS AND HAVE IT ACTUALLY DISPATCH ON ANOTHER THREAD
 	job->DoWork(job->job_data);
+	job->status = TS_JOB_STATUS_DONE;
+	if (job->JobComplete)
+	{
+		job->JobComplete(job->job_data);
+	}
 	// // NOTE(rjf): Get a free thread.
 	// Win32WorkerThreadData *thread_data = 0;
 	// {
@@ -42,6 +47,8 @@ LinuxQueueJob(void *job_data, TsWorkerThreadDoJobWorkCallback *DoWork, TsWorkerT
 		global_platform.work_queue_jobs[job_index].status = TS_JOB_STATUS_QUEUED;
 	}
 
+	LinuxDispatchJob(global_platform.work_queue_jobs + job_index);
+
 	return job_index;
 }
 
@@ -49,8 +56,14 @@ internal b32
 LinuxWaitForJob(i32 index, u32 milliseconds)
 {
 	// IMPLEMENT THIS
-	global_platform.work_queue_jobs[index].DoWork(global_platform.work_queue_jobs[index].job_data);
-	return 0;
+	TsWorkQueueJob job = global_platform.work_queue_jobs[index];
+	job.DoWork(job.job_data);
+	job.status = TS_JOB_STATUS_DONE;
+	if (job.JobComplete)
+	{
+		job.JobComplete(job.job_data);
+	}
+	return 1;
 }
 
 internal void

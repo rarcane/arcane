@@ -48,6 +48,7 @@
 internal void
 GameInit(void)
 {
+	printf("INITIALIZING\n");
 	core = MemoryArenaAllocateAndZero(&platform->permanent_arena, sizeof(*core));
 	HardAssert(core != 0);
 
@@ -105,12 +106,14 @@ GameInit(void)
 #undef TsAssetsAssetType
 
 				};
-			char root_path[sizeof(platform->executable_absolute_path) + 6];
+			char root_path[sizeof(platform->executable_absolute_path) + 6] = {0};
 			strcpy(root_path, platform->executable_absolute_path);
 			strcat(root_path, "/res/");
 
+			printf("Root: %s \n", platform->executable_absolute_path);
+
 			// If parker leaves this here it will be sad and pathetic
-			TsAssetsSetAssetRootPath(root_path);
+			TsAssetsSetAssetRootPath("/home/parker/Documents/opensource/arcane/game/res/");
 			TsAssetsSetAssetTypes(ArrayCount(asset_types), asset_types, core->permanent_arena);
 		}
 
@@ -153,7 +156,6 @@ GameHotUnload(void)
 internal void
 GameUpdate(void)
 {
-
 	// NOTE(rjf): Load data from platform.
 	{
 		core->render_w = (f32)platform->window_width;

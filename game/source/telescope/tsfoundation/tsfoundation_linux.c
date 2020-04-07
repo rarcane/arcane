@@ -289,12 +289,11 @@ internal void X11WindowProc(XEvent event)
 
 int main(int argc, char *argv[])
 {
+	// Get Absolute Paths
+	setup_absolute_paths();
 
 	LinuxTimerInit(&global_linux_timer);
 	global_platform.quit = 0;
-
-	// Get Absolute Paths
-	setup_absolute_paths();
 
 	sprintf(global_app_so_path, "./%s.so\n", TS_APP_FILENAME);
 	printf(global_app_so_path);
@@ -303,6 +302,15 @@ int main(int argc, char *argv[])
 
 	u32 permanent_storage_size = TS_APP_PERMANENT_STORAGE_SIZE;
 	u32 scratch_storage_size = TS_APP_SCRATCH_STORAGE_SIZE;
+	void *permanent_storage = malloc(permanent_storage_size);
+	memset(permanent_storage, 0, permanent_storage_size);
+	global_platform.permanent_arena = MemoryArenaInit(permanent_storage, permanent_storage_size);
+
+	void *scratch_storage = malloc(scratch_storage_size);
+	memset(scratch_storage, 0, scratch_storage_size);
+	global_platform.scratch_arena = MemoryArenaInit(scratch_storage, scratch_storage_size);
+
+	global_platform.gamepads = global_platform.gamepad_states_1;
 
 	global_platform.vsync = 1;
 	global_platform.fullscreen = 0;
@@ -313,21 +321,9 @@ int main(int argc, char *argv[])
 	// Bring in xrandr to pull refresh rate of monitor with X
 	global_platform.target_frames_per_second = 60.0f;
 
-	global_platform.gamepads = global_platform.gamepad_states_1;
-
 	// TODO: Just stubbing values for audio right now
 	global_platform.sample_out = malloc(48000 * sizeof(f32) * 2);
 	global_platform.samples_per_second = 48000;
-
-	global_display = XOpenDisplay(0);
-
-	void *permanent_storage = malloc(permanent_storage_size);
-	memset(permanent_storage, 0, permanent_storage_size);
-	global_platform.permanent_arena = MemoryArenaInit(permanent_storage, permanent_storage_size);
-
-	void *scratch_storage = malloc(scratch_storage_size);
-	memset(scratch_storage, 0, scratch_storage_size);
-	global_platform.scratch_arena = MemoryArenaInit(scratch_storage, scratch_storage_size);
 
 	global_platform.OutputError = LinuxOutputError;
 	global_platform.HeapAlloc = LinuxHeapAlloc;
@@ -361,9 +357,10 @@ int main(int argc, char *argv[])
 		global_platform.work_queue_free_indices[i] = i;
 	}
 
-	LinuxInitOpenGL();
-
 	platform = &global_platform;
+
+	global_display = XOpenDisplay(0);
+	LinuxInitOpenGL();
 
 	LinuxAppCode linux_app_code = {0};
 	LinuxAppCodeLoad(&linux_app_code);

@@ -5,7 +5,7 @@
 * Written by Ryan Fleury <ryan.j.fleury@gmail.com>, 2020
 */
 
-// THIS IS BAD. PARKER COMMNENTED THIS OUT BECAUSE OPENGL WAS BEING INCLUDED AND CLOBBERING STUFFZ
+// THIS IS BAD PARKER. PARKER COMMNENTED THIS OUT BECAUSE OPENGL WAS BEING INCLUDED SOMEHOW AND CLOBBERING STUFFZ
 // #define GLProc(type, name) PFNGL##type##PROC gl##name;
 // #include "ts2d_opengl_procedure_list.inc"
 GLAPI void GLAPIENTRY glActiveTexture(GLenum type);
@@ -14,7 +14,6 @@ GLAPI void GLAPIENTRY glBlendEquation(GLenum mode);
 internal void
 Ts2dLoadAllOpenGLProcedures(void)
 {
-	// 	glUseProgram = (void *)glXGetProcAddress((const GLubyte *)"glUseProgram");
 	// #define GLProc(type, name) gl##name = platform->LoadOpenGLProcedure("gl" #name);
 	// #include "ts2d_opengl_procedure_list.inc"
 }
