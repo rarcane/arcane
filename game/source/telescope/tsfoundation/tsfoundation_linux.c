@@ -274,10 +274,10 @@ internal void X11WindowProc(XEvent event)
 		}
 		else
 		{
-			// if (was_down)
-			// {
-			// 	global_platform.key_released[key_input] = 1;
-			// }
+			if (!is_down)
+			{
+				global_platform.key_released[key_input] = 1;
+			}
 			global_platform.key_down[key_input] = 0;
 			global_platform.key_pressed[key_input] = 0;
 		}
