@@ -2325,7 +2325,6 @@ f32 Ts2dPushTextWithBoldnessAndSoftnessN(Ts2dFont *font, i32 flags, v4 color, v2
 						global_ts2d->active_request.flags = 0;
 						global_ts2d->active_request.data = _Ts2dAllocateRequestMemory(sizeof(Ts2dTextureRequestData));
 						((Ts2dTextureRequestData *)global_ts2d->active_request.data)->texture = &font->texture;
-						printf("TEXT TEXTURE: %s\n", font->texture);
 					}
 					else
 					{

@@ -63,7 +63,6 @@ internal void setup_absolute_paths()
 		exit(1);
 	}
 	path[ret] = 0;
-	printf("Path: %s\n", path);
 
 	char folder_path[4096];
 	strcpy(folder_path, path);
@@ -74,7 +73,6 @@ internal void setup_absolute_paths()
 
 	// TODO: Take another look at this to ensure accuracy
 	global_platform.executable_absolute_path = path;
-	printf("Path: %s\n", path);
 	global_platform.executable_folder_absolute_path = folder_path;
 	global_platform.working_directory_path = cwd;
 }
@@ -210,7 +208,6 @@ internal void X11WindowProc(XEvent event)
 			}
 			else if (keycode == XK_Left)
 			{
-				printf("LEFT\n");
 				key_input = KEY_left;
 			}
 			else if (keycode == XK_Down)

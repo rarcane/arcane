@@ -517,8 +517,6 @@ _TsAssetsRefreshDirectory(int type_id)
             if(type->count < type->max_count)
             {
                 uint32_t hash = TsAssetsHashAssetName(items[i]) % type->max_count;
-				printf("Hash %d\n", hash);
-				printf("Name %s\n", items[i]);
                 uint32_t original_hash = hash;
                 uint32_t slot_index = 0;
                 uint32_t slot_found = 0;

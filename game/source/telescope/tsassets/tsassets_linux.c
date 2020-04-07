@@ -35,7 +35,6 @@ void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_
 #define QueueTask(path)                                                                \
 	{                                                                                  \
 		DirectorySearchTask *new_task = MemoryArenaAllocate(arena, sizeof(*new_task)); \
-		printf("For Path: %s\n", path);                                                \
 		if (new_task != 0)                                                             \
 		{                                                                              \
 			new_task->sub_search_pattern = path;                                       \
@@ -138,7 +137,6 @@ void _TsAssetsLoadDirectoryItems(char *path, int *item_count_ptr, char ***items_
 						unsigned int needed_bytes = strlen(find_file_path) + strlen(search_pattern) + 1;
 						new_item = platform->HeapAlloc(needed_bytes + 1);
 						snprintf(new_item, needed_bytes, "%s%s", task->sub_search_pattern, find_file_path);
-						printf("--------new item: %s\n", new_item);
 						new_item[needed_bytes] = 0;
 					}
 

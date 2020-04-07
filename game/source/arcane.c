@@ -48,7 +48,6 @@
 internal void
 GameInit(void)
 {
-	printf("INITIALIZING\n");
 	core = MemoryArenaAllocateAndZero(&platform->permanent_arena, sizeof(*core));
 	HardAssert(core != 0);
 
