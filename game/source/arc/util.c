@@ -128,6 +128,118 @@ internal c2Poly v2AddPoly(v2 a, c2Poly poly)
 	return poly;
 }
 
+#ifdef DEVELOPER_TOOLS
+internal void PushDebugLine(v2 p1, v2 p2, v3 colour)
+{
+	DebugLine debug_line = {
+		1,
+		p1,
+		p2,
+		colour,
+		0,
+		0.0f,
+		0.0f,
+	};
+
+	if (core->debug_line_count == core->free_debug_line_index)
+	{
+		core->debug_lines[core->debug_line_count++] = debug_line;
+		core->free_debug_line_index++;
+	}
+	else
+	{
+		core->debug_lines[core->free_debug_line_index] = debug_line;
+
+		b8 found_free_index = 0;
+		for (int i = 0; i < core->debug_line_count + 1; i++)
+		{
+			if (!core->debug_lines[i].is_valid)
+			{
+				core->free_debug_line_index = i;
+				found_free_index = 1;
+				break;
+			}
+		}
+
+		R_DEV_ASSERT(found_free_index, "Couldn't find a spare index.");
+	}
+}
+
+internal void PushDebugLineForDuration(v2 p1, v2 p2, v3 colour, f32 lifetime)
+{
+	DebugLine debug_line = {
+		1,
+		p1,
+		p2,
+		colour,
+		1,
+		lifetime,
+		core->world_data->elapsed_world_time,
+	};
+
+	if (core->debug_line_count == core->free_debug_line_index)
+	{
+		core->debug_lines[core->debug_line_count++] = debug_line;
+		core->free_debug_line_index++;
+	}
+	else
+	{
+		core->debug_lines[core->free_debug_line_index] = debug_line;
+
+		b8 found_free_index = 0;
+		for (int i = 0; i < core->debug_line_count + 1; i++)
+		{
+			if (!core->debug_lines[i].is_valid)
+			{
+				core->free_debug_line_index = i;
+				found_free_index = 1;
+				break;
+			}
+		}
+
+		R_DEV_ASSERT(found_free_index, "Couldn't find a spare index.");
+	}
+}
+
+internal void DrawDebugLines()
+{
+	for (int i = 0; i < core->debug_line_count; i++)
+	{
+		DebugLine *debug_line = &core->debug_lines[i];
+
+		if (debug_line->is_valid && debug_line->has_duration && debug_line->start_time + debug_line->lifetime <= core->world_data->elapsed_world_time)
+		{
+			DebugLine empty_debug_line = {0};
+			core->debug_lines[i] = empty_debug_line;
+
+			if (i < core->free_debug_line_index)
+				core->free_debug_line_index = i;
+		}
+
+		if (debug_line->is_valid)
+		{
+			f32 alpha;
+			if (debug_line->has_duration)
+				alpha = ((debug_line->start_time + debug_line->lifetime) - core->world_data->elapsed_world_time) / debug_line->lifetime;
+			else
+				alpha = 1.0f;
+
+			Ts2dPushLine(v4(debug_line->colour.r, debug_line->colour.g, debug_line->colour.b, alpha),
+						 v2view(debug_line->p1),
+						 v2view(debug_line->p2));
+
+			if (!debug_line->has_duration)
+			{
+				DebugLine empty_debug_line = {0};
+				core->debug_lines[i] = empty_debug_line;
+
+				if (i < core->free_debug_line_index)
+					core->free_debug_line_index = i;
+			}
+		}
+	}
+}
+
 internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v3 colour)
 {
 	switch (type)
@@ -191,3 +303,49 @@ internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v3 co
 								 lifetime);
 	}
 } */
+#endif
+
+internal void WriteToFile(FILE *file, void *data, size_t size_bytes)
+{
+	fwrite(data, size_bytes, 1, file);
+}
+
+internal void ReadFromFile(FILE *file, void *data, size_t size_bytes)
+{
+	fread(data, size_bytes, 1, file);
+}
+
+// NOTE(tjr): Saves current data to a specified level.
+internal void SaveLevel(char *level_name)
+{
+	char path[200] = "";
+	sprintf(path, "%s%s.save", core->client_data->res_path, level_name);
+	FILE *save = fopen(path, "w");
+	R_DEV_ASSERT(save, "Couldn't open file.");
+
+	// ...
+
+	fclose(save);
+}
+
+// NOTE(tjr): Loads a given level. Returns 0 if the level doesn't exist.
+internal b8 LoadLevel(char *level_name)
+{
+	char path[200] = "";
+	sprintf(path, "%s%s.save", core->client_data->res_path, level_name);
+	FILE *save = fopen(path, "r");
+	if (!save)
+		return 0;
+
+	strcpy(core->client_data->current_level, level_name);
+
+	// ...
+
+	fclose(save);
+	return 1;
+}
+
+// NOTE(tjr): Attempts to move level into the root res folder. Only works if being run from arc/game/build
+internal void CommitLevel(char *level_name)
+{
+}

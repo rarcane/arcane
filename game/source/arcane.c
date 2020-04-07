@@ -110,7 +110,8 @@ GameInit(void)
 
 				};
 
-			TsAssetsSetAssetRootPath(MakeCStringOnMemoryArena(core->permanent_arena, "%s/res/", platform->executable_folder_absolute_path));
+			core->client_data->res_path = MakeCStringOnMemoryArena(core->permanent_arena, "%s/res/", platform->executable_folder_absolute_path);
+			TsAssetsSetAssetRootPath(core->client_data->res_path);
 			TsAssetsSetAssetTypes(ArrayCount(asset_types), asset_types, core->permanent_arena);
 		}
 
@@ -126,7 +127,13 @@ GameInit(void)
 			core->delta_mult = 1.0f;
 			core->world_delta_mult = 1.0f;
 
-			TempInitGameWorld();
+#ifdef DEVELOPER_ENVIORNMENT
+			core->is_ingame = 1;
+			//if (!LoadLevel("testing"))
+			CreateTestLevel();
+#else
+			core->is_ingame = 0;
+#endif
 		}
 
 		Ts2dSetDefaultFont(TsAssetsRequestAssetByName(ASSET_TYPE_Ts2dFont, "mono"));
@@ -146,7 +153,6 @@ GameHotUnload(void)
 internal void
 GameUpdate(void)
 {
-
 	// NOTE(rjf): Load data from platform.
 	{
 		core->render_w = (f32)platform->window_width;
@@ -160,6 +166,7 @@ GameUpdate(void)
 		if (platform->key_pressed[KEY_f11])
 			platform->fullscreen = !platform->fullscreen;
 
+#ifdef DEVELOPER_TOOLS
 		// NOTE(tjr): Enter editor mode
 		if (platform->key_pressed[KEY_f1])
 		{
@@ -194,6 +201,7 @@ GameUpdate(void)
 				core->client_data->editor_state = EDITOR_STATE_collision;
 			}
 		}
+#endif
 
 		{
 			local_persist b8 initiated_click = 0;
@@ -295,6 +303,7 @@ GameUpdate(void)
 		core->world_data->elapsed_world_time += core->world_delta_t;
 	}
 
+#ifdef DEVELOPER_TOOLS
 	// NOTE(tjr): Application-wide slow-motion controls
 	{
 		static b8 is_time_dilated = 0;
@@ -324,204 +333,76 @@ GameUpdate(void)
 			TsUIPopPosition();
 		}
 	}
+#endif
 
 	// NOTE(rjf): Update.
+	if (core->is_ingame)
 	{
-		if (core->is_ingame)
+#ifdef DEVELOPER_TOOLS
+		DrawEditorUI();
+		if (core->client_data->editor_state)
+			TransformEditorCamera();
+#endif
+
+		core->performance_timer_count = 0;
+
+		START_PERF_TIMER("Update");
+
+		// NOTE(tjr): Perform if the game is not paused.
+		if (core->world_delta_t != 0.0f)
 		{
-			/* v2 world_mouse_pos = GetMousePositionInWorldSpace();
-            Log("%f %f", world_mouse_pos.x, world_mouse_pos.y);
-            PushDebugLine(v2(world_mouse_pos.x - 10.0f, world_mouse_pos.y), v2(world_mouse_pos.x + 10.0f, world_mouse_pos.y), v3(1, 0, 0));
-            PushDebugLine(v2(world_mouse_pos.x, world_mouse_pos.y - 10.0f), v2(world_mouse_pos.x, world_mouse_pos.y + 10.0f), v3(1, 0, 0)); */
+			UpdateCellMaterials();
 
-			DrawEditorUI();
-			if (core->client_data->editor_state)
-				TransformEditorCamera();
+			PreMoveUpdatePlayer();
 
-			core->performance_timer_count = 0;
+			UpdateChunks();
+			UpdatePhysics();
 
-			START_PERF_TIMER("Update");
+			if (!core->client_data->editor_state)
+				TransformInGameCamera();
 
-			// NOTE(tjr): Perform if the game is not paused.
-			if (core->world_delta_t != 0.0f)
-			{
-				UpdateCellMaterials();
-
-				PreMoveUpdatePlayer();
-
-				UpdateChunks();
-				UpdatePhysics();
-
-				if (!core->client_data->editor_state)
-					TransformInGameCamera();
-
-				PostMoveUpdatePlayer();
-			}
-
-			UpdateParallax();
-
-			if (core->client_data->editor_flags & EDITOR_FLAGS_draw_world)
-			{
-				DrawWorld();
-				RenderCells();
-			}
-
-			if (core->client_data->editor_flags & EDITOR_FLAGS_draw_collision)
-			{
-				RenderColliders();
-			}
-
-			UpdateParticleEmitters();
-			DrawGameUI();
-			DrawDebugLines();
-
-			END_PERF_TIMER;
+			PostMoveUpdatePlayer();
 		}
-		else
+
+		UpdateParallax();
+
+		DrawWorld();
+		RenderCells();
+
+#ifdef DEVELOPER_TOOLS
+		RenderColliders();
+#endif
+
+		UpdateParticleEmitters();
+		DrawGameUI();
+#ifdef DEVELOPER_TOOLS
+		DrawDebugLines();
+#endif
+
+		END_PERF_TIMER;
+	}
+	else
+	{
+		TsUIBeginInputGroup();
+		TsUIPushCenteredColumn(v2(200, 50), 3);
 		{
-			TsUIBeginInputGroup();
-			TsUIPushCenteredColumn(v2(200, 50), 3);
+			TsUIMenuTitle("Arcane");
+			TsUIDivider();
+			if (TsUIMenuButton("Play"))
 			{
-				TsUIMenuTitle("Arcane");
-				TsUIDivider();
-				if (TsUIMenuButton("Play"))
-				{
-					TempInitGameWorld();
-				}
-				if (TsUIMenuButton("Quit"))
-				{
-					platform->quit = 1;
-				}
+				CreateTestLevel();
 			}
-			TsUIPopColumn();
-			TsUIEndInputGroup();
+			if (TsUIMenuButton("Quit"))
+			{
+				platform->quit = 1;
+			}
 		}
+		TsUIPopColumn();
+		TsUIEndInputGroup();
 	}
 }
 
 internal v2 GetMousePositionInWorldSpace()
 {
 	return v2(platform->mouse_x / core->camera_zoom - core->camera_position.x - GetZeroWorldPosition().x, platform->mouse_y / core->camera_zoom - core->camera_position.y - GetZeroWorldPosition().y);
-}
-
-// NOTE(tjr): Determine if the mouse position is overlapping a shape within world-space. Shape must be AABB for now.
-/* internal b8 IsMouseOverlappingWorldShape(Shape shape, v2 shape_world_pos)
-{
-	v2 mouse_pos = GetMousePositionInWorldSpace();
-	if (mouse_pos.x > shape.vertices[0].x + shape_world_pos.x && mouse_pos.x <= shape.vertices[1].x + shape_world_pos.x &&
-		mouse_pos.y > shape.vertices[0].y + shape_world_pos.y && mouse_pos.y <= shape.vertices[2].y + shape_world_pos.y)
-		return 1;
-	else
-		return 0;
-} */
-
-internal void PushDebugLine(v2 p1, v2 p2, v3 colour)
-{
-	DebugLine debug_line = {
-		1,
-		p1,
-		p2,
-		colour,
-		0,
-		0.0f,
-		0.0f,
-	};
-
-	if (core->debug_line_count == core->free_debug_line_index)
-	{
-		core->debug_lines[core->debug_line_count++] = debug_line;
-		core->free_debug_line_index++;
-	}
-	else
-	{
-		core->debug_lines[core->free_debug_line_index] = debug_line;
-
-		b8 found_free_index = 0;
-		for (int i = 0; i < core->debug_line_count + 1; i++)
-		{
-			if (!core->debug_lines[i].is_valid)
-			{
-				core->free_debug_line_index = i;
-				found_free_index = 1;
-				break;
-			}
-		}
-
-		R_DEV_ASSERT(found_free_index, "Couldn't find a spare index.");
-	}
-}
-
-internal void PushDebugLineForDuration(v2 p1, v2 p2, v3 colour, f32 lifetime)
-{
-	DebugLine debug_line = {
-		1,
-		p1,
-		p2,
-		colour,
-		1,
-		lifetime,
-		core->world_data->elapsed_world_time,
-	};
-
-	if (core->debug_line_count == core->free_debug_line_index)
-	{
-		core->debug_lines[core->debug_line_count++] = debug_line;
-		core->free_debug_line_index++;
-	}
-	else
-	{
-		core->debug_lines[core->free_debug_line_index] = debug_line;
-
-		b8 found_free_index = 0;
-		for (int i = 0; i < core->debug_line_count + 1; i++)
-		{
-			if (!core->debug_lines[i].is_valid)
-			{
-				core->free_debug_line_index = i;
-				found_free_index = 1;
-				break;
-			}
-		}
-
-		R_DEV_ASSERT(found_free_index, "Couldn't find a spare index.");
-	}
-}
-
-internal void DrawDebugLines()
-{
-	for (int i = 0; i < core->debug_line_count; i++)
-	{
-		DebugLine *debug_line = &core->debug_lines[i];
-
-		if (debug_line->is_valid && debug_line->has_duration && debug_line->start_time + debug_line->lifetime <= core->world_data->elapsed_world_time)
-		{
-			DebugLine empty_debug_line = {0};
-			core->debug_lines[i] = empty_debug_line;
-
-			if (i < core->free_debug_line_index)
-				core->free_debug_line_index = i;
-		}
-
-		if (debug_line->is_valid)
-		{
-			f32 alpha;
-			if (debug_line->has_duration)
-				alpha = ((debug_line->start_time + debug_line->lifetime) - core->world_data->elapsed_world_time) / debug_line->lifetime;
-			else
-				alpha = 1.0f;
-
-			Ts2dPushLine(v4(debug_line->colour.r, debug_line->colour.g, debug_line->colour.b, alpha),
-						 v2view(debug_line->p1),
-						 v2view(debug_line->p2));
-
-			if (!debug_line->has_duration)
-			{
-				DebugLine empty_debug_line = {0};
-				core->debug_lines[i] = empty_debug_line;
-
-				if (i < core->free_debug_line_index)
-					core->free_debug_line_index = i;
-			}
-		}
-	}
 }

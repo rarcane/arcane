@@ -1,6 +1,6 @@
-internal void TempInitGameWorld()
+internal void CreateTestLevel()
 {
-	core->is_ingame = 1;
+	R_DEV_ASSERT(!core->client_data->current_level[0], "A level is already loaded in.");
 
 	{
 		CharacterEntity *character = InitialiseCharacterEntity();
@@ -100,10 +100,17 @@ internal void TempInitGameWorld()
 			last_height = (f32)terrain_height;
 		}
 	}
+
+	SaveLevel("testing");
 }
 
 internal void DrawWorld()
 {
+#ifdef DEVELOPER_TOOLS
+	if (!(core->client_data->editor_flags & EDITOR_FLAGS_draw_world))
+		return;
+#endif
+
 	Ts2dPushBackgroundBegin();
 	{
 		v4 top_sky_colour = v4(88.0f / 255.0f, 152.0f / 255.0f, 194.0f / 255.0f, 1.0f);
@@ -413,3 +420,5 @@ internal void UpdateChunks()
 		}
 	}
 }
+
+// internal void

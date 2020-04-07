@@ -678,6 +678,11 @@ internal void UpdateCellMaterials()
 
 internal void RenderCells()
 {
+#ifdef DEVELOPER_TOOLS
+	if (!(core->client_data->editor_flags & EDITOR_FLAGS_draw_world))
+		return;
+#endif
+
 	for (int i = 0; i < core->queued_cell_chunk_count; i++)
 	{
 		CellChunk *cell_chunk = core->queued_cell_chunks_for_update[i];

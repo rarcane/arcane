@@ -1,5 +1,7 @@
 internal void PreMoveUpdatePlayer()
 {
+	R_DEV_ASSERT(core->world_data->character_entity.parent_generic_entity, "Character hasn't been created yet.");
+
 	PositionComponent *position_comp = core->world_data->character_entity.position_comp;
 	PhysicsBodyComponent *body_comp = core->world_data->character_entity.physics_body_comp;
 	MovementComponent *movement_comp = core->world_data->character_entity.movement_comp;

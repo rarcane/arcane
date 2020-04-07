@@ -618,6 +618,7 @@ ChunkData :: struct
 }
 
 // NOTE(tjr): World-save specific data
+@Serialisable
 WorldData :: struct
 {
 	elapsed_world_time : f32;
@@ -639,12 +640,16 @@ ClientData :: struct
 {
 	/* ~ Player-controlled options ~ */
 	bloom : b32;
+	current_level : char[20];
+	
+	res_path : *char;
 
 	/* ~ Editor ~ */
 	editor_state : EditorState;
 	editor_flags : EditorFlags;
-	// Entity Editor
+	// ~ Entity Editor
 	selected_entity : *Entity;
+	// ~ Collision editor
 	selected_ground_seg : *GroundSegmentEntity;
 	is_seg_grabbed : b8;
 	grabbed_seg_pos : v2;

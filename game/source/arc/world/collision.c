@@ -1,5 +1,9 @@
+#ifdef DEVELOPER_TOOLS
 internal void RenderColliders()
 {
+	if (!(core->client_data->editor_flags & EDITOR_FLAGS_draw_collision))
+		return;
+
 	for (int i = 0; i < core->world_data->entity_components.physics_body_component_count; i++)
 	{
 		PhysicsBodyComponent *body_comp = &core->world_data->entity_components.physics_body_components[i];
@@ -37,6 +41,7 @@ internal void RenderColliders()
 						  v3(1.0f, 1.0f, 1.0f));
 		}
 }
+#endif
 
 internal void UpdatePhysics()
 {

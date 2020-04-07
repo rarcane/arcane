@@ -687,6 +687,8 @@ ComponentSet entity_components;
 typedef struct ClientData
 {
 b32 bloom;
+char current_level[20];
+char *res_path;
 EditorState editor_state;
 EditorFlags editor_flags;
 Entity *selected_entity;

@@ -1,4 +1,4 @@
-internal void TempInitGameWorld();
+internal void CreateTestLevel();
 internal void DrawWorld();
 internal void PostUpdateWorldAnimations();
 

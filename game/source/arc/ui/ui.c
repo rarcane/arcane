@@ -418,6 +418,7 @@ internal void DrawGameUI()
 		}
 	} */
 
+#ifdef DEVELOPER_TOOLS
 	switch (core->client_data->editor_state)
 	{
 	case EDITOR_STATE_entity:
@@ -662,6 +663,7 @@ internal void DrawGameUI()
 		break;
 	}
 	}
+#endif
 }
 
 internal void DrawEditorUI()
@@ -679,8 +681,15 @@ internal void DrawEditorUI()
 		{
 			if (TsUIDropdown("World..."))
 			{
-				TsUIButton("Commit");
-				TsUIButton("Reload");
+				if (TsUIButton("Save"))
+				{
+					R_DEV_ASSERT(core->client_data->current_level[0], "No level currently loaded?");
+				}
+
+				if (TsUIButton("Reload"))
+				{
+					R_DEV_ASSERT(core->client_data->current_level[0], "No level currently loaded?");
+				}
 			}
 			TsUIDropdownEnd();
 
