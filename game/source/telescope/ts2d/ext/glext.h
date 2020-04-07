@@ -272,7 +272,7 @@ GLAPI void APIENTRY glCompressedTexSubImage3D (GLenum target, GLint level, GLint
 GLAPI void APIENTRY glCompressedTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void *data);
 GLAPI void APIENTRY glCompressedTexSubImage1D (GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLsizei imageSize, const void *data);
 GLAPI void APIENTRY glGetCompressedTexImage (GLenum target, GLint level, void *img);
-GLAPI void APIENTRY glClientActiveTexture (GLenum texture);
+GLAPI void APIENTRY glClientActiveTexture (GLenum texture); 
 GLAPI void APIENTRY glMultiTexCoord1d (GLenum target, GLdouble s);
 GLAPI void APIENTRY glMultiTexCoord1dv (GLenum target, const GLdouble *v);
 GLAPI void APIENTRY glMultiTexCoord1f (GLenum target, GLfloat s);

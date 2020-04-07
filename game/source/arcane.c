@@ -140,6 +140,12 @@ GameInit(void)
 		}
 
 		Ts2dSetDefaultFont(TsAssetsRequestAssetByName(ASSET_TYPE_Ts2dFont, "mono"));
+		Ts2dPushText(Ts2dGetDefaultFont(),
+					 TS2D_TEXT_ALIGN_CENTER_X | TS2D_TEXT_ALIGN_CENTER_Y,
+					 v4(1.0f, 1.0f, 1.0f, 1.0f),
+					 v2(0, 0),
+					 0.35f,
+					 "I SHOULD BE RENDERING!");
 	}
 }
 

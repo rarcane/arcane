@@ -302,11 +302,10 @@ int main(int argc, char *argv[])
 
 	u32 permanent_storage_size = TS_APP_PERMANENT_STORAGE_SIZE;
 	u32 scratch_storage_size = TS_APP_SCRATCH_STORAGE_SIZE;
-	void *permanent_storage = malloc(permanent_storage_size);
-	memset(permanent_storage, 0, permanent_storage_size);
+	void *permanent_storage = calloc(permanent_storage_size, sizeof(char));
 	global_platform.permanent_arena = MemoryArenaInit(permanent_storage, permanent_storage_size);
 
-	void *scratch_storage = malloc(scratch_storage_size);
+	void *scratch_storage = calloc(scratch_storage_size, sizeof(char));
 	memset(scratch_storage, 0, scratch_storage_size);
 	global_platform.scratch_arena = MemoryArenaInit(scratch_storage, scratch_storage_size);
 

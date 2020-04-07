@@ -6,16 +6,14 @@
 */
 
 // THIS IS BAD PARKER. PARKER COMMNENTED THIS OUT BECAUSE OPENGL WAS BEING INCLUDED SOMEHOW AND CLOBBERING STUFFZ
-// #define GLProc(type, name) PFNGL##type##PROC gl##name;
-// #include "ts2d_opengl_procedure_list.inc"
-GLAPI void GLAPIENTRY glActiveTexture(GLenum type);
-GLAPI void GLAPIENTRY glBlendEquation(GLenum mode);
+#define GLProc(type, name) PFNGL##type##PROC gl##name;
+#include "ts2d_opengl_procedure_list.inc"
 
 internal void
 Ts2dLoadAllOpenGLProcedures(void)
 {
-	// #define GLProc(type, name) gl##name = platform->LoadOpenGLProcedure("gl" #name);
-	// #include "ts2d_opengl_procedure_list.inc"
+#define GLProc(type, name) gl##name = platform->LoadOpenGLProcedure("gl" #name);
+#include "ts2d_opengl_procedure_list.inc"
 }
 
 Ts2dTexture
@@ -2327,6 +2325,7 @@ f32 Ts2dPushTextWithBoldnessAndSoftnessN(Ts2dFont *font, i32 flags, v4 color, v2
 						global_ts2d->active_request.flags = 0;
 						global_ts2d->active_request.data = _Ts2dAllocateRequestMemory(sizeof(Ts2dTextureRequestData));
 						((Ts2dTextureRequestData *)global_ts2d->active_request.data)->texture = &font->texture;
+						printf("TEXT TEXTURE: %s\n", font->texture);
 					}
 					else
 					{
