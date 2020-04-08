@@ -355,6 +355,33 @@ global CellMaterialTypeData cell_material_type_data[CELL_MATERIAL_TYPE_MAX] = {
 
 typedef struct Entity Entity;
 
+typedef struct PositionComponent
+{
+Entity *parent_entity;
+i32 component_id;
+v2 position;
+} PositionComponent;
+
+typedef struct SpriteComponent
+{
+Entity *parent_entity;
+i32 component_id;
+SpriteData sprite_data;
+// @Editable 
+b8 is_flipped;
+b8 is_background_sprite;
+} SpriteComponent;
+
+typedef struct AnimationComponent
+{
+Entity *parent_entity;
+i32 component_id;
+AnimationFlags flags;
+i32 current_frame;
+f32 interval_mult;
+f32 frame_start_time;
+} AnimationComponent;
+
 typedef struct Line
 {
 v2 p1;
@@ -396,35 +423,6 @@ typedef struct MassData
 f32 mass;
 f32 inv_mass;
 } MassData;
-
-typedef struct ChunkData ChunkData;
-
-typedef struct PositionComponent
-{
-Entity *parent_entity;
-i32 component_id;
-v2 position;
-} PositionComponent;
-
-typedef struct SpriteComponent
-{
-Entity *parent_entity;
-i32 component_id;
-SpriteData sprite_data;
-// @Editable 
-b8 is_flipped;
-b8 is_background_sprite;
-} SpriteComponent;
-
-typedef struct AnimationComponent
-{
-Entity *parent_entity;
-i32 component_id;
-AnimationFlags flags;
-i32 current_frame;
-f32 interval_mult;
-f32 frame_start_time;
-} AnimationComponent;
 
 typedef struct PhysicsBodyComponent
 {
@@ -506,6 +504,8 @@ EmitterBeginCallback begin_callback;
 EmitterFinishCallback finish_callback;
 } ParticleEmitterComponent;
 
+typedef struct ChunkData ChunkData;
+
 typedef enum ComponentType
 {
 COMPONENT_INVALID,
@@ -527,37 +527,37 @@ typedef struct ComponentSet
 {
 PositionComponent position_components[MAX_ACTIVE_ENTITIES];
 i32 position_component_count;
-i32 position_free_component_id;
+i32 position_component_free_id;
 SpriteComponent sprite_components[MAX_ACTIVE_ENTITIES];
 i32 sprite_component_count;
-i32 sprite_free_component_id;
+i32 sprite_component_free_id;
 AnimationComponent animation_components[MAX_ACTIVE_ENTITIES];
 i32 animation_component_count;
-i32 animation_free_component_id;
+i32 animation_component_free_id;
 PhysicsBodyComponent physics_body_components[MAX_ACTIVE_ENTITIES];
 i32 physics_body_component_count;
-i32 physics_body_free_component_id;
+i32 physics_body_component_free_id;
 MovementComponent movement_components[MAX_ACTIVE_ENTITIES];
 i32 movement_component_count;
-i32 movement_free_component_id;
+i32 movement_component_free_id;
 ArcEntityComponent arc_entity_components[MAX_ACTIVE_ENTITIES];
 i32 arc_entity_component_count;
-i32 arc_entity_free_component_id;
+i32 arc_entity_component_free_id;
 ItemComponent item_components[MAX_ACTIVE_ENTITIES];
 i32 item_component_count;
-i32 item_free_component_id;
+i32 item_component_free_id;
 TriggerComponent trigger_components[MAX_ACTIVE_ENTITIES];
 i32 trigger_component_count;
-i32 trigger_free_component_id;
+i32 trigger_component_free_id;
 StorageComponent storage_components[MAX_ACTIVE_ENTITIES];
 i32 storage_component_count;
-i32 storage_free_component_id;
+i32 storage_component_free_id;
 ParallaxComponent parallax_components[MAX_ACTIVE_ENTITIES];
 i32 parallax_component_count;
-i32 parallax_free_component_id;
+i32 parallax_component_free_id;
 ParticleEmitterComponent particle_emitter_components[MAX_ACTIVE_ENTITIES];
 i32 particle_emitter_component_count;
-i32 particle_emitter_free_component_id;
+i32 particle_emitter_component_free_id;
 } ComponentSet;
 
 #define MAX_CHARACTER_ENTITIES (1)
@@ -647,6 +647,8 @@ Cell cells[CELL_CHUNK_SIZE][CELL_CHUNK_SIZE];
 Ts2dTexture texture;
 } CellChunk;
 
+#define CELL_CHUNKS_IN_CHUNK ((CHUNK_SIZE/CELL_CHUNK_SIZE))
+#define CHUNK_AREA ((CHUNK_SIZE*CHUNK_SIZE))
 typedef struct ChunkData
 {
 b8 is_valid;
@@ -654,8 +656,8 @@ i32 entity_ids[MAX_ENTITIES_PER_CHUNK];
 i32 entity_count;
 i32 x_index;
 i32 y_index;
-CellChunk cell_chunks[(CHUNK_SIZE/CELL_CHUNK_SIZE)][(CHUNK_SIZE/CELL_CHUNK_SIZE)];
-CellMaterial cell_materials[(CHUNK_SIZE*CHUNK_SIZE)];
+CellChunk cell_chunks[CELL_CHUNKS_IN_CHUNK][CELL_CHUNKS_IN_CHUNK];
+CellMaterial cell_materials[CHUNK_AREA];
 i32 cell_material_count;
 i32 free_cell_material_id;
 CellMaterial *dynamic_cell_materials[MAX_DYNAMIC_CELLS];
@@ -696,4 +698,40 @@ GroundSegmentEntity *selected_ground_seg;
 b8 is_seg_grabbed;
 v2 grabbed_seg_pos;
 } ClientData;
+
+static void WritePositionComponentToFile(FILE *file, PositionComponent *data);
+
+static void WriteSpriteComponentToFile(FILE *file, SpriteComponent *data);
+
+static void WriteAnimationComponentToFile(FILE *file, AnimationComponent *data);
+
+static void WritePhysicsBodyComponentToFile(FILE *file, PhysicsBodyComponent *data);
+
+static void WriteMovementComponentToFile(FILE *file, MovementComponent *data);
+
+static void WriteArcEntityComponentToFile(FILE *file, ArcEntityComponent *data);
+
+static void WriteItemComponentToFile(FILE *file, ItemComponent *data);
+
+static void WriteTriggerComponentToFile(FILE *file, TriggerComponent *data);
+
+static void WriteStorageComponentToFile(FILE *file, StorageComponent *data);
+
+static void WriteParallaxComponentToFile(FILE *file, ParallaxComponent *data);
+
+static void WriteParticleEmitterComponentToFile(FILE *file, ParticleEmitterComponent *data);
+
+static void WriteComponentSetToFile(FILE *file, ComponentSet *data);
+
+static void WriteEntityToFile(FILE *file, Entity *data);
+
+static void WriteCellMaterialToFile(FILE *file, CellMaterial *data);
+
+static void WriteCellToFile(FILE *file, Cell *data);
+
+static void WriteCellChunkToFile(FILE *file, CellChunk *data);
+
+static void WriteChunkDataToFile(FILE *file, ChunkData *data);
+
+static void WriteWorldDataToFile(FILE *file, WorldData *data);
 

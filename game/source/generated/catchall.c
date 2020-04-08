@@ -381,8 +381,12 @@ internal void PrintComponentDataUI(void *component_data, ComponentType type)
     {
         PositionComponent *component = (PositionComponent*)component_data;
         char title[100];
-        sprintf(title, "Position #%i", component->component_id);
+        sprintf(title, "PositionComponent #%i", component->component_id);
         if (TsUICollapsable(title))        {
+            // TODO: Don't know how to generate UI print for variable 'parent_entity'
+            TsUIPushAutoWidth();
+            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
+            TsUIPopWidth();
             TsUIPushAutoWidth();
             { char label[100]; sprintf(label, "position: %f, %f", component->position.x, component->position.y); TsUILabel(label); }
             TsUIPopWidth();
@@ -396,8 +400,12 @@ internal void PrintComponentDataUI(void *component_data, ComponentType type)
     {
         SpriteComponent *component = (SpriteComponent*)component_data;
         char title[100];
-        sprintf(title, "Sprite #%i", component->component_id);
+        sprintf(title, "SpriteComponent #%i", component->component_id);
         if (TsUICollapsable(title))        {
+            // TODO: Don't know how to generate UI print for variable 'parent_entity'
+            TsUIPushAutoWidth();
+            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
+            TsUIPopWidth();
             // TODO: Don't know how to generate UI print for variable 'sprite_data'
             component->is_flipped = TsUIToggler("is_flipped", component->is_flipped);
             TsUIPushAutoWidth();
@@ -413,8 +421,12 @@ internal void PrintComponentDataUI(void *component_data, ComponentType type)
     {
         AnimationComponent *component = (AnimationComponent*)component_data;
         char title[100];
-        sprintf(title, "Animation #%i", component->component_id);
+        sprintf(title, "AnimationComponent #%i", component->component_id);
         if (TsUICollapsable(title))        {
+            // TODO: Don't know how to generate UI print for variable 'parent_entity'
+            TsUIPushAutoWidth();
+            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
+            TsUIPopWidth();
             // TODO: Don't know how to generate UI print for variable 'flags'
             TsUIPushAutoWidth();
             { char label[100]; sprintf(label, "current_frame: %i", component->current_frame); TsUILabel(label); }
@@ -435,8 +447,12 @@ internal void PrintComponentDataUI(void *component_data, ComponentType type)
     {
         PhysicsBodyComponent *component = (PhysicsBodyComponent*)component_data;
         char title[100];
-        sprintf(title, "PhysicsBody #%i", component->component_id);
+        sprintf(title, "PhysicsBodyComponent #%i", component->component_id);
         if (TsUICollapsable(title))        {
+            // TODO: Don't know how to generate UI print for variable 'parent_entity'
+            TsUIPushAutoWidth();
+            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
+            TsUIPopWidth();
             // TODO: Don't know how to generate UI print for variable 'shape'
             // TODO: Don't know how to generate UI print for variable 'shape_type'
             // TODO: Don't know how to generate UI print for variable 'material'
@@ -460,8 +476,12 @@ internal void PrintComponentDataUI(void *component_data, ComponentType type)
     {
         MovementComponent *component = (MovementComponent*)component_data;
         char title[100];
-        sprintf(title, "Movement #%i", component->component_id);
+        sprintf(title, "MovementComponent #%i", component->component_id);
         if (TsUICollapsable(title))        {
+            // TODO: Don't know how to generate UI print for variable 'parent_entity'
+            TsUIPushAutoWidth();
+            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
+            TsUIPopWidth();
             TsUIPushAutoWidth();
             { char label[100]; sprintf(label, "axis_x: %f", component->axis_x); TsUILabel(label); }
             TsUIPopWidth();
@@ -481,8 +501,12 @@ internal void PrintComponentDataUI(void *component_data, ComponentType type)
     {
         ArcEntityComponent *component = (ArcEntityComponent*)component_data;
         char title[100];
-        sprintf(title, "ArcEntity #%i", component->component_id);
+        sprintf(title, "ArcEntityComponent #%i", component->component_id);
         if (TsUICollapsable(title))        {
+            // TODO: Don't know how to generate UI print for variable 'parent_entity'
+            TsUIPushAutoWidth();
+            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
+            TsUIPopWidth();
             // TODO: Don't know how to generate UI print for variable 'entity_type'
             TsUIPushAutoWidth();
             { char label[100]; sprintf(label, "current_general_state: %s", component->current_general_state); TsUILabel(label); }
@@ -498,8 +522,12 @@ internal void PrintComponentDataUI(void *component_data, ComponentType type)
     {
         ItemComponent *component = (ItemComponent*)component_data;
         char title[100];
-        sprintf(title, "Item #%i", component->component_id);
+        sprintf(title, "ItemComponent #%i", component->component_id);
         if (TsUICollapsable(title))        {
+            // TODO: Don't know how to generate UI print for variable 'parent_entity'
+            TsUIPushAutoWidth();
+            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
+            TsUIPopWidth();
             // TODO: Don't know how to generate UI print for variable 'item_type'
             TsUIPushAutoWidth();
             { char label[100]; sprintf(label, "stack_size: %i", component->stack_size); TsUILabel(label); }
@@ -514,8 +542,12 @@ internal void PrintComponentDataUI(void *component_data, ComponentType type)
     {
         TriggerComponent *component = (TriggerComponent*)component_data;
         char title[100];
-        sprintf(title, "Trigger #%i", component->component_id);
+        sprintf(title, "TriggerComponent #%i", component->component_id);
         if (TsUICollapsable(title))        {
+            // TODO: Don't know how to generate UI print for variable 'parent_entity'
+            TsUIPushAutoWidth();
+            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
+            TsUIPopWidth();
             // TODO: Don't know how to generate UI print for variable 'enter_trigger_callback'
             // TODO: Don't know how to generate UI print for variable 'exit_trigger_callback'
             // TODO: Don't know how to generate UI print for variable 'previous_overlaps'
@@ -535,8 +567,12 @@ internal void PrintComponentDataUI(void *component_data, ComponentType type)
     {
         StorageComponent *component = (StorageComponent*)component_data;
         char title[100];
-        sprintf(title, "Storage #%i", component->component_id);
+        sprintf(title, "StorageComponent #%i", component->component_id);
         if (TsUICollapsable(title))        {
+            // TODO: Don't know how to generate UI print for variable 'parent_entity'
+            TsUIPushAutoWidth();
+            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
+            TsUIPopWidth();
             TsUIPushAutoWidth();
             { char label[100]; sprintf(label, "storage_size: %i", component->storage_size); TsUILabel(label); }
             TsUIPopWidth();
@@ -551,8 +587,12 @@ internal void PrintComponentDataUI(void *component_data, ComponentType type)
     {
         ParallaxComponent *component = (ParallaxComponent*)component_data;
         char title[100];
-        sprintf(title, "Parallax #%i", component->component_id);
+        sprintf(title, "ParallaxComponent #%i", component->component_id);
         if (TsUICollapsable(title))        {
+            // TODO: Don't know how to generate UI print for variable 'parent_entity'
+            TsUIPushAutoWidth();
+            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
+            TsUIPopWidth();
             TsUIPushAutoWidth();
             { char label[100]; sprintf(label, "parallax_amount: %f, %f", component->parallax_amount.x, component->parallax_amount.y); TsUILabel(label); }
             TsUIPopWidth();
@@ -569,8 +609,12 @@ internal void PrintComponentDataUI(void *component_data, ComponentType type)
     {
         ParticleEmitterComponent *component = (ParticleEmitterComponent*)component_data;
         char title[100];
-        sprintf(title, "ParticleEmitter #%i", component->component_id);
+        sprintf(title, "ParticleEmitterComponent #%i", component->component_id);
         if (TsUICollapsable(title))        {
+            // TODO: Don't know how to generate UI print for variable 'parent_entity'
+            TsUIPushAutoWidth();
+            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
+            TsUIPopWidth();
             TsUIPushAutoWidth();
             { char label[100]; sprintf(label, "life_time: %f", component->life_time); TsUILabel(label); }
             TsUIPopWidth();
@@ -599,15 +643,15 @@ internal void PrintComponentDataUI(void *component_data, ComponentType type)
 internal PositionComponent *AddPositionComponent(Entity *entity)
 {
     i32 component_id;
-    if (core->world_data->entity_components.position_free_component_id == core->world_data->entity_components.position_component_count)
+    if (core->world_data->entity_components.position_component_free_id == core->world_data->entity_components.position_component_count)
     {
         component_id = core->world_data->entity_components.position_component_count;
         core->world_data->entity_components.position_component_count++;
-        core->world_data->entity_components.position_free_component_id = component_id + 1;
+        core->world_data->entity_components.position_component_free_id = component_id + 1;
     }
     else
     {
-        component_id = core->world_data->entity_components.position_free_component_id;
+        component_id = core->world_data->entity_components.position_component_free_id;
     }
 
     core->world_data->entity_components.position_components[component_id] = GetDefaultPositionComponent();
@@ -619,7 +663,7 @@ internal PositionComponent *AddPositionComponent(Entity *entity)
     {
         if (!core->world_data->entity_components.position_components[i].parent_entity)
         {
-            core->world_data->entity_components.position_free_component_id = i;
+            core->world_data->entity_components.position_component_free_id = i;
             break;
         }
     }
@@ -637,22 +681,22 @@ internal void RemovePositionComponent(Entity *entity)
     core->world_data->entity_components.position_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_position] = 0;
 
-    if (deleted_component_id < core->world_data->entity_components.position_free_component_id)
-        core->world_data->entity_components.position_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.position_component_free_id)
+        core->world_data->entity_components.position_component_free_id = deleted_component_id;
 }
 
 internal SpriteComponent *AddSpriteComponent(Entity *entity)
 {
     i32 component_id;
-    if (core->world_data->entity_components.sprite_free_component_id == core->world_data->entity_components.sprite_component_count)
+    if (core->world_data->entity_components.sprite_component_free_id == core->world_data->entity_components.sprite_component_count)
     {
         component_id = core->world_data->entity_components.sprite_component_count;
         core->world_data->entity_components.sprite_component_count++;
-        core->world_data->entity_components.sprite_free_component_id = component_id + 1;
+        core->world_data->entity_components.sprite_component_free_id = component_id + 1;
     }
     else
     {
-        component_id = core->world_data->entity_components.sprite_free_component_id;
+        component_id = core->world_data->entity_components.sprite_component_free_id;
     }
 
     core->world_data->entity_components.sprite_components[component_id] = GetDefaultSpriteComponent();
@@ -664,7 +708,7 @@ internal SpriteComponent *AddSpriteComponent(Entity *entity)
     {
         if (!core->world_data->entity_components.sprite_components[i].parent_entity)
         {
-            core->world_data->entity_components.sprite_free_component_id = i;
+            core->world_data->entity_components.sprite_component_free_id = i;
             break;
         }
     }
@@ -682,22 +726,22 @@ internal void RemoveSpriteComponent(Entity *entity)
     core->world_data->entity_components.sprite_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_sprite] = 0;
 
-    if (deleted_component_id < core->world_data->entity_components.sprite_free_component_id)
-        core->world_data->entity_components.sprite_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.sprite_component_free_id)
+        core->world_data->entity_components.sprite_component_free_id = deleted_component_id;
 }
 
 internal AnimationComponent *AddAnimationComponent(Entity *entity)
 {
     i32 component_id;
-    if (core->world_data->entity_components.animation_free_component_id == core->world_data->entity_components.animation_component_count)
+    if (core->world_data->entity_components.animation_component_free_id == core->world_data->entity_components.animation_component_count)
     {
         component_id = core->world_data->entity_components.animation_component_count;
         core->world_data->entity_components.animation_component_count++;
-        core->world_data->entity_components.animation_free_component_id = component_id + 1;
+        core->world_data->entity_components.animation_component_free_id = component_id + 1;
     }
     else
     {
-        component_id = core->world_data->entity_components.animation_free_component_id;
+        component_id = core->world_data->entity_components.animation_component_free_id;
     }
 
     core->world_data->entity_components.animation_components[component_id] = GetDefaultAnimationComponent();
@@ -709,7 +753,7 @@ internal AnimationComponent *AddAnimationComponent(Entity *entity)
     {
         if (!core->world_data->entity_components.animation_components[i].parent_entity)
         {
-            core->world_data->entity_components.animation_free_component_id = i;
+            core->world_data->entity_components.animation_component_free_id = i;
             break;
         }
     }
@@ -727,22 +771,22 @@ internal void RemoveAnimationComponent(Entity *entity)
     core->world_data->entity_components.animation_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_animation] = 0;
 
-    if (deleted_component_id < core->world_data->entity_components.animation_free_component_id)
-        core->world_data->entity_components.animation_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.animation_component_free_id)
+        core->world_data->entity_components.animation_component_free_id = deleted_component_id;
 }
 
 internal PhysicsBodyComponent *AddPhysicsBodyComponent(Entity *entity)
 {
     i32 component_id;
-    if (core->world_data->entity_components.physics_body_free_component_id == core->world_data->entity_components.physics_body_component_count)
+    if (core->world_data->entity_components.physics_body_component_free_id == core->world_data->entity_components.physics_body_component_count)
     {
         component_id = core->world_data->entity_components.physics_body_component_count;
         core->world_data->entity_components.physics_body_component_count++;
-        core->world_data->entity_components.physics_body_free_component_id = component_id + 1;
+        core->world_data->entity_components.physics_body_component_free_id = component_id + 1;
     }
     else
     {
-        component_id = core->world_data->entity_components.physics_body_free_component_id;
+        component_id = core->world_data->entity_components.physics_body_component_free_id;
     }
 
     core->world_data->entity_components.physics_body_components[component_id] = GetDefaultPhysicsBodyComponent();
@@ -754,7 +798,7 @@ internal PhysicsBodyComponent *AddPhysicsBodyComponent(Entity *entity)
     {
         if (!core->world_data->entity_components.physics_body_components[i].parent_entity)
         {
-            core->world_data->entity_components.physics_body_free_component_id = i;
+            core->world_data->entity_components.physics_body_component_free_id = i;
             break;
         }
     }
@@ -772,22 +816,22 @@ internal void RemovePhysicsBodyComponent(Entity *entity)
     core->world_data->entity_components.physics_body_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_physics_body] = 0;
 
-    if (deleted_component_id < core->world_data->entity_components.physics_body_free_component_id)
-        core->world_data->entity_components.physics_body_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.physics_body_component_free_id)
+        core->world_data->entity_components.physics_body_component_free_id = deleted_component_id;
 }
 
 internal MovementComponent *AddMovementComponent(Entity *entity)
 {
     i32 component_id;
-    if (core->world_data->entity_components.movement_free_component_id == core->world_data->entity_components.movement_component_count)
+    if (core->world_data->entity_components.movement_component_free_id == core->world_data->entity_components.movement_component_count)
     {
         component_id = core->world_data->entity_components.movement_component_count;
         core->world_data->entity_components.movement_component_count++;
-        core->world_data->entity_components.movement_free_component_id = component_id + 1;
+        core->world_data->entity_components.movement_component_free_id = component_id + 1;
     }
     else
     {
-        component_id = core->world_data->entity_components.movement_free_component_id;
+        component_id = core->world_data->entity_components.movement_component_free_id;
     }
 
     core->world_data->entity_components.movement_components[component_id] = GetDefaultMovementComponent();
@@ -799,7 +843,7 @@ internal MovementComponent *AddMovementComponent(Entity *entity)
     {
         if (!core->world_data->entity_components.movement_components[i].parent_entity)
         {
-            core->world_data->entity_components.movement_free_component_id = i;
+            core->world_data->entity_components.movement_component_free_id = i;
             break;
         }
     }
@@ -817,22 +861,22 @@ internal void RemoveMovementComponent(Entity *entity)
     core->world_data->entity_components.movement_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_movement] = 0;
 
-    if (deleted_component_id < core->world_data->entity_components.movement_free_component_id)
-        core->world_data->entity_components.movement_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.movement_component_free_id)
+        core->world_data->entity_components.movement_component_free_id = deleted_component_id;
 }
 
 internal ArcEntityComponent *AddArcEntityComponent(Entity *entity)
 {
     i32 component_id;
-    if (core->world_data->entity_components.arc_entity_free_component_id == core->world_data->entity_components.arc_entity_component_count)
+    if (core->world_data->entity_components.arc_entity_component_free_id == core->world_data->entity_components.arc_entity_component_count)
     {
         component_id = core->world_data->entity_components.arc_entity_component_count;
         core->world_data->entity_components.arc_entity_component_count++;
-        core->world_data->entity_components.arc_entity_free_component_id = component_id + 1;
+        core->world_data->entity_components.arc_entity_component_free_id = component_id + 1;
     }
     else
     {
-        component_id = core->world_data->entity_components.arc_entity_free_component_id;
+        component_id = core->world_data->entity_components.arc_entity_component_free_id;
     }
 
     core->world_data->entity_components.arc_entity_components[component_id] = GetDefaultArcEntityComponent();
@@ -844,7 +888,7 @@ internal ArcEntityComponent *AddArcEntityComponent(Entity *entity)
     {
         if (!core->world_data->entity_components.arc_entity_components[i].parent_entity)
         {
-            core->world_data->entity_components.arc_entity_free_component_id = i;
+            core->world_data->entity_components.arc_entity_component_free_id = i;
             break;
         }
     }
@@ -862,22 +906,22 @@ internal void RemoveArcEntityComponent(Entity *entity)
     core->world_data->entity_components.arc_entity_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_arc_entity] = 0;
 
-    if (deleted_component_id < core->world_data->entity_components.arc_entity_free_component_id)
-        core->world_data->entity_components.arc_entity_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.arc_entity_component_free_id)
+        core->world_data->entity_components.arc_entity_component_free_id = deleted_component_id;
 }
 
 internal ItemComponent *AddItemComponent(Entity *entity)
 {
     i32 component_id;
-    if (core->world_data->entity_components.item_free_component_id == core->world_data->entity_components.item_component_count)
+    if (core->world_data->entity_components.item_component_free_id == core->world_data->entity_components.item_component_count)
     {
         component_id = core->world_data->entity_components.item_component_count;
         core->world_data->entity_components.item_component_count++;
-        core->world_data->entity_components.item_free_component_id = component_id + 1;
+        core->world_data->entity_components.item_component_free_id = component_id + 1;
     }
     else
     {
-        component_id = core->world_data->entity_components.item_free_component_id;
+        component_id = core->world_data->entity_components.item_component_free_id;
     }
 
     core->world_data->entity_components.item_components[component_id] = GetDefaultItemComponent();
@@ -889,7 +933,7 @@ internal ItemComponent *AddItemComponent(Entity *entity)
     {
         if (!core->world_data->entity_components.item_components[i].parent_entity)
         {
-            core->world_data->entity_components.item_free_component_id = i;
+            core->world_data->entity_components.item_component_free_id = i;
             break;
         }
     }
@@ -907,22 +951,22 @@ internal void RemoveItemComponent(Entity *entity)
     core->world_data->entity_components.item_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_item] = 0;
 
-    if (deleted_component_id < core->world_data->entity_components.item_free_component_id)
-        core->world_data->entity_components.item_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.item_component_free_id)
+        core->world_data->entity_components.item_component_free_id = deleted_component_id;
 }
 
 internal TriggerComponent *AddTriggerComponent(Entity *entity)
 {
     i32 component_id;
-    if (core->world_data->entity_components.trigger_free_component_id == core->world_data->entity_components.trigger_component_count)
+    if (core->world_data->entity_components.trigger_component_free_id == core->world_data->entity_components.trigger_component_count)
     {
         component_id = core->world_data->entity_components.trigger_component_count;
         core->world_data->entity_components.trigger_component_count++;
-        core->world_data->entity_components.trigger_free_component_id = component_id + 1;
+        core->world_data->entity_components.trigger_component_free_id = component_id + 1;
     }
     else
     {
-        component_id = core->world_data->entity_components.trigger_free_component_id;
+        component_id = core->world_data->entity_components.trigger_component_free_id;
     }
 
     core->world_data->entity_components.trigger_components[component_id] = GetDefaultTriggerComponent();
@@ -934,7 +978,7 @@ internal TriggerComponent *AddTriggerComponent(Entity *entity)
     {
         if (!core->world_data->entity_components.trigger_components[i].parent_entity)
         {
-            core->world_data->entity_components.trigger_free_component_id = i;
+            core->world_data->entity_components.trigger_component_free_id = i;
             break;
         }
     }
@@ -952,22 +996,22 @@ internal void RemoveTriggerComponent(Entity *entity)
     core->world_data->entity_components.trigger_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_trigger] = 0;
 
-    if (deleted_component_id < core->world_data->entity_components.trigger_free_component_id)
-        core->world_data->entity_components.trigger_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.trigger_component_free_id)
+        core->world_data->entity_components.trigger_component_free_id = deleted_component_id;
 }
 
 internal StorageComponent *AddStorageComponent(Entity *entity)
 {
     i32 component_id;
-    if (core->world_data->entity_components.storage_free_component_id == core->world_data->entity_components.storage_component_count)
+    if (core->world_data->entity_components.storage_component_free_id == core->world_data->entity_components.storage_component_count)
     {
         component_id = core->world_data->entity_components.storage_component_count;
         core->world_data->entity_components.storage_component_count++;
-        core->world_data->entity_components.storage_free_component_id = component_id + 1;
+        core->world_data->entity_components.storage_component_free_id = component_id + 1;
     }
     else
     {
-        component_id = core->world_data->entity_components.storage_free_component_id;
+        component_id = core->world_data->entity_components.storage_component_free_id;
     }
 
     core->world_data->entity_components.storage_components[component_id] = GetDefaultStorageComponent();
@@ -979,7 +1023,7 @@ internal StorageComponent *AddStorageComponent(Entity *entity)
     {
         if (!core->world_data->entity_components.storage_components[i].parent_entity)
         {
-            core->world_data->entity_components.storage_free_component_id = i;
+            core->world_data->entity_components.storage_component_free_id = i;
             break;
         }
     }
@@ -997,22 +1041,22 @@ internal void RemoveStorageComponent(Entity *entity)
     core->world_data->entity_components.storage_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_storage] = 0;
 
-    if (deleted_component_id < core->world_data->entity_components.storage_free_component_id)
-        core->world_data->entity_components.storage_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.storage_component_free_id)
+        core->world_data->entity_components.storage_component_free_id = deleted_component_id;
 }
 
 internal ParallaxComponent *AddParallaxComponent(Entity *entity)
 {
     i32 component_id;
-    if (core->world_data->entity_components.parallax_free_component_id == core->world_data->entity_components.parallax_component_count)
+    if (core->world_data->entity_components.parallax_component_free_id == core->world_data->entity_components.parallax_component_count)
     {
         component_id = core->world_data->entity_components.parallax_component_count;
         core->world_data->entity_components.parallax_component_count++;
-        core->world_data->entity_components.parallax_free_component_id = component_id + 1;
+        core->world_data->entity_components.parallax_component_free_id = component_id + 1;
     }
     else
     {
-        component_id = core->world_data->entity_components.parallax_free_component_id;
+        component_id = core->world_data->entity_components.parallax_component_free_id;
     }
 
     core->world_data->entity_components.parallax_components[component_id] = GetDefaultParallaxComponent();
@@ -1024,7 +1068,7 @@ internal ParallaxComponent *AddParallaxComponent(Entity *entity)
     {
         if (!core->world_data->entity_components.parallax_components[i].parent_entity)
         {
-            core->world_data->entity_components.parallax_free_component_id = i;
+            core->world_data->entity_components.parallax_component_free_id = i;
             break;
         }
     }
@@ -1042,22 +1086,22 @@ internal void RemoveParallaxComponent(Entity *entity)
     core->world_data->entity_components.parallax_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_parallax] = 0;
 
-    if (deleted_component_id < core->world_data->entity_components.parallax_free_component_id)
-        core->world_data->entity_components.parallax_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.parallax_component_free_id)
+        core->world_data->entity_components.parallax_component_free_id = deleted_component_id;
 }
 
 internal ParticleEmitterComponent *AddParticleEmitterComponent(Entity *entity)
 {
     i32 component_id;
-    if (core->world_data->entity_components.particle_emitter_free_component_id == core->world_data->entity_components.particle_emitter_component_count)
+    if (core->world_data->entity_components.particle_emitter_component_free_id == core->world_data->entity_components.particle_emitter_component_count)
     {
         component_id = core->world_data->entity_components.particle_emitter_component_count;
         core->world_data->entity_components.particle_emitter_component_count++;
-        core->world_data->entity_components.particle_emitter_free_component_id = component_id + 1;
+        core->world_data->entity_components.particle_emitter_component_free_id = component_id + 1;
     }
     else
     {
-        component_id = core->world_data->entity_components.particle_emitter_free_component_id;
+        component_id = core->world_data->entity_components.particle_emitter_component_free_id;
     }
 
     core->world_data->entity_components.particle_emitter_components[component_id] = GetDefaultParticleEmitterComponent();
@@ -1069,7 +1113,7 @@ internal ParticleEmitterComponent *AddParticleEmitterComponent(Entity *entity)
     {
         if (!core->world_data->entity_components.particle_emitter_components[i].parent_entity)
         {
-            core->world_data->entity_components.particle_emitter_free_component_id = i;
+            core->world_data->entity_components.particle_emitter_component_free_id = i;
             break;
         }
     }
@@ -1087,8 +1131,8 @@ internal void RemoveParticleEmitterComponent(Entity *entity)
     core->world_data->entity_components.particle_emitter_components[deleted_component_id] = empty_comp;
     entity->components[COMPONENT_particle_emitter] = 0;
 
-    if (deleted_component_id < core->world_data->entity_components.particle_emitter_free_component_id)
-        core->world_data->entity_components.particle_emitter_free_component_id = deleted_component_id;
+    if (deleted_component_id < core->world_data->entity_components.particle_emitter_component_free_id)
+        core->world_data->entity_components.particle_emitter_component_free_id = deleted_component_id;
 }
 
 internal void DeleteEntity(Entity *entity)
@@ -1247,3 +1291,201 @@ static void PrintEntityDataUI(Entity *entity)
         }
     }
 }
+static void WritePositionComponentToFile(FILE *file, PositionComponent *data)
+{
+// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    WriteToFile(file, &data->component_id, sizeof(data->component_id));
+    WriteToFile(file, &data->position, sizeof(data->position));
+}
+
+static void WriteSpriteComponentToFile(FILE *file, SpriteComponent *data)
+{
+// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    WriteToFile(file, &data->component_id, sizeof(data->component_id));
+    WriteToFile(file, &data->sprite_data, sizeof(data->sprite_data));
+    WriteToFile(file, &data->is_flipped, sizeof(data->is_flipped));
+    WriteToFile(file, &data->is_background_sprite, sizeof(data->is_background_sprite));
+}
+
+static void WriteAnimationComponentToFile(FILE *file, AnimationComponent *data)
+{
+// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    WriteToFile(file, &data->component_id, sizeof(data->component_id));
+    WriteToFile(file, &data->flags, sizeof(data->flags));
+    WriteToFile(file, &data->current_frame, sizeof(data->current_frame));
+    WriteToFile(file, &data->interval_mult, sizeof(data->interval_mult));
+    WriteToFile(file, &data->frame_start_time, sizeof(data->frame_start_time));
+}
+
+static void WritePhysicsBodyComponentToFile(FILE *file, PhysicsBodyComponent *data)
+{
+// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    WriteToFile(file, &data->component_id, sizeof(data->component_id));
+    WriteToFile(file, &data->shape, sizeof(data->shape));
+    WriteToFile(file, &data->shape_type, sizeof(data->shape_type));
+    WriteToFile(file, &data->material, sizeof(data->material));
+    WriteToFile(file, &data->mass_data, sizeof(data->mass_data));
+    WriteToFile(file, &data->velocity, sizeof(data->velocity));
+    WriteToFile(file, &data->force, sizeof(data->force));
+    WriteToFile(file, &data->gravity_multiplier, sizeof(data->gravity_multiplier));
+}
+
+static void WriteMovementComponentToFile(FILE *file, MovementComponent *data)
+{
+// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    WriteToFile(file, &data->component_id, sizeof(data->component_id));
+    WriteToFile(file, &data->axis_x, sizeof(data->axis_x));
+    WriteToFile(file, &data->move_speed, sizeof(data->move_speed));
+    WriteToFile(file, &data->move_speed_mult, sizeof(data->move_speed_mult));
+}
+
+static void WriteArcEntityComponentToFile(FILE *file, ArcEntityComponent *data)
+{
+// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    WriteToFile(file, &data->component_id, sizeof(data->component_id));
+    WriteToFile(file, &data->entity_type, sizeof(data->entity_type));
+// - Pointer: 1     WriteToFile(file, &data->current_general_state, sizeof(data->current_general_state));
+    WriteToFile(file, &data->current_animation_state, sizeof(data->current_animation_state));
+}
+
+static void WriteItemComponentToFile(FILE *file, ItemComponent *data)
+{
+// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    WriteToFile(file, &data->component_id, sizeof(data->component_id));
+    WriteToFile(file, &data->item_type, sizeof(data->item_type));
+    WriteToFile(file, &data->stack_size, sizeof(data->stack_size));
+}
+
+static void WriteTriggerComponentToFile(FILE *file, TriggerComponent *data)
+{
+// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    WriteToFile(file, &data->component_id, sizeof(data->component_id));
+    WriteToFile(file, &data->enter_trigger_callback, sizeof(data->enter_trigger_callback));
+    WriteToFile(file, &data->exit_trigger_callback, sizeof(data->exit_trigger_callback));
+// - Arary MAX_OVERLAPPING_COLLIDERS     WriteToFile(file, &data->previous_overlaps, sizeof(data->previous_overlaps));
+    WriteToFile(file, &data->previous_overlaps_count, sizeof(data->previous_overlaps_count));
+    WriteToFile(file, &data->trigger_against, sizeof(data->trigger_against));
+}
+
+static void WriteStorageComponentToFile(FILE *file, StorageComponent *data)
+{
+// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    WriteToFile(file, &data->component_id, sizeof(data->component_id));
+    WriteToFile(file, &data->storage_size, sizeof(data->storage_size));
+// - Pointer: 1 // - Arary MAX_STORAGE_SIZE     WriteItemComponentToFile(file, &data->items);
+}
+
+static void WriteParallaxComponentToFile(FILE *file, ParallaxComponent *data)
+{
+// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    WriteToFile(file, &data->component_id, sizeof(data->component_id));
+    WriteToFile(file, &data->parallax_amount, sizeof(data->parallax_amount));
+    WriteToFile(file, &data->desired_position, sizeof(data->desired_position));
+}
+
+static void WriteParticleEmitterComponentToFile(FILE *file, ParticleEmitterComponent *data)
+{
+// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    WriteToFile(file, &data->component_id, sizeof(data->component_id));
+    WriteToFile(file, &data->life_time, sizeof(data->life_time));
+    WriteToFile(file, &data->start_time, sizeof(data->start_time));
+    WriteToFile(file, &data->flags, sizeof(data->flags));
+// - Arary MAX_PARTICLE_AMOUNT     WriteToFile(file, &data->particles, sizeof(data->particles));
+    WriteToFile(file, &data->particle_count, sizeof(data->particle_count));
+    WriteToFile(file, &data->free_particle_index, sizeof(data->free_particle_index));
+    WriteToFile(file, &data->begin_callback, sizeof(data->begin_callback));
+    WriteToFile(file, &data->finish_callback, sizeof(data->finish_callback));
+}
+
+static void WriteComponentSetToFile(FILE *file, ComponentSet *data)
+{
+// - Arary MAX_ACTIVE_ENTITIES     WritePositionComponentToFile(file, &data->position_components);
+// - Arary MAX_ACTIVE_ENTITIES     WriteSpriteComponentToFile(file, &data->sprite_components);
+// - Arary MAX_ACTIVE_ENTITIES     WriteAnimationComponentToFile(file, &data->animation_components);
+// - Arary MAX_ACTIVE_ENTITIES     WritePhysicsBodyComponentToFile(file, &data->physics_body_components);
+// - Arary MAX_ACTIVE_ENTITIES     WriteMovementComponentToFile(file, &data->movement_components);
+// - Arary MAX_ACTIVE_ENTITIES     WriteArcEntityComponentToFile(file, &data->arc_entity_components);
+// - Arary MAX_ACTIVE_ENTITIES     WriteItemComponentToFile(file, &data->item_components);
+// - Arary MAX_ACTIVE_ENTITIES     WriteTriggerComponentToFile(file, &data->trigger_components);
+// - Arary MAX_ACTIVE_ENTITIES     WriteStorageComponentToFile(file, &data->storage_components);
+// - Arary MAX_ACTIVE_ENTITIES     WriteParallaxComponentToFile(file, &data->parallax_components);
+// - Arary MAX_ACTIVE_ENTITIES     WriteParticleEmitterComponentToFile(file, &data->particle_emitter_components);
+}
+
+static void WriteEntityToFile(FILE *file, Entity *data)
+{
+    WriteToFile(file, &data->entity_id, sizeof(data->entity_id));
+// - Arary 20     WriteToFile(file, &data->name, sizeof(data->name));
+    WriteToFile(file, &data->generalised_type, sizeof(data->generalised_type));
+// - Pointer: 1     WriteToFile(file, &data->unique_entity, sizeof(data->unique_entity));
+    WriteToFile(file, &data->type, sizeof(data->type));
+    WriteToFile(file, &data->flags, sizeof(data->flags));
+// - Pointer: 1 // - Arary COMPONENT_MAX     WriteToFile(file, &data->components, sizeof(data->components));
+// - Pointer: 1     WriteChunkDataToFile(file, &data->active_chunk);
+}
+
+static void WriteCellMaterialToFile(FILE *file, CellMaterial *data)
+{
+    WriteToFile(file, &data->id, sizeof(data->id));
+// - Pointer: 1     WriteCellToFile(file, &data->parent_cell);
+    WriteToFile(file, &data->material_type, sizeof(data->material_type));
+    WriteToFile(file, &data->flags, sizeof(data->flags));
+    WriteToFile(file, &data->mass, sizeof(data->mass));
+    WriteToFile(file, &data->properties_type, sizeof(data->properties_type));
+    WriteToFile(file, &data->properties, sizeof(data->properties));
+    WriteToFile(file, &data->is_material_dynamic, sizeof(data->is_material_dynamic));
+    WriteToFile(file, &data->has_been_updated, sizeof(data->has_been_updated));
+    WriteToFile(file, &data->idle_start, sizeof(data->idle_start));
+}
+
+static void WriteCellToFile(FILE *file, Cell *data)
+{
+// - Pointer: 1     WriteCellChunkToFile(file, &data->parent_cell_chunk);
+    WriteToFile(file, &data->x_index, sizeof(data->x_index));
+    WriteToFile(file, &data->y_index, sizeof(data->y_index));
+// - Pointer: 1     WriteCellMaterialToFile(file, &data->material);
+}
+
+static void WriteCellChunkToFile(FILE *file, CellChunk *data)
+{
+// - Pointer: 1     WriteChunkDataToFile(file, &data->parent_chunk);
+    WriteToFile(file, &data->x_index, sizeof(data->x_index));
+    WriteToFile(file, &data->y_index, sizeof(data->y_index));
+// - Arary CELL_CHUNK_SIZE     WriteCellToFile(file, &data->cells);
+    WriteToFile(file, &data->texture, sizeof(data->texture));
+}
+
+static void WriteChunkDataToFile(FILE *file, ChunkData *data)
+{
+    WriteToFile(file, &data->is_valid, sizeof(data->is_valid));
+// - Arary MAX_ENTITIES_PER_CHUNK     WriteToFile(file, &data->entity_ids, sizeof(data->entity_ids));
+    WriteToFile(file, &data->entity_count, sizeof(data->entity_count));
+    WriteToFile(file, &data->x_index, sizeof(data->x_index));
+    WriteToFile(file, &data->y_index, sizeof(data->y_index));
+// - Arary CELL_CHUNKS_IN_CHUNK     WriteCellChunkToFile(file, &data->cell_chunks);
+// - Arary CHUNK_AREA     WriteCellMaterialToFile(file, &data->cell_materials);
+    WriteToFile(file, &data->cell_material_count, sizeof(data->cell_material_count));
+    WriteToFile(file, &data->free_cell_material_id, sizeof(data->free_cell_material_id));
+// - Pointer: 1 // - Arary MAX_DYNAMIC_CELLS     WriteCellMaterialToFile(file, &data->dynamic_cell_materials);
+    WriteToFile(file, &data->dynamic_cell_material_count, sizeof(data->dynamic_cell_material_count));
+}
+
+static void WriteWorldDataToFile(FILE *file, WorldData *data)
+{
+    WriteToFile(file, &data->elapsed_world_time, sizeof(data->elapsed_world_time));
+// - Arary MAX_WORLD_CHUNKS     WriteChunkDataToFile(file, &data->active_chunks);
+    WriteToFile(file, &data->active_chunk_count, sizeof(data->active_chunk_count));
+    WriteChunkDataToFile(file, &data->floating_chunk);
+    WriteToFile(file, &data->character_entity, sizeof(data->character_entity));
+    WriteToFile(file, &data->cloud_entities, sizeof(data->cloud_entities));
+    WriteToFile(file, &data->cloud_entity_count, sizeof(data->cloud_entity_count));
+    WriteToFile(file, &data->free_cloud_entity_index, sizeof(data->free_cloud_entity_index));
+    WriteToFile(file, &data->ground_segment_entities, sizeof(data->ground_segment_entities));
+    WriteToFile(file, &data->ground_segment_entity_count, sizeof(data->ground_segment_entity_count));
+    WriteToFile(file, &data->free_ground_segment_entity_index, sizeof(data->free_ground_segment_entity_index));
+// - Arary MAX_ACTIVE_ENTITIES     WriteEntityToFile(file, &data->entities);
+    WriteToFile(file, &data->entity_count, sizeof(data->entity_count));
+    WriteToFile(file, &data->free_entity_id, sizeof(data->free_entity_id));
+    WriteComponentSetToFile(file, &data->entity_components);
+}
+

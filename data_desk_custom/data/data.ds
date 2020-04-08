@@ -371,14 +371,14 @@ CellMaterialType :: enum
 @ForwardDeclare(Entity)
 ForwardEntity :: _;
 
-@Component
-Position :: struct
+@Component @SerialisableStruct
+PositionComponent :: struct
 {
 	position : v2;
 }
 
-@Component
-Sprite :: struct
+@Component @SerialisableStruct
+SpriteComponent :: struct
 {
 	sprite_data : SpriteData;
 	@Editable
@@ -386,8 +386,8 @@ Sprite :: struct
 	is_background_sprite : b8; // Temp solution
 }
 
-@Component
-Animation :: struct
+@Component @SerialisableStruct
+AnimationComponent :: struct
 {
 	flags : AnimationFlags;
 	current_frame : i32;
@@ -433,8 +433,8 @@ MassData :: struct
 	inv_mass : f32;
 }
 
-@Component
-PhysicsBody :: struct
+@Component @SerialisableStruct
+PhysicsBodyComponent :: struct
 {
 	shape : c2Shape;
 	shape_type : c2ShapeType;
@@ -445,31 +445,31 @@ PhysicsBody :: struct
 	gravity_multiplier : f32;
 }
 
-@Component
-Movement :: struct
+@Component @SerialisableStruct
+MovementComponent :: struct
 {
 	axis_x : f32;
 	move_speed : f32;
 	move_speed_mult : f32;
 }
 
-@Component
-ArcEntity :: struct
+@Component @SerialisableStruct
+ArcEntityComponent :: struct
 {
 	entity_type : ArcEntityType;
 	current_general_state : *char;
 	current_animation_state : ArcEntityAnimationState;
 }
 
-@Component
-Item :: struct
+@Component @SerialisableStruct
+ItemComponent :: struct
 {
 	item_type : ItemType;
 	stack_size : i32;
 }
 
-@Component
-Trigger :: struct
+@Component @SerialisableStruct
+TriggerComponent :: struct
 {
 	enter_trigger_callback : TriggerCallback;
 	exit_trigger_callback : TriggerCallback;
@@ -478,22 +478,22 @@ Trigger :: struct
 	trigger_against : b8;
 }
 
-@Component
-Storage :: struct
+@Component @SerialisableStruct
+StorageComponent :: struct
 {
 	storage_size : i32;
 	items : *ItemComponent[MAX_STORAGE_SIZE];
 }
 
-@Component
-Parallax :: struct
+@Component @SerialisableStruct
+ParallaxComponent :: struct
 {
 	parallax_amount : v2;
 	desired_position : v2;
 }
 
-@Component
-ParticleEmitter :: struct
+@Component @SerialisableStruct
+ParticleEmitterComponent :: struct
 {
 	life_time : f32;
 	start_time : f32;
@@ -514,21 +514,21 @@ Dummy2 :: _;
 
 /* --- ENTITIES --- */
 
-@UniqueEntity(1, character)
+@UniqueEntity(1, character) @SerialisableStruct
 Character :: struct
 {
 	@ComponentList(Position, Sprite, Animation, PhysicsBody, Movement, ArcEntity)
 	dummy : Dummy;
 }
 
-@UniqueEntity(50, scenic)
+@UniqueEntity(50, scenic) @SerialisableStruct
 Cloud :: struct
 {
 	@ComponentList(Position, Sprite, Parallax)
 	dummy : Dummy;
 }
 
-@UniqueEntity(1024, ground)
+@UniqueEntity(1024, ground) @SerialisableStruct
 GroundSegment :: struct
 {
 	@ComponentList(Position, PhysicsBody)
@@ -538,6 +538,7 @@ GroundSegment :: struct
 @GenerateEntityCode
 Dummy3 :: _;
 
+@SerialisableStruct
 Entity :: struct
 {
 	entity_id : i32;
@@ -558,6 +559,7 @@ Entity :: struct
 @ForwardDeclare(Cell)
 ForwardCell :: _;
 
+@SerialisableStruct
 CellMaterial :: struct
 {
 	id : i32;
@@ -579,6 +581,7 @@ CellMaterial :: struct
 @ForwardDeclare(CellChunk)
 ForwardCellChunk :: _;
 
+@SerialisableStruct
 Cell :: struct
 {
 	parent_cell_chunk : *CellChunk;
@@ -588,6 +591,7 @@ Cell :: struct
 	material : *CellMaterial;
 }
 
+@SerialisableStruct
 CellChunk :: struct // Why tf did I create these and organise cells into them? The textures should be a separate division thing entirely and not be bound to the resolution of any given chunk size.
 {
 	parent_chunk : *ChunkData;
@@ -599,6 +603,9 @@ CellChunk :: struct // Why tf did I create these and organise cells into them? T
 	texture : Ts2dTexture;
 }
 
+CELL_CHUNKS_IN_CHUNK :: CHUNK_SIZE / CELL_CHUNK_SIZE
+CHUNK_AREA :: CHUNK_SIZE * CHUNK_SIZE
+@SerialisableStruct
 ChunkData :: struct
 {
 	is_valid : b8;
@@ -607,9 +614,11 @@ ChunkData :: struct
 	x_index : i32;
 	y_index : i32;
 	
-	cell_chunks : CellChunk[CHUNK_SIZE / CELL_CHUNK_SIZE][CHUNK_SIZE / CELL_CHUNK_SIZE];
+	cell_chunks : CellChunk[CELL_CHUNKS_IN_CHUNK][CELL_CHUNKS_IN_CHUNK];
+	// What happens if it's a complex array?
 	
-	cell_materials : CellMaterial[CHUNK_SIZE * CHUNK_SIZE];
+	
+	cell_materials : CellMaterial[CHUNK_AREA];
 	cell_material_count : i32;
 	free_cell_material_id : i32;
 	
@@ -618,7 +627,7 @@ ChunkData :: struct
 }
 
 // NOTE(tjr): World-save specific data
-@Serialisable
+@SerialisableStruct
 WorldData :: struct
 {
 	elapsed_world_time : f32;

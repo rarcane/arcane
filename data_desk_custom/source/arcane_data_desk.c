@@ -2,9 +2,24 @@
 #include <stdlib.h>
 #include <string.h>
 #include "data_desk.h"
+#include "../../game/source/telescope/telescope.h"
 
 static FILE *global_catchall_header;
 static FILE *global_catchall_implementation;
+
+static char storage[Megabytes(64)];
+static MemoryArena parse_arena;
+
+static DataDeskNode global_data_desk_nodes[512];
+static int global_data_desk_node_count = 0;
+static DataDeskNode *AllocNode(DataDeskNodeType node_type, char *string)
+{
+	DataDeskNode *node = &global_data_desk_nodes[global_data_desk_node_count++];
+	memset(node, 0, sizeof(DataDeskNode));
+	node->type = node_type;
+	node->string = MemoryArenaAllocateCStringCopy(&parse_arena, string);
+	return node;
+}
 
 static int component_count = 0;
 static DataDeskNode *components[1024];
@@ -12,7 +27,6 @@ static void GenerateComponentCode(void);
 
 static int unique_entity_count = 0;
 static DataDeskNode *unique_entities[1024];
-static void GenerateUniqueEntityArrays();
 static void GenerateEntityCode();
 
 static int xmacro_count = 0;
@@ -21,9 +35,15 @@ static DataDeskNode *GetXMacroNode(const char *name);
 
 static void GeneratePrintUICodeForAST(FILE *file, DataDeskNode *root, char *access_string);
 
+static int serialisable_struct_count = 0;
+static DataDeskNode *serialisable_structs[128];
+static void GenerateSerialisationCode();
+
 DATA_DESK_FUNC void
 DataDeskCustomInitCallback(void)
 {
+	parse_arena = MemoryArenaInit(storage, sizeof(storage));
+
 	global_catchall_header = fopen("catchall.h", "w");
 	global_catchall_implementation = fopen("catchall.c", "w");
 }
@@ -35,11 +55,7 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 	FILE *c_file = global_catchall_implementation;
 	if (h_file && c_file)
 	{
-		if (DataDeskNodeHasTag(root, "Component"))
-		{
-			components[component_count++] = root;
-		}
-		else if (DataDeskNodeHasTag(root, "UniqueEntity"))
+		if (DataDeskNodeHasTag(root, "UniqueEntity"))
 		{
 			unique_entities[unique_entity_count++] = root;
 
@@ -103,22 +119,103 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 			{
 				fprintf(h_file, "typedef struct %s\n", root->string);
 				fprintf(h_file, "{\n");
-				for (DataDeskNode *member = root->struct_declaration.first_member;
+
+				DataDeskNode *previous_node = 0;
+				DataDeskNode *original_first_member = root->struct_declaration.first_member;
+				if (DataDeskNodeHasTag(root, "Component"))
+				{
+					fprintf(h_file, "Entity *parent_entity;\n");
+					DataDeskNode *node_1 = AllocNode(DATA_DESK_NODE_TYPE_declaration, "parent_entity");
+					node_1->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, "Entity");
+					node_1->declaration.type->type_usage.pointer_count = 1;
+					root->struct_declaration.first_member = node_1;
+
+					fprintf(h_file, "i32 component_id;\n");
+					DataDeskNode *node_2 = AllocNode(DATA_DESK_NODE_TYPE_declaration, "component_id");
+					node_2->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, "i32");
+					node_1->next = node_2;
+					previous_node = node_2;
+
+					components[component_count++] = root;
+				}
+
+				for (DataDeskNode *member = original_first_member;
 					 member; member = member->next)
 				{
 					if (DataDeskNodeHasTag(member, "GenerateUniqueEntityArrays"))
 					{
-						GenerateUniqueEntityArrays();
+						fprintf(h_file, "\n");
+						for (int i = 0; i < unique_entity_count; i++)
+						{
+							DataDeskNode *entity_node = unique_entities[i];
+							DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
+
+							if (atoi(DataDeskGetTagParameter(entity_node_tag, 0)->name) > 1)
+							{
+								char variable_1_type[100];
+								sprintf(variable_1_type, "%sEntity", entity_node->name);
+								char variable_1_name[100];
+								sprintf(variable_1_name, "%s_entities", entity_node->name_lowercase_with_underscores);
+								fprintf(h_file, "%s %s[MAX_%s_ENTITIES];\n",
+										variable_1_type,
+										variable_1_name,
+										entity_node->name_uppercase_with_underscores);
+								DataDeskNode *node_1 = AllocNode(DATA_DESK_NODE_TYPE_declaration, variable_1_name);
+								node_1->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, variable_1_type);
+								if (previous_node)
+									previous_node->next = node_1;
+
+								char variable_2_name[100];
+								sprintf(variable_2_name, "%s_entity_count", entity_node->name_lowercase_with_underscores);
+								fprintf(h_file, "i32 %s;\n", variable_2_name);
+								DataDeskNode *node_2 = AllocNode(DATA_DESK_NODE_TYPE_declaration, variable_2_name);
+								node_2->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, "i32");
+								node_1->next = node_2;
+
+								char variable_3_name[100];
+								sprintf(variable_3_name, "free_%s_entity_index", entity_node->name_lowercase_with_underscores);
+								fprintf(h_file, "i32 %s;\n", variable_3_name);
+								DataDeskNode *node_3 = AllocNode(DATA_DESK_NODE_TYPE_declaration, variable_3_name);
+								node_3->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, "i32");
+								node_2->next = node_3;
+
+								previous_node = node_3;
+							}
+							else
+							{
+								char variable_1_type[100];
+								sprintf(variable_1_type, "%sEntity", entity_node->name);
+								char variable_1_name[100];
+								sprintf(variable_1_name, "%s_entity", entity_node->name_lowercase_with_underscores);
+								fprintf(h_file, "%s %s;\n", variable_1_type, variable_1_name);
+								DataDeskNode *node_1 = AllocNode(DATA_DESK_NODE_TYPE_declaration, variable_1_name);
+								node_1->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, variable_1_type);
+								if (previous_node)
+									previous_node->next = node_1;
+
+								previous_node = node_1;
+							}
+						}
+						fprintf(h_file, "\n");
 					}
 
-					_DataDeskFWriteGraphAsC(h_file, member, 0, 1);
+					if (previous_node)
+						previous_node->next = member;
+
+					DataDeskFWriteGraphAsC(h_file, member, 0);
 					fprintf(h_file, ";\n");
+
+					previous_node = member;
 				}
 				fprintf(h_file, "} %s;\n\n", root->string);
 
 				if (DataDeskNodeHasTag(root, "XMacro"))
 				{
 					xmacro_nodes[xmacro_count++] = root;
+				}
+				else if (DataDeskNodeHasTag(root, "SerialisableStruct"))
+				{
+					serialisable_structs[serialisable_struct_count++] = root;
 				}
 
 				break;
@@ -279,37 +376,18 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 DATA_DESK_FUNC void
 DataDeskCustomCleanUpCallback(void)
 {
+	GenerateSerialisationCode();
+
 	fclose(global_catchall_header);
 	fclose(global_catchall_implementation);
 }
 
-static void
-GenerateComponentCode(void)
+static void GenerateComponentCode(void)
 {
 	FILE *h_file = global_catchall_header;
 	FILE *c_file = global_catchall_implementation;
 	if (!h_file || !c_file)
 		return;
-
-	// NOTE(tjr): Generate component struct declarations
-	{
-		for (int i = 0; i < component_count; ++i)
-		{
-			DataDeskNode *root = components[i];
-			fprintf(h_file, "typedef struct %sComponent\n", root->name);
-			fprintf(h_file, "{\n");
-			fprintf(h_file, "Entity *parent_entity;\n");
-			fprintf(h_file, "i32 component_id;\n");
-
-			for (DataDeskNode *member = root->struct_declaration.first_member; member; member = member->next)
-			{
-				DataDeskFWriteGraphAsC(h_file, member, 0);
-				fprintf(h_file, ";\n");
-			}
-
-			fprintf(h_file, "} %sComponent;\n\n", root->name);
-		}
-	}
 
 	// NOTE(rjf): Generate component enums
 	{
@@ -318,7 +396,15 @@ GenerateComponentCode(void)
 		fprintf(h_file, "COMPONENT_INVALID,\n");
 		for (int i = 0; i < component_count; i++)
 		{
-			fprintf(h_file, "COMPONENT_%s,\n", components[i]->name_lowercase_with_underscores);
+			int string_length = 0;
+			for (; components[i]->name_lowercase_with_underscores[string_length]; ++string_length)
+			{
+			}
+			char trimmed_lowercase_name[50];
+			strcpy(trimmed_lowercase_name, components[i]->name_lowercase_with_underscores);
+			trimmed_lowercase_name[string_length - 10] = '\0';
+
+			fprintf(h_file, "COMPONENT_%s,\n", trimmed_lowercase_name);
 		}
 		fprintf(h_file, "COMPONENT_MAX,\n");
 		fprintf(h_file, "} ComponentType;\n\n");
@@ -326,15 +412,39 @@ GenerateComponentCode(void)
 
 	// NOTE(tjr): Generate component set structure.
 	{
+		DataDeskNode *struct_node = AllocNode(DATA_DESK_NODE_TYPE_struct_declaration, "ComponentSet");
+
 		fprintf(h_file, "typedef struct ComponentSet\n");
 		fprintf(h_file, "{\n");
+		DataDeskNode *previous_node = 0;
 		for (int i = 0; i < component_count; i++)
 		{
-			fprintf(h_file, "%sComponent %s_components[MAX_ACTIVE_ENTITIES];\n", components[i]->name, components[i]->name_lowercase_with_underscores);
-			fprintf(h_file, "i32 %s_component_count;\n", components[i]->name_lowercase_with_underscores);
-			fprintf(h_file, "i32 %s_free_component_id;\n", components[i]->name_lowercase_with_underscores);
+			DataDeskNode *component_node = components[i];
+
+			char variable_1_name[100];
+			sprintf(variable_1_name, "%ss", component_node->name_lowercase_with_underscores);
+
+			fprintf(h_file, "%s %s[MAX_ACTIVE_ENTITIES];\n",
+					component_node->name,
+					variable_1_name);
+
+			DataDeskNode *node_1 = AllocNode(DATA_DESK_NODE_TYPE_declaration, variable_1_name);
+			node_1->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, component_node->name);
+			node_1->declaration.type->type_usage.first_array_size_expression = AllocNode(DATA_DESK_NODE_TYPE_identifier, "MAX_ACTIVE_ENTITIES");
+			if (!previous_node)
+				struct_node->struct_declaration.first_member = node_1;
+			else
+				previous_node->next = node_1;
+
+			//todo
+			fprintf(h_file, "i32 %s_count;\n", components[i]->name_lowercase_with_underscores);
+			fprintf(h_file, "i32 %s_free_id;\n", components[i]->name_lowercase_with_underscores);
+
+			previous_node = node_1;
 		}
 		fprintf(h_file, "} ComponentSet;\n\n");
+
+		serialisable_structs[serialisable_struct_count++] = struct_node;
 	}
 
 	{
@@ -350,9 +460,17 @@ GenerateComponentCode(void)
 			fprintf(c_file, "        break;\n\n");
 			for (int i = 0; i < component_count; i++)
 			{
-				fprintf(c_file, "    case COMPONENT_%s :\n", components[i]->name_lowercase_with_underscores);
+				int string_length = 0;
+				for (; components[i]->name_lowercase_with_underscores[string_length]; ++string_length)
+				{
+				}
+				char trimmed_lowercase_name[50];
+				strcpy(trimmed_lowercase_name, components[i]->name_lowercase_with_underscores);
+				trimmed_lowercase_name[string_length - 10] = '\0';
+
+				fprintf(c_file, "    case COMPONENT_%s :\n", trimmed_lowercase_name);
 				fprintf(c_file, "    {\n");
-				fprintf(c_file, "        %sComponent *component = (%sComponent*)component_data;\n", components[i]->name, components[i]->name);
+				fprintf(c_file, "        %s *component = (%s*)component_data;\n", components[i]->name, components[i]->name);
 				GeneratePrintUICodeForAST(c_file, components[i], "component->");
 				fprintf(c_file, "        break;\n");
 				fprintf(c_file, "    }\n\n");
@@ -363,54 +481,62 @@ GenerateComponentCode(void)
 
 		for (int i = 0; i < component_count; i++)
 		{
+			int string_length = 0;
+			for (; components[i]->name_lowercase_with_underscores[string_length]; ++string_length)
+			{
+			}
+			char trimmed_lowercase_name[50];
+			strcpy(trimmed_lowercase_name, components[i]->name_lowercase_with_underscores);
+			trimmed_lowercase_name[string_length - 10] = '\0';
+
 			// NOTE(tjr): Add Component function.
 			{
-				fprintf(c_file, "internal %sComponent *Add%sComponent(Entity *entity)\n", components[i]->name, components[i]->name);
+				fprintf(c_file, "internal %s *Add%s(Entity *entity)\n", components[i]->name, components[i]->name);
 				fprintf(c_file, "{\n");
 				fprintf(c_file, "    i32 component_id;\n");
-				fprintf(c_file, "    if (core->world_data->entity_components.%s_free_component_id == core->world_data->entity_components.%s_component_count)\n", components[i]->name_lowercase_with_underscores, components[i]->name_lowercase_with_underscores);
+				fprintf(c_file, "    if (core->world_data->entity_components.%s_free_id == core->world_data->entity_components.%s_count)\n", components[i]->name_lowercase_with_underscores, components[i]->name_lowercase_with_underscores);
 				fprintf(c_file, "    {\n");
-				fprintf(c_file, "        component_id = core->world_data->entity_components.%s_component_count;\n", components[i]->name_lowercase_with_underscores);
-				fprintf(c_file, "        core->world_data->entity_components.%s_component_count++;\n", components[i]->name_lowercase_with_underscores);
-				fprintf(c_file, "        core->world_data->entity_components.%s_free_component_id = component_id + 1;\n", components[i]->name_lowercase_with_underscores);
+				fprintf(c_file, "        component_id = core->world_data->entity_components.%s_count;\n", components[i]->name_lowercase_with_underscores);
+				fprintf(c_file, "        core->world_data->entity_components.%s_count++;\n", components[i]->name_lowercase_with_underscores);
+				fprintf(c_file, "        core->world_data->entity_components.%s_free_id = component_id + 1;\n", components[i]->name_lowercase_with_underscores);
 				fprintf(c_file, "    }\n");
 				fprintf(c_file, "    else\n");
 				fprintf(c_file, "    {\n");
-				fprintf(c_file, "        component_id = core->world_data->entity_components.%s_free_component_id;\n", components[i]->name_lowercase_with_underscores);
+				fprintf(c_file, "        component_id = core->world_data->entity_components.%s_free_id;\n", components[i]->name_lowercase_with_underscores);
 				fprintf(c_file, "    }\n\n");
 
-				fprintf(c_file, "    core->world_data->entity_components.%s_components[component_id] = GetDefault%sComponent();\n", components[i]->name_lowercase_with_underscores, components[i]->name);
-				fprintf(c_file, "    entity->components[COMPONENT_%s] = &core->world_data->entity_components.%s_components[component_id];\n", components[i]->name_lowercase_with_underscores, components[i]->name_lowercase_with_underscores);
-				fprintf(c_file, "    core->world_data->entity_components.%s_components[component_id].parent_entity = entity;\n", components[i]->name_lowercase_with_underscores);
-				fprintf(c_file, "    core->world_data->entity_components.%s_components[component_id].component_id = component_id;\n\n", components[i]->name_lowercase_with_underscores);
+				fprintf(c_file, "    core->world_data->entity_components.%ss[component_id] = GetDefault%s();\n", components[i]->name_lowercase_with_underscores, components[i]->name);
+				fprintf(c_file, "    entity->components[COMPONENT_%s] = &core->world_data->entity_components.%ss[component_id];\n", trimmed_lowercase_name, components[i]->name_lowercase_with_underscores);
+				fprintf(c_file, "    core->world_data->entity_components.%ss[component_id].parent_entity = entity;\n", components[i]->name_lowercase_with_underscores);
+				fprintf(c_file, "    core->world_data->entity_components.%ss[component_id].component_id = component_id;\n\n", components[i]->name_lowercase_with_underscores);
 
-				fprintf(c_file, "    for (int i = 0; i < core->world_data->entity_components.%s_component_count + 1; i++)\n", components[i]->name_lowercase_with_underscores);
+				fprintf(c_file, "    for (int i = 0; i < core->world_data->entity_components.%s_count + 1; i++)\n", components[i]->name_lowercase_with_underscores);
 				fprintf(c_file, "    {\n");
-				fprintf(c_file, "        if (!core->world_data->entity_components.%s_components[i].parent_entity)\n", components[i]->name_lowercase_with_underscores);
+				fprintf(c_file, "        if (!core->world_data->entity_components.%ss[i].parent_entity)\n", components[i]->name_lowercase_with_underscores);
 				fprintf(c_file, "        {\n");
-				fprintf(c_file, "            core->world_data->entity_components.%s_free_component_id = i;\n", components[i]->name_lowercase_with_underscores);
+				fprintf(c_file, "            core->world_data->entity_components.%s_free_id = i;\n", components[i]->name_lowercase_with_underscores);
 				fprintf(c_file, "            break;\n");
 				fprintf(c_file, "        }\n");
 				fprintf(c_file, "    }\n\n");
 
-				fprintf(c_file, "    return &core->world_data->entity_components.%s_components[component_id];\n", components[i]->name_lowercase_with_underscores);
+				fprintf(c_file, "    return &core->world_data->entity_components.%ss[component_id];\n", components[i]->name_lowercase_with_underscores);
 				fprintf(c_file, "}\n\n");
 			}
 
 			// NOTE(tjr): Remove Component function.
 			{
-				fprintf(c_file, "internal void Remove%sComponent(Entity *entity)\n", components[i]->name);
+				fprintf(c_file, "internal void Remove%s(Entity *entity)\n", components[i]->name);
 				fprintf(c_file, "{\n");
-				fprintf(c_file, "    %sComponent *component = entity->components[COMPONENT_%s];\n", components[i]->name, components[i]->name_lowercase_with_underscores);
-				fprintf(c_file, "    R_DEV_ASSERT(component, \"Entity does not a %sComponent attached, so it can't remove it.\");\n\n", components[i]->name);
+				fprintf(c_file, "    %s *component = entity->components[COMPONENT_%s];\n", components[i]->name, trimmed_lowercase_name);
+				fprintf(c_file, "    R_DEV_ASSERT(component, \"Entity does not a %s attached, so it can't remove it.\");\n\n", components[i]->name);
 
 				fprintf(c_file, "    i32 deleted_component_id = component->component_id;\n");
-				fprintf(c_file, "    %sComponent empty_comp = {0};\n", components[i]->name);
-				fprintf(c_file, "    core->world_data->entity_components.%s_components[deleted_component_id] = empty_comp;\n", components[i]->name_lowercase_with_underscores);
-				fprintf(c_file, "    entity->components[COMPONENT_%s] = 0;\n\n", components[i]->name_lowercase_with_underscores);
+				fprintf(c_file, "    %s empty_comp = {0};\n", components[i]->name);
+				fprintf(c_file, "    core->world_data->entity_components.%ss[deleted_component_id] = empty_comp;\n", components[i]->name_lowercase_with_underscores);
+				fprintf(c_file, "    entity->components[COMPONENT_%s] = 0;\n\n", trimmed_lowercase_name);
 
-				fprintf(c_file, "    if (deleted_component_id < core->world_data->entity_components.%s_free_component_id)\n", components[i]->name_lowercase_with_underscores);
-				fprintf(c_file, "        core->world_data->entity_components.%s_free_component_id = deleted_component_id;\n", components[i]->name_lowercase_with_underscores);
+				fprintf(c_file, "    if (deleted_component_id < core->world_data->entity_components.%s_free_id)\n", components[i]->name_lowercase_with_underscores);
+				fprintf(c_file, "        core->world_data->entity_components.%s_free_id = deleted_component_id;\n", components[i]->name_lowercase_with_underscores);
 				fprintf(c_file, "}\n\n");
 			}
 		}
@@ -420,9 +546,9 @@ GenerateComponentCode(void)
 		fprintf(c_file, "{\n");
 		for (int i = 0; i < component_count; i++)
 		{
-			fprintf(c_file, "    %sComponent *%s_component = entity->components[%i];\n", components[i]->name, components[i]->name_lowercase_with_underscores, i + 1);
-			fprintf(c_file, "    if (%s_component)\n", components[i]->name_lowercase_with_underscores);
-			fprintf(c_file, "        Remove%sComponent(entity);\n", components[i]->name);
+			fprintf(c_file, "    %s *%s = entity->components[%i];\n", components[i]->name, components[i]->name_lowercase_with_underscores, i + 1);
+			fprintf(c_file, "    if (%s)\n", components[i]->name_lowercase_with_underscores);
+			fprintf(c_file, "        Remove%s(entity);\n", components[i]->name);
 		}
 
 		fprintf(c_file, "\n    i32 deleted_entity_id = entity->entity_id;\n");
@@ -432,32 +558,6 @@ GenerateComponentCode(void)
 		fprintf(c_file, "        core->world_data->free_entity_id = deleted_entity_id;\n");
 		fprintf(c_file, "}\n\n");
 	}
-}
-
-static void GenerateUniqueEntityArrays()
-{
-	FILE *file = global_catchall_header;
-	fprintf(file, "\n");
-	for (int i = 0; i < unique_entity_count; i++)
-	{
-		DataDeskNode *entity_node = unique_entities[i];
-		DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
-
-		if (atoi(DataDeskGetTagParameter(entity_node_tag, 0)->name) > 1)
-		{
-			fprintf(file, "%sEntity %s_entities[MAX_%s_ENTITIES];\n",
-					entity_node->name,
-					entity_node->name_lowercase_with_underscores,
-					entity_node->name_uppercase_with_underscores);
-			fprintf(file, "i32 %s_entity_count;\n", entity_node->name_lowercase_with_underscores);
-			fprintf(file, "i32 free_%s_entity_index;\n", entity_node->name_lowercase_with_underscores);
-		}
-		else
-		{
-			fprintf(file, "%sEntity %s_entity;\n", entity_node->name, entity_node->name_lowercase_with_underscores);
-		}
-	}
-	fprintf(file, "\n");
 }
 
 static void GenerateEntityCode()
@@ -753,5 +853,69 @@ static void GeneratePrintUICodeForAST(FILE *file, DataDeskNode *root, char *acce
 		default:
 			break;
 		}
+	}
+}
+
+static void GenerateSerialisationCode()
+{
+	FILE *h_file = global_catchall_header;
+	FILE *c_file = global_catchall_implementation;
+	if (!h_file || !c_file)
+		return;
+
+	for (int i = 0; i < serialisable_struct_count; i++)
+	{
+		DataDeskNode *root = serialisable_structs[i];
+
+		fprintf(h_file, "static void Write%sToFile(FILE *file, %s *data);\n\n", root->name, root->name);
+
+		fprintf(c_file, "static void Write%sToFile(FILE *file, %s *data)\n", root->name, root->name);
+		fprintf(c_file, "{\n");
+		for (DataDeskNode *member = root->struct_declaration.first_member;
+			 member; member = member->next)
+		{
+			if (member->type != DATA_DESK_NODE_TYPE_declaration || member->declaration.type->type != DATA_DESK_NODE_TYPE_type_usage)
+				fprintf(c_file, "uhhhhh");
+
+			if (member->declaration.type->type_usage.pointer_count > 0)
+			{
+				fprintf(c_file, "// - Pointer: %i ", member->declaration.type->type_usage.pointer_count);
+			}
+
+			if (member->declaration.type->type_usage.first_array_size_expression)
+			{
+				if (!(member->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_identifier ||
+					  member->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_numeric_constant))
+					fprintf(c_file, "\nuhhhhh\n");
+
+				if (member->declaration.type->type_usage.first_array_size_expression->next)
+				{
+					// 2d array
+				}
+
+				fprintf(c_file, "// - Arary %s ", member->declaration.type->type_usage.first_array_size_expression->string);
+			}
+
+			int is_complex = 0;
+			for (int j = 0; j < serialisable_struct_count; j++)
+			{
+				DataDeskNode *complex_struct = serialisable_structs[j];
+				if (strcmp(complex_struct->name, member->declaration.type->name) == 0)
+				{
+					is_complex = 1;
+					break;
+				}
+			}
+
+			if (is_complex)
+			{
+				fprintf(c_file, "    Write%sToFile(file, &data->%s);\n", member->declaration.type->name, member->name);
+			}
+			else // Just directly read/write the data-structure, since it just consists of primatives.
+			{
+				fprintf(c_file, "    WriteToFile(file, &data->%s, sizeof(data->%s));\n", member->name, member->name);
+			}
+		}
+		fprintf(c_file, "}\n\n");
 	}
 }
