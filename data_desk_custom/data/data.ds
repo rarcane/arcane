@@ -515,21 +515,21 @@ Dummy2 :: _;
 /* --- ENTITIES --- */
 
 @UniqueEntity(1, character) @SerialisableStruct
-Character :: struct
+CharacterEntity :: struct
 {
 	@ComponentList(Position, Sprite, Animation, PhysicsBody, Movement, ArcEntity)
 	dummy : Dummy;
 }
 
 @UniqueEntity(50, scenic) @SerialisableStruct
-Cloud :: struct
+CloudEntity :: struct
 {
 	@ComponentList(Position, Sprite, Parallax)
 	dummy : Dummy;
 }
 
 @UniqueEntity(1024, ground) @SerialisableStruct
-GroundSegment :: struct
+GroundSegmentEntity :: struct
 {
 	@ComponentList(Position, PhysicsBody)
 	dummy : Dummy;
@@ -615,8 +615,6 @@ ChunkData :: struct
 	y_index : i32;
 	
 	cell_chunks : CellChunk[CELL_CHUNKS_IN_CHUNK][CELL_CHUNKS_IN_CHUNK];
-	// What happens if it's a complex array?
-	
 	
 	cell_materials : CellMaterial[CHUNK_AREA];
 	cell_material_count : i32;
@@ -642,6 +640,8 @@ WorldData :: struct
 	free_entity_id : i32;
 	
 	entity_components : ComponentSet;
+	
+	test_ptr : *i32;
 }
 
 // NOTE(tjr): Game client data

@@ -71,7 +71,7 @@ GameInit(void)
 		{
 			TsDevTerminalCommand commands[] =
 				{
-					0 // {"col_draw", "", "Toggles whether the collision bounds are drawn.", 1, ToggleCollisionCommand},
+					{"save", "[Level name]", "Saves the provided level. If left blank, saves current level.", 1, SaveLevelCommand},
 				};
 
 			TsDevTerminalVariable variables[] =

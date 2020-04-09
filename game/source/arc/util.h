@@ -48,3 +48,12 @@ internal f32 Fade(f32 alpha);
 internal f32 PythagSolve(f32 a, f32 b);
 
 internal f32 GetPerlinNoise(f32 x_pos, f32 y_pos);
+
+typedef struct SerialisationPointer
+{
+	void **pointer_address;
+	i32 offset;
+} SerialisationPointer;
+
+global i32 serialisation_pointer_count = 0;
+global SerialisationPointer serialisation_pointers[10240];

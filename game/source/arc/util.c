@@ -318,13 +318,19 @@ internal void ReadFromFile(FILE *file, void *data, size_t size_bytes)
 // NOTE(tjr): Saves current data to a specified level.
 internal void SaveLevel(char *level_name)
 {
+	R_DEV_ASSERT(level_name[0], "Invalid name.");
+
 	char path[200] = "";
 	sprintf(path, "%s%s.save", core->client_data->res_path, level_name);
 	FILE *save = fopen(path, "w");
 	R_DEV_ASSERT(save, "Couldn't open file.");
 
-	// ...
+	WriteWorldDataToFile(save, core->world_data);
+	fclose(save);
 
+	save = fopen(path, "r+");
+	fseek(save, 0, SEEK_SET);
+	FillWorldDataPointersInFile(save, core->world_data);
 	fclose(save);
 }
 

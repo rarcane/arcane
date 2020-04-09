@@ -2,6 +2,8 @@ internal void CreateTestLevel()
 {
 	R_DEV_ASSERT(!core->client_data->current_level[0], "A level is already loaded in.");
 
+	core->world_data->test_ptr = &core->world_data->free_entity_id;
+
 	{
 		CharacterEntity *character = InitialiseCharacterEntity();
 		character->parent_generic_entity->flags |= ENTITY_FLAGS_no_delete;
@@ -101,6 +103,7 @@ internal void CreateTestLevel()
 		}
 	}
 
+	strcpy(core->client_data->current_level, "testing");
 	SaveLevel("testing");
 }
 

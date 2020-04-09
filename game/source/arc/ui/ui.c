@@ -565,7 +565,7 @@ internal void DrawGameUI()
 	{
 		for (int i = 0; i < core->world_data->ground_segment_entity_count; i++)
 		{
-			GroundSegmentEntity *seg_entity = &core->world_data->ground_segment_entities[i];
+			GroundSegmentEntity *seg_entity = &core->world_data->ground_segment_entity_list[i];
 			if (seg_entity->parent_generic_entity)
 			{
 				PhysicsBodyComponent *seg_body = seg_entity->physics_body_comp;
@@ -625,7 +625,7 @@ internal void DrawGameUI()
 						DeleteGroundSegmentEntity(seg_entity);
 						for (int j = 0; j < core->world_data->ground_segment_entity_count; j++)
 						{
-							GroundSegmentEntity *seg_entity_2 = &core->world_data->ground_segment_entities[j];
+							GroundSegmentEntity *seg_entity_2 = &core->world_data->ground_segment_entity_list[j];
 							if (seg_entity_2->parent_generic_entity)
 							{
 								PhysicsBodyComponent *seg_body_2 = seg_entity_2->physics_body_comp;
@@ -681,7 +681,7 @@ internal void DrawEditorUI()
 		{
 			if (TsUIDropdown("World..."))
 			{
-				if (TsUIButton("Save"))
+				/* if (TsUIButton("Save"))
 				{
 					R_DEV_ASSERT(core->client_data->current_level[0], "No level currently loaded?");
 				}
@@ -689,7 +689,7 @@ internal void DrawEditorUI()
 				if (TsUIButton("Reload"))
 				{
 					R_DEV_ASSERT(core->client_data->current_level[0], "No level currently loaded?");
-				}
+				} */
 			}
 			TsUIDropdownEnd();
 
@@ -1005,7 +1005,7 @@ internal void DrawEditorUI()
 			// List segments
 			for (int i = 0; i < core->world_data->ground_segment_entity_count; i++)
 			{
-				GroundSegmentEntity *ground_seg = &core->world_data->ground_segment_entities[i];
+				GroundSegmentEntity *ground_seg = &core->world_data->ground_segment_entity_list[i];
 				if (ground_seg->parent_generic_entity)
 				{
 					char label[50];

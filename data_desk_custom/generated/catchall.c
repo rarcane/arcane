@@ -659,7 +659,7 @@ internal PositionComponent *AddPositionComponent(Entity *entity)
     core->world_data->entity_components.position_components[component_id].parent_entity = entity;
     core->world_data->entity_components.position_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < core->world_data->entity_components.position_component_count + 1; i++)
+    for (i32 i = 0; i < core->world_data->entity_components.position_component_count + 1; i++)
     {
         if (!core->world_data->entity_components.position_components[i].parent_entity)
         {
@@ -704,7 +704,7 @@ internal SpriteComponent *AddSpriteComponent(Entity *entity)
     core->world_data->entity_components.sprite_components[component_id].parent_entity = entity;
     core->world_data->entity_components.sprite_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < core->world_data->entity_components.sprite_component_count + 1; i++)
+    for (i32 i = 0; i < core->world_data->entity_components.sprite_component_count + 1; i++)
     {
         if (!core->world_data->entity_components.sprite_components[i].parent_entity)
         {
@@ -749,7 +749,7 @@ internal AnimationComponent *AddAnimationComponent(Entity *entity)
     core->world_data->entity_components.animation_components[component_id].parent_entity = entity;
     core->world_data->entity_components.animation_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < core->world_data->entity_components.animation_component_count + 1; i++)
+    for (i32 i = 0; i < core->world_data->entity_components.animation_component_count + 1; i++)
     {
         if (!core->world_data->entity_components.animation_components[i].parent_entity)
         {
@@ -794,7 +794,7 @@ internal PhysicsBodyComponent *AddPhysicsBodyComponent(Entity *entity)
     core->world_data->entity_components.physics_body_components[component_id].parent_entity = entity;
     core->world_data->entity_components.physics_body_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < core->world_data->entity_components.physics_body_component_count + 1; i++)
+    for (i32 i = 0; i < core->world_data->entity_components.physics_body_component_count + 1; i++)
     {
         if (!core->world_data->entity_components.physics_body_components[i].parent_entity)
         {
@@ -839,7 +839,7 @@ internal MovementComponent *AddMovementComponent(Entity *entity)
     core->world_data->entity_components.movement_components[component_id].parent_entity = entity;
     core->world_data->entity_components.movement_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < core->world_data->entity_components.movement_component_count + 1; i++)
+    for (i32 i = 0; i < core->world_data->entity_components.movement_component_count + 1; i++)
     {
         if (!core->world_data->entity_components.movement_components[i].parent_entity)
         {
@@ -884,7 +884,7 @@ internal ArcEntityComponent *AddArcEntityComponent(Entity *entity)
     core->world_data->entity_components.arc_entity_components[component_id].parent_entity = entity;
     core->world_data->entity_components.arc_entity_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < core->world_data->entity_components.arc_entity_component_count + 1; i++)
+    for (i32 i = 0; i < core->world_data->entity_components.arc_entity_component_count + 1; i++)
     {
         if (!core->world_data->entity_components.arc_entity_components[i].parent_entity)
         {
@@ -929,7 +929,7 @@ internal ItemComponent *AddItemComponent(Entity *entity)
     core->world_data->entity_components.item_components[component_id].parent_entity = entity;
     core->world_data->entity_components.item_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < core->world_data->entity_components.item_component_count + 1; i++)
+    for (i32 i = 0; i < core->world_data->entity_components.item_component_count + 1; i++)
     {
         if (!core->world_data->entity_components.item_components[i].parent_entity)
         {
@@ -974,7 +974,7 @@ internal TriggerComponent *AddTriggerComponent(Entity *entity)
     core->world_data->entity_components.trigger_components[component_id].parent_entity = entity;
     core->world_data->entity_components.trigger_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < core->world_data->entity_components.trigger_component_count + 1; i++)
+    for (i32 i = 0; i < core->world_data->entity_components.trigger_component_count + 1; i++)
     {
         if (!core->world_data->entity_components.trigger_components[i].parent_entity)
         {
@@ -1019,7 +1019,7 @@ internal StorageComponent *AddStorageComponent(Entity *entity)
     core->world_data->entity_components.storage_components[component_id].parent_entity = entity;
     core->world_data->entity_components.storage_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < core->world_data->entity_components.storage_component_count + 1; i++)
+    for (i32 i = 0; i < core->world_data->entity_components.storage_component_count + 1; i++)
     {
         if (!core->world_data->entity_components.storage_components[i].parent_entity)
         {
@@ -1064,7 +1064,7 @@ internal ParallaxComponent *AddParallaxComponent(Entity *entity)
     core->world_data->entity_components.parallax_components[component_id].parent_entity = entity;
     core->world_data->entity_components.parallax_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < core->world_data->entity_components.parallax_component_count + 1; i++)
+    for (i32 i = 0; i < core->world_data->entity_components.parallax_component_count + 1; i++)
     {
         if (!core->world_data->entity_components.parallax_components[i].parent_entity)
         {
@@ -1109,7 +1109,7 @@ internal ParticleEmitterComponent *AddParticleEmitterComponent(Entity *entity)
     core->world_data->entity_components.particle_emitter_components[component_id].parent_entity = entity;
     core->world_data->entity_components.particle_emitter_components[component_id].component_id = component_id;
 
-    for (int i = 0; i < core->world_data->entity_components.particle_emitter_component_count + 1; i++)
+    for (i32 i = 0; i < core->world_data->entity_components.particle_emitter_component_count + 1; i++)
     {
         if (!core->world_data->entity_components.particle_emitter_components[i].parent_entity)
         {
@@ -1180,7 +1180,7 @@ internal void DeleteEntity(Entity *entity)
 
 static CharacterEntity *InitialiseCharacterEntity()
 {
-    Entity *generic_entity = NewEntity("Character", ENTITY_TYPE_character, GENERALISED_ENTITY_TYPE_character);
+    Entity *generic_entity = NewEntity("CharacterEntity", ENTITY_TYPE_character_entity, GENERALISED_ENTITY_TYPE_character);
     CharacterEntity *unique_entity = &core->world_data->character_entity;
     generic_entity->unique_entity = unique_entity;
     unique_entity->parent_generic_entity = generic_entity;
@@ -1197,7 +1197,7 @@ static CharacterEntity *InitialiseCharacterEntity()
 
 static CloudEntity *NewCloudEntity()
 {
-    R_DEV_ASSERT(core->world_data->free_cloud_entity_index + 1 < MAX_CLOUD_ENTITIES, "Maximum amount of Cloud entites reached");
+    R_DEV_ASSERT(core->world_data->free_cloud_entity_index + 1 < MAX_CLOUD_ENTITY_COUNT, "Maximum amount of CloudEntity entites reached");
 
     i32 new_unique_id = core->world_data->free_cloud_entity_index;
     if (core->world_data->free_cloud_entity_index == core->world_data->cloud_entity_count)
@@ -1205,10 +1205,10 @@ static CloudEntity *NewCloudEntity()
         core->world_data->cloud_entity_count++;
         core->world_data->free_cloud_entity_index++;
     }
-    core->world_data->cloud_entities[new_unique_id].unique_entity_id = new_unique_id;
+    core->world_data->cloud_entity_list[new_unique_id].unique_entity_id = new_unique_id;
 
-    Entity *generic_entity = NewEntity("Cloud", ENTITY_TYPE_cloud, GENERALISED_ENTITY_TYPE_scenic);
-    CloudEntity *unique_entity = &core->world_data->cloud_entities[new_unique_id];
+    Entity *generic_entity = NewEntity("CloudEntity", ENTITY_TYPE_cloud_entity, GENERALISED_ENTITY_TYPE_scenic);
+    CloudEntity *unique_entity = &core->world_data->cloud_entity_list[new_unique_id];
     generic_entity->unique_entity = unique_entity;
     unique_entity->parent_generic_entity = generic_entity;
     unique_entity->unique_entity_id = new_unique_id;
@@ -1231,7 +1231,7 @@ static void DeleteCloudEntity(CloudEntity *entity)
 
 static GroundSegmentEntity *NewGroundSegmentEntity()
 {
-    R_DEV_ASSERT(core->world_data->free_ground_segment_entity_index + 1 < MAX_GROUND_SEGMENT_ENTITIES, "Maximum amount of GroundSegment entites reached");
+    R_DEV_ASSERT(core->world_data->free_ground_segment_entity_index + 1 < MAX_GROUND_SEGMENT_ENTITY_COUNT, "Maximum amount of GroundSegmentEntity entites reached");
 
     i32 new_unique_id = core->world_data->free_ground_segment_entity_index;
     if (core->world_data->free_ground_segment_entity_index == core->world_data->ground_segment_entity_count)
@@ -1239,10 +1239,10 @@ static GroundSegmentEntity *NewGroundSegmentEntity()
         core->world_data->ground_segment_entity_count++;
         core->world_data->free_ground_segment_entity_index++;
     }
-    core->world_data->ground_segment_entities[new_unique_id].unique_entity_id = new_unique_id;
+    core->world_data->ground_segment_entity_list[new_unique_id].unique_entity_id = new_unique_id;
 
-    Entity *generic_entity = NewEntity("GroundSegment", ENTITY_TYPE_ground_segment, GENERALISED_ENTITY_TYPE_ground);
-    GroundSegmentEntity *unique_entity = &core->world_data->ground_segment_entities[new_unique_id];
+    Entity *generic_entity = NewEntity("GroundSegmentEntity", ENTITY_TYPE_ground_segment_entity, GENERALISED_ENTITY_TYPE_ground);
+    GroundSegmentEntity *unique_entity = &core->world_data->ground_segment_entity_list[new_unique_id];
     generic_entity->unique_entity = unique_entity;
     unique_entity->parent_generic_entity = generic_entity;
     unique_entity->unique_entity_id = new_unique_id;
@@ -1266,24 +1266,44 @@ static void PrintEntityDataUI(Entity *entity)
 {
     switch(entity->type)
     {
-    case ENTITY_TYPE_character :
+    case ENTITY_TYPE_character_entity :
     {
         CharacterEntity *unique_entity = entity->unique_entity;
+            // TODO: Don't know how to generate UI print for variable 'parent_generic_entity'
+            // TODO: Don't know how to generate UI print for variable 'position_comp'
+            // TODO: Don't know how to generate UI print for variable 'sprite_comp'
+            // TODO: Don't know how to generate UI print for variable 'animation_comp'
+            // TODO: Don't know how to generate UI print for variable 'physics_body_comp'
+            // TODO: Don't know how to generate UI print for variable 'movement_comp'
+            // TODO: Don't know how to generate UI print for variable 'arc_entity_comp'
         break;
     }
-    case ENTITY_TYPE_cloud :
+    case ENTITY_TYPE_cloud_entity :
     {
         CloudEntity *unique_entity = entity->unique_entity;
+            // TODO: Don't know how to generate UI print for variable 'parent_generic_entity'
+            TsUIPushAutoWidth();
+            { char label[100]; sprintf(label, "unique_entity_id: %i", unique_entity->unique_entity_id); TsUILabel(label); }
+            TsUIPopWidth();
+            // TODO: Don't know how to generate UI print for variable 'position_comp'
+            // TODO: Don't know how to generate UI print for variable 'sprite_comp'
+            // TODO: Don't know how to generate UI print for variable 'parallax_comp'
         break;
     }
-    case ENTITY_TYPE_ground_segment :
+    case ENTITY_TYPE_ground_segment_entity :
     {
         GroundSegmentEntity *unique_entity = entity->unique_entity;
+            // TODO: Don't know how to generate UI print for variable 'parent_generic_entity'
+            TsUIPushAutoWidth();
+            { char label[100]; sprintf(label, "unique_entity_id: %i", unique_entity->unique_entity_id); TsUILabel(label); }
+            TsUIPopWidth();
+            // TODO: Don't know how to generate UI print for variable 'position_comp'
+            // TODO: Don't know how to generate UI print for variable 'physics_body_comp'
         break;
     }
     }
 
-    for (int i = 1; i < COMPONENT_MAX; i++)
+    for (i32 i = 1; i < COMPONENT_MAX; i++)
     {
         if (entity->components[i])
         {
@@ -1293,23 +1313,123 @@ static void PrintEntityDataUI(Entity *entity)
 }
 static void WritePositionComponentToFile(FILE *file, PositionComponent *data)
 {
-// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parent_entity, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
     WriteToFile(file, &data->position, sizeof(data->position));
 }
 
+static void FillPositionComponentPointersInFile(FILE *file, PositionComponent *data)
+{
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->component_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->component_id), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->position)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->position), SEEK_CUR);
+}
+
 static void WriteSpriteComponentToFile(FILE *file, SpriteComponent *data)
 {
-// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parent_entity, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
     WriteToFile(file, &data->sprite_data, sizeof(data->sprite_data));
     WriteToFile(file, &data->is_flipped, sizeof(data->is_flipped));
     WriteToFile(file, &data->is_background_sprite, sizeof(data->is_background_sprite));
 }
 
+static void FillSpriteComponentPointersInFile(FILE *file, SpriteComponent *data)
+{
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->component_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->component_id), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->sprite_data)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->sprite_data), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->is_flipped)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->is_flipped), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->is_background_sprite)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->is_background_sprite), SEEK_CUR);
+}
+
 static void WriteAnimationComponentToFile(FILE *file, AnimationComponent *data)
 {
-// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parent_entity, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
     WriteToFile(file, &data->flags, sizeof(data->flags));
     WriteToFile(file, &data->current_frame, sizeof(data->current_frame));
@@ -1317,9 +1437,80 @@ static void WriteAnimationComponentToFile(FILE *file, AnimationComponent *data)
     WriteToFile(file, &data->frame_start_time, sizeof(data->frame_start_time));
 }
 
+static void FillAnimationComponentPointersInFile(FILE *file, AnimationComponent *data)
+{
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->component_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->component_id), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->flags)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->flags), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->current_frame)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->current_frame), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->interval_mult)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->interval_mult), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->frame_start_time)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->frame_start_time), SEEK_CUR);
+}
+
 static void WritePhysicsBodyComponentToFile(FILE *file, PhysicsBodyComponent *data)
 {
-// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parent_entity, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
     WriteToFile(file, &data->shape, sizeof(data->shape));
     WriteToFile(file, &data->shape_type, sizeof(data->shape_type));
@@ -1330,104 +1521,1149 @@ static void WritePhysicsBodyComponentToFile(FILE *file, PhysicsBodyComponent *da
     WriteToFile(file, &data->gravity_multiplier, sizeof(data->gravity_multiplier));
 }
 
+static void FillPhysicsBodyComponentPointersInFile(FILE *file, PhysicsBodyComponent *data)
+{
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->component_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->component_id), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->shape)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->shape), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->shape_type)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->shape_type), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->material)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->material), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->mass_data)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->mass_data), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->velocity)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->velocity), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->force)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->force), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->gravity_multiplier)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->gravity_multiplier), SEEK_CUR);
+}
+
 static void WriteMovementComponentToFile(FILE *file, MovementComponent *data)
 {
-// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parent_entity, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
     WriteToFile(file, &data->axis_x, sizeof(data->axis_x));
     WriteToFile(file, &data->move_speed, sizeof(data->move_speed));
     WriteToFile(file, &data->move_speed_mult, sizeof(data->move_speed_mult));
 }
 
+static void FillMovementComponentPointersInFile(FILE *file, MovementComponent *data)
+{
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->component_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->component_id), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->axis_x)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->axis_x), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->move_speed)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->move_speed), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->move_speed_mult)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->move_speed_mult), SEEK_CUR);
+}
+
 static void WriteArcEntityComponentToFile(FILE *file, ArcEntityComponent *data)
 {
-// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parent_entity, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
     WriteToFile(file, &data->entity_type, sizeof(data->entity_type));
-// - Pointer: 1     WriteToFile(file, &data->current_general_state, sizeof(data->current_general_state));
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->current_general_state, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
     WriteToFile(file, &data->current_animation_state, sizeof(data->current_animation_state));
+}
+
+static void FillArcEntityComponentPointersInFile(FILE *file, ArcEntityComponent *data)
+{
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->component_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->component_id), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->entity_type)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->entity_type), SEEK_CUR);
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->current_animation_state)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->current_animation_state), SEEK_CUR);
 }
 
 static void WriteItemComponentToFile(FILE *file, ItemComponent *data)
 {
-// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parent_entity, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
     WriteToFile(file, &data->item_type, sizeof(data->item_type));
     WriteToFile(file, &data->stack_size, sizeof(data->stack_size));
 }
 
+static void FillItemComponentPointersInFile(FILE *file, ItemComponent *data)
+{
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->component_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->component_id), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->item_type)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->item_type), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->stack_size)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->stack_size), SEEK_CUR);
+}
+
 static void WriteTriggerComponentToFile(FILE *file, TriggerComponent *data)
 {
-// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parent_entity, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
     WriteToFile(file, &data->enter_trigger_callback, sizeof(data->enter_trigger_callback));
     WriteToFile(file, &data->exit_trigger_callback, sizeof(data->exit_trigger_callback));
-// - Arary MAX_OVERLAPPING_COLLIDERS     WriteToFile(file, &data->previous_overlaps, sizeof(data->previous_overlaps));
     WriteToFile(file, &data->previous_overlaps_count, sizeof(data->previous_overlaps_count));
     WriteToFile(file, &data->trigger_against, sizeof(data->trigger_against));
 }
 
+static void FillTriggerComponentPointersInFile(FILE *file, TriggerComponent *data)
+{
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->component_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->component_id), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->enter_trigger_callback)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->enter_trigger_callback), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->exit_trigger_callback)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->exit_trigger_callback), SEEK_CUR);
+// - Arary MAX_OVERLAPPING_COLLIDERS
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->previous_overlaps_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->previous_overlaps_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->trigger_against)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->trigger_against), SEEK_CUR);
+}
+
 static void WriteStorageComponentToFile(FILE *file, StorageComponent *data)
 {
-// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parent_entity, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
     WriteToFile(file, &data->storage_size, sizeof(data->storage_size));
-// - Pointer: 1 // - Arary MAX_STORAGE_SIZE     WriteItemComponentToFile(file, &data->items);
+}
+
+static void FillStorageComponentPointersInFile(FILE *file, StorageComponent *data)
+{
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->component_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->component_id), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->storage_size)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->storage_size), SEEK_CUR);
+// - Arary MAX_STORAGE_SIZE
 }
 
 static void WriteParallaxComponentToFile(FILE *file, ParallaxComponent *data)
 {
-// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parent_entity, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
     WriteToFile(file, &data->parallax_amount, sizeof(data->parallax_amount));
     WriteToFile(file, &data->desired_position, sizeof(data->desired_position));
 }
 
+static void FillParallaxComponentPointersInFile(FILE *file, ParallaxComponent *data)
+{
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->component_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->component_id), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->parallax_amount)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->parallax_amount), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->desired_position)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->desired_position), SEEK_CUR);
+}
+
 static void WriteParticleEmitterComponentToFile(FILE *file, ParticleEmitterComponent *data)
 {
-// - Pointer: 1     WriteEntityToFile(file, &data->parent_entity);
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parent_entity, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
     WriteToFile(file, &data->life_time, sizeof(data->life_time));
     WriteToFile(file, &data->start_time, sizeof(data->start_time));
     WriteToFile(file, &data->flags, sizeof(data->flags));
-// - Arary MAX_PARTICLE_AMOUNT     WriteToFile(file, &data->particles, sizeof(data->particles));
     WriteToFile(file, &data->particle_count, sizeof(data->particle_count));
     WriteToFile(file, &data->free_particle_index, sizeof(data->free_particle_index));
     WriteToFile(file, &data->begin_callback, sizeof(data->begin_callback));
     WriteToFile(file, &data->finish_callback, sizeof(data->finish_callback));
 }
 
+static void FillParticleEmitterComponentPointersInFile(FILE *file, ParticleEmitterComponent *data)
+{
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->component_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->component_id), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->life_time)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->life_time), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->start_time)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->start_time), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->flags)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->flags), SEEK_CUR);
+// - Arary MAX_PARTICLE_AMOUNT
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->particle_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->particle_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->free_particle_index)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->free_particle_index), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->begin_callback)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->begin_callback), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->finish_callback)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->finish_callback), SEEK_CUR);
+}
+
 static void WriteComponentSetToFile(FILE *file, ComponentSet *data)
 {
-// - Arary MAX_ACTIVE_ENTITIES     WritePositionComponentToFile(file, &data->position_components);
-// - Arary MAX_ACTIVE_ENTITIES     WriteSpriteComponentToFile(file, &data->sprite_components);
-// - Arary MAX_ACTIVE_ENTITIES     WriteAnimationComponentToFile(file, &data->animation_components);
-// - Arary MAX_ACTIVE_ENTITIES     WritePhysicsBodyComponentToFile(file, &data->physics_body_components);
-// - Arary MAX_ACTIVE_ENTITIES     WriteMovementComponentToFile(file, &data->movement_components);
-// - Arary MAX_ACTIVE_ENTITIES     WriteArcEntityComponentToFile(file, &data->arc_entity_components);
-// - Arary MAX_ACTIVE_ENTITIES     WriteItemComponentToFile(file, &data->item_components);
-// - Arary MAX_ACTIVE_ENTITIES     WriteTriggerComponentToFile(file, &data->trigger_components);
-// - Arary MAX_ACTIVE_ENTITIES     WriteStorageComponentToFile(file, &data->storage_components);
-// - Arary MAX_ACTIVE_ENTITIES     WriteParallaxComponentToFile(file, &data->parallax_components);
-// - Arary MAX_ACTIVE_ENTITIES     WriteParticleEmitterComponentToFile(file, &data->particle_emitter_components);
+    WriteToFile(file, &data->position_component_count, sizeof(data->position_component_count));
+    WriteToFile(file, &data->position_component_free_id, sizeof(data->position_component_free_id));
+    WriteToFile(file, &data->sprite_component_count, sizeof(data->sprite_component_count));
+    WriteToFile(file, &data->sprite_component_free_id, sizeof(data->sprite_component_free_id));
+    WriteToFile(file, &data->animation_component_count, sizeof(data->animation_component_count));
+    WriteToFile(file, &data->animation_component_free_id, sizeof(data->animation_component_free_id));
+    WriteToFile(file, &data->physics_body_component_count, sizeof(data->physics_body_component_count));
+    WriteToFile(file, &data->physics_body_component_free_id, sizeof(data->physics_body_component_free_id));
+    WriteToFile(file, &data->movement_component_count, sizeof(data->movement_component_count));
+    WriteToFile(file, &data->movement_component_free_id, sizeof(data->movement_component_free_id));
+    WriteToFile(file, &data->arc_entity_component_count, sizeof(data->arc_entity_component_count));
+    WriteToFile(file, &data->arc_entity_component_free_id, sizeof(data->arc_entity_component_free_id));
+    WriteToFile(file, &data->item_component_count, sizeof(data->item_component_count));
+    WriteToFile(file, &data->item_component_free_id, sizeof(data->item_component_free_id));
+    WriteToFile(file, &data->trigger_component_count, sizeof(data->trigger_component_count));
+    WriteToFile(file, &data->trigger_component_free_id, sizeof(data->trigger_component_free_id));
+    WriteToFile(file, &data->storage_component_count, sizeof(data->storage_component_count));
+    WriteToFile(file, &data->storage_component_free_id, sizeof(data->storage_component_free_id));
+    WriteToFile(file, &data->parallax_component_count, sizeof(data->parallax_component_count));
+    WriteToFile(file, &data->parallax_component_free_id, sizeof(data->parallax_component_free_id));
+    WriteToFile(file, &data->particle_emitter_component_count, sizeof(data->particle_emitter_component_count));
+    WriteToFile(file, &data->particle_emitter_component_free_id, sizeof(data->particle_emitter_component_free_id));
+}
+
+static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
+{
+// - Arary MAX_ACTIVE_ENTITIES
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->position_component_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->position_component_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->position_component_free_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->position_component_free_id), SEEK_CUR);
+// - Arary MAX_ACTIVE_ENTITIES
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->sprite_component_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->sprite_component_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->sprite_component_free_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->sprite_component_free_id), SEEK_CUR);
+// - Arary MAX_ACTIVE_ENTITIES
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->animation_component_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->animation_component_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->animation_component_free_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->animation_component_free_id), SEEK_CUR);
+// - Arary MAX_ACTIVE_ENTITIES
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->physics_body_component_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->physics_body_component_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->physics_body_component_free_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->physics_body_component_free_id), SEEK_CUR);
+// - Arary MAX_ACTIVE_ENTITIES
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->movement_component_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->movement_component_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->movement_component_free_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->movement_component_free_id), SEEK_CUR);
+// - Arary MAX_ACTIVE_ENTITIES
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->arc_entity_component_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->arc_entity_component_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->arc_entity_component_free_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->arc_entity_component_free_id), SEEK_CUR);
+// - Arary MAX_ACTIVE_ENTITIES
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->item_component_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->item_component_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->item_component_free_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->item_component_free_id), SEEK_CUR);
+// - Arary MAX_ACTIVE_ENTITIES
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->trigger_component_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->trigger_component_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->trigger_component_free_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->trigger_component_free_id), SEEK_CUR);
+// - Arary MAX_ACTIVE_ENTITIES
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->storage_component_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->storage_component_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->storage_component_free_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->storage_component_free_id), SEEK_CUR);
+// - Arary MAX_ACTIVE_ENTITIES
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->parallax_component_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->parallax_component_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->parallax_component_free_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->parallax_component_free_id), SEEK_CUR);
+// - Arary MAX_ACTIVE_ENTITIES
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->particle_emitter_component_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->particle_emitter_component_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->particle_emitter_component_free_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->particle_emitter_component_free_id), SEEK_CUR);
+}
+
+static void WriteCharacterEntityToFile(FILE *file, CharacterEntity *data)
+{
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parent_generic_entity, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->position_comp, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->sprite_comp, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->animation_comp, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->physics_body_comp, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->movement_comp, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->arc_entity_comp, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+}
+
+static void FillCharacterEntityPointersInFile(FILE *file, CharacterEntity *data)
+{
+    fseek(file, sizeof(i32), SEEK_CUR);
+    fseek(file, sizeof(i32), SEEK_CUR);
+    fseek(file, sizeof(i32), SEEK_CUR);
+    fseek(file, sizeof(i32), SEEK_CUR);
+    fseek(file, sizeof(i32), SEEK_CUR);
+    fseek(file, sizeof(i32), SEEK_CUR);
+    fseek(file, sizeof(i32), SEEK_CUR);
+}
+
+static void WriteCloudEntityToFile(FILE *file, CloudEntity *data)
+{
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parent_generic_entity, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+    WriteToFile(file, &data->unique_entity_id, sizeof(data->unique_entity_id));
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->position_comp, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->sprite_comp, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parallax_comp, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+}
+
+static void FillCloudEntityPointersInFile(FILE *file, CloudEntity *data)
+{
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->unique_entity_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->unique_entity_id), SEEK_CUR);
+    fseek(file, sizeof(i32), SEEK_CUR);
+    fseek(file, sizeof(i32), SEEK_CUR);
+    fseek(file, sizeof(i32), SEEK_CUR);
+}
+
+static void WriteGroundSegmentEntityToFile(FILE *file, GroundSegmentEntity *data)
+{
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parent_generic_entity, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+    WriteToFile(file, &data->unique_entity_id, sizeof(data->unique_entity_id));
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->position_comp, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->physics_body_comp, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+}
+
+static void FillGroundSegmentEntityPointersInFile(FILE *file, GroundSegmentEntity *data)
+{
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->unique_entity_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->unique_entity_id), SEEK_CUR);
+    fseek(file, sizeof(i32), SEEK_CUR);
+    fseek(file, sizeof(i32), SEEK_CUR);
 }
 
 static void WriteEntityToFile(FILE *file, Entity *data)
 {
     WriteToFile(file, &data->entity_id, sizeof(data->entity_id));
-// - Arary 20     WriteToFile(file, &data->name, sizeof(data->name));
     WriteToFile(file, &data->generalised_type, sizeof(data->generalised_type));
-// - Pointer: 1     WriteToFile(file, &data->unique_entity, sizeof(data->unique_entity));
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->unique_entity, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
     WriteToFile(file, &data->type, sizeof(data->type));
     WriteToFile(file, &data->flags, sizeof(data->flags));
-// - Pointer: 1 // - Arary COMPONENT_MAX     WriteToFile(file, &data->components, sizeof(data->components));
-// - Pointer: 1     WriteChunkDataToFile(file, &data->active_chunk);
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->active_chunk, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+}
+
+static void FillEntityPointersInFile(FILE *file, Entity *data)
+{
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->entity_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->entity_id), SEEK_CUR);
+// - Arary 20
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->generalised_type)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->generalised_type), SEEK_CUR);
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->type)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->type), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->flags)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->flags), SEEK_CUR);
+// - Arary COMPONENT_MAX
+    fseek(file, sizeof(i32), SEEK_CUR);
 }
 
 static void WriteCellMaterialToFile(FILE *file, CellMaterial *data)
 {
     WriteToFile(file, &data->id, sizeof(data->id));
-// - Pointer: 1     WriteCellToFile(file, &data->parent_cell);
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parent_cell, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
     WriteToFile(file, &data->material_type, sizeof(data->material_type));
     WriteToFile(file, &data->flags, sizeof(data->flags));
     WriteToFile(file, &data->mass, sizeof(data->mass));
@@ -1438,54 +2674,493 @@ static void WriteCellMaterialToFile(FILE *file, CellMaterial *data)
     WriteToFile(file, &data->idle_start, sizeof(data->idle_start));
 }
 
+static void FillCellMaterialPointersInFile(FILE *file, CellMaterial *data)
+{
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->id), SEEK_CUR);
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->material_type)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->material_type), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->flags)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->flags), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->mass)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->mass), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->properties_type)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->properties_type), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->properties)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->properties), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->is_material_dynamic)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->is_material_dynamic), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->has_been_updated)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->has_been_updated), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->idle_start)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->idle_start), SEEK_CUR);
+}
+
 static void WriteCellToFile(FILE *file, Cell *data)
 {
-// - Pointer: 1     WriteCellChunkToFile(file, &data->parent_cell_chunk);
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parent_cell_chunk, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
     WriteToFile(file, &data->x_index, sizeof(data->x_index));
     WriteToFile(file, &data->y_index, sizeof(data->y_index));
-// - Pointer: 1     WriteCellMaterialToFile(file, &data->material);
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->material, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+}
+
+static void FillCellPointersInFile(FILE *file, Cell *data)
+{
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->x_index)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->x_index), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->y_index)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->y_index), SEEK_CUR);
+    fseek(file, sizeof(i32), SEEK_CUR);
 }
 
 static void WriteCellChunkToFile(FILE *file, CellChunk *data)
 {
-// - Pointer: 1     WriteChunkDataToFile(file, &data->parent_chunk);
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->parent_chunk, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
     WriteToFile(file, &data->x_index, sizeof(data->x_index));
     WriteToFile(file, &data->y_index, sizeof(data->y_index));
-// - Arary CELL_CHUNK_SIZE     WriteCellToFile(file, &data->cells);
+// - 2D Arary CELL_CHUNK_SIZE CELL_CHUNK_SIZE
     WriteToFile(file, &data->texture, sizeof(data->texture));
+}
+
+static void FillCellChunkPointersInFile(FILE *file, CellChunk *data)
+{
+    fseek(file, sizeof(i32), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->x_index)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->x_index), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->y_index)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->y_index), SEEK_CUR);
+// - 2D Arary CELL_CHUNK_SIZE CELL_CHUNK_SIZE
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->texture)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->texture), SEEK_CUR);
 }
 
 static void WriteChunkDataToFile(FILE *file, ChunkData *data)
 {
     WriteToFile(file, &data->is_valid, sizeof(data->is_valid));
-// - Arary MAX_ENTITIES_PER_CHUNK     WriteToFile(file, &data->entity_ids, sizeof(data->entity_ids));
     WriteToFile(file, &data->entity_count, sizeof(data->entity_count));
     WriteToFile(file, &data->x_index, sizeof(data->x_index));
     WriteToFile(file, &data->y_index, sizeof(data->y_index));
-// - Arary CELL_CHUNKS_IN_CHUNK     WriteCellChunkToFile(file, &data->cell_chunks);
-// - Arary CHUNK_AREA     WriteCellMaterialToFile(file, &data->cell_materials);
+// - 2D Arary CELL_CHUNKS_IN_CHUNK CELL_CHUNKS_IN_CHUNK
     WriteToFile(file, &data->cell_material_count, sizeof(data->cell_material_count));
     WriteToFile(file, &data->free_cell_material_id, sizeof(data->free_cell_material_id));
-// - Pointer: 1 // - Arary MAX_DYNAMIC_CELLS     WriteCellMaterialToFile(file, &data->dynamic_cell_materials);
     WriteToFile(file, &data->dynamic_cell_material_count, sizeof(data->dynamic_cell_material_count));
+}
+
+static void FillChunkDataPointersInFile(FILE *file, ChunkData *data)
+{
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->is_valid)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->is_valid), SEEK_CUR);
+// - Arary MAX_ENTITIES_PER_CHUNK
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->entity_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->entity_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->x_index)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->x_index), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->y_index)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->y_index), SEEK_CUR);
+// - 2D Arary CELL_CHUNKS_IN_CHUNK CELL_CHUNKS_IN_CHUNK
+// - Arary CHUNK_AREA
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->cell_material_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->cell_material_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->free_cell_material_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->free_cell_material_id), SEEK_CUR);
+// - Arary MAX_DYNAMIC_CELLS
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->dynamic_cell_material_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->dynamic_cell_material_count), SEEK_CUR);
 }
 
 static void WriteWorldDataToFile(FILE *file, WorldData *data)
 {
     WriteToFile(file, &data->elapsed_world_time, sizeof(data->elapsed_world_time));
-// - Arary MAX_WORLD_CHUNKS     WriteChunkDataToFile(file, &data->active_chunks);
     WriteToFile(file, &data->active_chunk_count, sizeof(data->active_chunk_count));
     WriteChunkDataToFile(file, &data->floating_chunk);
-    WriteToFile(file, &data->character_entity, sizeof(data->character_entity));
-    WriteToFile(file, &data->cloud_entities, sizeof(data->cloud_entities));
+    WriteCharacterEntityToFile(file, &data->character_entity);
     WriteToFile(file, &data->cloud_entity_count, sizeof(data->cloud_entity_count));
     WriteToFile(file, &data->free_cloud_entity_index, sizeof(data->free_cloud_entity_index));
-    WriteToFile(file, &data->ground_segment_entities, sizeof(data->ground_segment_entities));
     WriteToFile(file, &data->ground_segment_entity_count, sizeof(data->ground_segment_entity_count));
     WriteToFile(file, &data->free_ground_segment_entity_index, sizeof(data->free_ground_segment_entity_index));
-// - Arary MAX_ACTIVE_ENTITIES     WriteEntityToFile(file, &data->entities);
     WriteToFile(file, &data->entity_count, sizeof(data->entity_count));
     WriteToFile(file, &data->free_entity_id, sizeof(data->free_entity_id));
     WriteComponentSetToFile(file, &data->entity_components);
+    {
+        i32 pos = ftell(file);
+        SerialisationPointer ptr = {&data->test_ptr, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = 255;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+}
+
+static void FillWorldDataPointersInFile(FILE *file, WorldData *data)
+{
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->elapsed_world_time)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->elapsed_world_time), SEEK_CUR);
+// - Arary MAX_WORLD_CHUNKS
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->active_chunk_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->active_chunk_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->floating_chunk)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    FillChunkDataPointersInFile(file, &data->floating_chunk);
+
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->character_entity)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    FillCharacterEntityPointersInFile(file, &data->character_entity);
+
+// - Arary MAX_CLOUD_ENTITY_COUNT
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->cloud_entity_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->cloud_entity_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->free_cloud_entity_index)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->free_cloud_entity_index), SEEK_CUR);
+// - Arary MAX_GROUND_SEGMENT_ENTITY_COUNT
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->ground_segment_entity_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->ground_segment_entity_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->free_ground_segment_entity_index)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->free_ground_segment_entity_index), SEEK_CUR);
+// - Arary MAX_ACTIVE_ENTITIES
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->entity_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->entity_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->free_entity_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->free_entity_id), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->entity_components)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    FillComponentSetPointersInFile(file, &data->entity_components);
+
+    fseek(file, sizeof(i32), SEEK_CUR);
 }
 

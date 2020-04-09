@@ -40,38 +40,38 @@ EDITOR_STATE_MAX,
 static char *GetEditorStateTypeName(EditorState type);
 
 #define ENTITY_FLAGS_no_delete (1<<0)
-typedef unsigned int EntityFlags;
+typedef uint32 EntityFlags;
 
 #define COLLIDER_FLAGS_ground (1<<0)
 #define COLLIDER_FLAGS_player (1<<1)
 #define COLLIDER_FLAGS_entity (1<<2)
 #define COLLIDER_FLAGS_item (1<<3)
 #define COLLIDER_FLAGS_trigger (1<<4)
-typedef unsigned int ColliderFlags;
+typedef uint32 ColliderFlags;
 
 #define ANIMATION_FLAGS_playing (1<<0)
 #define ANIMATION_FLAGS_reversing (1<<1)
 #define ANIMATION_FLAGS_repeat (1<<2)
-typedef unsigned int AnimationFlags;
+typedef uint32 AnimationFlags;
 
 #define PARTICLE_EMITTER_FLAGS_repeat (1<<0)
-typedef unsigned int ParticleEmitterFlags;
+typedef uint32 ParticleEmitterFlags;
 
 #define PIXEL_FLAGS_apply_gravity (1<<0)
-typedef unsigned int PixelFlags;
+typedef uint32 PixelFlags;
 
 #define CELL_FLAGS_no_gravity (1<<0)
-typedef unsigned int CellFlags;
+typedef uint32 CellFlags;
 
 #define EDITOR_FLAGS_draw_world (1<<0)
 #define EDITOR_FLAGS_draw_collision (1<<1)
 #define EDITOR_FLAGS_draw_chunk_grid (1<<2)
-typedef unsigned int EditorFlags;
+typedef uint32 EditorFlags;
 
 #define ITEM_FLAGS_resource (1<<0)
 #define ITEM_FLAGS_sword (1<<1)
 #define ITEM_FLAGS_bouncy (1<<2)
-typedef unsigned int ItemFlags;
+typedef uint32 ItemFlags;
 
 #define ITEM_FLAGS_HOTBARABLE (ITEM_FLAGS_sword)
 typedef struct StaticSpriteData
@@ -560,43 +560,43 @@ i32 particle_emitter_component_count;
 i32 particle_emitter_component_free_id;
 } ComponentSet;
 
-#define MAX_CHARACTER_ENTITIES (1)
+#define MAX_CHARACTER_ENTITY_COUNT (1)
 typedef struct CharacterEntity
 {
 Entity *parent_generic_entity;
-    PositionComponent *position_comp;
-    SpriteComponent *sprite_comp;
-    AnimationComponent *animation_comp;
-    PhysicsBodyComponent *physics_body_comp;
-    MovementComponent *movement_comp;
-    ArcEntityComponent *arc_entity_comp;
+PositionComponent *position_comp;
+SpriteComponent *sprite_comp;
+AnimationComponent *animation_comp;
+PhysicsBodyComponent *physics_body_comp;
+MovementComponent *movement_comp;
+ArcEntityComponent *arc_entity_comp;
 } CharacterEntity;
 
-#define MAX_CLOUD_ENTITIES (50)
+#define MAX_CLOUD_ENTITY_COUNT (50)
 typedef struct CloudEntity
 {
 Entity *parent_generic_entity;
 i32 unique_entity_id;
-    PositionComponent *position_comp;
-    SpriteComponent *sprite_comp;
-    ParallaxComponent *parallax_comp;
+PositionComponent *position_comp;
+SpriteComponent *sprite_comp;
+ParallaxComponent *parallax_comp;
 } CloudEntity;
 
-#define MAX_GROUND_SEGMENT_ENTITIES (1024)
+#define MAX_GROUND_SEGMENT_ENTITY_COUNT (1024)
 typedef struct GroundSegmentEntity
 {
 Entity *parent_generic_entity;
 i32 unique_entity_id;
-    PositionComponent *position_comp;
-    PhysicsBodyComponent *physics_body_comp;
+PositionComponent *position_comp;
+PhysicsBodyComponent *physics_body_comp;
 } GroundSegmentEntity;
 
 typedef enum EntityType
 {
     ENTITY_TYPE_generic,
-    ENTITY_TYPE_character,
-    ENTITY_TYPE_cloud,
-    ENTITY_TYPE_ground_segment,
+    ENTITY_TYPE_character_entity,
+    ENTITY_TYPE_cloud_entity,
+    ENTITY_TYPE_ground_segment_entity,
     ENTITY_TYPE_MAX
 } EntityType;
 
@@ -672,10 +672,10 @@ i32 active_chunk_count;
 ChunkData floating_chunk;
 
 CharacterEntity character_entity;
-CloudEntity cloud_entities[MAX_CLOUD_ENTITIES];
+CloudEntity cloud_entity_list[MAX_CLOUD_ENTITY_COUNT];
 i32 cloud_entity_count;
 i32 free_cloud_entity_index;
-GroundSegmentEntity ground_segment_entities[MAX_GROUND_SEGMENT_ENTITIES];
+GroundSegmentEntity ground_segment_entity_list[MAX_GROUND_SEGMENT_ENTITY_COUNT];
 i32 ground_segment_entity_count;
 i32 free_ground_segment_entity_index;
 
@@ -684,6 +684,7 @@ Entity entities[MAX_ACTIVE_ENTITIES];
 i32 entity_count;
 i32 free_entity_id;
 ComponentSet entity_components;
+i32 *test_ptr;
 } WorldData;
 
 typedef struct ClientData
@@ -701,37 +702,85 @@ v2 grabbed_seg_pos;
 
 static void WritePositionComponentToFile(FILE *file, PositionComponent *data);
 
+static void FillPositionComponentPointersInFile(FILE *file, PositionComponent *data);
+
 static void WriteSpriteComponentToFile(FILE *file, SpriteComponent *data);
+
+static void FillSpriteComponentPointersInFile(FILE *file, SpriteComponent *data);
 
 static void WriteAnimationComponentToFile(FILE *file, AnimationComponent *data);
 
+static void FillAnimationComponentPointersInFile(FILE *file, AnimationComponent *data);
+
 static void WritePhysicsBodyComponentToFile(FILE *file, PhysicsBodyComponent *data);
+
+static void FillPhysicsBodyComponentPointersInFile(FILE *file, PhysicsBodyComponent *data);
 
 static void WriteMovementComponentToFile(FILE *file, MovementComponent *data);
 
+static void FillMovementComponentPointersInFile(FILE *file, MovementComponent *data);
+
 static void WriteArcEntityComponentToFile(FILE *file, ArcEntityComponent *data);
+
+static void FillArcEntityComponentPointersInFile(FILE *file, ArcEntityComponent *data);
 
 static void WriteItemComponentToFile(FILE *file, ItemComponent *data);
 
+static void FillItemComponentPointersInFile(FILE *file, ItemComponent *data);
+
 static void WriteTriggerComponentToFile(FILE *file, TriggerComponent *data);
+
+static void FillTriggerComponentPointersInFile(FILE *file, TriggerComponent *data);
 
 static void WriteStorageComponentToFile(FILE *file, StorageComponent *data);
 
+static void FillStorageComponentPointersInFile(FILE *file, StorageComponent *data);
+
 static void WriteParallaxComponentToFile(FILE *file, ParallaxComponent *data);
+
+static void FillParallaxComponentPointersInFile(FILE *file, ParallaxComponent *data);
 
 static void WriteParticleEmitterComponentToFile(FILE *file, ParticleEmitterComponent *data);
 
+static void FillParticleEmitterComponentPointersInFile(FILE *file, ParticleEmitterComponent *data);
+
 static void WriteComponentSetToFile(FILE *file, ComponentSet *data);
+
+static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data);
+
+static void WriteCharacterEntityToFile(FILE *file, CharacterEntity *data);
+
+static void FillCharacterEntityPointersInFile(FILE *file, CharacterEntity *data);
+
+static void WriteCloudEntityToFile(FILE *file, CloudEntity *data);
+
+static void FillCloudEntityPointersInFile(FILE *file, CloudEntity *data);
+
+static void WriteGroundSegmentEntityToFile(FILE *file, GroundSegmentEntity *data);
+
+static void FillGroundSegmentEntityPointersInFile(FILE *file, GroundSegmentEntity *data);
 
 static void WriteEntityToFile(FILE *file, Entity *data);
 
+static void FillEntityPointersInFile(FILE *file, Entity *data);
+
 static void WriteCellMaterialToFile(FILE *file, CellMaterial *data);
+
+static void FillCellMaterialPointersInFile(FILE *file, CellMaterial *data);
 
 static void WriteCellToFile(FILE *file, Cell *data);
 
+static void FillCellPointersInFile(FILE *file, Cell *data);
+
 static void WriteCellChunkToFile(FILE *file, CellChunk *data);
+
+static void FillCellChunkPointersInFile(FILE *file, CellChunk *data);
 
 static void WriteChunkDataToFile(FILE *file, ChunkData *data);
 
+static void FillChunkDataPointersInFile(FILE *file, ChunkData *data);
+
 static void WriteWorldDataToFile(FILE *file, WorldData *data);
+
+static void FillWorldDataPointersInFile(FILE *file, WorldData *data);
 
