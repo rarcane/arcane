@@ -26,7 +26,7 @@ GENERALISED_ENTITY_TYPE_ground,
 GENERALISED_ENTITY_TYPE_pixel_object,
 GENERALISED_ENTITY_TYPE_MAX,
 };
-static char *GetGeneralisedEntityTypeTypeName(GeneralisedEntityType type);
+static char *GetGeneralisedEntityTypeName(GeneralisedEntityType type);
 
 typedef enum EditorState EditorState;
 enum EditorState
@@ -37,7 +37,7 @@ EDITOR_STATE_terrain,
 EDITOR_STATE_collision,
 EDITOR_STATE_MAX,
 };
-static char *GetEditorStateTypeName(EditorState type);
+static char *GetEditorStateName(EditorState type);
 
 #define ENTITY_FLAGS_no_delete (1<<0)
 typedef uint32 EntityFlags;
@@ -140,8 +140,6 @@ STATIC_SPRITE_x_axis_arrow_icon,
 STATIC_SPRITE_circle_icon,
 STATIC_SPRITE_MAX,
 };
-static char *GetStaticSpriteTypeName(StaticSprite type);
-
 global StaticSpriteData static_sprite_data[STATIC_SPRITE_MAX] = {
     { "invalid_texture", {0.0f, 0.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, },
     { "scenic/biome_ground", {0.0f, 0.0f, 100.0f, 150.0f}, {0.0f, 147.0f}, },
@@ -197,6 +195,8 @@ global StaticSpriteData static_sprite_data[STATIC_SPRITE_MAX] = {
     { "icon/axis_icons", {33.0f, 0.0f, 7.0f, 7.0f}, {0.0f, 0.0f}, },
 };
 
+static char *GetStaticSpriteName(StaticSprite type);
+
 typedef struct DynamicSpriteData
 {
 char texture_path[50];
@@ -221,8 +221,6 @@ DYNAMIC_SPRITE_birch_tree3,
 DYNAMIC_SPRITE_birch_tree4,
 DYNAMIC_SPRITE_MAX,
 };
-static char *GetDynamicSpriteTypeName(DynamicSprite type);
-
 global DynamicSpriteData dynamic_sprite_data[DYNAMIC_SPRITE_MAX] = {
     { "invalid_texture", {0.0f, 0.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 0, 0.0f, },
     { "entity/player/player_animations", {0.0f, 192.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 4, 0.15f, },
@@ -233,6 +231,8 @@ global DynamicSpriteData dynamic_sprite_data[DYNAMIC_SPRITE_MAX] = {
     { "scenic/trees/birch_idle", {0.0f, 320.0f, 120.0f, 160.0f}, {0.0f, 0.0f}, 6, 0.1f, },
     { "scenic/trees/birch_idle", {0.0f, 480.0f, 120.0f, 160.0f}, {0.0f, 0.0f}, 6, 0.1f, },
 };
+
+static char *GetDynamicSpriteName(DynamicSprite type);
 
 #define MAX_SUB_SPRITES (5)
 typedef struct ArcEntityAnimationStateData
@@ -248,13 +248,13 @@ ARC_ENTITY_ANIMATION_STATE_player_walking,
 ARC_ENTITY_ANIMATION_STATE_player_sprinting,
 ARC_ENTITY_ANIMATION_STATE_MAX,
 };
-static char *GetArcEntityAnimationStateTypeName(ArcEntityAnimationState type);
-
 global ArcEntityAnimationStateData arc_entity_animation_state_data[ARC_ENTITY_ANIMATION_STATE_MAX] = {
     { DYNAMIC_SPRITE_player_idle, },
     { DYNAMIC_SPRITE_player_walking, },
     { DYNAMIC_SPRITE_player_sprinting, },
 };
+
+static char *GetArcEntityAnimationStateName(ArcEntityAnimationState type);
 
 typedef struct ArcEntityTypeData
 {
@@ -268,11 +268,11 @@ enum ArcEntityType
 ARC_ENTITY_TYPE_player,
 ARC_ENTITY_TYPE_MAX,
 };
-static char *GetArcEntityTypeTypeName(ArcEntityType type);
-
 global ArcEntityTypeData arc_entity_type_data[ARC_ENTITY_TYPE_MAX] = {
     { {"Idle", "Walking", "Sprinting"}, {ARC_ENTITY_ANIMATION_STATE_player_idle, ARC_ENTITY_ANIMATION_STATE_player_walking, ARC_ENTITY_ANIMATION_STATE_player_sprinting}, },
 };
+
+static char *GetArcEntityTypeName(ArcEntityType type);
 
 typedef struct ItemTypeData
 {
@@ -289,69 +289,11 @@ enum ItemType
 ITEM_TYPE_flint_sword,
 ITEM_TYPE_MAX,
 };
-static char *GetItemTypeTypeName(ItemType type);
-
 global ItemTypeData item_type_data[ITEM_TYPE_MAX] = {
     { "Flint Sword", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_FLAGS_sword, },
 };
 
-#define FLUID_COMPRESSION (0.01f)
-typedef struct SolidMaterial
-{
-v2 position;
-v2 velocity;
-f32 hardness;
-} SolidMaterial;
-
-typedef struct FluidMatieral
-{
-f32 pressure;
-f32 mass;
-f32 new_mass;
-} FluidMatieral;
-
-typedef union CellProperties CellProperties;
-union CellProperties
-{
-SolidMaterial solid;
-FluidMatieral fluid;
-};
-
-typedef enum CellPropertiesType CellPropertiesType;
-enum CellPropertiesType
-{
-CELL_PROPERTIES_TYPE_solid,
-CELL_PROPERTIES_TYPE_fluid,
-CELL_PROPERTIES_TYPE_MAX,
-};
-static char *GetCellPropertiesTypeTypeName(CellPropertiesType type);
-
-typedef struct CellMaterialTypeData
-{
-f32 default_mass;
-f32 restitution;
-i32 max_height;
-i32 crust_depth;
-CellPropertiesType properties_type;
-} CellMaterialTypeData;
-
-typedef enum CellMaterialType CellMaterialType;
-enum CellMaterialType
-{
-CELL_MATERIAL_TYPE_air,
-CELL_MATERIAL_TYPE_dirt,
-CELL_MATERIAL_TYPE_sand,
-CELL_MATERIAL_TYPE_water,
-CELL_MATERIAL_TYPE_MAX,
-};
-static char *GetCellMaterialTypeTypeName(CellMaterialType type);
-
-global CellMaterialTypeData cell_material_type_data[CELL_MATERIAL_TYPE_MAX] = {
-    { 0.0f, 0.0f, 0, 0, CELL_PROPERTIES_TYPE_fluid, },
-    { 5.0f, 0.0f, 3, 3, CELL_PROPERTIES_TYPE_solid, },
-    { 3.0f, 0.0f, 1, 5, CELL_PROPERTIES_TYPE_solid, },
-    { 10.0f, 1.50f, 0, 0, CELL_PROPERTIES_TYPE_fluid, },
-};
+static char *GetItemTypeName(ItemType type);
 
 typedef struct Entity Entity;
 
@@ -388,15 +330,14 @@ v2 p1;
 v2 p2;
 } Line;
 
-typedef union c2Shape c2Shape;
-union c2Shape
+typedef union c2Shape
 {
 c2AABB aabb;
 c2Capsule capsule;
 c2Circle circle;
 c2Poly poly;
 Line line;
-};
+} c2Shape;
 
 typedef enum c2ShapeType c2ShapeType;
 enum c2ShapeType
@@ -408,7 +349,7 @@ C2_SHAPE_TYPE_poly,
 C2_SHAPE_TYPE_line,
 C2_SHAPE_TYPE_MAX,
 };
-static char *Getc2ShapeTypeTypeName(c2ShapeType type);
+static char *Getc2ShapeTypeName(c2ShapeType type);
 
 typedef struct PhysicsMaterial
 {
@@ -504,7 +445,7 @@ EmitterBeginCallback begin_callback;
 EmitterFinishCallback finish_callback;
 } ParticleEmitterComponent;
 
-typedef struct ChunkData ChunkData;
+typedef struct Chunk Chunk;
 
 typedef enum ComponentType
 {
@@ -609,67 +550,122 @@ void *unique_entity;
 EntityType type;
 EntityFlags flags;
 void *components[COMPONENT_MAX];
-ChunkData *active_chunk;
 } Entity;
 
-typedef struct Cell Cell;
-
-typedef struct CellMaterial
+#define FLUID_COMPRESSION (0.01f)
+typedef enum CellPropertiesType CellPropertiesType;
+enum CellPropertiesType
 {
-i32 id;
-Cell *parent_cell;
-CellMaterialType material_type;
-CellFlags flags;
-f32 mass;
-CellPropertiesType properties_type;
-CellProperties properties;
-b8 is_material_dynamic;
-b8 has_been_updated;
-f32 idle_start;
-} CellMaterial;
+CELL_PROPERTIES_TYPE_air,
+CELL_PROPERTIES_TYPE_liquid,
+CELL_PROPERTIES_TYPE_solid,
+CELL_PROPERTIES_TYPE_MAX,
+};
+static char *GetCellPropertiesTypeName(CellPropertiesType type);
 
-typedef struct CellChunk CellChunk;
+typedef struct DynamicAirProperties
+{
+f32 pressure;
+} DynamicAirProperties;
+
+typedef struct DynamicLiquidProperties
+{
+f32 mass;
+f32 new_mass;
+} DynamicLiquidProperties;
+
+typedef struct DynamicSolidProperties
+{
+v2 position;
+v2 velocity;
+f32 hardness;
+} DynamicSolidProperties;
+
+typedef union DynamicCellProperties
+{
+DynamicAirProperties air;
+DynamicLiquidProperties liquid;
+DynamicSolidProperties solid;
+} DynamicCellProperties;
+
+typedef struct StaticAirProperties
+{
+f32 resting_temp;
+b8 test;
+} StaticAirProperties;
+
+typedef struct StaticLiquidProperties
+{
+f32 default_mass;
+} StaticLiquidProperties;
+
+typedef struct StaticSolidProperties
+{
+f32 default_mass;
+f32 restitution;
+i32 max_height;
+i32 crust_depth;
+} StaticSolidProperties;
+
+typedef union StaticCellProperties
+{
+StaticAirProperties air;
+StaticLiquidProperties liquid;
+StaticSolidProperties solid;
+} StaticCellProperties;
+
+typedef struct CellMaterialTypeData
+{
+StaticCellProperties static_properties;
+CellPropertiesType properties_type;
+} CellMaterialTypeData;
+
+typedef enum CellMaterialType CellMaterialType;
+enum CellMaterialType
+{
+CELL_MATERIAL_TYPE_air,
+CELL_MATERIAL_TYPE_water,
+CELL_MATERIAL_TYPE_dirt,
+CELL_MATERIAL_TYPE_sand,
+CELL_MATERIAL_TYPE_MAX,
+};
+global CellMaterialTypeData cell_material_type_data[CELL_MATERIAL_TYPE_MAX] = {
+    { .static_properties.air = { .resting_temp = 2.0f, .test = 1}, CELL_PROPERTIES_TYPE_air, },
+    { .static_properties.liquid = { .default_mass = 1.5f} , CELL_PROPERTIES_TYPE_liquid, },
+    { .static_properties.solid = { .default_mass = 1.0f, .max_height = 3 }, CELL_PROPERTIES_TYPE_solid, },
+    { .static_properties.solid = { .default_mass = 0.5f, .max_height = 1 }, CELL_PROPERTIES_TYPE_solid, },
+};
+
+static char *GetCellMaterialTypeName(CellMaterialType type);
 
 typedef struct Cell
 {
-CellChunk *parent_cell_chunk;
-i32 x_index;
-i32 y_index;
-CellMaterial *material;
+i32 x_position;
+i32 y_position;
+CellFlags flags;
+CellMaterialType material_type;
+DynamicCellProperties dynamic_properties;
 } Cell;
-
-typedef struct CellChunk
-{
-ChunkData *parent_chunk;
-i32 x_index;
-i32 y_index;
-Cell cells[CELL_CHUNK_SIZE][CELL_CHUNK_SIZE];
-Ts2dTexture texture;
-} CellChunk;
 
 #define CELL_CHUNKS_IN_CHUNK ((CHUNK_SIZE/CELL_CHUNK_SIZE))
 #define CHUNK_AREA ((CHUNK_SIZE*CHUNK_SIZE))
-typedef struct ChunkData
+typedef struct Chunk
 {
 b8 is_valid;
+b8 remain_loaded;
 i32 entity_ids[MAX_ENTITIES_PER_CHUNK];
 i32 entity_count;
 i32 x_index;
 i32 y_index;
-CellChunk cell_chunks[CELL_CHUNKS_IN_CHUNK][CELL_CHUNKS_IN_CHUNK];
-CellMaterial cell_materials[CHUNK_AREA];
-i32 cell_material_count;
-i32 free_cell_material_id;
-CellMaterial *dynamic_cell_materials[MAX_DYNAMIC_CELLS];
-i32 dynamic_cell_material_count;
-} ChunkData;
+Cell cells[CHUNK_SIZE][CHUNK_SIZE];
+Ts2dTexture texture;
+} Chunk;
 
 typedef struct WorldData
 {
 f32 elapsed_world_time;
-ChunkData active_chunks[MAX_WORLD_CHUNKS];
+Chunk active_chunks[MAX_WORLD_CHUNKS];
 i32 active_chunk_count;
-ChunkData floating_chunk;
 
 CharacterEntity character_entity;
 CloudEntity cloud_entity_list[MAX_CLOUD_ENTITY_COUNT];
@@ -685,19 +681,28 @@ i32 entity_count;
 i32 free_entity_id;
 ComponentSet entity_components;
 i32 *test_ptr;
+Cell *dynamic_cells[MAX_DYNAMIC_CELLS];
+i32 dynamic_cell_count;
 } WorldData;
 
-typedef struct ClientData
+typedef struct RunData
 {
-b32 bloom;
-char current_level[20];
 char *res_path;
+char current_level[20];
+Chunk *chunk_texture_update_queue[MAX_WORLD_CHUNKS];
+i32 chunk_texture_update_queue_count;
+b8 disable_chunk_view_loading;
 EditorState editor_state;
 EditorFlags editor_flags;
 Entity *selected_entity;
 GroundSegmentEntity *selected_ground_seg;
 b8 is_seg_grabbed;
 v2 grabbed_seg_pos;
+} RunData;
+
+typedef struct ClientData
+{
+b32 bloom;
 } ClientData;
 
 static void WritePositionComponentToFile(FILE *file, PositionComponent *data);
@@ -764,21 +769,13 @@ static void WriteEntityToFile(FILE *file, Entity *data);
 
 static void FillEntityPointersInFile(FILE *file, Entity *data);
 
-static void WriteCellMaterialToFile(FILE *file, CellMaterial *data);
-
-static void FillCellMaterialPointersInFile(FILE *file, CellMaterial *data);
-
 static void WriteCellToFile(FILE *file, Cell *data);
 
 static void FillCellPointersInFile(FILE *file, Cell *data);
 
-static void WriteCellChunkToFile(FILE *file, CellChunk *data);
+static void WriteChunkToFile(FILE *file, Chunk *data);
 
-static void FillCellChunkPointersInFile(FILE *file, CellChunk *data);
-
-static void WriteChunkDataToFile(FILE *file, ChunkData *data);
-
-static void FillChunkDataPointersInFile(FILE *file, ChunkData *data);
+static void FillChunkPointersInFile(FILE *file, Chunk *data);
 
 static void WriteWorldDataToFile(FILE *file, WorldData *data);
 

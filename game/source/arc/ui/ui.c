@@ -419,11 +419,11 @@ internal void DrawGameUI()
 	} */
 
 #ifdef DEVELOPER_TOOLS
-	switch (core->client_data->editor_state)
+	switch (core->run_data->editor_state)
 	{
 	case EDITOR_STATE_entity:
 	{
-		if (core->client_data->selected_entity)
+		if (core->run_data->selected_entity)
 		{
 			StaticSpriteData *x_arrow = &static_sprite_data[STATIC_SPRITE_x_axis_arrow_icon];
 			StaticSpriteData *y_arrow = &static_sprite_data[STATIC_SPRITE_y_axis_arrow_icon];
@@ -431,8 +431,8 @@ internal void DrawGameUI()
 
 			b8 entity_has_position = 0;
 			v2 position = {0};
-			PositionComponent *position_comp = core->client_data->selected_entity->components[COMPONENT_position];
-			ParallaxComponent *parallax_comp = core->client_data->selected_entity->components[COMPONENT_parallax];
+			PositionComponent *position_comp = core->run_data->selected_entity->components[COMPONENT_position];
+			ParallaxComponent *parallax_comp = core->run_data->selected_entity->components[COMPONENT_parallax];
 			if (parallax_comp)
 			{
 				position = parallax_comp->desired_position;
@@ -578,14 +578,14 @@ internal void DrawGameUI()
 				v2 p1 = V2AddV2(seg_pos->position, seg_body->shape.line.p1);
 				v2 p2 = V2AddV2(seg_pos->position, seg_body->shape.line.p2);
 
-				if (core->client_data->is_seg_grabbed)
+				if (core->run_data->is_seg_grabbed)
 				{
-					if (EqualV2(core->client_data->grabbed_seg_pos, p1, 1.0f))
+					if (EqualV2(core->run_data->grabbed_seg_pos, p1, 1.0f))
 					{
 						p1 = GetMousePositionInWorldSpace();
 						seg_body->shape.line.p1 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
 					}
-					else if (EqualV2(core->client_data->grabbed_seg_pos, p2, 1.0f))
+					else if (EqualV2(core->run_data->grabbed_seg_pos, p2, 1.0f))
 					{
 						p2 = GetMousePositionInWorldSpace();
 						seg_body->shape.line.p2 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
@@ -615,8 +615,8 @@ internal void DrawGameUI()
 						}
 						else
 						{
-							core->client_data->grabbed_seg_pos = p1;
-							core->client_data->is_seg_grabbed = 1;
+							core->run_data->grabbed_seg_pos = p1;
+							core->run_data->is_seg_grabbed = 1;
 							TsPlatformCaptureMouseButtons();
 						}
 					}
@@ -640,8 +640,8 @@ internal void DrawGameUI()
 							}
 						}
 
-						if (core->client_data->selected_ground_seg == seg_entity)
-							core->client_data->selected_ground_seg = 0;
+						if (core->run_data->selected_ground_seg == seg_entity)
+							core->run_data->selected_ground_seg = 0;
 					}
 				}
 
@@ -652,12 +652,12 @@ internal void DrawGameUI()
 
 		if (core->left_mouse_released)
 		{
-			core->client_data->grabbed_seg_pos = v2(0.0f, 0.0f);
-			core->client_data->is_seg_grabbed = 0;
+			core->run_data->grabbed_seg_pos = v2(0.0f, 0.0f);
+			core->run_data->is_seg_grabbed = 0;
 		}
 		else if (platform->left_mouse_down)
 		{
-			core->client_data->grabbed_seg_pos = GetMousePositionInWorldSpace();
+			core->run_data->grabbed_seg_pos = GetMousePositionInWorldSpace();
 		}
 
 		break;
@@ -675,7 +675,7 @@ internal void DrawEditorUI()
 	local_persist b8 pin_windows = 0;
 
 	// NOTE(tjr): Drop-down menus
-	if (core->client_data->editor_state)
+	if (core->run_data->editor_state)
 	{
 		TsUIPushAutoRow(v2(0, 0), 30);
 		{
@@ -683,39 +683,39 @@ internal void DrawEditorUI()
 			{
 				/* if (TsUIButton("Save"))
 				{
-					R_DEV_ASSERT(core->client_data->current_level[0], "No level currently loaded?");
+					R_DEV_ASSERT(core->run_data->current_level[0], "No level currently loaded?");
 				}
 
 				if (TsUIButton("Reload"))
 				{
-					R_DEV_ASSERT(core->client_data->current_level[0], "No level currently loaded?");
+					R_DEV_ASSERT(core->run_data->current_level[0], "No level currently loaded?");
 				} */
 			}
 			TsUIDropdownEnd();
 
 			if (TsUIDropdown("Editor Mode..."))
 			{
-				if (TsUIToggler("Entity", core->client_data->editor_state == EDITOR_STATE_entity))
+				if (TsUIToggler("Entity", core->run_data->editor_state == EDITOR_STATE_entity))
 				{
-					if (core->client_data->editor_state != EDITOR_STATE_entity)
+					if (core->run_data->editor_state != EDITOR_STATE_entity)
 					{
-						core->client_data->editor_state = EDITOR_STATE_entity;
+						core->run_data->editor_state = EDITOR_STATE_entity;
 					}
 				}
 
-				if (TsUIToggler("Terrain", core->client_data->editor_state == EDITOR_STATE_terrain))
+				if (TsUIToggler("Terrain", core->run_data->editor_state == EDITOR_STATE_terrain))
 				{
-					if (core->client_data->editor_state != EDITOR_STATE_terrain)
+					if (core->run_data->editor_state != EDITOR_STATE_terrain)
 					{
-						core->client_data->editor_state = EDITOR_STATE_terrain;
+						core->run_data->editor_state = EDITOR_STATE_terrain;
 					}
 				}
 
-				if (TsUIToggler("Collision", core->client_data->editor_state == EDITOR_STATE_collision))
+				if (TsUIToggler("Collision", core->run_data->editor_state == EDITOR_STATE_collision))
 				{
-					if (core->client_data->editor_state != EDITOR_STATE_collision)
+					if (core->run_data->editor_state != EDITOR_STATE_collision)
 					{
-						core->client_data->editor_state = EDITOR_STATE_collision;
+						core->run_data->editor_state = EDITOR_STATE_collision;
 					}
 				}
 			}
@@ -723,20 +723,20 @@ internal void DrawEditorUI()
 
 			if (TsUIDropdown("View..."))
 			{
-				if (TsUIToggler("Draw World", core->client_data->editor_flags & EDITOR_FLAGS_draw_world))
-					core->client_data->editor_flags |= EDITOR_FLAGS_draw_world;
+				if (TsUIToggler("Draw World", core->run_data->editor_flags & EDITOR_FLAGS_draw_world))
+					core->run_data->editor_flags |= EDITOR_FLAGS_draw_world;
 				else
-					core->client_data->editor_flags &= ~EDITOR_FLAGS_draw_world;
+					core->run_data->editor_flags &= ~EDITOR_FLAGS_draw_world;
 
-				if (TsUIToggler("Draw Colliders", core->client_data->editor_flags & EDITOR_FLAGS_draw_collision))
-					core->client_data->editor_flags |= EDITOR_FLAGS_draw_collision;
+				if (TsUIToggler("Draw Colliders", core->run_data->editor_flags & EDITOR_FLAGS_draw_collision))
+					core->run_data->editor_flags |= EDITOR_FLAGS_draw_collision;
 				else
-					core->client_data->editor_flags &= ~EDITOR_FLAGS_draw_collision;
+					core->run_data->editor_flags &= ~EDITOR_FLAGS_draw_collision;
 
-				if (TsUIToggler("Draw Chunk Grid", core->client_data->editor_flags & EDITOR_FLAGS_draw_chunk_grid))
-					core->client_data->editor_flags |= EDITOR_FLAGS_draw_chunk_grid;
+				if (TsUIToggler("Draw Chunk Grid", core->run_data->editor_flags & EDITOR_FLAGS_draw_chunk_grid))
+					core->run_data->editor_flags |= EDITOR_FLAGS_draw_chunk_grid;
 				else
-					core->client_data->editor_flags &= ~EDITOR_FLAGS_draw_chunk_grid;
+					core->run_data->editor_flags &= ~EDITOR_FLAGS_draw_chunk_grid;
 			}
 			TsUIDropdownEnd();
 
@@ -772,7 +772,7 @@ internal void DrawEditorUI()
 	}
 
 	// NOTE(tjr): State-specific tools
-	switch (core->client_data->editor_state)
+	switch (core->run_data->editor_state)
 	{
 	case EDITOR_STATE_none:
 		break;
@@ -782,7 +782,7 @@ internal void DrawEditorUI()
 
 	case EDITOR_STATE_terrain:
 	{
-		local_persist CellMaterialType selected_material = -1;
+		/* local_persist CellMaterialType selected_material = -1;
 		local_persist i32 brush_size = 1;
 		local_persist f32 pressure = 100.0f;
 		local_persist v2 selection_start = {0};
@@ -991,7 +991,7 @@ internal void DrawEditorUI()
 			}
 		}
 
-		break;
+		break; */
 	}
 
 	case EDITOR_STATE_collision:
@@ -1010,20 +1010,20 @@ internal void DrawEditorUI()
 				{
 					char label[50];
 					sprintf(label, "Segment #%i", ground_seg->unique_entity_id);
-					if (core->client_data->selected_ground_seg)
+					if (core->run_data->selected_ground_seg)
 					{
-						if (TsUIToggler(label, ground_seg->unique_entity_id == core->client_data->selected_ground_seg->unique_entity_id))
-							core->client_data->selected_ground_seg = ground_seg;
-						else if (core->client_data->selected_ground_seg->unique_entity_id == ground_seg->unique_entity_id)
-							core->client_data->selected_ground_seg = 0;
+						if (TsUIToggler(label, ground_seg->unique_entity_id == core->run_data->selected_ground_seg->unique_entity_id))
+							core->run_data->selected_ground_seg = ground_seg;
+						else if (core->run_data->selected_ground_seg->unique_entity_id == ground_seg->unique_entity_id)
+							core->run_data->selected_ground_seg = 0;
 					}
 					else
 					{
 						if (TsUIToggler(label, 0))
-							core->client_data->selected_ground_seg = ground_seg;
+							core->run_data->selected_ground_seg = ground_seg;
 					}
 
-					if (core->client_data->selected_ground_seg && core->client_data->selected_ground_seg->unique_entity_id == ground_seg->unique_entity_id)
+					if (core->run_data->selected_ground_seg && core->run_data->selected_ground_seg->unique_entity_id == ground_seg->unique_entity_id)
 					{
 						{
 							char label[50];
@@ -1036,7 +1036,7 @@ internal void DrawEditorUI()
 							TsUILabel(label);
 						}
 
-						PrintEntityDataUI(core->client_data->selected_ground_seg->parent_generic_entity);
+						PrintEntityDataUI(core->run_data->selected_ground_seg->parent_generic_entity);
 					}
 				}
 			}
@@ -1055,7 +1055,7 @@ internal void DrawEditorUI()
 	}
 
 	// NOTE(tjr): Time dilation
-	if (core->client_data->editor_state)
+	if (core->run_data->editor_state)
 	{
 		TsUIBeginInputGroup();
 		TsUIPushColumn(v2(core->render_w / 2.0f - 125.0f, 40.0f), v2(250.0f, 30.0f));
@@ -1067,7 +1067,7 @@ internal void DrawEditorUI()
 	}
 
 	// NOTE(tjr): Draw windows.
-	if (pin_windows || core->client_data->editor_state)
+	if (pin_windows || core->run_data->editor_state)
 	{
 		if (is_entity_window_open)
 		{
@@ -1077,7 +1077,7 @@ internal void DrawEditorUI()
 			{
 				TsUIPushColumn(v2(10, 10), v2(100, 30));
 
-				if (!core->client_data->selected_entity)
+				if (!core->run_data->selected_entity)
 				{
 					TsUIPushAutoWidth();
 					TsUILabel("No Entity selected.");
@@ -1088,22 +1088,22 @@ internal void DrawEditorUI()
 					TsUIPushWidth(entity_info_window_rect.width - 50);
 					{
 						char *label = MakeCStringOnMemoryArena(core->frame_arena, "%s #%i",
-															   core->client_data->selected_entity->name, core->client_data->selected_entity->entity_id);
+															   core->run_data->selected_entity->name, core->run_data->selected_entity->entity_id);
 						TsUITitle(label);
 
-						PrintEntityDataUI(core->client_data->selected_entity);
+						PrintEntityDataUI(core->run_data->selected_entity);
 					}
 					TsUIPopWidth();
 
 					TsUIDivider();
 
 					TsUIPushAutoWidth();
-					if (!(core->client_data->selected_entity->flags & ENTITY_FLAGS_no_delete))
+					if (!(core->run_data->selected_entity->flags & ENTITY_FLAGS_no_delete))
 					{
 						if (TsUIButton("Delete Entity"))
 						{
-							DeleteEntity(core->client_data->selected_entity);
-							core->client_data->selected_entity = 0;
+							DeleteEntity(core->run_data->selected_entity);
+							core->run_data->selected_entity = 0;
 						}
 					}
 					TsUIPopWidth();
@@ -1163,15 +1163,15 @@ internal void DrawEditorUI()
 						{
 							TsUISameLine();
 							TsUIPushWidth(entity_list_window_rect.width - 80);
-							if (TsUIToggler(entity->name, (core->client_data->selected_entity ? core->client_data->selected_entity->entity_id == i : 0)))
+							if (TsUIToggler(entity->name, (core->run_data->selected_entity ? core->run_data->selected_entity->entity_id == i : 0)))
 							{
-								core->client_data->selected_entity = entity;
+								core->run_data->selected_entity = entity;
 							}
 							else
 							{
-								if (core->client_data->selected_entity && core->client_data->selected_entity->entity_id == i)
+								if (core->run_data->selected_entity && core->run_data->selected_entity->entity_id == i)
 								{
-									core->client_data->selected_entity = 0;
+									core->run_data->selected_entity = 0;
 								}
 							}
 							TsUIPopWidth();
@@ -1199,16 +1199,16 @@ internal void DrawEditorUI()
 								Entity *entity = &core->world_data->entities[j];
 								if (entity->entity_id > 0 && entity->generalised_type == i)
 								{
-									if (TsUIToggler(entity->name, (core->client_data->selected_entity ? core->client_data->selected_entity->entity_id == j : 0)))
+									if (TsUIToggler(entity->name, (core->run_data->selected_entity ? core->run_data->selected_entity->entity_id == j : 0)))
 									{
-										core->client_data->selected_entity = entity;
+										core->run_data->selected_entity = entity;
 									}
 									else
 									{
-										if (core->client_data->selected_entity &&
-											core->client_data->selected_entity->entity_id == j)
+										if (core->run_data->selected_entity &&
+											core->run_data->selected_entity->entity_id == j)
 										{
-											core->client_data->selected_entity = 0;
+											core->run_data->selected_entity = 0;
 										}
 									}
 								}

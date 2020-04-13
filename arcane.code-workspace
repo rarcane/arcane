@@ -41,7 +41,9 @@
 			"old_ecs.h": "c",
 			"data_desk.h": "c",
 			"tsassets.h": "c",
-			"sprite.h": "c"
+			"sprite.h": "c",
+			"world.h": "c",
+			"cell.h": "c"
 		},
 		"editor.formatOnSave": true,
 		"editor.find.autoFindInSelection": true,

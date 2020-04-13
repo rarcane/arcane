@@ -321,7 +321,7 @@ internal void SaveLevel(char *level_name)
 	R_DEV_ASSERT(level_name[0], "Invalid name.");
 
 	char path[200] = "";
-	sprintf(path, "%s%s.save", core->client_data->res_path, level_name);
+	sprintf(path, "%s%s.save", core->run_data->res_path, level_name);
 	FILE *save = fopen(path, "w");
 	R_DEV_ASSERT(save, "Couldn't open file.");
 
@@ -338,12 +338,12 @@ internal void SaveLevel(char *level_name)
 internal b8 LoadLevel(char *level_name)
 {
 	char path[200] = "";
-	sprintf(path, "%s%s.save", core->client_data->res_path, level_name);
+	sprintf(path, "%s%s.save", core->run_data->res_path, level_name);
 	FILE *save = fopen(path, "r");
 	if (!save)
 		return 0;
 
-	strcpy(core->client_data->current_level, level_name);
+	strcpy(core->run_data->current_level, level_name);
 
 	// ...
 

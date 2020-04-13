@@ -156,7 +156,7 @@ internal void RenderBackgroundSprites()
 			Ts2dPushTintedTexture(dynamic_sprite->texture_atlas,
 								  v4(source_pos.x, source_pos.y, dynamic_sprite->source.z - 0.5f, dynamic_sprite->source.w - 0.5f),
 								  v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-								  (core->client_data->editor_state && ordered_sprites[i].entity == core->client_data->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
+								  (core->run_data->editor_state && ordered_sprites[i].entity == core->run_data->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
 		}
 		else if (ordered_sprites[i].static_sprite)
 		{
@@ -175,7 +175,7 @@ internal void RenderBackgroundSprites()
 			Ts2dPushTintedTexture(static_sprite->texture_atlas,
 								  v4(static_sprite->source.x, static_sprite->source.y, static_sprite->source.z - 0.5f, static_sprite->source.w - 0.5f),
 								  v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-								  (core->client_data->editor_state && ordered_sprites[i].entity == core->client_data->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
+								  (core->run_data->editor_state && ordered_sprites[i].entity == core->run_data->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
 		}
 		else
 		{
@@ -264,7 +264,7 @@ internal void RenderForegroundSprites()
 			Ts2dPushTintedTexture(dynamic_sprite->texture_atlas,
 								  v4(source_pos.x, source_pos.y, dynamic_sprite->source.z - 0.5f, dynamic_sprite->source.w - 0.5f),
 								  v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-								  (core->client_data->editor_state && ordered_sprites[i].entity == core->client_data->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
+								  (core->run_data->editor_state && ordered_sprites[i].entity == core->run_data->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
 		}
 		else if (ordered_sprites[i].static_sprite)
 		{
@@ -283,7 +283,7 @@ internal void RenderForegroundSprites()
 			Ts2dPushTintedTexture(static_sprite->texture_atlas,
 								  v4(static_sprite->source.x, static_sprite->source.y, static_sprite->source.z - 0.5f, static_sprite->source.w - 0.5f),
 								  v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-								  (core->client_data->editor_state && ordered_sprites[i].entity == core->client_data->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
+								  (core->run_data->editor_state && ordered_sprites[i].entity == core->run_data->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
 		}
 		else
 		{

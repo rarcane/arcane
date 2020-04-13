@@ -43,33 +43,8 @@
 				"label": ""
 			},
 			{
-				"line": 877,
+				"line": 890,
 				"column": 39,
-				"label": ""
-			}
-		]
-	},
-	{
-		"path": "$ROOTPATH$\\data_desk_custom\\data\\data.ds",
-		"bookmarks": [
-			{
-				"line": 347,
-				"column": 30,
-				"label": ""
-			},
-			{
-				"line": 562,
-				"column": 22,
-				"label": ""
-			}
-		]
-	},
-	{
-		"path": "$ROOTPATH$\\game\\source\\arc\\world\\cell.c",
-		"bookmarks": [
-			{
-				"line": 430,
-				"column": 33,
 				"label": ""
 			}
 		]

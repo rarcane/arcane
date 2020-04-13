@@ -1,7 +1,7 @@
 #ifdef DEVELOPER_TOOLS
 internal void RenderColliders()
 {
-	if (!(core->client_data->editor_flags & EDITOR_FLAGS_draw_collision))
+	if (!(core->run_data->editor_flags & EDITOR_FLAGS_draw_collision))
 		return;
 
 	for (int i = 0; i < core->world_data->entity_components.physics_body_component_count; i++)
@@ -14,18 +14,18 @@ internal void RenderColliders()
 			R_DEV_ASSERT(pos_comp, "Physics entity doesn't have a position component.");
 
 			v3 col = {1.0f, 1.0f, 1.0f};
-			if (core->client_data->selected_ground_seg)
-				if (entity == core->client_data->selected_ground_seg->parent_generic_entity)
+			if (core->run_data->selected_ground_seg)
+				if (entity == core->run_data->selected_ground_seg->parent_generic_entity)
 					col = v3(1.0f, 0.0f, 0.0f);
 
 			PushDebugShape(body_comp->shape, body_comp->shape_type, pos_comp->position, col);
 		}
 	}
 
-	if (core->client_data->editor_flags & EDITOR_FLAGS_draw_chunk_grid)
+	if (core->run_data->editor_flags & EDITOR_FLAGS_draw_chunk_grid)
 		for (int i = 0; i < core->world_data->active_chunk_count; i++)
 		{
-			ChunkData *chunk = &core->world_data->active_chunks[i];
+			Chunk *chunk = &core->world_data->active_chunks[i];
 
 			PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index),
 						  v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),

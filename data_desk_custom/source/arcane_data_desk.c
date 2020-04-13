@@ -72,12 +72,6 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 		{
 			switch (root->type)
 			{
-			default:
-			{
-				DataDeskFWriteGraphAsC(h_file, root, 0);
-				break;
-			}
-
 			case DATA_DESK_NODE_TYPE_struct_declaration:
 			{
 				DataDeskNode *unique_entity_tag = DataDeskGetNodeTag(root, "UniqueEntity");
@@ -242,6 +236,21 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 				break;
 			}
 
+			case DATA_DESK_NODE_TYPE_union_declaration:
+			{
+				fprintf(h_file, "typedef union %s\n", root->string);
+				fprintf(h_file, "{\n");
+				for (DataDeskNode *member = root->union_declaration.first_member;
+					 member; member = member->next)
+				{
+					DataDeskFWriteGraphAsC(h_file, member, 0);
+					fprintf(h_file, ";\n");
+				}
+				fprintf(h_file, "} %s;\n\n", root->string);
+
+				break;
+			}
+
 			case DATA_DESK_NODE_TYPE_enum_declaration:
 			{
 				// MOTE(tjr): Generate styled enum.
@@ -256,8 +265,6 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 					}
 					fprintf(h_file, "%s_MAX,\n", root->name_uppercase_with_underscores);
 					fprintf(h_file, "};\n");
-
-					fprintf(h_file, "static char *Get%sTypeName(%s type);\n\n", root->name, root->name);
 				}
 
 				// NOTE(tjr): X-Macro initialisation
@@ -311,6 +318,7 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 
 				// NOTE(tjr): Generate enum print function implementation.
 				{
+					fprintf(h_file, "static char *Get%sName(%s type);\n\n", root->name, root->name);
 					fprintf(c_file, "static char *Get%sName(%s type)\n", root->name, root->name);
 					fprintf(c_file, "{\n");
 					fprintf(c_file, "switch(type)\n");
@@ -372,6 +380,10 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 
 				break;
 			}
+
+			default:
+				DataDeskFWriteGraphAsC(h_file, root, 0);
+				break;
 			}
 		}
 	}

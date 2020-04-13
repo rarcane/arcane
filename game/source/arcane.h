@@ -11,3 +11,4 @@ typedef struct OverlappedColliderInfo
 } OverlappedColliderInfo;
 
 internal v2 GetMousePositionInWorldSpace();
+internal void FinishUpdate();

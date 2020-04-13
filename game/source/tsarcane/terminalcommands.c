@@ -7,10 +7,10 @@ TSDEVTERMINAL_COMMAND_PROC(SaveLevelCommand)
 	}
 	else
 	{
-		if (core->client_data->current_level[0])
+		if (core->run_data->current_level[0])
 		{
-			SaveLevel(core->client_data->current_level);
-			Log("Successfully saved level to %s.save", core->client_data->current_level);
+			SaveLevel(core->run_data->current_level);
+			Log("Successfully saved level to %s.save", core->run_data->current_level);
 		}
 		else
 		{

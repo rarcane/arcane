@@ -61,11 +61,13 @@ GameInit(void)
 	{
 		core->client_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(ClientData));
 		R_DEV_ASSERT(core->client_data, "Failed to allocate memory for ClientData.");
-		core->client_data->editor_flags |= EDITOR_FLAGS_draw_world;
+
+		core->run_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(RunData));
+		R_DEV_ASSERT(core->run_data, "Failed to allocate memory for Run Data.");
+		core->run_data->editor_flags |= EDITOR_FLAGS_draw_world;
 
 		core->world_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(WorldData));
 		R_DEV_ASSERT(core->world_data, "Failed to allocate memory for WorldData.");
-		core->world_data->floating_chunk.is_valid = 1;
 
 		// NOTE(rjf): Initialize TsDevTerminal.
 		{
@@ -110,8 +112,8 @@ GameInit(void)
 
 				};
 
-			core->client_data->res_path = MakeCStringOnMemoryArena(core->permanent_arena, "%s/res/", platform->executable_folder_absolute_path);
-			TsAssetsSetAssetRootPath(core->client_data->res_path);
+			core->run_data->res_path = MakeCStringOnMemoryArena(core->permanent_arena, "%s/res/", platform->executable_folder_absolute_path);
+			TsAssetsSetAssetRootPath(core->run_data->res_path);
 			TsAssetsSetAssetTypes(ArrayCount(asset_types), asset_types, core->permanent_arena);
 		}
 
@@ -121,7 +123,7 @@ GameInit(void)
 
 			InitialiseECS();
 
-			core->client_data->editor_flags |= EDITOR_FLAGS_draw_collision;
+			core->run_data->editor_flags |= EDITOR_FLAGS_draw_collision;
 			core->camera_zoom = DEFAULT_CAMERA_ZOOM;
 
 			core->delta_mult = 1.0f;
@@ -170,35 +172,38 @@ GameUpdate(void)
 		// NOTE(tjr): Enter editor mode
 		if (platform->key_pressed[KEY_f1])
 		{
-			if (core->client_data->editor_state == EDITOR_STATE_entity)
+			if (core->run_data->editor_state == EDITOR_STATE_entity)
 			{
-				core->client_data->editor_state = EDITOR_STATE_none;
+				core->run_data->editor_state = EDITOR_STATE_none;
 			}
 			else
 			{
-				core->client_data->editor_state = EDITOR_STATE_entity;
+				core->run_data->editor_state = EDITOR_STATE_entity;
+				core->run_data->disable_chunk_view_loading = 1;
 			}
 		}
 		else if (platform->key_pressed[KEY_f2])
 		{
-			if (core->client_data->editor_state == EDITOR_STATE_terrain)
+			if (core->run_data->editor_state == EDITOR_STATE_terrain)
 			{
-				core->client_data->editor_state = EDITOR_STATE_none;
+				core->run_data->editor_state = EDITOR_STATE_none;
 			}
 			else
 			{
-				core->client_data->editor_state = EDITOR_STATE_terrain;
+				core->run_data->editor_state = EDITOR_STATE_terrain;
+				core->run_data->disable_chunk_view_loading = 1;
 			}
 		}
 		else if (platform->key_pressed[KEY_f3])
 		{
-			if (core->client_data->editor_state == EDITOR_STATE_collision)
+			if (core->run_data->editor_state == EDITOR_STATE_collision)
 			{
-				core->client_data->editor_state = EDITOR_STATE_none;
+				core->run_data->editor_state = EDITOR_STATE_none;
 			}
 			else
 			{
-				core->client_data->editor_state = EDITOR_STATE_collision;
+				core->run_data->editor_state = EDITOR_STATE_collision;
+				core->run_data->disable_chunk_view_loading = 1;
 			}
 		}
 #endif
@@ -338,9 +343,11 @@ GameUpdate(void)
 	// NOTE(rjf): Update.
 	if (core->is_ingame)
 	{
+		UpdateChunks();
+
 #ifdef DEVELOPER_TOOLS
 		DrawEditorUI();
-		if (core->client_data->editor_state)
+		if (core->run_data->editor_state)
 			TransformEditorCamera();
 #endif
 
@@ -351,14 +358,13 @@ GameUpdate(void)
 		// NOTE(tjr): Perform if the game is not paused.
 		if (core->world_delta_t != 0.0f)
 		{
-			UpdateCellMaterials();
+			// UpdateCellMaterials();
 
 			PreMoveUpdatePlayer();
 
-			UpdateChunks();
 			UpdatePhysics();
 
-			if (!core->client_data->editor_state)
+			if (!core->run_data->editor_state)
 				TransformInGameCamera();
 
 			PostMoveUpdatePlayer();

@@ -1,6 +1,6 @@
 internal void CreateTestLevel()
 {
-	R_DEV_ASSERT(!core->client_data->current_level[0], "A level is already loaded in.");
+	R_DEV_ASSERT(!core->run_data->current_level[0], "A level is already loaded in.");
 
 	core->world_data->test_ptr = &core->world_data->free_entity_id;
 
@@ -73,9 +73,17 @@ internal void CreateTestLevel()
 		i32 terrain_height = (i32)floorf(200.0f + 50.0f * noise);
 		for (int y = -1; y > -terrain_height - 1; y--)
 		{
-			Cell *cell = GetCellAtPosition(x - CHUNK_SIZE * 2, y + 200);
-			CellMaterial *material = NewCellMaterial(cell, CELL_MATERIAL_TYPE_dirt);
-			material->mass = 0.0f;
+			i32 x_pos = x - CHUNK_SIZE * 2;
+			i32 y_pos = y + 200;
+
+			Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex((f32)x_pos), WorldspaceToChunkIndex((f32)y_pos));
+			if (!chunk)
+				chunk = LoadChunkAtIndex(WorldspaceToChunkIndex((f32)x_pos), WorldspaceToChunkIndex((f32)y_pos));
+
+			Cell *cell = GetCellAtPosition(x_pos, y_pos);
+			cell->material_type = CELL_MATERIAL_TYPE_dirt;
+
+			QueueChunkForTextureUpdate(chunk);
 		}
 
 		f32 width = ((f32)CHUNK_SIZE * 4.0f) / 32.0f;
@@ -103,14 +111,14 @@ internal void CreateTestLevel()
 		}
 	}
 
-	strcpy(core->client_data->current_level, "testing");
+	strcpy(core->run_data->current_level, "testing");
 	SaveLevel("testing");
 }
 
 internal void DrawWorld()
 {
 #ifdef DEVELOPER_TOOLS
-	if (!(core->client_data->editor_flags & EDITOR_FLAGS_draw_world))
+	if (!(core->run_data->editor_flags & EDITOR_FLAGS_draw_world))
 		return;
 #endif
 
@@ -155,7 +163,7 @@ internal void DrawWorld()
 	// NOTE(tjr): Sprite rendering.
 	{
 		UpdateAnimations();
-		PostUpdateWorldAnimations();
+		// PostUpdateWorldAnimations();
 		RenderForegroundSprites();
 	}
 
@@ -186,10 +194,6 @@ internal void DrawWorld()
     } */
 }
 
-internal void PostUpdateWorldAnimations()
-{
-}
-
 internal void UpdateParallax()
 {
 	for (int j = 0; j < core->world_data->entity_components.parallax_component_count; j++)
@@ -211,169 +215,48 @@ internal void UpdateParallax()
 	}
 }
 
-internal i32 FloatToChunkIndex(f32 position)
-{
-	return (i32)floorf(position / CHUNK_SIZE);
-}
-
-internal ChunkData *GetChunkAtPosition(v2 position)
-{
-	for (int i = 0; i < core->world_data->active_chunk_count; i++)
-	{
-		ChunkData *chunk = &core->world_data->active_chunks[i];
-		if (chunk->is_valid)
-		{
-			if (FloatToChunkIndex(position.x) == chunk->x_index &&
-				FloatToChunkIndex(position.y) == chunk->y_index)
-			{
-				return chunk;
-			}
-		}
-	}
-
-	// Chunk doesn't exist yet, so just initialise a new one at this positon
-	{
-		R_DEV_ASSERT(core->world_data->active_chunk_count + 1 < MAX_WORLD_CHUNKS, "Too many chunccs bruh");
-
-		ChunkData *chunk = &core->world_data->active_chunks[core->world_data->active_chunk_count++];
-		chunk->is_valid = 1;
-		chunk->x_index = FloatToChunkIndex(position.x);
-		chunk->y_index = FloatToChunkIndex(position.y);
-		chunk->free_cell_material_id = 1;
-
-		for (int i = 0; i < CHUNK_SIZE / CELL_CHUNK_SIZE; i++)
-		{
-			for (int j = 0; j < CHUNK_SIZE / CELL_CHUNK_SIZE; j++)
-			{
-				CellChunk *cell_chunk = &chunk->cell_chunks[i][j];
-				cell_chunk->x_index = j;
-				cell_chunk->y_index = i;
-				cell_chunk->parent_chunk = chunk;
-
-				// Initialise cells
-				for (int y = 0; y < CELL_CHUNK_SIZE; y++)
-				{
-					for (int x = 0; x < CELL_CHUNK_SIZE; x++)
-					{
-						Cell *cell = &cell_chunk->cells[y][x];
-						cell->parent_cell_chunk = cell_chunk;
-						cell->x_index = x;
-						cell->y_index = y;
-					}
-				}
-			}
-		}
-
-		UpdateChunkTextures(chunk);
-
-		return chunk;
-	}
-}
-
-internal ChunkData *GetChunkAtIndex(i32 x, i32 y)
-{
-	for (int i = 0; i < core->world_data->active_chunk_count; i++)
-	{
-		ChunkData *chunk = &core->world_data->active_chunks[i];
-		if (chunk->is_valid)
-		{
-			if (x == chunk->x_index &&
-				y == chunk->y_index)
-			{
-				return chunk;
-			}
-		}
-	}
-
-	// Chunk doesn't exist yet, so just initialise a new one at this positon
-	{
-		R_DEV_ASSERT(core->world_data->active_chunk_count + 1 < MAX_WORLD_CHUNKS, "Too many chunccs bruh");
-
-		ChunkData *chunk = &core->world_data->active_chunks[core->world_data->active_chunk_count++];
-		chunk->is_valid = 1;
-		chunk->x_index = x;
-		chunk->y_index = y;
-		chunk->free_cell_material_id = 1;
-
-		for (int i = 0; i < CHUNK_SIZE / CELL_CHUNK_SIZE; i++)
-		{
-			for (int j = 0; j < CHUNK_SIZE / CELL_CHUNK_SIZE; j++)
-			{
-				CellChunk *cell_chunk = &chunk->cell_chunks[i][j];
-				cell_chunk->x_index = j;
-				cell_chunk->y_index = i;
-				cell_chunk->parent_chunk = chunk;
-
-				// Initialise cells
-				for (int y = 0; y < CELL_CHUNK_SIZE; y++)
-				{
-					for (int x = 0; x < CELL_CHUNK_SIZE; x++)
-					{
-						Cell *cell = &cell_chunk->cells[y][x];
-						cell->parent_cell_chunk = cell_chunk;
-						cell->x_index = x;
-						cell->y_index = y;
-					}
-				}
-			}
-		}
-
-		UpdateChunkTextures(chunk);
-
-		return chunk;
-	}
-}
-
-internal void GetVisibleChunks(ChunkData **chunks, i32 *chunk_count)
-{
-	v2 top_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
-	v2 top_right = {-core->camera_position.x + core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
-	v2 bottom_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y + core->render_h / (2.0f * core->camera_zoom)};
-	v2 bottom_right = {-core->camera_position.x + core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y + core->render_h / (2.0f * core->camera_zoom)};
-
-	ChunkData *tl_chunk = GetChunkAtPosition(top_left);
-	chunks[(*chunk_count)++] = tl_chunk;
-	ChunkData *tr_chunk = GetChunkAtPosition(top_right);
-	ChunkData *bl_chunk = GetChunkAtPosition(bottom_left);
-	ChunkData *br_chunk = GetChunkAtPosition(bottom_right);
-
-	i32 width = tr_chunk->x_index - tl_chunk->x_index;
-	i32 height = bl_chunk->y_index - tl_chunk->y_index;
-
-	for (int y = 0; y <= height; y++)
-	{
-		for (int x = 0; x <= width; x++)
-		{
-			if (!(x == 0 && y == 0))
-			{
-				ChunkData *chunk = GetChunkAtIndex(tl_chunk->x_index + x, tl_chunk->y_index + y);
-				chunks[(*chunk_count)++] = chunk;
-			}
-		}
-	}
-
-	R_DEV_ASSERT(*chunk_count < MAX_WORLD_CHUNKS, "Too many visible chunks.");
-}
-
-// NOTE(tjr): Returns 9 surrounding chunks (including the central chunk) in relation to a position
-internal void GetSurroundingChunks(ChunkData **chunks, v2 position)
-{
-	chunks[0] = GetChunkAtPosition(v2(position.x - CHUNK_SIZE, position.y - CHUNK_SIZE));
-	chunks[1] = GetChunkAtPosition(v2(position.x, position.y - CHUNK_SIZE));
-	chunks[2] = GetChunkAtPosition(v2(position.x + CHUNK_SIZE, position.y - CHUNK_SIZE));
-	chunks[3] = GetChunkAtPosition(v2(position.x - CHUNK_SIZE, position.y));
-	chunks[4] = GetChunkAtPosition(v2(position.x, position.y));
-	chunks[5] = GetChunkAtPosition(v2(position.x + CHUNK_SIZE, position.y));
-	chunks[6] = GetChunkAtPosition(v2(position.x - CHUNK_SIZE, position.y + CHUNK_SIZE));
-	chunks[7] = GetChunkAtPosition(v2(position.x, position.y + CHUNK_SIZE));
-	chunks[8] = GetChunkAtPosition(v2(position.x + CHUNK_SIZE, position.y + CHUNK_SIZE));
-}
-
 internal void UpdateChunks()
 {
-	// Check if any chunks need to get loaded in / unloaded
-	// Create / remove entity data as required
+	// Unload any chunks that haven't been marked as 'remain_loaded' by now
+	for (i32 i = 0; i < core->world_data->active_chunk_count; i++)
+	{
+		Chunk *chunk = &core->world_data->active_chunks[i];
+		if (!chunk->remain_loaded)
+		{
+			// unload chunk
+		}
+		else
+			chunk->remain_loaded = 0; // Reset
+	}
 
+	// Load in chunks that should be visible to the player + a buffer
+	if (!core->run_data->disable_chunk_view_loading)
+	{
+		const i32 buffer = 1;
+
+		v2 top_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
+		v2 top_right = {-core->camera_position.x + core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
+		v2 bottom_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y + core->render_h / (2.0f * core->camera_zoom)};
+
+		i32 width = WorldspaceToChunkIndex(top_right.x) - WorldspaceToChunkIndex(top_left.x);
+		i32 height = WorldspaceToChunkIndex(bottom_left.y) - WorldspaceToChunkIndex(top_left.y);
+
+		for (int y = -buffer; y <= height + buffer; y++)
+		{
+			for (int x = -buffer; x <= width + buffer; x++)
+			{
+				Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex(top_left.x) + x, WorldspaceToChunkIndex(top_left.y) + y);
+				if (!chunk)
+				{
+					chunk = LoadChunkAtIndex(WorldspaceToChunkIndex(top_left.x) + x, WorldspaceToChunkIndex(top_left.y) + y);
+					chunk->remain_loaded = 1;
+				}
+			}
+		}
+	}
+
+	// Give a new entity list for chunks
+	// TODO: This shouldn't be completely stored for each chunk, should be setup as a radix sort type thingy
 	for (int i = 0; i < core->world_data->active_chunk_count; i++)
 	{
 		core->world_data->active_chunks[i].entity_count = 0;
@@ -409,19 +292,119 @@ internal void UpdateChunks()
 
 			if (is_positional_entity)
 			{
-				ChunkData *chunk = GetChunkAtPosition(world_position);
+				Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex(world_position.x), WorldspaceToChunkIndex(world_position.y));
 
 				chunk->entity_ids[chunk->entity_count++] = entity->entity_id;
-
-				entity->active_chunk = chunk;
-			}
-			else
-			{
-				core->world_data->floating_chunk.entity_ids[core->world_data->floating_chunk.entity_count++] = entity->entity_id;
-				entity->active_chunk = &core->world_data->floating_chunk;
 			}
 		}
 	}
 }
 
-// internal void
+internal i32 WorldspaceToChunkIndex(f32 world_space_coordinate)
+{
+	return (i32)floorf(world_space_coordinate / CHUNK_SIZE);
+}
+
+internal Chunk *GetChunkAtIndex(i32 x, i32 y)
+{
+	for (int i = 0; i < core->world_data->active_chunk_count; i++)
+	{
+		Chunk *chunk = &core->world_data->active_chunks[i];
+		if (chunk->is_valid)
+			if (x == chunk->x_index &&
+				y == chunk->y_index)
+				return chunk;
+	}
+
+	// Chunk isn't loaded.
+	return 0;
+}
+
+internal void GetVisibleChunks(Chunk **chunks, i32 *chunk_count)
+{
+	v2 top_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
+	v2 top_right = {-core->camera_position.x + core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
+	v2 bottom_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y + core->render_h / (2.0f * core->camera_zoom)};
+	v2 bottom_right = {-core->camera_position.x + core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y + core->render_h / (2.0f * core->camera_zoom)};
+
+	Chunk *tl_chunk = GetChunkAtIndex(WorldspaceToChunkIndex(top_left.x), WorldspaceToChunkIndex(top_left.y));
+	if (tl_chunk)
+		chunks[(*chunk_count)++] = tl_chunk; // Manually add the first chunk to the algo.
+	else
+		LogWarning("A visible chunk is not loaded, is this intended?");
+
+	i32 width = WorldspaceToChunkIndex(top_right.x) - WorldspaceToChunkIndex(top_left.x);
+	i32 height = WorldspaceToChunkIndex(bottom_left.y) - WorldspaceToChunkIndex(top_left.y);
+
+	for (int y = 0; y <= height; y++)
+	{
+		for (int x = 0; x <= width; x++)
+		{
+			if (!(x == 0 && y == 0))
+			{
+				Chunk *chunk = GetChunkAtIndex(tl_chunk->x_index + x, tl_chunk->y_index + y);
+				if (chunk)
+					chunks[(*chunk_count)++] = chunk;
+				else
+					LogWarning("A visible chunk is not loaded, is this intended?");
+			}
+		}
+	}
+
+	R_DEV_ASSERT(*chunk_count < MAX_WORLD_CHUNKS, "Visible chunks exceed MAX_WORLD_CHUNKS, how is this possible?");
+}
+
+internal void GetSurroundingChunks(Chunk **chunks, v2 position)
+{
+	R_TODO; // What's this func for again?
+
+	chunks[0] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x - CHUNK_SIZE),
+								WorldspaceToChunkIndex(position.y - CHUNK_SIZE));
+	chunks[1] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x),
+								WorldspaceToChunkIndex(position.y - CHUNK_SIZE));
+	chunks[2] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x + CHUNK_SIZE),
+								WorldspaceToChunkIndex(position.y - CHUNK_SIZE));
+	chunks[3] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x - CHUNK_SIZE),
+								WorldspaceToChunkIndex(position.y));
+	chunks[4] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x),
+								WorldspaceToChunkIndex(position.y));
+	chunks[5] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x + CHUNK_SIZE),
+								WorldspaceToChunkIndex(position.y));
+	chunks[6] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x - CHUNK_SIZE),
+								WorldspaceToChunkIndex(position.y + CHUNK_SIZE));
+	chunks[7] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x),
+								WorldspaceToChunkIndex(position.y + CHUNK_SIZE));
+	chunks[8] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x + CHUNK_SIZE),
+								WorldspaceToChunkIndex(position.y + CHUNK_SIZE));
+}
+
+// Loading isn't done from disk, for now.
+internal Chunk *LoadChunkAtIndex(i32 x_index, i32 y_index)
+{
+	R_DEV_ASSERT(core->world_data->active_chunk_count + 1 < MAX_WORLD_CHUNKS, "Too many chunccs are loaded bruh.");
+
+	Chunk *chunk = &core->world_data->active_chunks[core->world_data->active_chunk_count++];
+	chunk->is_valid = 1;
+	chunk->x_index = x_index;
+	chunk->y_index = y_index;
+
+	for (int y = 0; y < CHUNK_SIZE; y++)
+	{
+		for (int x = 0; x < CHUNK_SIZE; x++)
+		{
+			Cell *cell = &chunk->cells[y][x];
+			cell->x_position = x_index * CHUNK_SIZE + x;
+			cell->y_position = y_index * CHUNK_SIZE + y;
+		}
+	}
+
+	QueueChunkForTextureUpdate(chunk);
+
+	return chunk;
+}
+
+internal void UnloadChunk(Chunk *chunk_to_unload)
+{
+	R_TODO;
+	// Will sort this out (along with proper world save structure) when we need infinite gen.
+}

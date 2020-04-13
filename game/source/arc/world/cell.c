@@ -1,3 +1,206 @@
+internal void UpdateCells()
+{
+	for (int i = 0; i < core->world_data->dynamic_cell_count; i++)
+	{
+		Cell *cell = core->world_data->dynamic_cells[i];
+		ProcessCell(cell);
+	}
+}
+
+internal void ProcessCell(Cell *cell)
+{
+	Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex((f32)cell->x_position),
+								   WorldspaceToChunkIndex((f32)cell->y_position));
+	QueueChunkForTextureUpdate(chunk);
+
+	CellMaterialTypeData *cell_type_data = &cell_material_type_data[cell->material_type];
+	switch (cell_type_data->properties_type)
+	{
+	case CELL_PROPERTIES_TYPE_air:
+	{
+		StaticAirProperties *static_air_properties = &cell_type_data->static_properties.air;
+		DynamicAirProperties *dynamic_air_properties = &cell->dynamic_properties.air;
+
+		break;
+	}
+	case CELL_PROPERTIES_TYPE_liquid:
+	{
+		StaticLiquidProperties *static_liquid_properties = &cell_type_data->static_properties.liquid;
+		DynamicLiquidProperties *dynamic_liquid_properties = &cell->dynamic_properties.liquid;
+
+		break;
+	}
+	case CELL_PROPERTIES_TYPE_solid:
+	{
+		StaticSolidProperties *static_solid_properties = &cell_type_data->static_properties.solid;
+		DynamicSolidProperties *dynamic_solid_properties = &cell->dynamic_properties.solid;
+
+		break;
+	}
+	default:
+		R_TODO;
+		break;
+	}
+}
+
+internal void QueueChunkForTextureUpdate(Chunk *chunk)
+{
+	for (i32 i = 0; i < core->run_data->chunk_texture_update_queue_count; i++)
+	{
+		Chunk *existing_chunk = core->run_data->chunk_texture_update_queue[i];
+		if (existing_chunk == chunk)
+		{
+			return;
+		}
+	}
+
+	core->run_data->chunk_texture_update_queue[core->run_data->chunk_texture_update_queue_count++] = chunk;
+}
+
+internal void RenderCells()
+{
+	for (i32 i = 0; i < core->run_data->chunk_texture_update_queue_count; i++)
+	{
+		Chunk *chunk = core->run_data->chunk_texture_update_queue[i];
+		unsigned char pixel_data[CHUNK_SIZE * CHUNK_SIZE * 4];
+		unsigned char *pixel_buffer = &pixel_data[0];
+
+		for (int y = 0; y < CHUNK_SIZE; y++)
+		{
+			for (int x = 0; x < CHUNK_SIZE; x++)
+			{
+				Cell *cell = &chunk->cells[y][x];
+				v4 colour;
+				switch (cell->material_type)
+				{
+				case CELL_MATERIAL_TYPE_air:
+				{
+					/* DynamicAirProperties *dyn_air_properties = &cell->dynamic_properties.air;
+
+					f32 pressure = dyn_air_properties->pressure;
+					if (pressure > 10.0f)
+						pressure = 10.0f;
+					else if (pressure < 0.0f)
+						pressure = 0.0f; */
+
+					colour = v4u(0.0f); //v4(pressure / 10.0f, 0.0f, 0.0f, 1.0f);
+					break;
+				}
+				case CELL_MATERIAL_TYPE_dirt:
+				{
+					v3 dirt_colour = {14.0f / 360.0f, 0.36f, 0.31f};
+
+					if (cell->dynamic_properties.solid.hardness > 0.0f)
+					{
+						v3 col = HSVToRGB(v3(dirt_colour.x, dirt_colour.y - 0.1f, dirt_colour.z - 0.05f));
+						colour = v4(col.r, col.g, col.b, 1.0f);
+					}
+					else
+					{
+						v3 col = HSVToRGB(v3(dirt_colour.x, dirt_colour.y, dirt_colour.z));
+						colour = v4(col.r, col.g, col.b, 1.0f);
+					}
+
+					break;
+				}
+				case CELL_MATERIAL_TYPE_sand:
+				{
+					v3 sand_colour = {55.0f / 360.0f, 0.43f, 1.0f};
+
+					if (cell->dynamic_properties.solid.hardness > 0.0f)
+					{
+						v3 col = HSVToRGB(v3(sand_colour.x, sand_colour.y - 0.1f, sand_colour.z - 0.05f));
+						colour = v4(col.r, col.g, col.b, 1.0f);
+					}
+					else
+					{
+						v3 col = HSVToRGB(v3(sand_colour.x, sand_colour.y, sand_colour.z));
+						colour = v4(col.r, col.g, col.b, 1.0f);
+					}
+
+					break;
+				}
+				case CELL_MATERIAL_TYPE_water:
+				{
+					v3 water_colour = {218.0f / 360.0f, 0.58f, 0.91f};
+					f32 mass = cell->dynamic_properties.liquid.mass;
+
+					v3 col = HSVToRGB(v3(water_colour.x, water_colour.y, water_colour.z));
+					colour = v4(col.r, col.g, col.b, mass);
+					colour = V4MultiplyF32(colour, 0.7f);
+
+					break;
+				}
+				default:
+					colour = v4u(1.0f);
+					break;
+				}
+
+				*pixel_buffer = (unsigned char)(ClampF32(colour.r, 0.0f, 1.0f) * 255.0f);
+				pixel_buffer++;
+				*pixel_buffer = (unsigned char)(ClampF32(colour.g, 0.0f, 1.0f) * 255.0f);
+				pixel_buffer++;
+				*pixel_buffer = (unsigned char)(ClampF32(colour.b, 0.0f, 1.0f) * 255.0f);
+				pixel_buffer++;
+				*pixel_buffer = (unsigned char)(ClampF32(colour.a, 0.0f, 1.0f) * 255.0f);
+				pixel_buffer++;
+			}
+		}
+
+		chunk->texture = Ts2dTextureInit(TS2D_TEXTURE_FORMAT_R8G8B8A8,
+										 CHUNK_SIZE,
+										 CHUNK_SIZE,
+										 pixel_data);
+	}
+
+	for (i32 i = 0; i < core->world_data->active_chunk_count; i++)
+	{
+		Chunk *chunk = &core->world_data->active_chunks[i];
+
+		v2 render_pos = v2view(v2((f32)chunk->x_index * CHUNK_SIZE,
+								  (f32)chunk->y_index * CHUNK_SIZE));
+		v2 render_size = v2zoom(v2(CHUNK_SIZE, CHUNK_SIZE));
+
+		Ts2dPushTexture(&chunk->texture,
+						v4(0.0f, 0.0f, CHUNK_SIZE, CHUNK_SIZE),
+						v4(render_pos.x, render_pos.y, render_size.x, render_size.y));
+	}
+
+	core->run_data->chunk_texture_update_queue_count = 0;
+}
+
+internal Cell *GetCellAtPosition(i32 x, i32 y)
+{
+	Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex((f32)x), WorldspaceToChunkIndex((f32)y));
+	if (!chunk)
+		return 0;
+
+	i32 cell_x;
+	if (x >= 0)
+		cell_x = x % CHUNK_SIZE;
+	else
+	{
+		if (abs(x) % CHUNK_SIZE == 0)
+			cell_x = 0;
+		else
+			cell_x = CHUNK_SIZE - abs(x) % CHUNK_SIZE;
+	}
+
+	i32 cell_y;
+	if (y >= 0)
+		cell_y = y % CHUNK_SIZE;
+	else
+	{
+		if (abs(y) % CHUNK_SIZE == 0)
+			cell_y = 0;
+		else
+			cell_y = CHUNK_SIZE - abs(y) % CHUNK_SIZE;
+	}
+
+	return &chunk->cells[cell_y][cell_x];
+}
+
+/*
 internal CellMaterial *NewCellMaterial(Cell *cell, CellMaterialType material_type)
 {
 	ChunkData *chunk = cell->parent_cell_chunk->parent_chunk;
@@ -679,7 +882,7 @@ internal void UpdateCellMaterials()
 internal void RenderCells()
 {
 #ifdef DEVELOPER_TOOLS
-	if (!(core->client_data->editor_flags & EDITOR_FLAGS_draw_world))
+	if (!(core->run_data->editor_flags & EDITOR_FLAGS_draw_world))
 		return;
 #endif
 
@@ -819,4 +1022,4 @@ internal void UpdateCellChunkTexture(CellChunk *chunk)
 									 CELL_CHUNK_SIZE,
 									 CELL_CHUNK_SIZE,
 									 pixel_data);
-}
+} */

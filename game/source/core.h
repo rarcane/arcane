@@ -7,8 +7,8 @@ typedef struct ItemComponent ItemComponent;
 typedef struct StorageComponent StorageComponent;
 
 typedef struct WorldData WorldData;
+typedef struct RunData RunData;
 typedef struct ClientData ClientData;
-typedef struct CellChunk CellChunk;
 
 typedef struct DebugLine
 {
@@ -52,11 +52,10 @@ struct Core
 
 	v2 random_field[256][256];
 
+	// NOTE(tjr): Data stores
 	WorldData *world_data;
+	RunData *run_data;
 	ClientData *client_data;
-
-	i32 queued_cell_chunk_count;
-	CellChunk *queued_cell_chunks_for_update[512];
 
 	// NOTE(rjf): Render size data.
 	union {

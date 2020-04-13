@@ -318,54 +318,6 @@ ItemType :: enum
 		flint_sword,
 }
 
-FLUID_COMPRESSION :: 0.01f
-
-SolidMaterial :: struct
-{
-	position : v2;
-	velocity : v2;
-	hardness : f32;
-}
-FluidMatieral :: struct
-{
-	//flow : v2;
-	pressure : f32;
-	mass : f32;
-	new_mass : f32;
-}
-CellProperties :: union
-{
-	solid : SolidMaterial;
-	fluid : FluidMatieral;
-}
-CellPropertiesType :: enum
-{
-	solid,
-	fluid,
-}
-
-@XMacro
-CellMaterialTypeData :: struct
-{
-	default_mass : f32;
-	restitution : f32;
-	max_height : i32;
-	crust_depth : i32;
-	properties_type : CellPropertiesType;
-}
-@XMacro
-CellMaterialType :: enum
-{
-	@Data(0.0f, 0.0f, 0, 0, CELL_PROPERTIES_TYPE_fluid)
-		air,
-	@Data(5.0f, 0.0f, 3, 3, CELL_PROPERTIES_TYPE_solid)
-		dirt,
-	@Data(3.0f, 0.0f, 1, 5, CELL_PROPERTIES_TYPE_solid)
-		sand,
-	@Data(10.0f, 1.50f, 0, 0, CELL_PROPERTIES_TYPE_fluid)
-		water,
-}
-
 /* --- COMPONENTS --- */
 
 @ForwardDeclare(Entity)
@@ -505,7 +457,7 @@ ParticleEmitterComponent :: struct
 	finish_callback : EmitterFinishCallback;
 }
 
-@ForwardDeclare(ChunkData)
+@ForwardDeclare(Chunk)
 ForwardChunk :: _;
 
 @GenerateComponentCode
@@ -550,89 +502,131 @@ Entity :: struct
 	
 	flags : EntityFlags;
 	components : *void[COMPONENT_MAX];
-	active_chunk : *ChunkData;
 }
 
 
-/* --- WORLD DATA --- */
+/* ----------------------------------------- */
+/* ----------- CELLULAR AUTOMATA ----------- */
+/* ----------------------------------------- */
 
-@ForwardDeclare(Cell)
-ForwardCell :: _;
+FLUID_COMPRESSION :: 0.01f
 
-@SerialisableStruct
-CellMaterial :: struct
+CellPropertiesType :: enum
 {
-	id : i32;
-	parent_cell : *Cell;
-	material_type : CellMaterialType;
-	flags : CellFlags;
-	
-	mass : f32;
-	
-	properties_type : CellPropertiesType;
-	properties : CellProperties;
-	
-	is_material_dynamic : b8;
-	has_been_updated : b8;
-	
-	idle_start : f32;
+	air,
+	liquid,
+	solid,
 }
 
-@ForwardDeclare(CellChunk)
-ForwardCellChunk :: _;
+DynamicAirProperties :: struct
+{
+	//flow : v2;
+	pressure : f32;
+}
+DynamicLiquidProperties :: struct
+{
+	//flow : v2;
+	mass : f32;
+	new_mass : f32;
+}
+DynamicSolidProperties :: struct
+{
+	position : v2;
+	velocity : v2;
+	hardness : f32;
+}
+DynamicCellProperties :: union
+{
+	air : DynamicAirProperties;
+	liquid : DynamicLiquidProperties;
+	solid : DynamicSolidProperties;
+}
+
+StaticAirProperties :: struct
+{
+	resting_temp : f32;
+	test : b8;
+}
+StaticLiquidProperties :: struct
+{
+	default_mass : f32;
+}
+StaticSolidProperties :: struct
+{
+	default_mass : f32;
+	restitution : f32;
+	max_height : i32;
+	crust_depth : i32;
+}
+StaticCellProperties :: union
+{
+	air : StaticAirProperties;
+	liquid : StaticLiquidProperties;
+	solid : StaticSolidProperties;
+}
+@XMacro
+CellMaterialTypeData :: struct
+{
+	static_properties : StaticCellProperties;
+	properties_type : CellPropertiesType;
+}
+@XMacro
+CellMaterialType :: enum
+{
+	@Data(".static_properties.air = { .resting_temp = 2.0f, .test = 1}", CELL_PROPERTIES_TYPE_air)
+		air,
+	@Data(".static_properties.liquid = { .default_mass = 1.5f} ", CELL_PROPERTIES_TYPE_liquid)
+		water,
+	@Data(".static_properties.solid = { .default_mass = 1.0f, .max_height = 3 }", CELL_PROPERTIES_TYPE_solid)
+		dirt,
+	@Data(".static_properties.solid = { .default_mass = 0.5f, .max_height = 1 }", CELL_PROPERTIES_TYPE_solid)
+		sand,
+}
 
 @SerialisableStruct
 Cell :: struct
 {
-	parent_cell_chunk : *CellChunk;
-	x_index : i32;
-	y_index : i32;
+	// id : i32 ? might need this for dynamic cell tracking.
+	x_position : i32;
+	y_position : i32;
+	flags : CellFlags;
 	
-	material : *CellMaterial;
+	material_type : CellMaterialType;
+	dynamic_properties : DynamicCellProperties;
 }
 
-@SerialisableStruct
-CellChunk :: struct // Why tf did I create these and organise cells into them? The textures should be a separate division thing entirely and not be bound to the resolution of any given chunk size.
-{
-	parent_chunk : *ChunkData;
-	x_index : i32;
-	y_index : i32;
-	
-	cells : Cell[CELL_CHUNK_SIZE][CELL_CHUNK_SIZE];
-	
-	texture : Ts2dTexture;
-}
+
+/* ---------------------------------- */
+/* ----------- WORLD DATA ----------- */
+/* ---------------------------------- */
 
 CELL_CHUNKS_IN_CHUNK :: CHUNK_SIZE / CELL_CHUNK_SIZE
 CHUNK_AREA :: CHUNK_SIZE * CHUNK_SIZE
 @SerialisableStruct
-ChunkData :: struct
+Chunk :: struct
 {
 	is_valid : b8;
+	remain_loaded : b8; // Is cleared each frame, systems need to provide this chunk with a reason to keep livin.
 	entity_ids : i32[MAX_ENTITIES_PER_CHUNK];
 	entity_count : i32;
 	x_index : i32;
 	y_index : i32;
 	
-	cell_chunks : CellChunk[CELL_CHUNKS_IN_CHUNK][CELL_CHUNKS_IN_CHUNK];
+	cells : Cell[CHUNK_SIZE][CHUNK_SIZE];
 	
-	cell_materials : CellMaterial[CHUNK_AREA];
-	cell_material_count : i32;
-	free_cell_material_id : i32;
-	
-	dynamic_cell_materials : *CellMaterial[MAX_DYNAMIC_CELLS];
-	dynamic_cell_material_count : i32;
+	texture : Ts2dTexture;
 }
 
-// NOTE(tjr): World-save specific data
+// NOTE(tjr): World-specific data, saved to disk in a .save
 @SerialisableStruct
 WorldData :: struct
 {
 	elapsed_world_time : f32;
 	
-	active_chunks : ChunkData[MAX_WORLD_CHUNKS];
+	// TODO: need to figure out where chunks will get stored, since they will be loading
+	// in and out of disk at run-time
+	active_chunks : Chunk[MAX_WORLD_CHUNKS];
 	active_chunk_count : i32;
-	floating_chunk : ChunkData;
 	
 	@GenerateUniqueEntityArrays
 	entities : Entity[MAX_ACTIVE_ENTITIES];
@@ -642,17 +636,22 @@ WorldData :: struct
 	entity_components : ComponentSet;
 	
 	test_ptr : *i32;
+	
+	dynamic_cells : *Cell[MAX_DYNAMIC_CELLS];
+	dynamic_cell_count : i32;
 }
 
-// NOTE(tjr): Game client data
-ClientData :: struct
+// NOTE(tjr): Temporary game data, used for run-time operations
+RunData :: struct
 {
-	/* ~ Player-controlled options ~ */
-	bloom : b32;
+	res_path : *char;
 	current_level : char[20];
 	
-	res_path : *char;
-
+	chunk_texture_update_queue : *Chunk[MAX_WORLD_CHUNKS];
+	chunk_texture_update_queue_count : i32;
+	
+	disable_chunk_view_loading : b8;
+	
 	/* ~ Editor ~ */
 	editor_state : EditorState;
 	editor_flags : EditorFlags;
@@ -662,4 +661,12 @@ ClientData :: struct
 	selected_ground_seg : *GroundSegmentEntity;
 	is_seg_grabbed : b8;
 	grabbed_seg_pos : v2;
+}
+
+// NOTE(tjr): Game client data, settings that should be remembered globally
+// TODO: serialise client options
+ClientData :: struct
+{
+	/* ~ Player-controlled options ~ */
+	bloom : b32;
 }

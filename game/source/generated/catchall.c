@@ -305,44 +305,6 @@ break;
 }
 }
 
-static char *GetCellPropertiesTypeName(CellPropertiesType type)
-{
-switch(type)
-{
-case CELL_PROPERTIES_TYPE_solid:
-return "Solid";
-break;
-case CELL_PROPERTIES_TYPE_fluid:
-return "Fluid";
-break;
-default:
-return "INVALID";
-break;
-}
-}
-
-static char *GetCellMaterialTypeName(CellMaterialType type)
-{
-switch(type)
-{
-case CELL_MATERIAL_TYPE_air:
-return "Air";
-break;
-case CELL_MATERIAL_TYPE_dirt:
-return "Dirt";
-break;
-case CELL_MATERIAL_TYPE_sand:
-return "Sand";
-break;
-case CELL_MATERIAL_TYPE_water:
-return "Water";
-break;
-default:
-return "INVALID";
-break;
-}
-}
-
 static char *Getc2ShapeTypeName(c2ShapeType type)
 {
 switch(type)
@@ -1311,6 +1273,47 @@ static void PrintEntityDataUI(Entity *entity)
         }
     }
 }
+static char *GetCellPropertiesTypeName(CellPropertiesType type)
+{
+switch(type)
+{
+case CELL_PROPERTIES_TYPE_air:
+return "Air";
+break;
+case CELL_PROPERTIES_TYPE_liquid:
+return "Liquid";
+break;
+case CELL_PROPERTIES_TYPE_solid:
+return "Solid";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
+static char *GetCellMaterialTypeName(CellMaterialType type)
+{
+switch(type)
+{
+case CELL_MATERIAL_TYPE_air:
+return "Air";
+break;
+case CELL_MATERIAL_TYPE_water:
+return "Water";
+break;
+case CELL_MATERIAL_TYPE_dirt:
+return "Dirt";
+break;
+case CELL_MATERIAL_TYPE_sand:
+return "Sand";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
 static void WritePositionComponentToFile(FILE *file, PositionComponent *data)
 {
     {
@@ -2589,13 +2592,6 @@ static void WriteEntityToFile(FILE *file, Entity *data)
     }
     WriteToFile(file, &data->type, sizeof(data->type));
     WriteToFile(file, &data->flags, sizeof(data->flags));
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->active_chunk, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
 }
 
 static void FillEntityPointersInFile(FILE *file, Entity *data)
@@ -2651,35 +2647,23 @@ static void FillEntityPointersInFile(FILE *file, Entity *data)
     }
     fseek(file, sizeof(data->flags), SEEK_CUR);
 // - Arary COMPONENT_MAX
-    fseek(file, sizeof(i32), SEEK_CUR);
 }
 
-static void WriteCellMaterialToFile(FILE *file, CellMaterial *data)
+static void WriteCellToFile(FILE *file, Cell *data)
 {
-    WriteToFile(file, &data->id, sizeof(data->id));
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parent_cell, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
-    WriteToFile(file, &data->material_type, sizeof(data->material_type));
+    WriteToFile(file, &data->x_position, sizeof(data->x_position));
+    WriteToFile(file, &data->y_position, sizeof(data->y_position));
     WriteToFile(file, &data->flags, sizeof(data->flags));
-    WriteToFile(file, &data->mass, sizeof(data->mass));
-    WriteToFile(file, &data->properties_type, sizeof(data->properties_type));
-    WriteToFile(file, &data->properties, sizeof(data->properties));
-    WriteToFile(file, &data->is_material_dynamic, sizeof(data->is_material_dynamic));
-    WriteToFile(file, &data->has_been_updated, sizeof(data->has_been_updated));
-    WriteToFile(file, &data->idle_start, sizeof(data->idle_start));
+    WriteToFile(file, &data->material_type, sizeof(data->material_type));
+    WriteToFile(file, &data->dynamic_properties, sizeof(data->dynamic_properties));
 }
 
-static void FillCellMaterialPointersInFile(FILE *file, CellMaterial *data)
+static void FillCellPointersInFile(FILE *file, Cell *data)
 {
     for (i32 i = 0; i < serialisation_pointer_count; i++)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->id)
+        if (*ptr->pointer_address == &data->x_position)
         {
             i32 current_pos = ftell(file);
             fseek(file, ptr->offset, SEEK_SET);
@@ -2687,12 +2671,11 @@ static void FillCellMaterialPointersInFile(FILE *file, CellMaterial *data)
             fseek(file, current_pos, SEEK_SET);
         }
     }
-    fseek(file, sizeof(data->id), SEEK_CUR);
-    fseek(file, sizeof(i32), SEEK_CUR);
+    fseek(file, sizeof(data->x_position), SEEK_CUR);
     for (i32 i = 0; i < serialisation_pointer_count; i++)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->material_type)
+        if (*ptr->pointer_address == &data->y_position)
         {
             i32 current_pos = ftell(file);
             fseek(file, ptr->offset, SEEK_SET);
@@ -2700,7 +2683,7 @@ static void FillCellMaterialPointersInFile(FILE *file, CellMaterial *data)
             fseek(file, current_pos, SEEK_SET);
         }
     }
-    fseek(file, sizeof(data->material_type), SEEK_CUR);
+    fseek(file, sizeof(data->y_position), SEEK_CUR);
     for (i32 i = 0; i < serialisation_pointer_count; i++)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
@@ -2716,7 +2699,7 @@ static void FillCellMaterialPointersInFile(FILE *file, CellMaterial *data)
     for (i32 i = 0; i < serialisation_pointer_count; i++)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->mass)
+        if (*ptr->pointer_address == &data->material_type)
         {
             i32 current_pos = ftell(file);
             fseek(file, ptr->offset, SEEK_SET);
@@ -2724,11 +2707,11 @@ static void FillCellMaterialPointersInFile(FILE *file, CellMaterial *data)
             fseek(file, current_pos, SEEK_SET);
         }
     }
-    fseek(file, sizeof(data->mass), SEEK_CUR);
+    fseek(file, sizeof(data->material_type), SEEK_CUR);
     for (i32 i = 0; i < serialisation_pointer_count; i++)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->properties_type)
+        if (*ptr->pointer_address == &data->dynamic_properties)
         {
             i32 current_pos = ftell(file);
             fseek(file, ptr->offset, SEEK_SET);
@@ -2736,177 +2719,21 @@ static void FillCellMaterialPointersInFile(FILE *file, CellMaterial *data)
             fseek(file, current_pos, SEEK_SET);
         }
     }
-    fseek(file, sizeof(data->properties_type), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->properties)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->properties), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->is_material_dynamic)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->is_material_dynamic), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->has_been_updated)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->has_been_updated), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->idle_start)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->idle_start), SEEK_CUR);
+    fseek(file, sizeof(data->dynamic_properties), SEEK_CUR);
 }
 
-static void WriteCellToFile(FILE *file, Cell *data)
-{
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parent_cell_chunk, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
-    WriteToFile(file, &data->x_index, sizeof(data->x_index));
-    WriteToFile(file, &data->y_index, sizeof(data->y_index));
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->material, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
-}
-
-static void FillCellPointersInFile(FILE *file, Cell *data)
-{
-    fseek(file, sizeof(i32), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->x_index)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->x_index), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->y_index)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->y_index), SEEK_CUR);
-    fseek(file, sizeof(i32), SEEK_CUR);
-}
-
-static void WriteCellChunkToFile(FILE *file, CellChunk *data)
-{
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parent_chunk, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
-    WriteToFile(file, &data->x_index, sizeof(data->x_index));
-    WriteToFile(file, &data->y_index, sizeof(data->y_index));
-// - 2D Arary CELL_CHUNK_SIZE CELL_CHUNK_SIZE
-    WriteToFile(file, &data->texture, sizeof(data->texture));
-}
-
-static void FillCellChunkPointersInFile(FILE *file, CellChunk *data)
-{
-    fseek(file, sizeof(i32), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->x_index)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->x_index), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->y_index)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->y_index), SEEK_CUR);
-// - 2D Arary CELL_CHUNK_SIZE CELL_CHUNK_SIZE
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->texture)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->texture), SEEK_CUR);
-}
-
-static void WriteChunkDataToFile(FILE *file, ChunkData *data)
+static void WriteChunkToFile(FILE *file, Chunk *data)
 {
     WriteToFile(file, &data->is_valid, sizeof(data->is_valid));
+    WriteToFile(file, &data->remain_loaded, sizeof(data->remain_loaded));
     WriteToFile(file, &data->entity_count, sizeof(data->entity_count));
     WriteToFile(file, &data->x_index, sizeof(data->x_index));
     WriteToFile(file, &data->y_index, sizeof(data->y_index));
-// - 2D Arary CELL_CHUNKS_IN_CHUNK CELL_CHUNKS_IN_CHUNK
-    WriteToFile(file, &data->cell_material_count, sizeof(data->cell_material_count));
-    WriteToFile(file, &data->free_cell_material_id, sizeof(data->free_cell_material_id));
-    WriteToFile(file, &data->dynamic_cell_material_count, sizeof(data->dynamic_cell_material_count));
+// - 2D Arary CHUNK_SIZE CHUNK_SIZE
+    WriteToFile(file, &data->texture, sizeof(data->texture));
 }
 
-static void FillChunkDataPointersInFile(FILE *file, ChunkData *data)
+static void FillChunkPointersInFile(FILE *file, Chunk *data)
 {
     for (i32 i = 0; i < serialisation_pointer_count; i++)
     {
@@ -2920,6 +2747,18 @@ static void FillChunkDataPointersInFile(FILE *file, ChunkData *data)
         }
     }
     fseek(file, sizeof(data->is_valid), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->remain_loaded)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->remain_loaded), SEEK_CUR);
 // - Arary MAX_ENTITIES_PER_CHUNK
     for (i32 i = 0; i < serialisation_pointer_count; i++)
     {
@@ -2957,12 +2796,11 @@ static void FillChunkDataPointersInFile(FILE *file, ChunkData *data)
         }
     }
     fseek(file, sizeof(data->y_index), SEEK_CUR);
-// - 2D Arary CELL_CHUNKS_IN_CHUNK CELL_CHUNKS_IN_CHUNK
-// - Arary CHUNK_AREA
+// - 2D Arary CHUNK_SIZE CHUNK_SIZE
     for (i32 i = 0; i < serialisation_pointer_count; i++)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->cell_material_count)
+        if (*ptr->pointer_address == &data->texture)
         {
             i32 current_pos = ftell(file);
             fseek(file, ptr->offset, SEEK_SET);
@@ -2970,39 +2808,13 @@ static void FillChunkDataPointersInFile(FILE *file, ChunkData *data)
             fseek(file, current_pos, SEEK_SET);
         }
     }
-    fseek(file, sizeof(data->cell_material_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->free_cell_material_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->free_cell_material_id), SEEK_CUR);
-// - Arary MAX_DYNAMIC_CELLS
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->dynamic_cell_material_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->dynamic_cell_material_count), SEEK_CUR);
+    fseek(file, sizeof(data->texture), SEEK_CUR);
 }
 
 static void WriteWorldDataToFile(FILE *file, WorldData *data)
 {
     WriteToFile(file, &data->elapsed_world_time, sizeof(data->elapsed_world_time));
     WriteToFile(file, &data->active_chunk_count, sizeof(data->active_chunk_count));
-    WriteChunkDataToFile(file, &data->floating_chunk);
     WriteCharacterEntityToFile(file, &data->character_entity);
     WriteToFile(file, &data->cloud_entity_count, sizeof(data->cloud_entity_count));
     WriteToFile(file, &data->free_cloud_entity_index, sizeof(data->free_cloud_entity_index));
@@ -3018,6 +2830,7 @@ static void WriteWorldDataToFile(FILE *file, WorldData *data)
         i32 empty = 255;
         WriteToFile(file, &empty, sizeof(i32));
     }
+    WriteToFile(file, &data->dynamic_cell_count, sizeof(data->dynamic_cell_count));
 }
 
 static void FillWorldDataPointersInFile(FILE *file, WorldData *data)
@@ -3047,19 +2860,6 @@ static void FillWorldDataPointersInFile(FILE *file, WorldData *data)
         }
     }
     fseek(file, sizeof(data->active_chunk_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->floating_chunk)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    FillChunkDataPointersInFile(file, &data->floating_chunk);
-
     for (i32 i = 0; i < serialisation_pointer_count; i++)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
@@ -3162,5 +2962,18 @@ static void FillWorldDataPointersInFile(FILE *file, WorldData *data)
     FillComponentSetPointersInFile(file, &data->entity_components);
 
     fseek(file, sizeof(i32), SEEK_CUR);
+// - Arary MAX_DYNAMIC_CELLS
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->dynamic_cell_count)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->dynamic_cell_count), SEEK_CUR);
 }
 
