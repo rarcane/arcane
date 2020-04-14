@@ -60,9 +60,6 @@ typedef uint32 ParticleEmitterFlags;
 #define PIXEL_FLAGS_apply_gravity (1<<0)
 typedef uint32 PixelFlags;
 
-#define CELL_FLAGS_no_gravity (1<<0)
-typedef uint32 CellFlags;
-
 #define EDITOR_FLAGS_draw_world (1<<0)
 #define EDITOR_FLAGS_draw_collision (1<<1)
 #define EDITOR_FLAGS_draw_chunk_grid (1<<2)
@@ -640,9 +637,9 @@ static char *GetCellMaterialTypeName(CellMaterialType type);
 
 typedef struct Cell
 {
+i32 dynamic_id;
 i32 x_position;
 i32 y_position;
-CellFlags flags;
 CellMaterialType material_type;
 DynamicCellProperties dynamic_properties;
 } Cell;
@@ -683,6 +680,7 @@ ComponentSet entity_components;
 i32 *test_ptr;
 Cell *dynamic_cells[MAX_DYNAMIC_CELLS];
 i32 dynamic_cell_count;
+i32 free_dynamic_cell_id;
 } WorldData;
 
 typedef struct RunData

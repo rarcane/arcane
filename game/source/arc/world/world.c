@@ -1,6 +1,14 @@
+internal void InitialiseWorldData()
+{
+	core->world_data->free_entity_id = 1;
+	core->world_data->free_dynamic_cell_id = 1;
+}
+
 internal void CreateTestLevel()
 {
 	R_DEV_ASSERT(!core->run_data->current_level[0], "A level is already loaded in.");
+
+	InitialiseWorldData();
 
 	core->world_data->test_ptr = &core->world_data->free_entity_id;
 

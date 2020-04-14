@@ -1,8 +1,3 @@
-internal void InitialiseECS()
-{
-	core->world_data->free_entity_id = 1;
-}
-
 internal Entity *NewEntity(char name[], EntityType type, GeneralisedEntityType generalised_type)
 {
 	R_DEV_ASSERT(core->world_data->free_entity_id != -1, "Max entities reached.");

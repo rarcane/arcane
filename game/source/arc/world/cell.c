@@ -3,15 +3,18 @@ internal void UpdateCells()
 	for (int i = 0; i < core->world_data->dynamic_cell_count; i++)
 	{
 		Cell *cell = core->world_data->dynamic_cells[i];
-		ProcessCell(cell);
+		if (cell)
+		{
+			R_DEV_ASSERT(core->world_data->dynamic_cells[cell->dynamic_id - 1] == cell,
+						 "The cell's dynamic ID is mismatched with the array.");
+			ProcessCell(cell);
+		}
 	}
 }
 
 internal void ProcessCell(Cell *cell)
 {
-	Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex((f32)cell->x_position),
-								   WorldspaceToChunkIndex((f32)cell->y_position));
-	QueueChunkForTextureUpdate(chunk);
+	QueueChunkForTextureUpdate(GetChunkAtCell(cell));
 
 	CellMaterialTypeData *cell_type_data = &cell_material_type_data[cell->material_type];
 	switch (cell_type_data->properties_type)
@@ -34,6 +37,32 @@ internal void ProcessCell(Cell *cell)
 	{
 		StaticSolidProperties *static_solid_properties = &cell_type_data->static_properties.solid;
 		DynamicSolidProperties *dynamic_solid_properties = &cell->dynamic_properties.solid;
+
+		// TODO: Change this to a velocity-based move system. Keep it simple for now though.
+		Cell *cell_below = GetCellAtPosition(cell->x_position, cell->y_position + 1);
+		CellMaterialTypeData *cell_below_type_data = &cell_material_type_data[cell_below->material_type];
+		switch (cell_below_type_data->properties_type)
+		{
+		case CELL_PROPERTIES_TYPE_air:
+		{
+			// Move solid down
+			// TODO: displace air pressure
+			SwapCells(cell, cell_below);
+
+			break;
+		}
+		case CELL_PROPERTIES_TYPE_liquid:
+		{
+			break;
+		}
+		case CELL_PROPERTIES_TYPE_solid:
+		{
+			break;
+		}
+		default:
+			R_TODO;
+			break;
+		}
 
 		break;
 	}
@@ -136,6 +165,11 @@ internal void RenderCells()
 					break;
 				}
 
+				if (cell->dynamic_id && cell->material_type != CELL_MATERIAL_TYPE_air)
+				{
+					colour = V4MultiplyV4(colour, v4u(0.75f));
+				}
+
 				*pixel_buffer = (unsigned char)(ClampF32(colour.r, 0.0f, 1.0f) * 255.0f);
 				pixel_buffer++;
 				*pixel_buffer = (unsigned char)(ClampF32(colour.g, 0.0f, 1.0f) * 255.0f);
@@ -198,6 +232,103 @@ internal Cell *GetCellAtPosition(i32 x, i32 y)
 	}
 
 	return &chunk->cells[cell_y][cell_x];
+}
+
+internal Chunk *GetChunkAtCell(Cell *cell)
+{
+	Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex((f32)cell->x_position), WorldspaceToChunkIndex((f32)cell->y_position));
+	R_DEV_ASSERT(chunk, "Chunk isn't loaded, the fuccccc?");
+	return chunk;
+}
+
+internal b8 IsCellEmpty(Cell *cell)
+{
+	return (cell->material_type == CELL_MATERIAL_TYPE_air && cell->dynamic_properties.air.pressure == 0.0f);
+}
+
+internal void SwapCells(Cell *cell_1, Cell *cell_2)
+{
+	Cell cell_1_copy = *cell_1;
+
+	// Need to update the cells with new addresses if they're dynamic.
+	if (cell_1->dynamic_id)
+		core->world_data->dynamic_cells[cell_1->dynamic_id - 1] = cell_2;
+	if (cell_2->dynamic_id)
+		core->world_data->dynamic_cells[cell_2->dynamic_id - 1] = cell_1;
+
+	cell_1->dynamic_id = cell_2->dynamic_id;
+	cell_1->material_type = cell_2->material_type;
+	cell_1->dynamic_properties = cell_2->dynamic_properties;
+
+	cell_2->dynamic_id = cell_1_copy.dynamic_id;
+	cell_2->material_type = cell_1_copy.material_type;
+	cell_2->dynamic_properties = cell_1_copy.dynamic_properties;
+
+	QueueChunkForTextureUpdate(GetChunkAtCell(cell_1));
+	QueueChunkForTextureUpdate(GetChunkAtCell(cell_2));
+}
+
+internal void MakeCellDynamic(Cell *cell)
+{
+	R_DEV_ASSERT(core->world_data->free_dynamic_cell_id != 0, "Max dynamic cells reached.");
+
+	i32 new_id = core->world_data->free_dynamic_cell_id;
+
+	core->world_data->dynamic_cells[new_id - 1] = cell;
+	cell->dynamic_id = new_id;
+
+	if (core->world_data->dynamic_cell_count == core->world_data->free_dynamic_cell_id - 1)
+	{
+		core->world_data->dynamic_cell_count++;
+		core->world_data->free_dynamic_cell_id++;
+	}
+
+	if (core->world_data->dynamic_cell_count < MAX_DYNAMIC_CELLS)
+	{
+		// If the free ID isn't at the current count position, find out where it should be
+		if (core->world_data->dynamic_cell_count != core->world_data->free_dynamic_cell_id - 1)
+		{
+			b8 found = 0;
+			for (int i = 0; i < core->world_data->dynamic_cell_count + 1; i++)
+			{
+				if (!core->world_data->dynamic_cells[i])
+				{
+					core->world_data->free_dynamic_cell_id = i + 1;
+					found = 1;
+					break;
+				}
+			}
+			R_DEV_ASSERT(found, "Couldn't find a free ID?");
+		}
+	}
+	else
+	{
+		// Count has gone past the max, it's now full.
+		core->world_data->free_dynamic_cell_id = 0;
+	}
+}
+
+internal void DeleteCell(Cell *cell)
+{
+	R_DEV_ASSERT(!IsCellEmpty(cell), "Cell is already empty.");
+
+	if (cell->dynamic_id)
+	{
+		R_DEV_ASSERT(core->world_data->dynamic_cells[cell->dynamic_id - 1] == cell, "Mismatched cell with ID??");
+
+		// Remove from the dynamic cell from the array.
+		core->world_data->dynamic_cells[cell->dynamic_id - 1] = 0;
+		if (cell->dynamic_id < core->world_data->free_dynamic_cell_id)
+			core->world_data->free_dynamic_cell_id = cell->dynamic_id;
+
+		cell->dynamic_id = 0;
+	}
+
+	cell->material_type = CELL_MATERIAL_TYPE_air;
+	DynamicCellProperties empty = {0};
+	cell->dynamic_properties = empty;
+
+	QueueChunkForTextureUpdate(GetChunkAtCell(cell));
 }
 
 /*

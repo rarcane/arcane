@@ -2651,15 +2651,27 @@ static void FillEntityPointersInFile(FILE *file, Entity *data)
 
 static void WriteCellToFile(FILE *file, Cell *data)
 {
+    WriteToFile(file, &data->dynamic_id, sizeof(data->dynamic_id));
     WriteToFile(file, &data->x_position, sizeof(data->x_position));
     WriteToFile(file, &data->y_position, sizeof(data->y_position));
-    WriteToFile(file, &data->flags, sizeof(data->flags));
     WriteToFile(file, &data->material_type, sizeof(data->material_type));
     WriteToFile(file, &data->dynamic_properties, sizeof(data->dynamic_properties));
 }
 
 static void FillCellPointersInFile(FILE *file, Cell *data)
 {
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->dynamic_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->dynamic_id), SEEK_CUR);
     for (i32 i = 0; i < serialisation_pointer_count; i++)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
@@ -2684,18 +2696,6 @@ static void FillCellPointersInFile(FILE *file, Cell *data)
         }
     }
     fseek(file, sizeof(data->y_position), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->flags)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->flags), SEEK_CUR);
     for (i32 i = 0; i < serialisation_pointer_count; i++)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
@@ -2831,6 +2831,7 @@ static void WriteWorldDataToFile(FILE *file, WorldData *data)
         WriteToFile(file, &empty, sizeof(i32));
     }
     WriteToFile(file, &data->dynamic_cell_count, sizeof(data->dynamic_cell_count));
+    WriteToFile(file, &data->free_dynamic_cell_id, sizeof(data->free_dynamic_cell_id));
 }
 
 static void FillWorldDataPointersInFile(FILE *file, WorldData *data)
@@ -2975,5 +2976,17 @@ static void FillWorldDataPointersInFile(FILE *file, WorldData *data)
         }
     }
     fseek(file, sizeof(data->dynamic_cell_count), SEEK_CUR);
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->free_dynamic_cell_id)
+        {
+            i32 current_pos = ftell(file);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->free_dynamic_cell_id), SEEK_CUR);
 }
 

@@ -9,6 +9,10 @@ internal i32 WorldspaceToChunkIndex(f32 world_space_coordinate);
 // If there isn't a chunk loaded at that index, it returns null.
 internal Chunk *GetChunkAtIndex(i32 x, i32 y);
 
+// NOTE(tjr): Gets the chunks that are visible within the current camera region.
+// Chunks that haven't been loaded in yet are marked as NULL.
+internal void GetVisibleChunks(Chunk **chunks, i32 *chunk_count);
+
 // NOTE(tjr): Returns NINE surrounding chunks relative to a world-pos.
 // If a surrounding chunk is not loaded, it'll be NULL
 internal void GetSurroundingChunks(Chunk **chunks, v2 position);

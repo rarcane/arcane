@@ -73,11 +73,6 @@ PixelFlags :: flags
 	apply_gravity,
 }
 
-CellFlags :: flags
-{
-	no_gravity,
-}
-
 EditorFlags :: flags
 {
 	draw_world,
@@ -586,10 +581,9 @@ CellMaterialType :: enum
 @SerialisableStruct
 Cell :: struct
 {
-	// id : i32 ? might need this for dynamic cell tracking.
+	dynamic_id : i32;
 	x_position : i32;
 	y_position : i32;
-	flags : CellFlags;
 	
 	material_type : CellMaterialType;
 	dynamic_properties : DynamicCellProperties;
@@ -639,6 +633,7 @@ WorldData :: struct
 	
 	dynamic_cells : *Cell[MAX_DYNAMIC_CELLS];
 	dynamic_cell_count : i32;
+	free_dynamic_cell_id : i32;
 }
 
 // NOTE(tjr): Temporary game data, used for run-time operations

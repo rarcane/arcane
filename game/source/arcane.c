@@ -121,8 +121,6 @@ GameInit(void)
 		{
 			InitialiseSpriteData();
 
-			InitialiseECS();
-
 			core->run_data->editor_flags |= EDITOR_FLAGS_draw_collision;
 			core->camera_zoom = DEFAULT_CAMERA_ZOOM;
 
@@ -358,7 +356,7 @@ GameUpdate(void)
 		// NOTE(tjr): Perform if the game is not paused.
 		if (core->world_delta_t != 0.0f)
 		{
-			// UpdateCellMaterials();
+			UpdateCells();
 
 			PreMoveUpdatePlayer();
 
