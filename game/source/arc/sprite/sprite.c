@@ -19,10 +19,10 @@ internal void UpdateAnimations()
 	for (int j = 0; j < core->world_data->entity_components.animation_component_count; j++)
 	{
 		AnimationComponent *animation_comp = &core->world_data->entity_components.animation_components[j];
-		if (animation_comp->parent_entity)
+		if (animation_comp->component_id)
 		{
-			Entity *entity = animation_comp->parent_entity;
-			SpriteComponent *sprite_comp = entity->components[COMPONENT_sprite];
+			Entity *entity = &core->world_data->entities[animation_comp->parent_entity_id - 1];
+			SpriteComponent *sprite_comp = GetSpriteComponentFromEntityID(entity->entity_id);
 
 			DynamicSpriteData *dynamic_sprite = &dynamic_sprite_data[sprite_comp->sprite_data.dynamic_sprite];
 
@@ -98,9 +98,9 @@ internal void RenderBackgroundSprites()
 	for (int j = 0; j < core->world_data->entity_components.sprite_component_count; j++)
 	{
 		SpriteComponent *sprite_component = &core->world_data->entity_components.sprite_components[j];
-		if (sprite_component->parent_entity && sprite_component->is_background_sprite) // Validate entity & check if it's a background sprite
+		if (sprite_component->component_id && sprite_component->is_background_sprite) // Validate entity & check if it's a background sprite
 		{
-			Entity *entity = sprite_component->parent_entity;
+			Entity *entity = GetEntityWithID(sprite_component->parent_entity_id);
 
 			SpriteRenderable sprite_renderable = {
 				entity,
@@ -111,9 +111,11 @@ internal void RenderBackgroundSprites()
 				sprite_component->sprite_data.scale,
 				sprite_component->is_flipped,
 				sprite_component->sprite_data.tint,
-				entity->components[COMPONENT_position],
-				entity->components[COMPONENT_animation],
+				0,
+				0,
 			};
+			sprite_renderable.position_comp = GetPositionComponentFromEntityID(entity->entity_id);
+			sprite_renderable.animation_comp = GetAnimationComponentFromEntityID(entity->entity_id);
 
 			ordered_sprites[ordered_sprite_count++] = sprite_renderable;
 		}
@@ -206,9 +208,9 @@ internal void RenderForegroundSprites()
 	for (int j = 0; j < core->world_data->entity_components.sprite_component_count; j++)
 	{
 		SpriteComponent *sprite_component = &core->world_data->entity_components.sprite_components[j];
-		if (sprite_component->parent_entity && !sprite_component->is_background_sprite) // Validate entity & check if it's a background sprite
+		if (sprite_component->component_id && !sprite_component->is_background_sprite) // Validate entity & check if it's not a background sprite
 		{
-			Entity *entity = sprite_component->parent_entity;
+			Entity *entity = GetEntityWithID(sprite_component->parent_entity_id);
 
 			SpriteRenderable sprite_renderable = {
 				entity,
@@ -219,9 +221,11 @@ internal void RenderForegroundSprites()
 				sprite_component->sprite_data.scale,
 				sprite_component->is_flipped,
 				sprite_component->sprite_data.tint,
-				entity->components[COMPONENT_position],
-				entity->components[COMPONENT_animation],
+				0,
+				0,
 			};
+			sprite_renderable.position_comp = GetPositionComponentFromEntityID(entity->entity_id);
+			sprite_renderable.animation_comp = GetAnimationComponentFromEntityID(entity->entity_id);
 
 			ordered_sprites[ordered_sprite_count++] = sprite_renderable;
 		}

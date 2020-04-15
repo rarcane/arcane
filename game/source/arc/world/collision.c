@@ -7,15 +7,14 @@ internal void RenderColliders()
 	for (int i = 0; i < core->world_data->entity_components.physics_body_component_count; i++)
 	{
 		PhysicsBodyComponent *body_comp = &core->world_data->entity_components.physics_body_components[i];
-		Entity *entity = body_comp->parent_entity;
-		if (entity)
+		if (body_comp->component_id)
 		{
-			PositionComponent *pos_comp = entity->components[COMPONENT_position];
+			PositionComponent *pos_comp = GetPositionComponentFromEntityID(body_comp->parent_entity_id);
 			R_DEV_ASSERT(pos_comp, "Physics entity doesn't have a position component.");
 
 			v3 col = {1.0f, 1.0f, 1.0f};
 			if (core->run_data->selected_ground_seg)
-				if (entity == core->run_data->selected_ground_seg->parent_generic_entity)
+				if (body_comp->parent_entity_id == core->run_data->selected_ground_seg->entity_id)
 					col = v3(1.0f, 0.0f, 0.0f);
 
 			PushDebugShape(body_comp->shape, body_comp->shape_type, pos_comp->position, col);
@@ -48,10 +47,9 @@ internal void UpdatePhysics()
 	for (int i = 0; i < core->world_data->entity_components.physics_body_component_count; i++)
 	{
 		PhysicsBodyComponent *body_comp = &core->world_data->entity_components.physics_body_components[i];
-		Entity *entity = body_comp->parent_entity;
-		if (entity)
+		if (body_comp->component_id)
 		{
-			PositionComponent *pos_comp = entity->components[COMPONENT_position];
+			PositionComponent *pos_comp = GetPositionComponentFromEntityID(body_comp->parent_entity_id);
 			R_DEV_ASSERT(pos_comp, "Physics entity doesn't have a position component.");
 
 			// Apply gravity
@@ -74,9 +72,9 @@ internal void UpdatePhysics()
 	for (int i = 0; i < pair_count; i++)
 	{
 		PhysicsBodyComponent *a_body_comp = collision_pairs[i].a;
-		PositionComponent *a_pos_comp = a_body_comp->parent_entity->components[COMPONENT_position];
+		PositionComponent *a_pos_comp = GetPositionComponentFromEntityID(a_body_comp->parent_entity_id);
 		PhysicsBodyComponent *b_body_comp = collision_pairs[i].b;
-		PositionComponent *b_pos_comp = b_body_comp->parent_entity->components[COMPONENT_position];
+		PositionComponent *b_pos_comp = GetPositionComponentFromEntityID(b_body_comp->parent_entity_id);
 
 		c2Manifold manifold = {0};
 		GenerateCollisionManifold(a_body_comp, a_pos_comp->position, b_body_comp, b_pos_comp->position, &manifold);
@@ -147,16 +145,14 @@ internal void GenerateCollisionPairs(CollisionPair pairs[], i32 *count)
 	for (int i = 0; i < core->world_data->entity_components.physics_body_component_count; i++)
 	{
 		PhysicsBodyComponent *body_comp_a = &core->world_data->entity_components.physics_body_components[i];
-		Entity *entity_a = body_comp_a->parent_entity;
-		if (entity_a)
+		if (body_comp_a->component_id)
 		{
 			for (int j = 0; j < core->world_data->entity_components.physics_body_component_count; j++)
 			{
 				PhysicsBodyComponent *body_comp_b = &core->world_data->entity_components.physics_body_components[j];
-				Entity *entity_b = body_comp_b->parent_entity;
-				if (entity_b)
+				if (body_comp_b->component_id)
 				{
-					if (entity_a != entity_b)
+					if (body_comp_a != body_comp_b)
 					{
 						if (!(body_comp_a->mass_data.mass == 0.0f && body_comp_b->mass_data.mass == 0.0f))
 						{

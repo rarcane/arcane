@@ -7,10 +7,8 @@ internal void SetArcEntityAnimationState(ArcEntityComponent *arc_entity_comp, Ar
 {
 	if (hard_reset || arc_entity_comp->current_animation_state != new_animation_state)
 	{
-		Entity *entity = arc_entity_comp->parent_entity;
-		SpriteComponent *sprite_comp = entity->components[COMPONENT_sprite];
-		AnimationComponent *animation_comp = entity->components[COMPONENT_animation];
-		R_DEV_ASSERT(sprite_comp && animation_comp, "Arc entity does not contain a sprite/animation component.");
+		SpriteComponent *sprite_comp = GetSpriteComponentFromEntityID(arc_entity_comp->parent_entity_id);
+		AnimationComponent *animation_comp = GetAnimationComponentFromEntityID(arc_entity_comp->parent_entity_id);
 
 		sprite_comp->sprite_data.dynamic_sprite = arc_entity_animation_state_data[new_animation_state].dynamic_sprite;
 

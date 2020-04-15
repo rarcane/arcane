@@ -2,6 +2,8 @@ internal void InitialiseWorldData()
 {
 	core->world_data->free_entity_id = 1;
 	core->world_data->free_dynamic_cell_id = 1;
+	InitialiseComponents();
+	InitialiseUniqueEntities();
 }
 
 internal void CreateTestLevel()
@@ -14,43 +16,45 @@ internal void CreateTestLevel()
 
 	{
 		CharacterEntity *character = InitialiseCharacterEntity();
-		character->parent_generic_entity->flags |= ENTITY_FLAGS_no_delete;
-		character->position_comp->position = v2(0.0f, -100.0f);
+		GetEntityWithID(character->entity_id)->flags |= ENTITY_FLAGS_no_delete;
+		GetPositionComponentFromEntityID(character->entity_id)->position = v2(0.0f, -100.0f);
 
 		c2Capsule capsule = {
 			.a = c2V(0.0f, -10.0f),
 			.b = c2V(0.0f, -50.0f),
 			.r = 10.0f,
 		};
-		character->physics_body_comp->shape.capsule = capsule;
-		character->physics_body_comp->shape_type = C2_SHAPE_TYPE_capsule;
+		PhysicsBodyComponent *phys_body_comp = GetPhysicsBodyComponentFromEntityID(character->entity_id);
+		phys_body_comp->shape.capsule = capsule;
+		phys_body_comp->shape_type = C2_SHAPE_TYPE_capsule;
 
-		character->physics_body_comp->mass_data.mass = 60.0f;
-		character->physics_body_comp->mass_data.inv_mass = 1.0f / character->physics_body_comp->mass_data.mass;
-		character->physics_body_comp->material.restitution = 0.4f;
-		character->physics_body_comp->material.static_friction = 0.5f;
-		character->physics_body_comp->material.dynamic_friction = 0.5f;
-		character->physics_body_comp->gravity_multiplier = 1.0f;
+		phys_body_comp->mass_data.mass = 60.0f;
+		phys_body_comp->mass_data.inv_mass = 1.0f / phys_body_comp->mass_data.mass;
+		phys_body_comp->material.restitution = 0.4f;
+		phys_body_comp->material.static_friction = 0.5f;
+		phys_body_comp->material.dynamic_friction = 0.5f;
+		phys_body_comp->gravity_multiplier = 1.0f;
 
-		character->movement_comp->move_speed = 100.0f;
-		character->arc_entity_comp->entity_type = ARC_ENTITY_TYPE_player;
-		character->arc_entity_comp->current_animation_state = ARC_ENTITY_ANIMATION_STATE_player_idle;
-		character->sprite_comp->sprite_data.dynamic_sprite = DYNAMIC_SPRITE_player_idle;
+		GetMovementComponentFromEntityID(character->entity_id)->move_speed = 100.0f;
+		GetArcEntityComponentFromEntityID(character->entity_id)->entity_type = ARC_ENTITY_TYPE_player;
+		GetArcEntityComponentFromEntityID(character->entity_id)->current_animation_state = ARC_ENTITY_ANIMATION_STATE_player_idle;
+		SpriteComponent *sprite_comp = GetSpriteComponentFromEntityID(character->entity_id);
+		sprite_comp->sprite_data.dynamic_sprite = DYNAMIC_SPRITE_player_idle;
 	}
 
 	{
-		core->sword = NewEntity("Sword", ENTITY_TYPE_generic, GENERALISED_ENTITY_TYPE_item);
+		core->sword = NewEntity("Sword", GENERALISED_ENTITY_TYPE_item);
 		core->sword->flags |= ENTITY_FLAGS_no_delete;
 		ItemComponent *sword_item = AddItemComponent(core->sword);
 		sword_item->item_type = ITEM_TYPE_flint_sword;
 		sword_item->stack_size = 1;
 
-		core->backpack = NewEntity("Backpack", ENTITY_TYPE_generic, GENERALISED_ENTITY_TYPE_storage);
+		core->backpack = NewEntity("Backpack", GENERALISED_ENTITY_TYPE_storage);
 		core->backpack->flags |= ENTITY_FLAGS_no_delete;
 		StorageComponent *backpack_storage = AddStorageComponent(core->backpack);
 		backpack_storage->storage_size = 9;
 
-		core->hotbar = NewEntity("Hotbar", ENTITY_TYPE_generic, GENERALISED_ENTITY_TYPE_storage); // Hotbar should technically be attached to the player entity
+		core->hotbar = NewEntity("Hotbar", GENERALISED_ENTITY_TYPE_storage); // Hotbar should technically be attached to the player entity
 		core->hotbar->flags |= ENTITY_FLAGS_no_delete;
 		StorageComponent *hotbar_storage = AddStorageComponent(core->hotbar);
 		hotbar_storage->storage_size = 2;
@@ -101,26 +105,27 @@ internal void CreateTestLevel()
 		else if (((x + 1) % (i32)width) == 0)
 		{
 			GroundSegmentEntity *ground = NewGroundSegmentEntity();
-			ground->position_comp->position = v2(floorf(x / width) * width - CHUNK_SIZE * 2, 0.0f);
+			GetPositionComponentFromEntityID(ground->entity_id)->position = v2(floorf(x / width) * width - CHUNK_SIZE * 2, 0.0f);
 
 			Line line = {0};
 			line.p1.y = 200.0f - (f32)last_height;
 			line.p2.x = width;
 			line.p2.y = 200.0f - (f32)terrain_height;
 
-			ground->physics_body_comp->shape.line = line;
-			ground->physics_body_comp->shape_type = C2_SHAPE_TYPE_line;
-			ground->physics_body_comp->material.static_friction = 0.2f;
-			ground->physics_body_comp->material.dynamic_friction = 0.2f;
-			ground->physics_body_comp->mass_data.mass = 0.0f;
-			ground->physics_body_comp->mass_data.inv_mass = 0.0f;
+			PhysicsBodyComponent *phys_body_comp = GetPhysicsBodyComponentFromEntityID(ground->entity_id);
+			phys_body_comp->shape.line = line;
+			phys_body_comp->shape_type = C2_SHAPE_TYPE_line;
+			phys_body_comp->material.static_friction = 0.2f;
+			phys_body_comp->material.dynamic_friction = 0.2f;
+			phys_body_comp->mass_data.mass = 0.0f;
+			phys_body_comp->mass_data.inv_mass = 0.0f;
 
 			last_height = (f32)terrain_height;
 		}
 	}
 
 	strcpy(core->run_data->current_level, "testing");
-	SaveLevel("testing");
+	// SaveLevel("testing");
 }
 
 internal void DrawWorld()
@@ -207,10 +212,9 @@ internal void UpdateParallax()
 	for (int j = 0; j < core->world_data->entity_components.parallax_component_count; j++)
 	{
 		ParallaxComponent *parallax_comp = &core->world_data->entity_components.parallax_components[j];
-		if (parallax_comp->parent_entity)
+		if (parallax_comp->component_id)
 		{
-			Entity *entity = parallax_comp->parent_entity;
-			PositionComponent *position_comp = entity->components[COMPONENT_position];
+			PositionComponent *position_comp = GetPositionComponentFromEntityID(parallax_comp->parent_entity_id);
 			R_DEV_ASSERT(position_comp, "Parallax must be attached with a position to update.");
 
 			// TODO: Need to find a way to centralise the desired_position of the parallax, whilst still maintaining spatial consistency across sprites
@@ -279,20 +283,19 @@ internal void UpdateChunks()
 			b8 is_positional_entity = 0;
 			v2 world_position;
 
-			ParallaxComponent *parallax_comp = entity->components[COMPONENT_parallax];
-			if (parallax_comp)
+			if (entity->component_ids[COMPONENT_parallax])
 			{
-				PositionComponent *position_comp = core->world_data->entities[i].components[COMPONENT_position];
-				R_DEV_ASSERT(position_comp, "Uhh");
+				ParallaxComponent *parallax_comp = GetParallaxComponentFromEntityID(entity->entity_id);
+				PositionComponent *position_comp = GetPositionComponentFromEntityID(entity->entity_id);
 
 				is_positional_entity = 1;
 				world_position = parallax_comp->desired_position;
 			}
 			else
 			{
-				PositionComponent *position_comp = core->world_data->entities[i].components[COMPONENT_position];
-				if (position_comp)
+				if (entity->component_ids[COMPONENT_position])
 				{
+					PositionComponent *position_comp = GetPositionComponentFromEntityID(entity->entity_id);
 					is_positional_entity = 1;
 					world_position = position_comp->position;
 				}

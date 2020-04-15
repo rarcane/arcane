@@ -330,949 +330,961 @@ break;
 }
 }
 
-internal void PrintComponentDataUI(void *component_data, ComponentType type)
-{
-    switch (type)
-    {
-    case COMPONENT_INVALID :
-    case COMPONENT_MAX :
-        R_BREAK("Invalid component.")
-        break;
-
-    case COMPONENT_position :
-    {
-        PositionComponent *component = (PositionComponent*)component_data;
-        char title[100];
-        sprintf(title, "PositionComponent #%i", component->component_id);
-        if (TsUICollapsable(title))        {
-            // TODO: Don't know how to generate UI print for variable 'parent_entity'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
-            TsUIPopWidth();
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "position: %f, %f", component->position.x, component->position.y); TsUILabel(label); }
-            TsUIPopWidth();
-
-            TsUICollapsableEnd();
-        }
-        break;
-    }
-
-    case COMPONENT_sprite :
-    {
-        SpriteComponent *component = (SpriteComponent*)component_data;
-        char title[100];
-        sprintf(title, "SpriteComponent #%i", component->component_id);
-        if (TsUICollapsable(title))        {
-            // TODO: Don't know how to generate UI print for variable 'parent_entity'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
-            TsUIPopWidth();
-            // TODO: Don't know how to generate UI print for variable 'sprite_data'
-            component->is_flipped = TsUIToggler("is_flipped", component->is_flipped);
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, component->is_background_sprite ? "is_background_sprite: true" : "is_background_sprite: false"); TsUILabel(label); }
-            TsUIPopWidth();
-
-            TsUICollapsableEnd();
-        }
-        break;
-    }
-
-    case COMPONENT_animation :
-    {
-        AnimationComponent *component = (AnimationComponent*)component_data;
-        char title[100];
-        sprintf(title, "AnimationComponent #%i", component->component_id);
-        if (TsUICollapsable(title))        {
-            // TODO: Don't know how to generate UI print for variable 'parent_entity'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
-            TsUIPopWidth();
-            // TODO: Don't know how to generate UI print for variable 'flags'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "current_frame: %i", component->current_frame); TsUILabel(label); }
-            TsUIPopWidth();
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "interval_mult: %f", component->interval_mult); TsUILabel(label); }
-            TsUIPopWidth();
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "frame_start_time: %f", component->frame_start_time); TsUILabel(label); }
-            TsUIPopWidth();
-
-            TsUICollapsableEnd();
-        }
-        break;
-    }
-
-    case COMPONENT_physics_body :
-    {
-        PhysicsBodyComponent *component = (PhysicsBodyComponent*)component_data;
-        char title[100];
-        sprintf(title, "PhysicsBodyComponent #%i", component->component_id);
-        if (TsUICollapsable(title))        {
-            // TODO: Don't know how to generate UI print for variable 'parent_entity'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
-            TsUIPopWidth();
-            // TODO: Don't know how to generate UI print for variable 'shape'
-            // TODO: Don't know how to generate UI print for variable 'shape_type'
-            // TODO: Don't know how to generate UI print for variable 'material'
-            // TODO: Don't know how to generate UI print for variable 'mass_data'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "velocity: %f, %f", component->velocity.x, component->velocity.y); TsUILabel(label); }
-            TsUIPopWidth();
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "force: %f, %f", component->force.x, component->force.y); TsUILabel(label); }
-            TsUIPopWidth();
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "gravity_multiplier: %f", component->gravity_multiplier); TsUILabel(label); }
-            TsUIPopWidth();
-
-            TsUICollapsableEnd();
-        }
-        break;
-    }
-
-    case COMPONENT_movement :
-    {
-        MovementComponent *component = (MovementComponent*)component_data;
-        char title[100];
-        sprintf(title, "MovementComponent #%i", component->component_id);
-        if (TsUICollapsable(title))        {
-            // TODO: Don't know how to generate UI print for variable 'parent_entity'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
-            TsUIPopWidth();
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "axis_x: %f", component->axis_x); TsUILabel(label); }
-            TsUIPopWidth();
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "move_speed: %f", component->move_speed); TsUILabel(label); }
-            TsUIPopWidth();
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "move_speed_mult: %f", component->move_speed_mult); TsUILabel(label); }
-            TsUIPopWidth();
-
-            TsUICollapsableEnd();
-        }
-        break;
-    }
-
-    case COMPONENT_arc_entity :
-    {
-        ArcEntityComponent *component = (ArcEntityComponent*)component_data;
-        char title[100];
-        sprintf(title, "ArcEntityComponent #%i", component->component_id);
-        if (TsUICollapsable(title))        {
-            // TODO: Don't know how to generate UI print for variable 'parent_entity'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
-            TsUIPopWidth();
-            // TODO: Don't know how to generate UI print for variable 'entity_type'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "current_general_state: %s", component->current_general_state); TsUILabel(label); }
-            TsUIPopWidth();
-            // TODO: Don't know how to generate UI print for variable 'current_animation_state'
-
-            TsUICollapsableEnd();
-        }
-        break;
-    }
-
-    case COMPONENT_item :
-    {
-        ItemComponent *component = (ItemComponent*)component_data;
-        char title[100];
-        sprintf(title, "ItemComponent #%i", component->component_id);
-        if (TsUICollapsable(title))        {
-            // TODO: Don't know how to generate UI print for variable 'parent_entity'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
-            TsUIPopWidth();
-            // TODO: Don't know how to generate UI print for variable 'item_type'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "stack_size: %i", component->stack_size); TsUILabel(label); }
-            TsUIPopWidth();
-
-            TsUICollapsableEnd();
-        }
-        break;
-    }
-
-    case COMPONENT_trigger :
-    {
-        TriggerComponent *component = (TriggerComponent*)component_data;
-        char title[100];
-        sprintf(title, "TriggerComponent #%i", component->component_id);
-        if (TsUICollapsable(title))        {
-            // TODO: Don't know how to generate UI print for variable 'parent_entity'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
-            TsUIPopWidth();
-            // TODO: Don't know how to generate UI print for variable 'enter_trigger_callback'
-            // TODO: Don't know how to generate UI print for variable 'exit_trigger_callback'
-            // TODO: Don't know how to generate UI print for variable 'previous_overlaps'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "previous_overlaps_count: %i", component->previous_overlaps_count); TsUILabel(label); }
-            TsUIPopWidth();
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, component->trigger_against ? "trigger_against: true" : "trigger_against: false"); TsUILabel(label); }
-            TsUIPopWidth();
-
-            TsUICollapsableEnd();
-        }
-        break;
-    }
-
-    case COMPONENT_storage :
-    {
-        StorageComponent *component = (StorageComponent*)component_data;
-        char title[100];
-        sprintf(title, "StorageComponent #%i", component->component_id);
-        if (TsUICollapsable(title))        {
-            // TODO: Don't know how to generate UI print for variable 'parent_entity'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
-            TsUIPopWidth();
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "storage_size: %i", component->storage_size); TsUILabel(label); }
-            TsUIPopWidth();
-            // TODO: Don't know how to generate UI print for variable 'items'
-
-            TsUICollapsableEnd();
-        }
-        break;
-    }
-
-    case COMPONENT_parallax :
-    {
-        ParallaxComponent *component = (ParallaxComponent*)component_data;
-        char title[100];
-        sprintf(title, "ParallaxComponent #%i", component->component_id);
-        if (TsUICollapsable(title))        {
-            // TODO: Don't know how to generate UI print for variable 'parent_entity'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
-            TsUIPopWidth();
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "parallax_amount: %f, %f", component->parallax_amount.x, component->parallax_amount.y); TsUILabel(label); }
-            TsUIPopWidth();
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "desired_position: %f, %f", component->desired_position.x, component->desired_position.y); TsUILabel(label); }
-            TsUIPopWidth();
-
-            TsUICollapsableEnd();
-        }
-        break;
-    }
-
-    case COMPONENT_particle_emitter :
-    {
-        ParticleEmitterComponent *component = (ParticleEmitterComponent*)component_data;
-        char title[100];
-        sprintf(title, "ParticleEmitterComponent #%i", component->component_id);
-        if (TsUICollapsable(title))        {
-            // TODO: Don't know how to generate UI print for variable 'parent_entity'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "component_id: %i", component->component_id); TsUILabel(label); }
-            TsUIPopWidth();
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "life_time: %f", component->life_time); TsUILabel(label); }
-            TsUIPopWidth();
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "start_time: %f", component->start_time); TsUILabel(label); }
-            TsUIPopWidth();
-            // TODO: Don't know how to generate UI print for variable 'flags'
-            // TODO: Don't know how to generate UI print for variable 'particles'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "particle_count: %i", component->particle_count); TsUILabel(label); }
-            TsUIPopWidth();
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "free_particle_index: %i", component->free_particle_index); TsUILabel(label); }
-            TsUIPopWidth();
-            // TODO: Don't know how to generate UI print for variable 'begin_callback'
-            // TODO: Don't know how to generate UI print for variable 'finish_callback'
-
-            TsUICollapsableEnd();
-        }
-        break;
-    }
-
-    }
-}
-
 internal PositionComponent *AddPositionComponent(Entity *entity)
 {
-    i32 component_id;
-    if (core->world_data->entity_components.position_component_free_id == core->world_data->entity_components.position_component_count)
+    R_DEV_ASSERT(core->world_data->entity_components.free_position_component_id > 0, "Max PositionComponent reached.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_position] == 0, "Entity already has a PositionComponent");
+    i32 new_comp_id = core->world_data->entity_components.free_position_component_id;
+
+    PositionComponent *comp = &core->world_data->entity_components.position_components[new_comp_id - 1];
+    *comp = GetDefaultPositionComponent();
+    comp->parent_entity_id = entity->entity_id;
+    comp->component_id = new_comp_id;
+    entity->component_ids[COMPONENT_position] = new_comp_id;
+
+    if (core->world_data->entity_components.position_component_count == core->world_data->entity_components.free_position_component_id - 1)
     {
-        component_id = core->world_data->entity_components.position_component_count;
         core->world_data->entity_components.position_component_count++;
-        core->world_data->entity_components.position_component_free_id = component_id + 1;
+        core->world_data->entity_components.free_position_component_id++;
+    }
+
+    if (core->world_data->entity_components.position_component_count < MAX_ACTIVE_ENTITIES)
+    {
+        if (core->world_data->entity_components.position_component_count != core->world_data->entity_components.free_position_component_id - 1)
+        {
+            b8 found = 0;
+            for (i32 i = 0; i < core->world_data->entity_components.position_component_count; i++)
+            {
+                if (core->world_data->entity_components.position_components[i].component_id)
+                {
+                    core->world_data->entity_components.free_position_component_id = i + 1;
+                    found = 1;
+                    break;
+                }
+            }
+        }
     }
     else
     {
-        component_id = core->world_data->entity_components.position_component_free_id;
+        core->world_data->entity_components.free_position_component_id = 0;
     }
 
-    core->world_data->entity_components.position_components[component_id] = GetDefaultPositionComponent();
-    entity->components[COMPONENT_position] = &core->world_data->entity_components.position_components[component_id];
-    core->world_data->entity_components.position_components[component_id].parent_entity = entity;
-    core->world_data->entity_components.position_components[component_id].component_id = component_id;
-
-    for (i32 i = 0; i < core->world_data->entity_components.position_component_count + 1; i++)
-    {
-        if (!core->world_data->entity_components.position_components[i].parent_entity)
-        {
-            core->world_data->entity_components.position_component_free_id = i;
-            break;
-        }
-    }
-
-    return &core->world_data->entity_components.position_components[component_id];
+    return comp;
 }
 
 internal void RemovePositionComponent(Entity *entity)
 {
-    PositionComponent *component = entity->components[COMPONENT_position];
-    R_DEV_ASSERT(component, "Entity does not a PositionComponent attached, so it can't remove it.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_position] != 0, "Entity does not have a PositionComponent");
+    PositionComponent *comp = &core->world_data->entity_components.position_components[entity->component_ids[COMPONENT_position] - 1];
 
-    i32 deleted_component_id = component->component_id;
+    if (comp->component_id < core->world_data->entity_components.free_position_component_id)
+        core->world_data->entity_components.free_position_component_id = comp->component_id;
+
     PositionComponent empty_comp = {0};
-    core->world_data->entity_components.position_components[deleted_component_id] = empty_comp;
-    entity->components[COMPONENT_position] = 0;
+    *comp = empty_comp;
+    entity->component_ids[COMPONENT_position] = 0;
+}
 
-    if (deleted_component_id < core->world_data->entity_components.position_component_free_id)
-        core->world_data->entity_components.position_component_free_id = deleted_component_id;
+internal PositionComponent *GetPositionComponentFromEntityID(i32 id)
+{
+    Entity *entity = GetEntityWithID(id);
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_position], "Entity doesn't have a PositionComponent");
+    PositionComponent *comp = &core->world_data->entity_components.position_components[entity->component_ids[COMPONENT_position] - 1];
+    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_position], "IDs are mismatched.");
+    return comp;
 }
 
 internal SpriteComponent *AddSpriteComponent(Entity *entity)
 {
-    i32 component_id;
-    if (core->world_data->entity_components.sprite_component_free_id == core->world_data->entity_components.sprite_component_count)
+    R_DEV_ASSERT(core->world_data->entity_components.free_sprite_component_id > 0, "Max SpriteComponent reached.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_sprite] == 0, "Entity already has a SpriteComponent");
+    i32 new_comp_id = core->world_data->entity_components.free_sprite_component_id;
+
+    SpriteComponent *comp = &core->world_data->entity_components.sprite_components[new_comp_id - 1];
+    *comp = GetDefaultSpriteComponent();
+    comp->parent_entity_id = entity->entity_id;
+    comp->component_id = new_comp_id;
+    entity->component_ids[COMPONENT_sprite] = new_comp_id;
+
+    if (core->world_data->entity_components.sprite_component_count == core->world_data->entity_components.free_sprite_component_id - 1)
     {
-        component_id = core->world_data->entity_components.sprite_component_count;
         core->world_data->entity_components.sprite_component_count++;
-        core->world_data->entity_components.sprite_component_free_id = component_id + 1;
+        core->world_data->entity_components.free_sprite_component_id++;
+    }
+
+    if (core->world_data->entity_components.sprite_component_count < MAX_ACTIVE_ENTITIES)
+    {
+        if (core->world_data->entity_components.sprite_component_count != core->world_data->entity_components.free_sprite_component_id - 1)
+        {
+            b8 found = 0;
+            for (i32 i = 0; i < core->world_data->entity_components.sprite_component_count; i++)
+            {
+                if (core->world_data->entity_components.sprite_components[i].component_id)
+                {
+                    core->world_data->entity_components.free_sprite_component_id = i + 1;
+                    found = 1;
+                    break;
+                }
+            }
+        }
     }
     else
     {
-        component_id = core->world_data->entity_components.sprite_component_free_id;
+        core->world_data->entity_components.free_sprite_component_id = 0;
     }
 
-    core->world_data->entity_components.sprite_components[component_id] = GetDefaultSpriteComponent();
-    entity->components[COMPONENT_sprite] = &core->world_data->entity_components.sprite_components[component_id];
-    core->world_data->entity_components.sprite_components[component_id].parent_entity = entity;
-    core->world_data->entity_components.sprite_components[component_id].component_id = component_id;
-
-    for (i32 i = 0; i < core->world_data->entity_components.sprite_component_count + 1; i++)
-    {
-        if (!core->world_data->entity_components.sprite_components[i].parent_entity)
-        {
-            core->world_data->entity_components.sprite_component_free_id = i;
-            break;
-        }
-    }
-
-    return &core->world_data->entity_components.sprite_components[component_id];
+    return comp;
 }
 
 internal void RemoveSpriteComponent(Entity *entity)
 {
-    SpriteComponent *component = entity->components[COMPONENT_sprite];
-    R_DEV_ASSERT(component, "Entity does not a SpriteComponent attached, so it can't remove it.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_sprite] != 0, "Entity does not have a SpriteComponent");
+    SpriteComponent *comp = &core->world_data->entity_components.sprite_components[entity->component_ids[COMPONENT_sprite] - 1];
 
-    i32 deleted_component_id = component->component_id;
+    if (comp->component_id < core->world_data->entity_components.free_sprite_component_id)
+        core->world_data->entity_components.free_sprite_component_id = comp->component_id;
+
     SpriteComponent empty_comp = {0};
-    core->world_data->entity_components.sprite_components[deleted_component_id] = empty_comp;
-    entity->components[COMPONENT_sprite] = 0;
+    *comp = empty_comp;
+    entity->component_ids[COMPONENT_sprite] = 0;
+}
 
-    if (deleted_component_id < core->world_data->entity_components.sprite_component_free_id)
-        core->world_data->entity_components.sprite_component_free_id = deleted_component_id;
+internal SpriteComponent *GetSpriteComponentFromEntityID(i32 id)
+{
+    Entity *entity = GetEntityWithID(id);
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_sprite], "Entity doesn't have a SpriteComponent");
+    SpriteComponent *comp = &core->world_data->entity_components.sprite_components[entity->component_ids[COMPONENT_sprite] - 1];
+    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_sprite], "IDs are mismatched.");
+    return comp;
 }
 
 internal AnimationComponent *AddAnimationComponent(Entity *entity)
 {
-    i32 component_id;
-    if (core->world_data->entity_components.animation_component_free_id == core->world_data->entity_components.animation_component_count)
+    R_DEV_ASSERT(core->world_data->entity_components.free_animation_component_id > 0, "Max AnimationComponent reached.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_animation] == 0, "Entity already has a AnimationComponent");
+    i32 new_comp_id = core->world_data->entity_components.free_animation_component_id;
+
+    AnimationComponent *comp = &core->world_data->entity_components.animation_components[new_comp_id - 1];
+    *comp = GetDefaultAnimationComponent();
+    comp->parent_entity_id = entity->entity_id;
+    comp->component_id = new_comp_id;
+    entity->component_ids[COMPONENT_animation] = new_comp_id;
+
+    if (core->world_data->entity_components.animation_component_count == core->world_data->entity_components.free_animation_component_id - 1)
     {
-        component_id = core->world_data->entity_components.animation_component_count;
         core->world_data->entity_components.animation_component_count++;
-        core->world_data->entity_components.animation_component_free_id = component_id + 1;
+        core->world_data->entity_components.free_animation_component_id++;
+    }
+
+    if (core->world_data->entity_components.animation_component_count < MAX_ACTIVE_ENTITIES)
+    {
+        if (core->world_data->entity_components.animation_component_count != core->world_data->entity_components.free_animation_component_id - 1)
+        {
+            b8 found = 0;
+            for (i32 i = 0; i < core->world_data->entity_components.animation_component_count; i++)
+            {
+                if (core->world_data->entity_components.animation_components[i].component_id)
+                {
+                    core->world_data->entity_components.free_animation_component_id = i + 1;
+                    found = 1;
+                    break;
+                }
+            }
+        }
     }
     else
     {
-        component_id = core->world_data->entity_components.animation_component_free_id;
+        core->world_data->entity_components.free_animation_component_id = 0;
     }
 
-    core->world_data->entity_components.animation_components[component_id] = GetDefaultAnimationComponent();
-    entity->components[COMPONENT_animation] = &core->world_data->entity_components.animation_components[component_id];
-    core->world_data->entity_components.animation_components[component_id].parent_entity = entity;
-    core->world_data->entity_components.animation_components[component_id].component_id = component_id;
-
-    for (i32 i = 0; i < core->world_data->entity_components.animation_component_count + 1; i++)
-    {
-        if (!core->world_data->entity_components.animation_components[i].parent_entity)
-        {
-            core->world_data->entity_components.animation_component_free_id = i;
-            break;
-        }
-    }
-
-    return &core->world_data->entity_components.animation_components[component_id];
+    return comp;
 }
 
 internal void RemoveAnimationComponent(Entity *entity)
 {
-    AnimationComponent *component = entity->components[COMPONENT_animation];
-    R_DEV_ASSERT(component, "Entity does not a AnimationComponent attached, so it can't remove it.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_animation] != 0, "Entity does not have a AnimationComponent");
+    AnimationComponent *comp = &core->world_data->entity_components.animation_components[entity->component_ids[COMPONENT_animation] - 1];
 
-    i32 deleted_component_id = component->component_id;
+    if (comp->component_id < core->world_data->entity_components.free_animation_component_id)
+        core->world_data->entity_components.free_animation_component_id = comp->component_id;
+
     AnimationComponent empty_comp = {0};
-    core->world_data->entity_components.animation_components[deleted_component_id] = empty_comp;
-    entity->components[COMPONENT_animation] = 0;
+    *comp = empty_comp;
+    entity->component_ids[COMPONENT_animation] = 0;
+}
 
-    if (deleted_component_id < core->world_data->entity_components.animation_component_free_id)
-        core->world_data->entity_components.animation_component_free_id = deleted_component_id;
+internal AnimationComponent *GetAnimationComponentFromEntityID(i32 id)
+{
+    Entity *entity = GetEntityWithID(id);
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_animation], "Entity doesn't have a AnimationComponent");
+    AnimationComponent *comp = &core->world_data->entity_components.animation_components[entity->component_ids[COMPONENT_animation] - 1];
+    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_animation], "IDs are mismatched.");
+    return comp;
 }
 
 internal PhysicsBodyComponent *AddPhysicsBodyComponent(Entity *entity)
 {
-    i32 component_id;
-    if (core->world_data->entity_components.physics_body_component_free_id == core->world_data->entity_components.physics_body_component_count)
+    R_DEV_ASSERT(core->world_data->entity_components.free_physics_body_component_id > 0, "Max PhysicsBodyComponent reached.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_physics_body] == 0, "Entity already has a PhysicsBodyComponent");
+    i32 new_comp_id = core->world_data->entity_components.free_physics_body_component_id;
+
+    PhysicsBodyComponent *comp = &core->world_data->entity_components.physics_body_components[new_comp_id - 1];
+    *comp = GetDefaultPhysicsBodyComponent();
+    comp->parent_entity_id = entity->entity_id;
+    comp->component_id = new_comp_id;
+    entity->component_ids[COMPONENT_physics_body] = new_comp_id;
+
+    if (core->world_data->entity_components.physics_body_component_count == core->world_data->entity_components.free_physics_body_component_id - 1)
     {
-        component_id = core->world_data->entity_components.physics_body_component_count;
         core->world_data->entity_components.physics_body_component_count++;
-        core->world_data->entity_components.physics_body_component_free_id = component_id + 1;
+        core->world_data->entity_components.free_physics_body_component_id++;
+    }
+
+    if (core->world_data->entity_components.physics_body_component_count < MAX_ACTIVE_ENTITIES)
+    {
+        if (core->world_data->entity_components.physics_body_component_count != core->world_data->entity_components.free_physics_body_component_id - 1)
+        {
+            b8 found = 0;
+            for (i32 i = 0; i < core->world_data->entity_components.physics_body_component_count; i++)
+            {
+                if (core->world_data->entity_components.physics_body_components[i].component_id)
+                {
+                    core->world_data->entity_components.free_physics_body_component_id = i + 1;
+                    found = 1;
+                    break;
+                }
+            }
+        }
     }
     else
     {
-        component_id = core->world_data->entity_components.physics_body_component_free_id;
+        core->world_data->entity_components.free_physics_body_component_id = 0;
     }
 
-    core->world_data->entity_components.physics_body_components[component_id] = GetDefaultPhysicsBodyComponent();
-    entity->components[COMPONENT_physics_body] = &core->world_data->entity_components.physics_body_components[component_id];
-    core->world_data->entity_components.physics_body_components[component_id].parent_entity = entity;
-    core->world_data->entity_components.physics_body_components[component_id].component_id = component_id;
-
-    for (i32 i = 0; i < core->world_data->entity_components.physics_body_component_count + 1; i++)
-    {
-        if (!core->world_data->entity_components.physics_body_components[i].parent_entity)
-        {
-            core->world_data->entity_components.physics_body_component_free_id = i;
-            break;
-        }
-    }
-
-    return &core->world_data->entity_components.physics_body_components[component_id];
+    return comp;
 }
 
 internal void RemovePhysicsBodyComponent(Entity *entity)
 {
-    PhysicsBodyComponent *component = entity->components[COMPONENT_physics_body];
-    R_DEV_ASSERT(component, "Entity does not a PhysicsBodyComponent attached, so it can't remove it.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_physics_body] != 0, "Entity does not have a PhysicsBodyComponent");
+    PhysicsBodyComponent *comp = &core->world_data->entity_components.physics_body_components[entity->component_ids[COMPONENT_physics_body] - 1];
 
-    i32 deleted_component_id = component->component_id;
+    if (comp->component_id < core->world_data->entity_components.free_physics_body_component_id)
+        core->world_data->entity_components.free_physics_body_component_id = comp->component_id;
+
     PhysicsBodyComponent empty_comp = {0};
-    core->world_data->entity_components.physics_body_components[deleted_component_id] = empty_comp;
-    entity->components[COMPONENT_physics_body] = 0;
+    *comp = empty_comp;
+    entity->component_ids[COMPONENT_physics_body] = 0;
+}
 
-    if (deleted_component_id < core->world_data->entity_components.physics_body_component_free_id)
-        core->world_data->entity_components.physics_body_component_free_id = deleted_component_id;
+internal PhysicsBodyComponent *GetPhysicsBodyComponentFromEntityID(i32 id)
+{
+    Entity *entity = GetEntityWithID(id);
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_physics_body], "Entity doesn't have a PhysicsBodyComponent");
+    PhysicsBodyComponent *comp = &core->world_data->entity_components.physics_body_components[entity->component_ids[COMPONENT_physics_body] - 1];
+    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_physics_body], "IDs are mismatched.");
+    return comp;
 }
 
 internal MovementComponent *AddMovementComponent(Entity *entity)
 {
-    i32 component_id;
-    if (core->world_data->entity_components.movement_component_free_id == core->world_data->entity_components.movement_component_count)
+    R_DEV_ASSERT(core->world_data->entity_components.free_movement_component_id > 0, "Max MovementComponent reached.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_movement] == 0, "Entity already has a MovementComponent");
+    i32 new_comp_id = core->world_data->entity_components.free_movement_component_id;
+
+    MovementComponent *comp = &core->world_data->entity_components.movement_components[new_comp_id - 1];
+    *comp = GetDefaultMovementComponent();
+    comp->parent_entity_id = entity->entity_id;
+    comp->component_id = new_comp_id;
+    entity->component_ids[COMPONENT_movement] = new_comp_id;
+
+    if (core->world_data->entity_components.movement_component_count == core->world_data->entity_components.free_movement_component_id - 1)
     {
-        component_id = core->world_data->entity_components.movement_component_count;
         core->world_data->entity_components.movement_component_count++;
-        core->world_data->entity_components.movement_component_free_id = component_id + 1;
+        core->world_data->entity_components.free_movement_component_id++;
+    }
+
+    if (core->world_data->entity_components.movement_component_count < MAX_ACTIVE_ENTITIES)
+    {
+        if (core->world_data->entity_components.movement_component_count != core->world_data->entity_components.free_movement_component_id - 1)
+        {
+            b8 found = 0;
+            for (i32 i = 0; i < core->world_data->entity_components.movement_component_count; i++)
+            {
+                if (core->world_data->entity_components.movement_components[i].component_id)
+                {
+                    core->world_data->entity_components.free_movement_component_id = i + 1;
+                    found = 1;
+                    break;
+                }
+            }
+        }
     }
     else
     {
-        component_id = core->world_data->entity_components.movement_component_free_id;
+        core->world_data->entity_components.free_movement_component_id = 0;
     }
 
-    core->world_data->entity_components.movement_components[component_id] = GetDefaultMovementComponent();
-    entity->components[COMPONENT_movement] = &core->world_data->entity_components.movement_components[component_id];
-    core->world_data->entity_components.movement_components[component_id].parent_entity = entity;
-    core->world_data->entity_components.movement_components[component_id].component_id = component_id;
-
-    for (i32 i = 0; i < core->world_data->entity_components.movement_component_count + 1; i++)
-    {
-        if (!core->world_data->entity_components.movement_components[i].parent_entity)
-        {
-            core->world_data->entity_components.movement_component_free_id = i;
-            break;
-        }
-    }
-
-    return &core->world_data->entity_components.movement_components[component_id];
+    return comp;
 }
 
 internal void RemoveMovementComponent(Entity *entity)
 {
-    MovementComponent *component = entity->components[COMPONENT_movement];
-    R_DEV_ASSERT(component, "Entity does not a MovementComponent attached, so it can't remove it.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_movement] != 0, "Entity does not have a MovementComponent");
+    MovementComponent *comp = &core->world_data->entity_components.movement_components[entity->component_ids[COMPONENT_movement] - 1];
 
-    i32 deleted_component_id = component->component_id;
+    if (comp->component_id < core->world_data->entity_components.free_movement_component_id)
+        core->world_data->entity_components.free_movement_component_id = comp->component_id;
+
     MovementComponent empty_comp = {0};
-    core->world_data->entity_components.movement_components[deleted_component_id] = empty_comp;
-    entity->components[COMPONENT_movement] = 0;
+    *comp = empty_comp;
+    entity->component_ids[COMPONENT_movement] = 0;
+}
 
-    if (deleted_component_id < core->world_data->entity_components.movement_component_free_id)
-        core->world_data->entity_components.movement_component_free_id = deleted_component_id;
+internal MovementComponent *GetMovementComponentFromEntityID(i32 id)
+{
+    Entity *entity = GetEntityWithID(id);
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_movement], "Entity doesn't have a MovementComponent");
+    MovementComponent *comp = &core->world_data->entity_components.movement_components[entity->component_ids[COMPONENT_movement] - 1];
+    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_movement], "IDs are mismatched.");
+    return comp;
 }
 
 internal ArcEntityComponent *AddArcEntityComponent(Entity *entity)
 {
-    i32 component_id;
-    if (core->world_data->entity_components.arc_entity_component_free_id == core->world_data->entity_components.arc_entity_component_count)
+    R_DEV_ASSERT(core->world_data->entity_components.free_arc_entity_component_id > 0, "Max ArcEntityComponent reached.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_arc_entity] == 0, "Entity already has a ArcEntityComponent");
+    i32 new_comp_id = core->world_data->entity_components.free_arc_entity_component_id;
+
+    ArcEntityComponent *comp = &core->world_data->entity_components.arc_entity_components[new_comp_id - 1];
+    *comp = GetDefaultArcEntityComponent();
+    comp->parent_entity_id = entity->entity_id;
+    comp->component_id = new_comp_id;
+    entity->component_ids[COMPONENT_arc_entity] = new_comp_id;
+
+    if (core->world_data->entity_components.arc_entity_component_count == core->world_data->entity_components.free_arc_entity_component_id - 1)
     {
-        component_id = core->world_data->entity_components.arc_entity_component_count;
         core->world_data->entity_components.arc_entity_component_count++;
-        core->world_data->entity_components.arc_entity_component_free_id = component_id + 1;
+        core->world_data->entity_components.free_arc_entity_component_id++;
+    }
+
+    if (core->world_data->entity_components.arc_entity_component_count < MAX_ACTIVE_ENTITIES)
+    {
+        if (core->world_data->entity_components.arc_entity_component_count != core->world_data->entity_components.free_arc_entity_component_id - 1)
+        {
+            b8 found = 0;
+            for (i32 i = 0; i < core->world_data->entity_components.arc_entity_component_count; i++)
+            {
+                if (core->world_data->entity_components.arc_entity_components[i].component_id)
+                {
+                    core->world_data->entity_components.free_arc_entity_component_id = i + 1;
+                    found = 1;
+                    break;
+                }
+            }
+        }
     }
     else
     {
-        component_id = core->world_data->entity_components.arc_entity_component_free_id;
+        core->world_data->entity_components.free_arc_entity_component_id = 0;
     }
 
-    core->world_data->entity_components.arc_entity_components[component_id] = GetDefaultArcEntityComponent();
-    entity->components[COMPONENT_arc_entity] = &core->world_data->entity_components.arc_entity_components[component_id];
-    core->world_data->entity_components.arc_entity_components[component_id].parent_entity = entity;
-    core->world_data->entity_components.arc_entity_components[component_id].component_id = component_id;
-
-    for (i32 i = 0; i < core->world_data->entity_components.arc_entity_component_count + 1; i++)
-    {
-        if (!core->world_data->entity_components.arc_entity_components[i].parent_entity)
-        {
-            core->world_data->entity_components.arc_entity_component_free_id = i;
-            break;
-        }
-    }
-
-    return &core->world_data->entity_components.arc_entity_components[component_id];
+    return comp;
 }
 
 internal void RemoveArcEntityComponent(Entity *entity)
 {
-    ArcEntityComponent *component = entity->components[COMPONENT_arc_entity];
-    R_DEV_ASSERT(component, "Entity does not a ArcEntityComponent attached, so it can't remove it.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_arc_entity] != 0, "Entity does not have a ArcEntityComponent");
+    ArcEntityComponent *comp = &core->world_data->entity_components.arc_entity_components[entity->component_ids[COMPONENT_arc_entity] - 1];
 
-    i32 deleted_component_id = component->component_id;
+    if (comp->component_id < core->world_data->entity_components.free_arc_entity_component_id)
+        core->world_data->entity_components.free_arc_entity_component_id = comp->component_id;
+
     ArcEntityComponent empty_comp = {0};
-    core->world_data->entity_components.arc_entity_components[deleted_component_id] = empty_comp;
-    entity->components[COMPONENT_arc_entity] = 0;
+    *comp = empty_comp;
+    entity->component_ids[COMPONENT_arc_entity] = 0;
+}
 
-    if (deleted_component_id < core->world_data->entity_components.arc_entity_component_free_id)
-        core->world_data->entity_components.arc_entity_component_free_id = deleted_component_id;
+internal ArcEntityComponent *GetArcEntityComponentFromEntityID(i32 id)
+{
+    Entity *entity = GetEntityWithID(id);
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_arc_entity], "Entity doesn't have a ArcEntityComponent");
+    ArcEntityComponent *comp = &core->world_data->entity_components.arc_entity_components[entity->component_ids[COMPONENT_arc_entity] - 1];
+    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_arc_entity], "IDs are mismatched.");
+    return comp;
 }
 
 internal ItemComponent *AddItemComponent(Entity *entity)
 {
-    i32 component_id;
-    if (core->world_data->entity_components.item_component_free_id == core->world_data->entity_components.item_component_count)
+    R_DEV_ASSERT(core->world_data->entity_components.free_item_component_id > 0, "Max ItemComponent reached.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_item] == 0, "Entity already has a ItemComponent");
+    i32 new_comp_id = core->world_data->entity_components.free_item_component_id;
+
+    ItemComponent *comp = &core->world_data->entity_components.item_components[new_comp_id - 1];
+    *comp = GetDefaultItemComponent();
+    comp->parent_entity_id = entity->entity_id;
+    comp->component_id = new_comp_id;
+    entity->component_ids[COMPONENT_item] = new_comp_id;
+
+    if (core->world_data->entity_components.item_component_count == core->world_data->entity_components.free_item_component_id - 1)
     {
-        component_id = core->world_data->entity_components.item_component_count;
         core->world_data->entity_components.item_component_count++;
-        core->world_data->entity_components.item_component_free_id = component_id + 1;
+        core->world_data->entity_components.free_item_component_id++;
+    }
+
+    if (core->world_data->entity_components.item_component_count < MAX_ACTIVE_ENTITIES)
+    {
+        if (core->world_data->entity_components.item_component_count != core->world_data->entity_components.free_item_component_id - 1)
+        {
+            b8 found = 0;
+            for (i32 i = 0; i < core->world_data->entity_components.item_component_count; i++)
+            {
+                if (core->world_data->entity_components.item_components[i].component_id)
+                {
+                    core->world_data->entity_components.free_item_component_id = i + 1;
+                    found = 1;
+                    break;
+                }
+            }
+        }
     }
     else
     {
-        component_id = core->world_data->entity_components.item_component_free_id;
+        core->world_data->entity_components.free_item_component_id = 0;
     }
 
-    core->world_data->entity_components.item_components[component_id] = GetDefaultItemComponent();
-    entity->components[COMPONENT_item] = &core->world_data->entity_components.item_components[component_id];
-    core->world_data->entity_components.item_components[component_id].parent_entity = entity;
-    core->world_data->entity_components.item_components[component_id].component_id = component_id;
-
-    for (i32 i = 0; i < core->world_data->entity_components.item_component_count + 1; i++)
-    {
-        if (!core->world_data->entity_components.item_components[i].parent_entity)
-        {
-            core->world_data->entity_components.item_component_free_id = i;
-            break;
-        }
-    }
-
-    return &core->world_data->entity_components.item_components[component_id];
+    return comp;
 }
 
 internal void RemoveItemComponent(Entity *entity)
 {
-    ItemComponent *component = entity->components[COMPONENT_item];
-    R_DEV_ASSERT(component, "Entity does not a ItemComponent attached, so it can't remove it.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_item] != 0, "Entity does not have a ItemComponent");
+    ItemComponent *comp = &core->world_data->entity_components.item_components[entity->component_ids[COMPONENT_item] - 1];
 
-    i32 deleted_component_id = component->component_id;
+    if (comp->component_id < core->world_data->entity_components.free_item_component_id)
+        core->world_data->entity_components.free_item_component_id = comp->component_id;
+
     ItemComponent empty_comp = {0};
-    core->world_data->entity_components.item_components[deleted_component_id] = empty_comp;
-    entity->components[COMPONENT_item] = 0;
+    *comp = empty_comp;
+    entity->component_ids[COMPONENT_item] = 0;
+}
 
-    if (deleted_component_id < core->world_data->entity_components.item_component_free_id)
-        core->world_data->entity_components.item_component_free_id = deleted_component_id;
+internal ItemComponent *GetItemComponentFromEntityID(i32 id)
+{
+    Entity *entity = GetEntityWithID(id);
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_item], "Entity doesn't have a ItemComponent");
+    ItemComponent *comp = &core->world_data->entity_components.item_components[entity->component_ids[COMPONENT_item] - 1];
+    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_item], "IDs are mismatched.");
+    return comp;
 }
 
 internal TriggerComponent *AddTriggerComponent(Entity *entity)
 {
-    i32 component_id;
-    if (core->world_data->entity_components.trigger_component_free_id == core->world_data->entity_components.trigger_component_count)
+    R_DEV_ASSERT(core->world_data->entity_components.free_trigger_component_id > 0, "Max TriggerComponent reached.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_trigger] == 0, "Entity already has a TriggerComponent");
+    i32 new_comp_id = core->world_data->entity_components.free_trigger_component_id;
+
+    TriggerComponent *comp = &core->world_data->entity_components.trigger_components[new_comp_id - 1];
+    *comp = GetDefaultTriggerComponent();
+    comp->parent_entity_id = entity->entity_id;
+    comp->component_id = new_comp_id;
+    entity->component_ids[COMPONENT_trigger] = new_comp_id;
+
+    if (core->world_data->entity_components.trigger_component_count == core->world_data->entity_components.free_trigger_component_id - 1)
     {
-        component_id = core->world_data->entity_components.trigger_component_count;
         core->world_data->entity_components.trigger_component_count++;
-        core->world_data->entity_components.trigger_component_free_id = component_id + 1;
+        core->world_data->entity_components.free_trigger_component_id++;
+    }
+
+    if (core->world_data->entity_components.trigger_component_count < MAX_ACTIVE_ENTITIES)
+    {
+        if (core->world_data->entity_components.trigger_component_count != core->world_data->entity_components.free_trigger_component_id - 1)
+        {
+            b8 found = 0;
+            for (i32 i = 0; i < core->world_data->entity_components.trigger_component_count; i++)
+            {
+                if (core->world_data->entity_components.trigger_components[i].component_id)
+                {
+                    core->world_data->entity_components.free_trigger_component_id = i + 1;
+                    found = 1;
+                    break;
+                }
+            }
+        }
     }
     else
     {
-        component_id = core->world_data->entity_components.trigger_component_free_id;
+        core->world_data->entity_components.free_trigger_component_id = 0;
     }
 
-    core->world_data->entity_components.trigger_components[component_id] = GetDefaultTriggerComponent();
-    entity->components[COMPONENT_trigger] = &core->world_data->entity_components.trigger_components[component_id];
-    core->world_data->entity_components.trigger_components[component_id].parent_entity = entity;
-    core->world_data->entity_components.trigger_components[component_id].component_id = component_id;
-
-    for (i32 i = 0; i < core->world_data->entity_components.trigger_component_count + 1; i++)
-    {
-        if (!core->world_data->entity_components.trigger_components[i].parent_entity)
-        {
-            core->world_data->entity_components.trigger_component_free_id = i;
-            break;
-        }
-    }
-
-    return &core->world_data->entity_components.trigger_components[component_id];
+    return comp;
 }
 
 internal void RemoveTriggerComponent(Entity *entity)
 {
-    TriggerComponent *component = entity->components[COMPONENT_trigger];
-    R_DEV_ASSERT(component, "Entity does not a TriggerComponent attached, so it can't remove it.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_trigger] != 0, "Entity does not have a TriggerComponent");
+    TriggerComponent *comp = &core->world_data->entity_components.trigger_components[entity->component_ids[COMPONENT_trigger] - 1];
 
-    i32 deleted_component_id = component->component_id;
+    if (comp->component_id < core->world_data->entity_components.free_trigger_component_id)
+        core->world_data->entity_components.free_trigger_component_id = comp->component_id;
+
     TriggerComponent empty_comp = {0};
-    core->world_data->entity_components.trigger_components[deleted_component_id] = empty_comp;
-    entity->components[COMPONENT_trigger] = 0;
+    *comp = empty_comp;
+    entity->component_ids[COMPONENT_trigger] = 0;
+}
 
-    if (deleted_component_id < core->world_data->entity_components.trigger_component_free_id)
-        core->world_data->entity_components.trigger_component_free_id = deleted_component_id;
+internal TriggerComponent *GetTriggerComponentFromEntityID(i32 id)
+{
+    Entity *entity = GetEntityWithID(id);
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_trigger], "Entity doesn't have a TriggerComponent");
+    TriggerComponent *comp = &core->world_data->entity_components.trigger_components[entity->component_ids[COMPONENT_trigger] - 1];
+    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_trigger], "IDs are mismatched.");
+    return comp;
 }
 
 internal StorageComponent *AddStorageComponent(Entity *entity)
 {
-    i32 component_id;
-    if (core->world_data->entity_components.storage_component_free_id == core->world_data->entity_components.storage_component_count)
+    R_DEV_ASSERT(core->world_data->entity_components.free_storage_component_id > 0, "Max StorageComponent reached.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_storage] == 0, "Entity already has a StorageComponent");
+    i32 new_comp_id = core->world_data->entity_components.free_storage_component_id;
+
+    StorageComponent *comp = &core->world_data->entity_components.storage_components[new_comp_id - 1];
+    *comp = GetDefaultStorageComponent();
+    comp->parent_entity_id = entity->entity_id;
+    comp->component_id = new_comp_id;
+    entity->component_ids[COMPONENT_storage] = new_comp_id;
+
+    if (core->world_data->entity_components.storage_component_count == core->world_data->entity_components.free_storage_component_id - 1)
     {
-        component_id = core->world_data->entity_components.storage_component_count;
         core->world_data->entity_components.storage_component_count++;
-        core->world_data->entity_components.storage_component_free_id = component_id + 1;
+        core->world_data->entity_components.free_storage_component_id++;
+    }
+
+    if (core->world_data->entity_components.storage_component_count < MAX_ACTIVE_ENTITIES)
+    {
+        if (core->world_data->entity_components.storage_component_count != core->world_data->entity_components.free_storage_component_id - 1)
+        {
+            b8 found = 0;
+            for (i32 i = 0; i < core->world_data->entity_components.storage_component_count; i++)
+            {
+                if (core->world_data->entity_components.storage_components[i].component_id)
+                {
+                    core->world_data->entity_components.free_storage_component_id = i + 1;
+                    found = 1;
+                    break;
+                }
+            }
+        }
     }
     else
     {
-        component_id = core->world_data->entity_components.storage_component_free_id;
+        core->world_data->entity_components.free_storage_component_id = 0;
     }
 
-    core->world_data->entity_components.storage_components[component_id] = GetDefaultStorageComponent();
-    entity->components[COMPONENT_storage] = &core->world_data->entity_components.storage_components[component_id];
-    core->world_data->entity_components.storage_components[component_id].parent_entity = entity;
-    core->world_data->entity_components.storage_components[component_id].component_id = component_id;
-
-    for (i32 i = 0; i < core->world_data->entity_components.storage_component_count + 1; i++)
-    {
-        if (!core->world_data->entity_components.storage_components[i].parent_entity)
-        {
-            core->world_data->entity_components.storage_component_free_id = i;
-            break;
-        }
-    }
-
-    return &core->world_data->entity_components.storage_components[component_id];
+    return comp;
 }
 
 internal void RemoveStorageComponent(Entity *entity)
 {
-    StorageComponent *component = entity->components[COMPONENT_storage];
-    R_DEV_ASSERT(component, "Entity does not a StorageComponent attached, so it can't remove it.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_storage] != 0, "Entity does not have a StorageComponent");
+    StorageComponent *comp = &core->world_data->entity_components.storage_components[entity->component_ids[COMPONENT_storage] - 1];
 
-    i32 deleted_component_id = component->component_id;
+    if (comp->component_id < core->world_data->entity_components.free_storage_component_id)
+        core->world_data->entity_components.free_storage_component_id = comp->component_id;
+
     StorageComponent empty_comp = {0};
-    core->world_data->entity_components.storage_components[deleted_component_id] = empty_comp;
-    entity->components[COMPONENT_storage] = 0;
+    *comp = empty_comp;
+    entity->component_ids[COMPONENT_storage] = 0;
+}
 
-    if (deleted_component_id < core->world_data->entity_components.storage_component_free_id)
-        core->world_data->entity_components.storage_component_free_id = deleted_component_id;
+internal StorageComponent *GetStorageComponentFromEntityID(i32 id)
+{
+    Entity *entity = GetEntityWithID(id);
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_storage], "Entity doesn't have a StorageComponent");
+    StorageComponent *comp = &core->world_data->entity_components.storage_components[entity->component_ids[COMPONENT_storage] - 1];
+    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_storage], "IDs are mismatched.");
+    return comp;
 }
 
 internal ParallaxComponent *AddParallaxComponent(Entity *entity)
 {
-    i32 component_id;
-    if (core->world_data->entity_components.parallax_component_free_id == core->world_data->entity_components.parallax_component_count)
+    R_DEV_ASSERT(core->world_data->entity_components.free_parallax_component_id > 0, "Max ParallaxComponent reached.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_parallax] == 0, "Entity already has a ParallaxComponent");
+    i32 new_comp_id = core->world_data->entity_components.free_parallax_component_id;
+
+    ParallaxComponent *comp = &core->world_data->entity_components.parallax_components[new_comp_id - 1];
+    *comp = GetDefaultParallaxComponent();
+    comp->parent_entity_id = entity->entity_id;
+    comp->component_id = new_comp_id;
+    entity->component_ids[COMPONENT_parallax] = new_comp_id;
+
+    if (core->world_data->entity_components.parallax_component_count == core->world_data->entity_components.free_parallax_component_id - 1)
     {
-        component_id = core->world_data->entity_components.parallax_component_count;
         core->world_data->entity_components.parallax_component_count++;
-        core->world_data->entity_components.parallax_component_free_id = component_id + 1;
+        core->world_data->entity_components.free_parallax_component_id++;
+    }
+
+    if (core->world_data->entity_components.parallax_component_count < MAX_ACTIVE_ENTITIES)
+    {
+        if (core->world_data->entity_components.parallax_component_count != core->world_data->entity_components.free_parallax_component_id - 1)
+        {
+            b8 found = 0;
+            for (i32 i = 0; i < core->world_data->entity_components.parallax_component_count; i++)
+            {
+                if (core->world_data->entity_components.parallax_components[i].component_id)
+                {
+                    core->world_data->entity_components.free_parallax_component_id = i + 1;
+                    found = 1;
+                    break;
+                }
+            }
+        }
     }
     else
     {
-        component_id = core->world_data->entity_components.parallax_component_free_id;
+        core->world_data->entity_components.free_parallax_component_id = 0;
     }
 
-    core->world_data->entity_components.parallax_components[component_id] = GetDefaultParallaxComponent();
-    entity->components[COMPONENT_parallax] = &core->world_data->entity_components.parallax_components[component_id];
-    core->world_data->entity_components.parallax_components[component_id].parent_entity = entity;
-    core->world_data->entity_components.parallax_components[component_id].component_id = component_id;
-
-    for (i32 i = 0; i < core->world_data->entity_components.parallax_component_count + 1; i++)
-    {
-        if (!core->world_data->entity_components.parallax_components[i].parent_entity)
-        {
-            core->world_data->entity_components.parallax_component_free_id = i;
-            break;
-        }
-    }
-
-    return &core->world_data->entity_components.parallax_components[component_id];
+    return comp;
 }
 
 internal void RemoveParallaxComponent(Entity *entity)
 {
-    ParallaxComponent *component = entity->components[COMPONENT_parallax];
-    R_DEV_ASSERT(component, "Entity does not a ParallaxComponent attached, so it can't remove it.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_parallax] != 0, "Entity does not have a ParallaxComponent");
+    ParallaxComponent *comp = &core->world_data->entity_components.parallax_components[entity->component_ids[COMPONENT_parallax] - 1];
 
-    i32 deleted_component_id = component->component_id;
+    if (comp->component_id < core->world_data->entity_components.free_parallax_component_id)
+        core->world_data->entity_components.free_parallax_component_id = comp->component_id;
+
     ParallaxComponent empty_comp = {0};
-    core->world_data->entity_components.parallax_components[deleted_component_id] = empty_comp;
-    entity->components[COMPONENT_parallax] = 0;
+    *comp = empty_comp;
+    entity->component_ids[COMPONENT_parallax] = 0;
+}
 
-    if (deleted_component_id < core->world_data->entity_components.parallax_component_free_id)
-        core->world_data->entity_components.parallax_component_free_id = deleted_component_id;
+internal ParallaxComponent *GetParallaxComponentFromEntityID(i32 id)
+{
+    Entity *entity = GetEntityWithID(id);
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_parallax], "Entity doesn't have a ParallaxComponent");
+    ParallaxComponent *comp = &core->world_data->entity_components.parallax_components[entity->component_ids[COMPONENT_parallax] - 1];
+    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_parallax], "IDs are mismatched.");
+    return comp;
 }
 
 internal ParticleEmitterComponent *AddParticleEmitterComponent(Entity *entity)
 {
-    i32 component_id;
-    if (core->world_data->entity_components.particle_emitter_component_free_id == core->world_data->entity_components.particle_emitter_component_count)
+    R_DEV_ASSERT(core->world_data->entity_components.free_particle_emitter_component_id > 0, "Max ParticleEmitterComponent reached.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_particle_emitter] == 0, "Entity already has a ParticleEmitterComponent");
+    i32 new_comp_id = core->world_data->entity_components.free_particle_emitter_component_id;
+
+    ParticleEmitterComponent *comp = &core->world_data->entity_components.particle_emitter_components[new_comp_id - 1];
+    *comp = GetDefaultParticleEmitterComponent();
+    comp->parent_entity_id = entity->entity_id;
+    comp->component_id = new_comp_id;
+    entity->component_ids[COMPONENT_particle_emitter] = new_comp_id;
+
+    if (core->world_data->entity_components.particle_emitter_component_count == core->world_data->entity_components.free_particle_emitter_component_id - 1)
     {
-        component_id = core->world_data->entity_components.particle_emitter_component_count;
         core->world_data->entity_components.particle_emitter_component_count++;
-        core->world_data->entity_components.particle_emitter_component_free_id = component_id + 1;
+        core->world_data->entity_components.free_particle_emitter_component_id++;
+    }
+
+    if (core->world_data->entity_components.particle_emitter_component_count < MAX_ACTIVE_ENTITIES)
+    {
+        if (core->world_data->entity_components.particle_emitter_component_count != core->world_data->entity_components.free_particle_emitter_component_id - 1)
+        {
+            b8 found = 0;
+            for (i32 i = 0; i < core->world_data->entity_components.particle_emitter_component_count; i++)
+            {
+                if (core->world_data->entity_components.particle_emitter_components[i].component_id)
+                {
+                    core->world_data->entity_components.free_particle_emitter_component_id = i + 1;
+                    found = 1;
+                    break;
+                }
+            }
+        }
     }
     else
     {
-        component_id = core->world_data->entity_components.particle_emitter_component_free_id;
+        core->world_data->entity_components.free_particle_emitter_component_id = 0;
     }
 
-    core->world_data->entity_components.particle_emitter_components[component_id] = GetDefaultParticleEmitterComponent();
-    entity->components[COMPONENT_particle_emitter] = &core->world_data->entity_components.particle_emitter_components[component_id];
-    core->world_data->entity_components.particle_emitter_components[component_id].parent_entity = entity;
-    core->world_data->entity_components.particle_emitter_components[component_id].component_id = component_id;
-
-    for (i32 i = 0; i < core->world_data->entity_components.particle_emitter_component_count + 1; i++)
-    {
-        if (!core->world_data->entity_components.particle_emitter_components[i].parent_entity)
-        {
-            core->world_data->entity_components.particle_emitter_component_free_id = i;
-            break;
-        }
-    }
-
-    return &core->world_data->entity_components.particle_emitter_components[component_id];
+    return comp;
 }
 
 internal void RemoveParticleEmitterComponent(Entity *entity)
 {
-    ParticleEmitterComponent *component = entity->components[COMPONENT_particle_emitter];
-    R_DEV_ASSERT(component, "Entity does not a ParticleEmitterComponent attached, so it can't remove it.");
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_particle_emitter] != 0, "Entity does not have a ParticleEmitterComponent");
+    ParticleEmitterComponent *comp = &core->world_data->entity_components.particle_emitter_components[entity->component_ids[COMPONENT_particle_emitter] - 1];
 
-    i32 deleted_component_id = component->component_id;
+    if (comp->component_id < core->world_data->entity_components.free_particle_emitter_component_id)
+        core->world_data->entity_components.free_particle_emitter_component_id = comp->component_id;
+
     ParticleEmitterComponent empty_comp = {0};
-    core->world_data->entity_components.particle_emitter_components[deleted_component_id] = empty_comp;
-    entity->components[COMPONENT_particle_emitter] = 0;
-
-    if (deleted_component_id < core->world_data->entity_components.particle_emitter_component_free_id)
-        core->world_data->entity_components.particle_emitter_component_free_id = deleted_component_id;
+    *comp = empty_comp;
+    entity->component_ids[COMPONENT_particle_emitter] = 0;
 }
 
-internal void DeleteEntity(Entity *entity)
+internal ParticleEmitterComponent *GetParticleEmitterComponentFromEntityID(i32 id)
 {
-    PositionComponent *position_component = entity->components[1];
-    if (position_component)
-        RemovePositionComponent(entity);
-    SpriteComponent *sprite_component = entity->components[2];
-    if (sprite_component)
-        RemoveSpriteComponent(entity);
-    AnimationComponent *animation_component = entity->components[3];
-    if (animation_component)
-        RemoveAnimationComponent(entity);
-    PhysicsBodyComponent *physics_body_component = entity->components[4];
-    if (physics_body_component)
-        RemovePhysicsBodyComponent(entity);
-    MovementComponent *movement_component = entity->components[5];
-    if (movement_component)
-        RemoveMovementComponent(entity);
-    ArcEntityComponent *arc_entity_component = entity->components[6];
-    if (arc_entity_component)
-        RemoveArcEntityComponent(entity);
-    ItemComponent *item_component = entity->components[7];
-    if (item_component)
-        RemoveItemComponent(entity);
-    TriggerComponent *trigger_component = entity->components[8];
-    if (trigger_component)
-        RemoveTriggerComponent(entity);
-    StorageComponent *storage_component = entity->components[9];
-    if (storage_component)
-        RemoveStorageComponent(entity);
-    ParallaxComponent *parallax_component = entity->components[10];
-    if (parallax_component)
-        RemoveParallaxComponent(entity);
-    ParticleEmitterComponent *particle_emitter_component = entity->components[11];
-    if (particle_emitter_component)
-        RemoveParticleEmitterComponent(entity);
-
-    i32 deleted_entity_id = entity->entity_id;
-    Entity empty_entity = {0};
-    *entity = empty_entity;
-    if (deleted_entity_id < core->world_data->free_entity_id)
-        core->world_data->free_entity_id = deleted_entity_id;
+    Entity *entity = GetEntityWithID(id);
+    R_DEV_ASSERT(entity->component_ids[COMPONENT_particle_emitter], "Entity doesn't have a ParticleEmitterComponent");
+    ParticleEmitterComponent *comp = &core->world_data->entity_components.particle_emitter_components[entity->component_ids[COMPONENT_particle_emitter] - 1];
+    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_particle_emitter], "IDs are mismatched.");
+    return comp;
 }
 
+internal void RemoveComponent(Entity *entity, ComponentType type)
+{
+    switch (type)
+    {
+    case COMPONENT_position:
+    {
+        if (entity->component_ids[COMPONENT_position])
+            RemovePositionComponent(entity);
+        else
+            R_BREAK("Entity doesn't have a PositionComponent to remove.");
+        break;
+    }
+    case COMPONENT_sprite:
+    {
+        if (entity->component_ids[COMPONENT_sprite])
+            RemoveSpriteComponent(entity);
+        else
+            R_BREAK("Entity doesn't have a SpriteComponent to remove.");
+        break;
+    }
+    case COMPONENT_animation:
+    {
+        if (entity->component_ids[COMPONENT_animation])
+            RemoveAnimationComponent(entity);
+        else
+            R_BREAK("Entity doesn't have a AnimationComponent to remove.");
+        break;
+    }
+    case COMPONENT_physics_body:
+    {
+        if (entity->component_ids[COMPONENT_physics_body])
+            RemovePhysicsBodyComponent(entity);
+        else
+            R_BREAK("Entity doesn't have a PhysicsBodyComponent to remove.");
+        break;
+    }
+    case COMPONENT_movement:
+    {
+        if (entity->component_ids[COMPONENT_movement])
+            RemoveMovementComponent(entity);
+        else
+            R_BREAK("Entity doesn't have a MovementComponent to remove.");
+        break;
+    }
+    case COMPONENT_arc_entity:
+    {
+        if (entity->component_ids[COMPONENT_arc_entity])
+            RemoveArcEntityComponent(entity);
+        else
+            R_BREAK("Entity doesn't have a ArcEntityComponent to remove.");
+        break;
+    }
+    case COMPONENT_item:
+    {
+        if (entity->component_ids[COMPONENT_item])
+            RemoveItemComponent(entity);
+        else
+            R_BREAK("Entity doesn't have a ItemComponent to remove.");
+        break;
+    }
+    case COMPONENT_trigger:
+    {
+        if (entity->component_ids[COMPONENT_trigger])
+            RemoveTriggerComponent(entity);
+        else
+            R_BREAK("Entity doesn't have a TriggerComponent to remove.");
+        break;
+    }
+    case COMPONENT_storage:
+    {
+        if (entity->component_ids[COMPONENT_storage])
+            RemoveStorageComponent(entity);
+        else
+            R_BREAK("Entity doesn't have a StorageComponent to remove.");
+        break;
+    }
+    case COMPONENT_parallax:
+    {
+        if (entity->component_ids[COMPONENT_parallax])
+            RemoveParallaxComponent(entity);
+        else
+            R_BREAK("Entity doesn't have a ParallaxComponent to remove.");
+        break;
+    }
+    case COMPONENT_particle_emitter:
+    {
+        if (entity->component_ids[COMPONENT_particle_emitter])
+            RemoveParticleEmitterComponent(entity);
+        else
+            R_BREAK("Entity doesn't have a ParticleEmitterComponent to remove.");
+        break;
+    }
+    default:
+        R_BREAK("Invalid component type.");
+        break;
+    }
+}
+internal void InitialiseComponents()
+{
+    core->world_data->entity_components.free_position_component_id = 1;
+    core->world_data->entity_components.free_sprite_component_id = 1;
+    core->world_data->entity_components.free_animation_component_id = 1;
+    core->world_data->entity_components.free_physics_body_component_id = 1;
+    core->world_data->entity_components.free_movement_component_id = 1;
+    core->world_data->entity_components.free_arc_entity_component_id = 1;
+    core->world_data->entity_components.free_item_component_id = 1;
+    core->world_data->entity_components.free_trigger_component_id = 1;
+    core->world_data->entity_components.free_storage_component_id = 1;
+    core->world_data->entity_components.free_parallax_component_id = 1;
+    core->world_data->entity_components.free_particle_emitter_component_id = 1;
+}
+internal void InitialiseUniqueEntities()
+{
+    core->world_data->free_cloud_entity_id = 1;
+    core->world_data->free_ground_segment_entity_id = 1;
+}
 static CharacterEntity *InitialiseCharacterEntity()
 {
-    Entity *generic_entity = NewEntity("CharacterEntity", ENTITY_TYPE_character_entity, GENERALISED_ENTITY_TYPE_character);
+    Entity *generic_entity = NewEntity("CharacterEntity", GENERALISED_ENTITY_TYPE_character);
     CharacterEntity *unique_entity = &core->world_data->character_entity;
-    generic_entity->unique_entity = unique_entity;
-    unique_entity->parent_generic_entity = generic_entity;
+    generic_entity->type = ENTITY_TYPE_character_entity;
+    generic_entity->unique_entity_id = 1;
+    unique_entity->entity_id = generic_entity->entity_id;
 
-    unique_entity->position_comp = AddPositionComponent(generic_entity);
-    unique_entity->sprite_comp = AddSpriteComponent(generic_entity);
-    unique_entity->animation_comp = AddAnimationComponent(generic_entity);
-    unique_entity->physics_body_comp = AddPhysicsBodyComponent(generic_entity);
-    unique_entity->movement_comp = AddMovementComponent(generic_entity);
-    unique_entity->arc_entity_comp = AddArcEntityComponent(generic_entity);
+    AddPositionComponent(generic_entity);
+    AddSpriteComponent(generic_entity);
+    AddAnimationComponent(generic_entity);
+    AddPhysicsBodyComponent(generic_entity);
+    AddMovementComponent(generic_entity);
+    AddArcEntityComponent(generic_entity);
 
     return unique_entity;
 }
 
 static CloudEntity *NewCloudEntity()
 {
-    R_DEV_ASSERT(core->world_data->free_cloud_entity_index + 1 < MAX_CLOUD_ENTITY_COUNT, "Maximum amount of CloudEntity entites reached");
+    R_DEV_ASSERT(core->world_data->free_cloud_entity_id > 0, "Maximum amount of CloudEntity entites reached");
 
-    i32 new_unique_id = core->world_data->free_cloud_entity_index;
-    if (core->world_data->free_cloud_entity_index == core->world_data->cloud_entity_count)
-    {
-        core->world_data->cloud_entity_count++;
-        core->world_data->free_cloud_entity_index++;
-    }
-    core->world_data->cloud_entity_list[new_unique_id].unique_entity_id = new_unique_id;
+    i32 new_unique_id = core->world_data->free_cloud_entity_id;
 
-    Entity *generic_entity = NewEntity("CloudEntity", ENTITY_TYPE_cloud_entity, GENERALISED_ENTITY_TYPE_scenic);
-    CloudEntity *unique_entity = &core->world_data->cloud_entity_list[new_unique_id];
-    generic_entity->unique_entity = unique_entity;
-    unique_entity->parent_generic_entity = generic_entity;
+    Entity *generic_entity = NewEntity("CloudEntity", GENERALISED_ENTITY_TYPE_scenic);
+    generic_entity->unique_entity_id = new_unique_id;
+    generic_entity->type = ENTITY_TYPE_cloud_entity;
+    CloudEntity *unique_entity = &core->world_data->cloud_entity_list[new_unique_id - 1];
+    unique_entity->entity_id = generic_entity->entity_id;
     unique_entity->unique_entity_id = new_unique_id;
 
-    unique_entity->position_comp = AddPositionComponent(generic_entity);
-    unique_entity->sprite_comp = AddSpriteComponent(generic_entity);
-    unique_entity->parallax_comp = AddParallaxComponent(generic_entity);
+    AddPositionComponent(generic_entity);
+    AddSpriteComponent(generic_entity);
+    AddParallaxComponent(generic_entity);
+
+    if (core->world_data->cloud_entity_count == core->world_data->free_cloud_entity_id - 1)
+    {
+        core->world_data->cloud_entity_count++;
+        core->world_data->free_cloud_entity_id++;
+    }
+
+    if (core->world_data->cloud_entity_count < MAX_CLOUD_ENTITY_COUNT)
+    {
+        if (core->world_data->cloud_entity_count != core->world_data->free_cloud_entity_id - 1)
+        {
+            b8 found = 0;
+            for (i32 i = 0; i < core->world_data->cloud_entity_count++; i++)
+            {
+                core->world_data->free_cloud_entity_id = i + 1;
+                found = 1;
+                break;
+            }
+            R_DEV_ASSERT(found, "Couldn't find a free index?");
+        }
+    }
+    else
+    {
+        core->world_data->free_cloud_entity_id = 0;
+    }
 
     return unique_entity;
 }
 
 static void DeleteCloudEntity(CloudEntity *entity)
 {
-    DeleteEntity(entity->parent_generic_entity);
-    if (entity->unique_entity_id < core->world_data->free_cloud_entity_index);
-        core->world_data->free_cloud_entity_index = entity->unique_entity_id;
+    R_DEV_ASSERT(entity && entity->entity_id && entity->unique_entity_id, "Invalid entity");
+    Entity *generic_entity = GetEntityWithID(entity->entity_id);
+    R_DEV_ASSERT(generic_entity->unique_entity_id == entity->unique_entity_id, "Mismatched id.");
+    generic_entity->unique_entity_id = 0;
+    DeleteEntity(generic_entity);
+
+    if (entity->unique_entity_id < core->world_data->free_cloud_entity_id);
+        core->world_data->free_cloud_entity_id = entity->unique_entity_id;
     CloudEntity empty_entity = {0};
     *entity = empty_entity;
 }
 
 static GroundSegmentEntity *NewGroundSegmentEntity()
 {
-    R_DEV_ASSERT(core->world_data->free_ground_segment_entity_index + 1 < MAX_GROUND_SEGMENT_ENTITY_COUNT, "Maximum amount of GroundSegmentEntity entites reached");
+    R_DEV_ASSERT(core->world_data->free_ground_segment_entity_id > 0, "Maximum amount of GroundSegmentEntity entites reached");
 
-    i32 new_unique_id = core->world_data->free_ground_segment_entity_index;
-    if (core->world_data->free_ground_segment_entity_index == core->world_data->ground_segment_entity_count)
-    {
-        core->world_data->ground_segment_entity_count++;
-        core->world_data->free_ground_segment_entity_index++;
-    }
-    core->world_data->ground_segment_entity_list[new_unique_id].unique_entity_id = new_unique_id;
+    i32 new_unique_id = core->world_data->free_ground_segment_entity_id;
 
-    Entity *generic_entity = NewEntity("GroundSegmentEntity", ENTITY_TYPE_ground_segment_entity, GENERALISED_ENTITY_TYPE_ground);
-    GroundSegmentEntity *unique_entity = &core->world_data->ground_segment_entity_list[new_unique_id];
-    generic_entity->unique_entity = unique_entity;
-    unique_entity->parent_generic_entity = generic_entity;
+    Entity *generic_entity = NewEntity("GroundSegmentEntity", GENERALISED_ENTITY_TYPE_ground);
+    generic_entity->unique_entity_id = new_unique_id;
+    generic_entity->type = ENTITY_TYPE_ground_segment_entity;
+    GroundSegmentEntity *unique_entity = &core->world_data->ground_segment_entity_list[new_unique_id - 1];
+    unique_entity->entity_id = generic_entity->entity_id;
     unique_entity->unique_entity_id = new_unique_id;
 
-    unique_entity->position_comp = AddPositionComponent(generic_entity);
-    unique_entity->physics_body_comp = AddPhysicsBodyComponent(generic_entity);
+    AddPositionComponent(generic_entity);
+    AddPhysicsBodyComponent(generic_entity);
+
+    if (core->world_data->ground_segment_entity_count == core->world_data->free_ground_segment_entity_id - 1)
+    {
+        core->world_data->ground_segment_entity_count++;
+        core->world_data->free_ground_segment_entity_id++;
+    }
+
+    if (core->world_data->ground_segment_entity_count < MAX_GROUND_SEGMENT_ENTITY_COUNT)
+    {
+        if (core->world_data->ground_segment_entity_count != core->world_data->free_ground_segment_entity_id - 1)
+        {
+            b8 found = 0;
+            for (i32 i = 0; i < core->world_data->ground_segment_entity_count++; i++)
+            {
+                core->world_data->free_ground_segment_entity_id = i + 1;
+                found = 1;
+                break;
+            }
+            R_DEV_ASSERT(found, "Couldn't find a free index?");
+        }
+    }
+    else
+    {
+        core->world_data->free_ground_segment_entity_id = 0;
+    }
 
     return unique_entity;
 }
 
 static void DeleteGroundSegmentEntity(GroundSegmentEntity *entity)
 {
-    DeleteEntity(entity->parent_generic_entity);
-    if (entity->unique_entity_id < core->world_data->free_ground_segment_entity_index);
-        core->world_data->free_ground_segment_entity_index = entity->unique_entity_id;
+    R_DEV_ASSERT(entity && entity->entity_id && entity->unique_entity_id, "Invalid entity");
+    Entity *generic_entity = GetEntityWithID(entity->entity_id);
+    R_DEV_ASSERT(generic_entity->unique_entity_id == entity->unique_entity_id, "Mismatched id.");
+    generic_entity->unique_entity_id = 0;
+    DeleteEntity(generic_entity);
+
+    if (entity->unique_entity_id < core->world_data->free_ground_segment_entity_id);
+        core->world_data->free_ground_segment_entity_id = entity->unique_entity_id;
     GroundSegmentEntity empty_entity = {0};
     *entity = empty_entity;
 }
 
-static void PrintEntityDataUI(Entity *entity)
-{
-    switch(entity->type)
-    {
-    case ENTITY_TYPE_character_entity :
-    {
-        CharacterEntity *unique_entity = entity->unique_entity;
-            // TODO: Don't know how to generate UI print for variable 'parent_generic_entity'
-            // TODO: Don't know how to generate UI print for variable 'position_comp'
-            // TODO: Don't know how to generate UI print for variable 'sprite_comp'
-            // TODO: Don't know how to generate UI print for variable 'animation_comp'
-            // TODO: Don't know how to generate UI print for variable 'physics_body_comp'
-            // TODO: Don't know how to generate UI print for variable 'movement_comp'
-            // TODO: Don't know how to generate UI print for variable 'arc_entity_comp'
-        break;
-    }
-    case ENTITY_TYPE_cloud_entity :
-    {
-        CloudEntity *unique_entity = entity->unique_entity;
-            // TODO: Don't know how to generate UI print for variable 'parent_generic_entity'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "unique_entity_id: %i", unique_entity->unique_entity_id); TsUILabel(label); }
-            TsUIPopWidth();
-            // TODO: Don't know how to generate UI print for variable 'position_comp'
-            // TODO: Don't know how to generate UI print for variable 'sprite_comp'
-            // TODO: Don't know how to generate UI print for variable 'parallax_comp'
-        break;
-    }
-    case ENTITY_TYPE_ground_segment_entity :
-    {
-        GroundSegmentEntity *unique_entity = entity->unique_entity;
-            // TODO: Don't know how to generate UI print for variable 'parent_generic_entity'
-            TsUIPushAutoWidth();
-            { char label[100]; sprintf(label, "unique_entity_id: %i", unique_entity->unique_entity_id); TsUILabel(label); }
-            TsUIPopWidth();
-            // TODO: Don't know how to generate UI print for variable 'position_comp'
-            // TODO: Don't know how to generate UI print for variable 'physics_body_comp'
-        break;
-    }
-    }
-
-    for (i32 i = 1; i < COMPONENT_MAX; i++)
-    {
-        if (entity->components[i])
-        {
-            PrintComponentDataUI(entity->components[i], i);
-        }
-    }
-}
 static char *GetCellPropertiesTypeName(CellPropertiesType type)
 {
 switch(type)
@@ -1316,1677 +1328,659 @@ break;
 
 static void WritePositionComponentToFile(FILE *file, PositionComponent *data)
 {
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parent_entity, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
+    // 'parent_entity_id' in PositionComponent
+    WriteToFile(file, &data->parent_entity_id, sizeof(data->parent_entity_id));
+
+    // 'component_id' in PositionComponent
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
+
+    // 'position' in PositionComponent
     WriteToFile(file, &data->position, sizeof(data->position));
+
 }
 
 static void FillPositionComponentPointersInFile(FILE *file, PositionComponent *data)
 {
-    fseek(file, sizeof(i32), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->component_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->component_id), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->position)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->position), SEEK_CUR);
 }
 
 static void WriteSpriteComponentToFile(FILE *file, SpriteComponent *data)
 {
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parent_entity, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
+    // 'parent_entity_id' in SpriteComponent
+    WriteToFile(file, &data->parent_entity_id, sizeof(data->parent_entity_id));
+
+    // 'component_id' in SpriteComponent
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
+
+    // 'sprite_data' in SpriteComponent
     WriteToFile(file, &data->sprite_data, sizeof(data->sprite_data));
+
+    // 'is_flipped' in SpriteComponent
     WriteToFile(file, &data->is_flipped, sizeof(data->is_flipped));
+
+    // 'is_background_sprite' in SpriteComponent
     WriteToFile(file, &data->is_background_sprite, sizeof(data->is_background_sprite));
+
 }
 
 static void FillSpriteComponentPointersInFile(FILE *file, SpriteComponent *data)
 {
-    fseek(file, sizeof(i32), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->component_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->component_id), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->sprite_data)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->sprite_data), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->is_flipped)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->is_flipped), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->is_background_sprite)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->is_background_sprite), SEEK_CUR);
 }
 
 static void WriteAnimationComponentToFile(FILE *file, AnimationComponent *data)
 {
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parent_entity, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
+    // 'parent_entity_id' in AnimationComponent
+    WriteToFile(file, &data->parent_entity_id, sizeof(data->parent_entity_id));
+
+    // 'component_id' in AnimationComponent
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
+
+    // 'flags' in AnimationComponent
     WriteToFile(file, &data->flags, sizeof(data->flags));
+
+    // 'current_frame' in AnimationComponent
     WriteToFile(file, &data->current_frame, sizeof(data->current_frame));
+
+    // 'interval_mult' in AnimationComponent
     WriteToFile(file, &data->interval_mult, sizeof(data->interval_mult));
+
+    // 'frame_start_time' in AnimationComponent
     WriteToFile(file, &data->frame_start_time, sizeof(data->frame_start_time));
+
 }
 
 static void FillAnimationComponentPointersInFile(FILE *file, AnimationComponent *data)
 {
-    fseek(file, sizeof(i32), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->component_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->component_id), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->flags)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->flags), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->current_frame)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->current_frame), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->interval_mult)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->interval_mult), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->frame_start_time)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->frame_start_time), SEEK_CUR);
 }
 
 static void WritePhysicsBodyComponentToFile(FILE *file, PhysicsBodyComponent *data)
 {
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parent_entity, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
+    // 'parent_entity_id' in PhysicsBodyComponent
+    WriteToFile(file, &data->parent_entity_id, sizeof(data->parent_entity_id));
+
+    // 'component_id' in PhysicsBodyComponent
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
+
+    // 'shape' in PhysicsBodyComponent
     WriteToFile(file, &data->shape, sizeof(data->shape));
+
+    // 'shape_type' in PhysicsBodyComponent
     WriteToFile(file, &data->shape_type, sizeof(data->shape_type));
+
+    // 'material' in PhysicsBodyComponent
     WriteToFile(file, &data->material, sizeof(data->material));
+
+    // 'mass_data' in PhysicsBodyComponent
     WriteToFile(file, &data->mass_data, sizeof(data->mass_data));
+
+    // 'velocity' in PhysicsBodyComponent
     WriteToFile(file, &data->velocity, sizeof(data->velocity));
+
+    // 'force' in PhysicsBodyComponent
     WriteToFile(file, &data->force, sizeof(data->force));
+
+    // 'gravity_multiplier' in PhysicsBodyComponent
     WriteToFile(file, &data->gravity_multiplier, sizeof(data->gravity_multiplier));
+
 }
 
 static void FillPhysicsBodyComponentPointersInFile(FILE *file, PhysicsBodyComponent *data)
 {
-    fseek(file, sizeof(i32), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->component_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->component_id), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->shape)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->shape), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->shape_type)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->shape_type), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->material)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->material), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->mass_data)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->mass_data), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->velocity)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->velocity), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->force)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->force), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->gravity_multiplier)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->gravity_multiplier), SEEK_CUR);
 }
 
 static void WriteMovementComponentToFile(FILE *file, MovementComponent *data)
 {
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parent_entity, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
+    // 'parent_entity_id' in MovementComponent
+    WriteToFile(file, &data->parent_entity_id, sizeof(data->parent_entity_id));
+
+    // 'component_id' in MovementComponent
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
+
+    // 'axis_x' in MovementComponent
     WriteToFile(file, &data->axis_x, sizeof(data->axis_x));
+
+    // 'move_speed' in MovementComponent
     WriteToFile(file, &data->move_speed, sizeof(data->move_speed));
+
+    // 'move_speed_mult' in MovementComponent
     WriteToFile(file, &data->move_speed_mult, sizeof(data->move_speed_mult));
+
 }
 
 static void FillMovementComponentPointersInFile(FILE *file, MovementComponent *data)
 {
-    fseek(file, sizeof(i32), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->component_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->component_id), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->axis_x)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->axis_x), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->move_speed)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->move_speed), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->move_speed_mult)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->move_speed_mult), SEEK_CUR);
 }
 
 static void WriteArcEntityComponentToFile(FILE *file, ArcEntityComponent *data)
 {
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parent_entity, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
+    // 'parent_entity_id' in ArcEntityComponent
+    WriteToFile(file, &data->parent_entity_id, sizeof(data->parent_entity_id));
+
+    // 'component_id' in ArcEntityComponent
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
+
+    // 'entity_type' in ArcEntityComponent
     WriteToFile(file, &data->entity_type, sizeof(data->entity_type));
+
+    // 'current_general_state' pointer in ArcEntityComponent
     {
         i32 pos = ftell(file);
+        R_DEV_ASSERT(pos != -1, "Uh oh.");
+        R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, "Max pointers reached. Consider a better design?");
         SerialisationPointer ptr = {&data->current_general_state, pos};
         serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
+        i32 empty = INT_MAX;
         WriteToFile(file, &empty, sizeof(i32));
     }
+
+    // 'current_animation_state' in ArcEntityComponent
     WriteToFile(file, &data->current_animation_state, sizeof(data->current_animation_state));
+
 }
 
 static void FillArcEntityComponentPointersInFile(FILE *file, ArcEntityComponent *data)
 {
-    fseek(file, sizeof(i32), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->component_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->component_id), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->entity_type)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->entity_type), SEEK_CUR);
-    fseek(file, sizeof(i32), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->current_animation_state)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->current_animation_state), SEEK_CUR);
 }
 
 static void WriteItemComponentToFile(FILE *file, ItemComponent *data)
 {
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parent_entity, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
+    // 'parent_entity_id' in ItemComponent
+    WriteToFile(file, &data->parent_entity_id, sizeof(data->parent_entity_id));
+
+    // 'component_id' in ItemComponent
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
+
+    // 'item_type' in ItemComponent
     WriteToFile(file, &data->item_type, sizeof(data->item_type));
+
+    // 'stack_size' in ItemComponent
     WriteToFile(file, &data->stack_size, sizeof(data->stack_size));
+
 }
 
 static void FillItemComponentPointersInFile(FILE *file, ItemComponent *data)
 {
-    fseek(file, sizeof(i32), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->component_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->component_id), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->item_type)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->item_type), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->stack_size)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->stack_size), SEEK_CUR);
 }
 
 static void WriteTriggerComponentToFile(FILE *file, TriggerComponent *data)
 {
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parent_entity, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
+    // 'parent_entity_id' in TriggerComponent
+    WriteToFile(file, &data->parent_entity_id, sizeof(data->parent_entity_id));
+
+    // 'component_id' in TriggerComponent
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
+
+    // 'enter_trigger_callback' in TriggerComponent
     WriteToFile(file, &data->enter_trigger_callback, sizeof(data->enter_trigger_callback));
+
+    // 'exit_trigger_callback' in TriggerComponent
     WriteToFile(file, &data->exit_trigger_callback, sizeof(data->exit_trigger_callback));
+
+    for (i32 i = 0; i < MAX_OVERLAPPING_COLLIDERS; i++)
+    {
+        // 'previous_overlaps' array in TriggerComponent
+        WriteToFile(file, &data->previous_overlaps[i], sizeof(OverlappedColliderInfo));
+    }
+
+    // 'previous_overlaps_count' in TriggerComponent
     WriteToFile(file, &data->previous_overlaps_count, sizeof(data->previous_overlaps_count));
+
+    // 'trigger_against' in TriggerComponent
     WriteToFile(file, &data->trigger_against, sizeof(data->trigger_against));
+
 }
 
 static void FillTriggerComponentPointersInFile(FILE *file, TriggerComponent *data)
 {
-    fseek(file, sizeof(i32), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->component_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->component_id), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->enter_trigger_callback)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->enter_trigger_callback), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->exit_trigger_callback)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->exit_trigger_callback), SEEK_CUR);
-// - Arary MAX_OVERLAPPING_COLLIDERS
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->previous_overlaps_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->previous_overlaps_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->trigger_against)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->trigger_against), SEEK_CUR);
 }
 
 static void WriteStorageComponentToFile(FILE *file, StorageComponent *data)
 {
+    // 'parent_entity_id' in StorageComponent
+    WriteToFile(file, &data->parent_entity_id, sizeof(data->parent_entity_id));
+
+    // 'component_id' in StorageComponent
+    WriteToFile(file, &data->component_id, sizeof(data->component_id));
+
+    // 'storage_size' in StorageComponent
+    WriteToFile(file, &data->storage_size, sizeof(data->storage_size));
+
+    for (i32 i = 0; i < MAX_STORAGE_SIZE; i++)
     {
+        // 'items' pointer array in StorageComponent
         i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parent_entity, pos};
+        R_DEV_ASSERT(pos != -1, "Uh oh.");
+        R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, "Max pointers reached. Consider a better design?");
+        SerialisationPointer ptr = {&(data->items[i]), pos};
         serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
+        i32 empty = INT_MAX;
         WriteToFile(file, &empty, sizeof(i32));
     }
-    WriteToFile(file, &data->component_id, sizeof(data->component_id));
-    WriteToFile(file, &data->storage_size, sizeof(data->storage_size));
+
 }
 
 static void FillStorageComponentPointersInFile(FILE *file, StorageComponent *data)
 {
-    fseek(file, sizeof(i32), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->component_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->component_id), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->storage_size)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->storage_size), SEEK_CUR);
-// - Arary MAX_STORAGE_SIZE
 }
 
 static void WriteParallaxComponentToFile(FILE *file, ParallaxComponent *data)
 {
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parent_entity, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
+    // 'parent_entity_id' in ParallaxComponent
+    WriteToFile(file, &data->parent_entity_id, sizeof(data->parent_entity_id));
+
+    // 'component_id' in ParallaxComponent
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
+
+    // 'parallax_amount' in ParallaxComponent
     WriteToFile(file, &data->parallax_amount, sizeof(data->parallax_amount));
+
+    // 'desired_position' in ParallaxComponent
     WriteToFile(file, &data->desired_position, sizeof(data->desired_position));
+
 }
 
 static void FillParallaxComponentPointersInFile(FILE *file, ParallaxComponent *data)
 {
-    fseek(file, sizeof(i32), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->component_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->component_id), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->parallax_amount)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->parallax_amount), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->desired_position)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->desired_position), SEEK_CUR);
 }
 
 static void WriteParticleEmitterComponentToFile(FILE *file, ParticleEmitterComponent *data)
 {
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parent_entity, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
+    // 'parent_entity_id' in ParticleEmitterComponent
+    WriteToFile(file, &data->parent_entity_id, sizeof(data->parent_entity_id));
+
+    // 'component_id' in ParticleEmitterComponent
     WriteToFile(file, &data->component_id, sizeof(data->component_id));
+
+    // 'life_time' in ParticleEmitterComponent
     WriteToFile(file, &data->life_time, sizeof(data->life_time));
+
+    // 'start_time' in ParticleEmitterComponent
     WriteToFile(file, &data->start_time, sizeof(data->start_time));
+
+    // 'flags' in ParticleEmitterComponent
     WriteToFile(file, &data->flags, sizeof(data->flags));
+
+    for (i32 i = 0; i < MAX_PARTICLE_AMOUNT; i++)
+    {
+        // 'particles' array in ParticleEmitterComponent
+        WriteToFile(file, &data->particles[i], sizeof(Particle));
+    }
+
+    // 'particle_count' in ParticleEmitterComponent
     WriteToFile(file, &data->particle_count, sizeof(data->particle_count));
+
+    // 'free_particle_index' in ParticleEmitterComponent
     WriteToFile(file, &data->free_particle_index, sizeof(data->free_particle_index));
+
+    // 'begin_callback' in ParticleEmitterComponent
     WriteToFile(file, &data->begin_callback, sizeof(data->begin_callback));
+
+    // 'finish_callback' in ParticleEmitterComponent
     WriteToFile(file, &data->finish_callback, sizeof(data->finish_callback));
+
 }
 
 static void FillParticleEmitterComponentPointersInFile(FILE *file, ParticleEmitterComponent *data)
 {
-    fseek(file, sizeof(i32), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->component_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->component_id), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->life_time)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->life_time), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->start_time)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->start_time), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->flags)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->flags), SEEK_CUR);
-// - Arary MAX_PARTICLE_AMOUNT
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->particle_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->particle_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->free_particle_index)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->free_particle_index), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->begin_callback)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->begin_callback), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->finish_callback)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->finish_callback), SEEK_CUR);
 }
 
 static void WriteComponentSetToFile(FILE *file, ComponentSet *data)
 {
+    for (i32 i = 0; i < MAX_ACTIVE_ENTITIES; i++)
+    {
+        // 'position_components' array in ComponentSet
+        WritePositionComponentToFile(file, &(data->position_components[i]));
+    }
+
+    // 'position_component_count' in ComponentSet
     WriteToFile(file, &data->position_component_count, sizeof(data->position_component_count));
-    WriteToFile(file, &data->position_component_free_id, sizeof(data->position_component_free_id));
+
+    // 'free_position_component_id' in ComponentSet
+    WriteToFile(file, &data->free_position_component_id, sizeof(data->free_position_component_id));
+
+    for (i32 i = 0; i < MAX_ACTIVE_ENTITIES; i++)
+    {
+        // 'sprite_components' array in ComponentSet
+        WriteSpriteComponentToFile(file, &(data->sprite_components[i]));
+    }
+
+    // 'sprite_component_count' in ComponentSet
     WriteToFile(file, &data->sprite_component_count, sizeof(data->sprite_component_count));
-    WriteToFile(file, &data->sprite_component_free_id, sizeof(data->sprite_component_free_id));
+
+    // 'free_sprite_component_id' in ComponentSet
+    WriteToFile(file, &data->free_sprite_component_id, sizeof(data->free_sprite_component_id));
+
+    for (i32 i = 0; i < MAX_ACTIVE_ENTITIES; i++)
+    {
+        // 'animation_components' array in ComponentSet
+        WriteAnimationComponentToFile(file, &(data->animation_components[i]));
+    }
+
+    // 'animation_component_count' in ComponentSet
     WriteToFile(file, &data->animation_component_count, sizeof(data->animation_component_count));
-    WriteToFile(file, &data->animation_component_free_id, sizeof(data->animation_component_free_id));
+
+    // 'free_animation_component_id' in ComponentSet
+    WriteToFile(file, &data->free_animation_component_id, sizeof(data->free_animation_component_id));
+
+    for (i32 i = 0; i < MAX_ACTIVE_ENTITIES; i++)
+    {
+        // 'physics_body_components' array in ComponentSet
+        WritePhysicsBodyComponentToFile(file, &(data->physics_body_components[i]));
+    }
+
+    // 'physics_body_component_count' in ComponentSet
     WriteToFile(file, &data->physics_body_component_count, sizeof(data->physics_body_component_count));
-    WriteToFile(file, &data->physics_body_component_free_id, sizeof(data->physics_body_component_free_id));
+
+    // 'free_physics_body_component_id' in ComponentSet
+    WriteToFile(file, &data->free_physics_body_component_id, sizeof(data->free_physics_body_component_id));
+
+    for (i32 i = 0; i < MAX_ACTIVE_ENTITIES; i++)
+    {
+        // 'movement_components' array in ComponentSet
+        WriteMovementComponentToFile(file, &(data->movement_components[i]));
+    }
+
+    // 'movement_component_count' in ComponentSet
     WriteToFile(file, &data->movement_component_count, sizeof(data->movement_component_count));
-    WriteToFile(file, &data->movement_component_free_id, sizeof(data->movement_component_free_id));
+
+    // 'free_movement_component_id' in ComponentSet
+    WriteToFile(file, &data->free_movement_component_id, sizeof(data->free_movement_component_id));
+
+    for (i32 i = 0; i < MAX_ACTIVE_ENTITIES; i++)
+    {
+        // 'arc_entity_components' array in ComponentSet
+        WriteArcEntityComponentToFile(file, &(data->arc_entity_components[i]));
+    }
+
+    // 'arc_entity_component_count' in ComponentSet
     WriteToFile(file, &data->arc_entity_component_count, sizeof(data->arc_entity_component_count));
-    WriteToFile(file, &data->arc_entity_component_free_id, sizeof(data->arc_entity_component_free_id));
+
+    // 'free_arc_entity_component_id' in ComponentSet
+    WriteToFile(file, &data->free_arc_entity_component_id, sizeof(data->free_arc_entity_component_id));
+
+    for (i32 i = 0; i < MAX_ACTIVE_ENTITIES; i++)
+    {
+        // 'item_components' array in ComponentSet
+        WriteItemComponentToFile(file, &(data->item_components[i]));
+    }
+
+    // 'item_component_count' in ComponentSet
     WriteToFile(file, &data->item_component_count, sizeof(data->item_component_count));
-    WriteToFile(file, &data->item_component_free_id, sizeof(data->item_component_free_id));
+
+    // 'free_item_component_id' in ComponentSet
+    WriteToFile(file, &data->free_item_component_id, sizeof(data->free_item_component_id));
+
+    for (i32 i = 0; i < MAX_ACTIVE_ENTITIES; i++)
+    {
+        // 'trigger_components' array in ComponentSet
+        WriteTriggerComponentToFile(file, &(data->trigger_components[i]));
+    }
+
+    // 'trigger_component_count' in ComponentSet
     WriteToFile(file, &data->trigger_component_count, sizeof(data->trigger_component_count));
-    WriteToFile(file, &data->trigger_component_free_id, sizeof(data->trigger_component_free_id));
+
+    // 'free_trigger_component_id' in ComponentSet
+    WriteToFile(file, &data->free_trigger_component_id, sizeof(data->free_trigger_component_id));
+
+    for (i32 i = 0; i < MAX_ACTIVE_ENTITIES; i++)
+    {
+        // 'storage_components' array in ComponentSet
+        WriteStorageComponentToFile(file, &(data->storage_components[i]));
+    }
+
+    // 'storage_component_count' in ComponentSet
     WriteToFile(file, &data->storage_component_count, sizeof(data->storage_component_count));
-    WriteToFile(file, &data->storage_component_free_id, sizeof(data->storage_component_free_id));
+
+    // 'free_storage_component_id' in ComponentSet
+    WriteToFile(file, &data->free_storage_component_id, sizeof(data->free_storage_component_id));
+
+    for (i32 i = 0; i < MAX_ACTIVE_ENTITIES; i++)
+    {
+        // 'parallax_components' array in ComponentSet
+        WriteParallaxComponentToFile(file, &(data->parallax_components[i]));
+    }
+
+    // 'parallax_component_count' in ComponentSet
     WriteToFile(file, &data->parallax_component_count, sizeof(data->parallax_component_count));
-    WriteToFile(file, &data->parallax_component_free_id, sizeof(data->parallax_component_free_id));
+
+    // 'free_parallax_component_id' in ComponentSet
+    WriteToFile(file, &data->free_parallax_component_id, sizeof(data->free_parallax_component_id));
+
+    for (i32 i = 0; i < MAX_ACTIVE_ENTITIES; i++)
+    {
+        // 'particle_emitter_components' array in ComponentSet
+        WriteParticleEmitterComponentToFile(file, &(data->particle_emitter_components[i]));
+    }
+
+    // 'particle_emitter_component_count' in ComponentSet
     WriteToFile(file, &data->particle_emitter_component_count, sizeof(data->particle_emitter_component_count));
-    WriteToFile(file, &data->particle_emitter_component_free_id, sizeof(data->particle_emitter_component_free_id));
+
+    // 'free_particle_emitter_component_id' in ComponentSet
+    WriteToFile(file, &data->free_particle_emitter_component_id, sizeof(data->free_particle_emitter_component_id));
+
 }
 
 static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
 {
-// - Arary MAX_ACTIVE_ENTITIES
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->position_component_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->position_component_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->position_component_free_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->position_component_free_id), SEEK_CUR);
-// - Arary MAX_ACTIVE_ENTITIES
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->sprite_component_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->sprite_component_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->sprite_component_free_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->sprite_component_free_id), SEEK_CUR);
-// - Arary MAX_ACTIVE_ENTITIES
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->animation_component_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->animation_component_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->animation_component_free_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->animation_component_free_id), SEEK_CUR);
-// - Arary MAX_ACTIVE_ENTITIES
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->physics_body_component_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->physics_body_component_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->physics_body_component_free_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->physics_body_component_free_id), SEEK_CUR);
-// - Arary MAX_ACTIVE_ENTITIES
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->movement_component_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->movement_component_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->movement_component_free_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->movement_component_free_id), SEEK_CUR);
-// - Arary MAX_ACTIVE_ENTITIES
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->arc_entity_component_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->arc_entity_component_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->arc_entity_component_free_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->arc_entity_component_free_id), SEEK_CUR);
-// - Arary MAX_ACTIVE_ENTITIES
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->item_component_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->item_component_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->item_component_free_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->item_component_free_id), SEEK_CUR);
-// - Arary MAX_ACTIVE_ENTITIES
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->trigger_component_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->trigger_component_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->trigger_component_free_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->trigger_component_free_id), SEEK_CUR);
-// - Arary MAX_ACTIVE_ENTITIES
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->storage_component_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->storage_component_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->storage_component_free_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->storage_component_free_id), SEEK_CUR);
-// - Arary MAX_ACTIVE_ENTITIES
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->parallax_component_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->parallax_component_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->parallax_component_free_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->parallax_component_free_id), SEEK_CUR);
-// - Arary MAX_ACTIVE_ENTITIES
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->particle_emitter_component_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->particle_emitter_component_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->particle_emitter_component_free_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->particle_emitter_component_free_id), SEEK_CUR);
 }
 
 static void WriteCharacterEntityToFile(FILE *file, CharacterEntity *data)
 {
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parent_generic_entity, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->position_comp, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->sprite_comp, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->animation_comp, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->physics_body_comp, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->movement_comp, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->arc_entity_comp, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
+    // 'entity_id' in CharacterEntity
+    WriteToFile(file, &data->entity_id, sizeof(data->entity_id));
+
 }
 
 static void FillCharacterEntityPointersInFile(FILE *file, CharacterEntity *data)
 {
-    fseek(file, sizeof(i32), SEEK_CUR);
-    fseek(file, sizeof(i32), SEEK_CUR);
-    fseek(file, sizeof(i32), SEEK_CUR);
-    fseek(file, sizeof(i32), SEEK_CUR);
-    fseek(file, sizeof(i32), SEEK_CUR);
-    fseek(file, sizeof(i32), SEEK_CUR);
-    fseek(file, sizeof(i32), SEEK_CUR);
 }
 
 static void WriteCloudEntityToFile(FILE *file, CloudEntity *data)
 {
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parent_generic_entity, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
+    // 'entity_id' in CloudEntity
+    WriteToFile(file, &data->entity_id, sizeof(data->entity_id));
+
+    // 'unique_entity_id' in CloudEntity
     WriteToFile(file, &data->unique_entity_id, sizeof(data->unique_entity_id));
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->position_comp, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->sprite_comp, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parallax_comp, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
+
 }
 
 static void FillCloudEntityPointersInFile(FILE *file, CloudEntity *data)
 {
-    fseek(file, sizeof(i32), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->unique_entity_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->unique_entity_id), SEEK_CUR);
-    fseek(file, sizeof(i32), SEEK_CUR);
-    fseek(file, sizeof(i32), SEEK_CUR);
-    fseek(file, sizeof(i32), SEEK_CUR);
 }
 
 static void WriteGroundSegmentEntityToFile(FILE *file, GroundSegmentEntity *data)
 {
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->parent_generic_entity, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
+    // 'entity_id' in GroundSegmentEntity
+    WriteToFile(file, &data->entity_id, sizeof(data->entity_id));
+
+    // 'unique_entity_id' in GroundSegmentEntity
     WriteToFile(file, &data->unique_entity_id, sizeof(data->unique_entity_id));
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->position_comp, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
-    {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->physics_body_comp, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
+
 }
 
 static void FillGroundSegmentEntityPointersInFile(FILE *file, GroundSegmentEntity *data)
 {
-    fseek(file, sizeof(i32), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->unique_entity_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->unique_entity_id), SEEK_CUR);
-    fseek(file, sizeof(i32), SEEK_CUR);
-    fseek(file, sizeof(i32), SEEK_CUR);
 }
 
 static void WriteEntityToFile(FILE *file, Entity *data)
 {
+    // 'entity_id' in Entity
     WriteToFile(file, &data->entity_id, sizeof(data->entity_id));
-    WriteToFile(file, &data->generalised_type, sizeof(data->generalised_type));
+
+    for (i32 i = 0; i < COMPONENT_MAX; i++)
     {
-        i32 pos = ftell(file);
-        SerialisationPointer ptr = {&data->unique_entity, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
-        WriteToFile(file, &empty, sizeof(i32));
+        // 'component_ids' array in Entity
+        WriteToFile(file, &data->component_ids[i], sizeof(i32));
     }
+
+    for (i32 i = 0; i < 20; i++)
+    {
+        // 'name' array in Entity
+        WriteToFile(file, &data->name[i], sizeof(char));
+    }
+
+    // 'unique_entity_id' in Entity
+    WriteToFile(file, &data->unique_entity_id, sizeof(data->unique_entity_id));
+
+    // 'type' in Entity
     WriteToFile(file, &data->type, sizeof(data->type));
+
+    // 'flags' in Entity
     WriteToFile(file, &data->flags, sizeof(data->flags));
+
+    // 'generalised_type' in Entity
+    WriteToFile(file, &data->generalised_type, sizeof(data->generalised_type));
+
 }
 
 static void FillEntityPointersInFile(FILE *file, Entity *data)
 {
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->entity_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->entity_id), SEEK_CUR);
-// - Arary 20
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->generalised_type)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->generalised_type), SEEK_CUR);
-    fseek(file, sizeof(i32), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->type)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->type), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->flags)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->flags), SEEK_CUR);
-// - Arary COMPONENT_MAX
 }
 
 static void WriteCellToFile(FILE *file, Cell *data)
 {
+    // 'dynamic_id' in Cell
     WriteToFile(file, &data->dynamic_id, sizeof(data->dynamic_id));
+
+    // 'x_position' in Cell
     WriteToFile(file, &data->x_position, sizeof(data->x_position));
+
+    // 'y_position' in Cell
     WriteToFile(file, &data->y_position, sizeof(data->y_position));
+
+    // 'material_type' in Cell
     WriteToFile(file, &data->material_type, sizeof(data->material_type));
+
+    // 'dynamic_properties' in Cell
     WriteToFile(file, &data->dynamic_properties, sizeof(data->dynamic_properties));
+
 }
 
 static void FillCellPointersInFile(FILE *file, Cell *data)
 {
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->dynamic_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->dynamic_id), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->x_position)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->x_position), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->y_position)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->y_position), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->material_type)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->material_type), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->dynamic_properties)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->dynamic_properties), SEEK_CUR);
 }
 
 static void WriteChunkToFile(FILE *file, Chunk *data)
 {
+    // 'is_valid' in Chunk
     WriteToFile(file, &data->is_valid, sizeof(data->is_valid));
+
+    // 'remain_loaded' in Chunk
     WriteToFile(file, &data->remain_loaded, sizeof(data->remain_loaded));
+
+    for (i32 i = 0; i < MAX_ENTITIES_PER_CHUNK; i++)
+    {
+        // 'entity_ids' array in Chunk
+        WriteToFile(file, &data->entity_ids[i], sizeof(i32));
+    }
+
+    // 'entity_count' in Chunk
     WriteToFile(file, &data->entity_count, sizeof(data->entity_count));
+
+    // 'x_index' in Chunk
     WriteToFile(file, &data->x_index, sizeof(data->x_index));
+
+    // 'y_index' in Chunk
     WriteToFile(file, &data->y_index, sizeof(data->y_index));
+
 // - 2D Arary CHUNK_SIZE CHUNK_SIZE
+    // 'texture' in Chunk
     WriteToFile(file, &data->texture, sizeof(data->texture));
+
 }
 
 static void FillChunkPointersInFile(FILE *file, Chunk *data)
 {
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->is_valid)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->is_valid), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->remain_loaded)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->remain_loaded), SEEK_CUR);
-// - Arary MAX_ENTITIES_PER_CHUNK
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->entity_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->entity_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->x_index)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->x_index), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->y_index)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->y_index), SEEK_CUR);
-// - 2D Arary CHUNK_SIZE CHUNK_SIZE
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->texture)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->texture), SEEK_CUR);
 }
 
 static void WriteWorldDataToFile(FILE *file, WorldData *data)
 {
+    // 'elapsed_world_time' in WorldData
     WriteToFile(file, &data->elapsed_world_time, sizeof(data->elapsed_world_time));
+
+    for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
+    {
+        // 'active_chunks' array in WorldData
+        WriteChunkToFile(file, &(data->active_chunks[i]));
+    }
+
+    // 'active_chunk_count' in WorldData
     WriteToFile(file, &data->active_chunk_count, sizeof(data->active_chunk_count));
+
+    // 'character_entity' in WorldData
     WriteCharacterEntityToFile(file, &data->character_entity);
+
+    for (i32 i = 0; i < MAX_CLOUD_ENTITY_COUNT; i++)
+    {
+        // 'cloud_entity_list' array in WorldData
+        WriteCloudEntityToFile(file, &(data->cloud_entity_list[i]));
+    }
+
+    // 'cloud_entity_count' in WorldData
     WriteToFile(file, &data->cloud_entity_count, sizeof(data->cloud_entity_count));
-    WriteToFile(file, &data->free_cloud_entity_index, sizeof(data->free_cloud_entity_index));
+
+    // 'free_cloud_entity_id' in WorldData
+    WriteToFile(file, &data->free_cloud_entity_id, sizeof(data->free_cloud_entity_id));
+
+    for (i32 i = 0; i < MAX_GROUND_SEGMENT_ENTITY_COUNT; i++)
+    {
+        // 'ground_segment_entity_list' array in WorldData
+        WriteGroundSegmentEntityToFile(file, &(data->ground_segment_entity_list[i]));
+    }
+
+    // 'ground_segment_entity_count' in WorldData
     WriteToFile(file, &data->ground_segment_entity_count, sizeof(data->ground_segment_entity_count));
-    WriteToFile(file, &data->free_ground_segment_entity_index, sizeof(data->free_ground_segment_entity_index));
+
+    // 'free_ground_segment_entity_id' in WorldData
+    WriteToFile(file, &data->free_ground_segment_entity_id, sizeof(data->free_ground_segment_entity_id));
+
+    for (i32 i = 0; i < MAX_ACTIVE_ENTITIES; i++)
+    {
+        // 'entities' array in WorldData
+        WriteEntityToFile(file, &(data->entities[i]));
+    }
+
+    // 'entity_count' in WorldData
     WriteToFile(file, &data->entity_count, sizeof(data->entity_count));
+
+    // 'free_entity_id' in WorldData
     WriteToFile(file, &data->free_entity_id, sizeof(data->free_entity_id));
+
+    // 'entity_components' in WorldData
     WriteComponentSetToFile(file, &data->entity_components);
+
+    // 'test_ptr' pointer in WorldData
     {
         i32 pos = ftell(file);
+        R_DEV_ASSERT(pos != -1, "Uh oh.");
+        R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, "Max pointers reached. Consider a better design?");
         SerialisationPointer ptr = {&data->test_ptr, pos};
         serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = 255;
+        i32 empty = INT_MAX;
         WriteToFile(file, &empty, sizeof(i32));
     }
+
+    for (i32 i = 0; i < MAX_DYNAMIC_CELLS; i++)
+    {
+        // 'dynamic_cells' pointer array in WorldData
+        i32 pos = ftell(file);
+        R_DEV_ASSERT(pos != -1, "Uh oh.");
+        R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, "Max pointers reached. Consider a better design?");
+        SerialisationPointer ptr = {&(data->dynamic_cells[i]), pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = INT_MAX;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+
+    // 'dynamic_cell_count' in WorldData
     WriteToFile(file, &data->dynamic_cell_count, sizeof(data->dynamic_cell_count));
+
+    // 'free_dynamic_cell_id' in WorldData
     WriteToFile(file, &data->free_dynamic_cell_id, sizeof(data->free_dynamic_cell_id));
+
 }
 
 static void FillWorldDataPointersInFile(FILE *file, WorldData *data)
 {
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->elapsed_world_time)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->elapsed_world_time), SEEK_CUR);
-// - Arary MAX_WORLD_CHUNKS
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->active_chunk_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->active_chunk_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->character_entity)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    FillCharacterEntityPointersInFile(file, &data->character_entity);
-
-// - Arary MAX_CLOUD_ENTITY_COUNT
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->cloud_entity_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->cloud_entity_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->free_cloud_entity_index)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->free_cloud_entity_index), SEEK_CUR);
-// - Arary MAX_GROUND_SEGMENT_ENTITY_COUNT
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->ground_segment_entity_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->ground_segment_entity_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->free_ground_segment_entity_index)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->free_ground_segment_entity_index), SEEK_CUR);
-// - Arary MAX_ACTIVE_ENTITIES
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->entity_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->entity_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->free_entity_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->free_entity_id), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->entity_components)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    FillComponentSetPointersInFile(file, &data->entity_components);
-
-    fseek(file, sizeof(i32), SEEK_CUR);
-// - Arary MAX_DYNAMIC_CELLS
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->dynamic_cell_count)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->dynamic_cell_count), SEEK_CUR);
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->free_dynamic_cell_id)
-        {
-            i32 current_pos = ftell(file);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->free_dynamic_cell_id), SEEK_CUR);
 }
 

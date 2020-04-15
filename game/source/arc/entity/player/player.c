@@ -1,14 +1,13 @@
 internal void PreMoveUpdatePlayer()
 {
-	R_DEV_ASSERT(core->world_data->character_entity.parent_generic_entity, "Character hasn't been created yet.");
+	R_DEV_ASSERT(core->world_data->character_entity.entity_id, "Character hasn't been created yet.");
 
-	PositionComponent *position_comp = core->world_data->character_entity.position_comp;
-	PhysicsBodyComponent *body_comp = core->world_data->character_entity.physics_body_comp;
-	MovementComponent *movement_comp = core->world_data->character_entity.movement_comp;
-	ArcEntityComponent *arc_entity_comp = core->world_data->character_entity.arc_entity_comp;
-	SpriteComponent *sprite_comp = core->world_data->character_entity.sprite_comp;
-	AnimationComponent *animation_comp = core->world_data->character_entity.animation_comp;
-	R_DEV_ASSERT(movement_comp && arc_entity_comp && animation_comp && sprite_comp, "Entity does not have the required components.");
+	PositionComponent *position_comp = GetPositionComponentFromEntityID(core->world_data->character_entity.entity_id);
+	PhysicsBodyComponent *body_comp = GetPhysicsBodyComponentFromEntityID(core->world_data->character_entity.entity_id);
+	MovementComponent *movement_comp = GetMovementComponentFromEntityID(core->world_data->character_entity.entity_id);
+	ArcEntityComponent *arc_entity_comp = GetArcEntityComponentFromEntityID(core->world_data->character_entity.entity_id);
+	SpriteComponent *sprite_comp = GetSpriteComponentFromEntityID(core->world_data->character_entity.entity_id);
+	AnimationComponent *animation_comp = GetAnimationComponentFromEntityID(core->world_data->character_entity.entity_id);
 
 	b8 is_sprinting = 0;
 	if (core->run_data->editor_state == EDITOR_STATE_none && platform->key_down[KEY_a])
@@ -179,7 +178,7 @@ internal void PostMoveUpdatePlayer()
 
 	// NOTE(tjr): Check for a hotbar slot update.
 	{
-		StorageComponent *hotbar_storage = core->hotbar->components[COMPONENT_storage];
+		StorageComponent *hotbar_storage = GetStorageComponentFromEntityID(core->hotbar->entity_id);
 		for (int i = 0; i < hotbar_storage->storage_size; i++)
 		{
 			if (platform->key_pressed[KEY_1 + i])
@@ -194,7 +193,7 @@ internal void PostMoveUpdatePlayer()
 						}
 
 						ItemComponent *new_held_item_comp = hotbar_storage->items[i];
-						Entity *new_held_item = hotbar_storage->items[i]->parent_entity;
+						Entity *new_held_item = GetEntityWithID(hotbar_storage->items[i]->parent_entity_id);
 
 						AddPositionComponent(new_held_item);
 						SpriteComponent *new_held_item_sprite = AddSpriteComponent(new_held_item);

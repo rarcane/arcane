@@ -55,5 +55,6 @@ typedef struct SerialisationPointer
 	i32 offset;
 } SerialisationPointer;
 
+#define MAX_SERIALISATION_POINTERS 10240
 global i32 serialisation_pointer_count = 0;
-global SerialisationPointer serialisation_pointers[10240];
+global SerialisationPointer serialisation_pointers[MAX_SERIALISATION_POINTERS];

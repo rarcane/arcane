@@ -18,6 +18,7 @@
 #include "arc/world/particle.h"
 #include "generated/catchall.h"
 #include "arc/ecs/ecs.h"
+#include "arc/item/item.h"
 #include "arc/world/cell.h"
 #include "arc/world/world.h"
 #include "arc/world/collision.h"
@@ -73,7 +74,7 @@ GameInit(void)
 		{
 			TsDevTerminalCommand commands[] =
 				{
-					{"save", "[Level name]", "Saves the provided level. If left blank, saves current level.", 1, SaveLevelCommand},
+					{"save", "[Level name]", "Saves current data to the provided level name. If left blank, uses the current level name.", 1, SaveLevelCommand},
 				};
 
 			TsDevTerminalVariable variables[] =

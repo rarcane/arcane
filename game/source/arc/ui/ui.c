@@ -41,7 +41,7 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 			{
 				if (icon_data->storage_comp->items[icon_data->slot])
 				{
-					StorageComponent *hotbar_storage_comp = core->hotbar->components[COMPONENT_storage];
+					StorageComponent *hotbar_storage_comp = GetStorageComponentFromEntityID(core->hotbar->entity_id);
 					if (core->grabbed_inv_item_origin_storage_comp == hotbar_storage_comp) // If this incoming swap is from the hotbar.
 					{
 						if (item_type_data[icon_data->item_comp->item_type].flags & ITEM_FLAGS_HOTBARABLE) // Swap is allowed.
@@ -68,7 +68,7 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 								icon_data->item_comp->stack_size += core->grabbed_inv_item_comp->stack_size;
 
 								// Delete held item
-								Entity *grabbed_item = core->grabbed_inv_item_comp->parent_entity;
+								Entity *grabbed_item = GetEntityWithID(core->grabbed_inv_item_comp->parent_entity_id);
 								DeleteEntity(grabbed_item);
 								core->grabbed_inv_item_comp = 0;
 							}
@@ -109,12 +109,12 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 
 			if (icon_data->item_comp && icon_data->item_comp->stack_size > 1)
 			{
-				Entity *new_item = NewEntity("Item", ENTITY_TYPE_generic, GENERALISED_ENTITY_TYPE_item);
+				Entity *new_item = NewEntity("Item", GENERALISED_ENTITY_TYPE_item);
 				ItemComponent *new_item_comp = AddItemComponent(new_item);
 				new_item_comp->item_type = icon_data->item_comp->item_type;
 				new_item_comp->stack_size = icon_data->item_comp->stack_size / 2;
 
-				core->grabbed_inv_item_comp = new_item->components[COMPONENT_item];
+				core->grabbed_inv_item_comp = GetItemComponentFromEntityID(new_item->entity_id);
 				core->grabbed_inv_item_origin_slot = -1;
 				core->grabbed_inv_item_origin_storage_comp = 0;
 				core->grabbed_inventory_item_offset = mouse;
@@ -195,7 +195,7 @@ internal void hotbar_icon_canvas_update_callback(char *name, v4 rect, v2 mouse, 
 			{
 				if (core->held_item)
 				{
-					ItemComponent *held_item_comp = core->held_item->components[COMPONENT_item];
+					ItemComponent *held_item_comp = GetItemComponentFromEntityID(core->held_item->entity_id);
 					if (held_item_comp == icon_data->item_comp)
 						RemoveHeldItem();
 				}
@@ -431,16 +431,15 @@ internal void DrawGameUI()
 
 			b8 entity_has_position = 0;
 			v2 position = {0};
-			PositionComponent *position_comp = core->run_data->selected_entity->components[COMPONENT_position];
-			ParallaxComponent *parallax_comp = core->run_data->selected_entity->components[COMPONENT_parallax];
-			if (parallax_comp)
+
+			if (core->run_data->selected_entity->component_ids[COMPONENT_parallax])
 			{
-				position = parallax_comp->desired_position;
+				position = GetParallaxComponentFromEntityID(core->run_data->selected_entity->entity_id)->desired_position;
 				entity_has_position = 1;
 			}
-			else if (position_comp)
+			else if (core->run_data->selected_entity->component_ids[COMPONENT_position])
 			{
-				position = position_comp->position;
+				position = GetPositionComponentFromEntityID(core->run_data->selected_entity->entity_id)->position;
 				entity_has_position = 1;
 			}
 
@@ -566,10 +565,10 @@ internal void DrawGameUI()
 		for (int i = 0; i < core->world_data->ground_segment_entity_count; i++)
 		{
 			GroundSegmentEntity *seg_entity = &core->world_data->ground_segment_entity_list[i];
-			if (seg_entity->parent_generic_entity)
+			if (seg_entity->entity_id)
 			{
-				PhysicsBodyComponent *seg_body = seg_entity->physics_body_comp;
-				PositionComponent *seg_pos = seg_entity->position_comp;
+				PhysicsBodyComponent *seg_body = GetPhysicsBodyComponentFromEntityID(seg_entity->entity_id);
+				PositionComponent *seg_pos = GetPositionComponentFromEntityID(seg_entity->entity_id);
 
 				StaticSpriteData *circle_sprite = &static_sprite_data[STATIC_SPRITE_circle_icon];
 				f32 circle_size = 4.0f;
@@ -607,11 +606,11 @@ internal void DrawGameUI()
 							seg_body->shape.line.p2 = V2AddV2(mid_point, seg_body->shape.line.p1);
 
 							GroundSegmentEntity *new_segment = NewGroundSegmentEntity();
-							new_segment->physics_body_comp->shape_type = C2_SHAPE_TYPE_line;
-							new_segment->physics_body_comp->mass_data = seg_body->mass_data;
-							new_segment->physics_body_comp->material = seg_body->material;
-							new_segment->position_comp->position = V2AddV2(V2AddV2(mid_point, seg_body->shape.line.p1), seg_pos->position);
-							new_segment->physics_body_comp->shape.line.p2 = V2SubtractV2(p2, new_segment->position_comp->position);
+							GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape_type = C2_SHAPE_TYPE_line;
+							GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->mass_data = seg_body->mass_data;
+							GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->material = seg_body->material;
+							GetPositionComponentFromEntityID(new_segment->entity_id)->position = V2AddV2(V2AddV2(mid_point, seg_body->shape.line.p1), seg_pos->position);
+							GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape.line.p2 = V2SubtractV2(p2, GetPositionComponentFromEntityID(new_segment->entity_id)->position);
 						}
 						else
 						{
@@ -626,10 +625,10 @@ internal void DrawGameUI()
 						for (int j = 0; j < core->world_data->ground_segment_entity_count; j++)
 						{
 							GroundSegmentEntity *seg_entity_2 = &core->world_data->ground_segment_entity_list[j];
-							if (seg_entity_2->parent_generic_entity)
+							if (seg_entity_2->entity_id)
 							{
-								PhysicsBodyComponent *seg_body_2 = seg_entity_2->physics_body_comp;
-								PositionComponent *seg_pos_2 = seg_entity_2->position_comp;
+								PhysicsBodyComponent *seg_body_2 = GetPhysicsBodyComponentFromEntityID(seg_entity_2->entity_id);
+								PositionComponent *seg_pos_2 = GetPositionComponentFromEntityID(seg_entity_2->entity_id);
 
 								v2 p2_2 = V2AddV2(seg_body_2->shape.line.p2, seg_pos_2->position);
 								if (EqualV2(p2_2, p1, 1.0f))
@@ -911,7 +910,7 @@ internal void DrawEditorUI()
 		}
 		TsUIWindowEnd();
 
-		if (!platform->mouse_position_captured && platform->left_mouse_pressed)
+		if (!platform->mouse_position_captured && platform->left_mouse_down)
 		{
 			v2 mouse_pos = GetMousePositionInWorldSpace();
 
@@ -979,7 +978,7 @@ internal void DrawEditorUI()
 			for (int i = 0; i < core->world_data->ground_segment_entity_count; i++)
 			{
 				GroundSegmentEntity *ground_seg = &core->world_data->ground_segment_entity_list[i];
-				if (ground_seg->parent_generic_entity)
+				if (ground_seg->entity_id)
 				{
 					char label[50];
 					sprintf(label, "Segment #%i", ground_seg->unique_entity_id);
@@ -1000,16 +999,16 @@ internal void DrawEditorUI()
 					{
 						{
 							char label[50];
-							sprintf(label, "Point 1: %f, %f", ground_seg->physics_body_comp->shape.line.p1.x, ground_seg->physics_body_comp->shape.line.p1.y);
+							sprintf(label, "Point 1: %f, %f", GetPhysicsBodyComponentFromEntityID(ground_seg->entity_id)->shape.line.p1.x, GetPhysicsBodyComponentFromEntityID(ground_seg->entity_id)->shape.line.p1.y);
 							TsUILabel(label);
 						}
 						{
 							char label[50];
-							sprintf(label, "Point 2: %f, %f", ground_seg->physics_body_comp->shape.line.p2.x, ground_seg->physics_body_comp->shape.line.p2.y);
+							sprintf(label, "Point 2: %f, %f", GetPhysicsBodyComponentFromEntityID(ground_seg->entity_id)->shape.line.p2.x, GetPhysicsBodyComponentFromEntityID(ground_seg->entity_id)->shape.line.p2.y);
 							TsUILabel(label);
 						}
 
-						PrintEntityDataUI(core->run_data->selected_ground_seg->parent_generic_entity);
+						// PrintEntityDataUI(core->run_data->selected_ground_seg->parent_generic_entity);
 					}
 				}
 			}
@@ -1064,7 +1063,7 @@ internal void DrawEditorUI()
 															   core->run_data->selected_entity->name, core->run_data->selected_entity->entity_id);
 						TsUITitle(label);
 
-						PrintEntityDataUI(core->run_data->selected_entity);
+						//PrintEntityDataUI(core->run_data->selected_entity);
 					}
 					TsUIPopWidth();
 

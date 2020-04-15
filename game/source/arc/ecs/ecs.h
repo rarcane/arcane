@@ -1,6 +1,10 @@
-internal Entity *NewEntity(char *name, EntityType type, GeneralisedEntityType generalised_type);
-// internal void AddComponent(Entity *entity, ComponentType component_type, void *component);
-// internal void RemoveComponent(Entity *entity, ComponentType component_type);
+// NOTE(tjr): Create a new generic entity.
+internal Entity *NewEntity(char *name, GeneralisedEntityType generalised_type);
+// NOTE(tjr): Remmoves the provided generic entity.
+internal void DeleteEntity(Entity *entity);
+// NOTE(tjr): Gets entity with the provided ID.
+// indexes into entity array at ID - 1
+internal Entity *GetEntityWithID(i32 id);
 
 internal PositionComponent GetDefaultPositionComponent()
 {

@@ -296,14 +296,14 @@ typedef struct Entity Entity;
 
 typedef struct PositionComponent
 {
-Entity *parent_entity;
+i32 parent_entity_id;
 i32 component_id;
 v2 position;
 } PositionComponent;
 
 typedef struct SpriteComponent
 {
-Entity *parent_entity;
+i32 parent_entity_id;
 i32 component_id;
 SpriteData sprite_data;
 // @Editable 
@@ -313,7 +313,7 @@ b8 is_background_sprite;
 
 typedef struct AnimationComponent
 {
-Entity *parent_entity;
+i32 parent_entity_id;
 i32 component_id;
 AnimationFlags flags;
 i32 current_frame;
@@ -364,7 +364,7 @@ f32 inv_mass;
 
 typedef struct PhysicsBodyComponent
 {
-Entity *parent_entity;
+i32 parent_entity_id;
 i32 component_id;
 c2Shape shape;
 c2ShapeType shape_type;
@@ -377,7 +377,7 @@ f32 gravity_multiplier;
 
 typedef struct MovementComponent
 {
-Entity *parent_entity;
+i32 parent_entity_id;
 i32 component_id;
 f32 axis_x;
 f32 move_speed;
@@ -386,7 +386,7 @@ f32 move_speed_mult;
 
 typedef struct ArcEntityComponent
 {
-Entity *parent_entity;
+i32 parent_entity_id;
 i32 component_id;
 ArcEntityType entity_type;
 char *current_general_state;
@@ -395,7 +395,7 @@ ArcEntityAnimationState current_animation_state;
 
 typedef struct ItemComponent
 {
-Entity *parent_entity;
+i32 parent_entity_id;
 i32 component_id;
 ItemType item_type;
 i32 stack_size;
@@ -403,7 +403,7 @@ i32 stack_size;
 
 typedef struct TriggerComponent
 {
-Entity *parent_entity;
+i32 parent_entity_id;
 i32 component_id;
 TriggerCallback enter_trigger_callback;
 TriggerCallback exit_trigger_callback;
@@ -414,7 +414,7 @@ b8 trigger_against;
 
 typedef struct StorageComponent
 {
-Entity *parent_entity;
+i32 parent_entity_id;
 i32 component_id;
 i32 storage_size;
 ItemComponent *items[MAX_STORAGE_SIZE];
@@ -422,7 +422,7 @@ ItemComponent *items[MAX_STORAGE_SIZE];
 
 typedef struct ParallaxComponent
 {
-Entity *parent_entity;
+i32 parent_entity_id;
 i32 component_id;
 v2 parallax_amount;
 v2 desired_position;
@@ -430,7 +430,7 @@ v2 desired_position;
 
 typedef struct ParticleEmitterComponent
 {
-Entity *parent_entity;
+i32 parent_entity_id;
 i32 component_id;
 f32 life_time;
 f32 start_time;
@@ -465,68 +465,80 @@ typedef struct ComponentSet
 {
 PositionComponent position_components[MAX_ACTIVE_ENTITIES];
 i32 position_component_count;
-i32 position_component_free_id;
+i32 free_position_component_id;
 SpriteComponent sprite_components[MAX_ACTIVE_ENTITIES];
 i32 sprite_component_count;
-i32 sprite_component_free_id;
+i32 free_sprite_component_id;
 AnimationComponent animation_components[MAX_ACTIVE_ENTITIES];
 i32 animation_component_count;
-i32 animation_component_free_id;
+i32 free_animation_component_id;
 PhysicsBodyComponent physics_body_components[MAX_ACTIVE_ENTITIES];
 i32 physics_body_component_count;
-i32 physics_body_component_free_id;
+i32 free_physics_body_component_id;
 MovementComponent movement_components[MAX_ACTIVE_ENTITIES];
 i32 movement_component_count;
-i32 movement_component_free_id;
+i32 free_movement_component_id;
 ArcEntityComponent arc_entity_components[MAX_ACTIVE_ENTITIES];
 i32 arc_entity_component_count;
-i32 arc_entity_component_free_id;
+i32 free_arc_entity_component_id;
 ItemComponent item_components[MAX_ACTIVE_ENTITIES];
 i32 item_component_count;
-i32 item_component_free_id;
+i32 free_item_component_id;
 TriggerComponent trigger_components[MAX_ACTIVE_ENTITIES];
 i32 trigger_component_count;
-i32 trigger_component_free_id;
+i32 free_trigger_component_id;
 StorageComponent storage_components[MAX_ACTIVE_ENTITIES];
 i32 storage_component_count;
-i32 storage_component_free_id;
+i32 free_storage_component_id;
 ParallaxComponent parallax_components[MAX_ACTIVE_ENTITIES];
 i32 parallax_component_count;
-i32 parallax_component_free_id;
+i32 free_parallax_component_id;
 ParticleEmitterComponent particle_emitter_components[MAX_ACTIVE_ENTITIES];
 i32 particle_emitter_component_count;
-i32 particle_emitter_component_free_id;
+i32 free_particle_emitter_component_id;
 } ComponentSet;
 
+// NOTE(tjr): Gets a PositionComponent from a specified entity, it must have one.
+internal PositionComponent *GetPositionComponentFromEntityID(i32 id);
+// NOTE(tjr): Gets a SpriteComponent from a specified entity, it must have one.
+internal SpriteComponent *GetSpriteComponentFromEntityID(i32 id);
+// NOTE(tjr): Gets a AnimationComponent from a specified entity, it must have one.
+internal AnimationComponent *GetAnimationComponentFromEntityID(i32 id);
+// NOTE(tjr): Gets a PhysicsBodyComponent from a specified entity, it must have one.
+internal PhysicsBodyComponent *GetPhysicsBodyComponentFromEntityID(i32 id);
+// NOTE(tjr): Gets a MovementComponent from a specified entity, it must have one.
+internal MovementComponent *GetMovementComponentFromEntityID(i32 id);
+// NOTE(tjr): Gets a ArcEntityComponent from a specified entity, it must have one.
+internal ArcEntityComponent *GetArcEntityComponentFromEntityID(i32 id);
+// NOTE(tjr): Gets a ItemComponent from a specified entity, it must have one.
+internal ItemComponent *GetItemComponentFromEntityID(i32 id);
+// NOTE(tjr): Gets a TriggerComponent from a specified entity, it must have one.
+internal TriggerComponent *GetTriggerComponentFromEntityID(i32 id);
+// NOTE(tjr): Gets a StorageComponent from a specified entity, it must have one.
+internal StorageComponent *GetStorageComponentFromEntityID(i32 id);
+// NOTE(tjr): Gets a ParallaxComponent from a specified entity, it must have one.
+internal ParallaxComponent *GetParallaxComponentFromEntityID(i32 id);
+// NOTE(tjr): Gets a ParticleEmitterComponent from a specified entity, it must have one.
+internal ParticleEmitterComponent *GetParticleEmitterComponentFromEntityID(i32 id);
+internal void RemoveComponent(Entity *entity, ComponentType type);
 #define MAX_CHARACTER_ENTITY_COUNT (1)
 typedef struct CharacterEntity
 {
-Entity *parent_generic_entity;
-PositionComponent *position_comp;
-SpriteComponent *sprite_comp;
-AnimationComponent *animation_comp;
-PhysicsBodyComponent *physics_body_comp;
-MovementComponent *movement_comp;
-ArcEntityComponent *arc_entity_comp;
+i32 entity_id;
 } CharacterEntity;
 
 #define MAX_CLOUD_ENTITY_COUNT (50)
 typedef struct CloudEntity
 {
-Entity *parent_generic_entity;
+i32 entity_id;
 i32 unique_entity_id;
-PositionComponent *position_comp;
-SpriteComponent *sprite_comp;
-ParallaxComponent *parallax_comp;
 } CloudEntity;
 
 #define MAX_GROUND_SEGMENT_ENTITY_COUNT (1024)
 typedef struct GroundSegmentEntity
 {
-Entity *parent_generic_entity;
+i32 entity_id;
 i32 unique_entity_id;
-PositionComponent *position_comp;
-PhysicsBodyComponent *physics_body_comp;
 } GroundSegmentEntity;
 
 typedef enum EntityType
@@ -541,12 +553,12 @@ typedef enum EntityType
 typedef struct Entity
 {
 i32 entity_id;
+i32 component_ids[COMPONENT_MAX];
 char name[20];
-GeneralisedEntityType generalised_type;
-void *unique_entity;
+i32 unique_entity_id;
 EntityType type;
 EntityFlags flags;
-void *components[COMPONENT_MAX];
+GeneralisedEntityType generalised_type;
 } Entity;
 
 #define FLUID_COMPRESSION (0.01f)
@@ -667,10 +679,10 @@ i32 active_chunk_count;
 CharacterEntity character_entity;
 CloudEntity cloud_entity_list[MAX_CLOUD_ENTITY_COUNT];
 i32 cloud_entity_count;
-i32 free_cloud_entity_index;
+i32 free_cloud_entity_id;
 GroundSegmentEntity ground_segment_entity_list[MAX_GROUND_SEGMENT_ENTITY_COUNT];
 i32 ground_segment_entity_count;
-i32 free_ground_segment_entity_index;
+i32 free_ground_segment_entity_id;
 
 // @GenerateUniqueEntityArrays 
 Entity entities[MAX_ACTIVE_ENTITIES];

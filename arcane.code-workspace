@@ -43,7 +43,9 @@
 			"tsassets.h": "c",
 			"sprite.h": "c",
 			"world.h": "c",
-			"cell.h": "c"
+			"cell.h": "c",
+			"types.h": "c",
+			"telescope.h": "c"
 		},
 		"editor.formatOnSave": true,
 		"editor.find.autoFindInSelection": true,

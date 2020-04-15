@@ -489,14 +489,14 @@ Dummy3 :: _;
 Entity :: struct
 {
 	entity_id : i32;
+	component_ids : i32[COMPONENT_MAX];
 	name : char[20];
-	generalised_type : GeneralisedEntityType;
 	
-	unique_entity : *void;
+	unique_entity_id : i32;
 	type : EntityType;
 	
 	flags : EntityFlags;
-	components : *void[COMPONENT_MAX];
+	generalised_type : GeneralisedEntityType;
 }
 
 
