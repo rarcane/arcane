@@ -667,11 +667,13 @@ i32 entity_count;
 i32 x_index;
 i32 y_index;
 Cell cells[CHUNK_SIZE][CHUNK_SIZE];
+// @DoNotSerialise 
 Ts2dTexture texture;
 } Chunk;
 
 typedef struct WorldData
 {
+i32 *test_ptr;
 f32 elapsed_world_time;
 Chunk active_chunks[MAX_WORLD_CHUNKS];
 i32 active_chunk_count;
@@ -689,10 +691,6 @@ Entity entities[MAX_ACTIVE_ENTITIES];
 i32 entity_count;
 i32 free_entity_id;
 ComponentSet entity_components;
-i32 *test_ptr;
-Cell *dynamic_cells[MAX_DYNAMIC_CELLS];
-i32 dynamic_cell_count;
-i32 free_dynamic_cell_id;
 } WorldData;
 
 typedef struct RunData
@@ -702,6 +700,9 @@ char current_level[20];
 Chunk *chunk_texture_update_queue[MAX_WORLD_CHUNKS];
 i32 chunk_texture_update_queue_count;
 b8 disable_chunk_view_loading;
+Cell *dynamic_cells[MAX_DYNAMIC_CELLS];
+i32 dynamic_cell_count;
+i32 free_dynamic_cell_id;
 EditorState editor_state;
 EditorFlags editor_flags;
 Entity *selected_entity;
@@ -719,75 +720,151 @@ static void WritePositionComponentToFile(FILE *file, PositionComponent *data);
 
 static void FillPositionComponentPointersInFile(FILE *file, PositionComponent *data);
 
+static void ReadPositionComponentFromFile(FILE *file, PositionComponent *data);
+
+static void FillPositionComponentPointersFromFile(FILE *file, PositionComponent *data);
+
 static void WriteSpriteComponentToFile(FILE *file, SpriteComponent *data);
 
 static void FillSpriteComponentPointersInFile(FILE *file, SpriteComponent *data);
+
+static void ReadSpriteComponentFromFile(FILE *file, SpriteComponent *data);
+
+static void FillSpriteComponentPointersFromFile(FILE *file, SpriteComponent *data);
 
 static void WriteAnimationComponentToFile(FILE *file, AnimationComponent *data);
 
 static void FillAnimationComponentPointersInFile(FILE *file, AnimationComponent *data);
 
+static void ReadAnimationComponentFromFile(FILE *file, AnimationComponent *data);
+
+static void FillAnimationComponentPointersFromFile(FILE *file, AnimationComponent *data);
+
 static void WritePhysicsBodyComponentToFile(FILE *file, PhysicsBodyComponent *data);
 
 static void FillPhysicsBodyComponentPointersInFile(FILE *file, PhysicsBodyComponent *data);
+
+static void ReadPhysicsBodyComponentFromFile(FILE *file, PhysicsBodyComponent *data);
+
+static void FillPhysicsBodyComponentPointersFromFile(FILE *file, PhysicsBodyComponent *data);
 
 static void WriteMovementComponentToFile(FILE *file, MovementComponent *data);
 
 static void FillMovementComponentPointersInFile(FILE *file, MovementComponent *data);
 
+static void ReadMovementComponentFromFile(FILE *file, MovementComponent *data);
+
+static void FillMovementComponentPointersFromFile(FILE *file, MovementComponent *data);
+
 static void WriteArcEntityComponentToFile(FILE *file, ArcEntityComponent *data);
 
 static void FillArcEntityComponentPointersInFile(FILE *file, ArcEntityComponent *data);
+
+static void ReadArcEntityComponentFromFile(FILE *file, ArcEntityComponent *data);
+
+static void FillArcEntityComponentPointersFromFile(FILE *file, ArcEntityComponent *data);
 
 static void WriteItemComponentToFile(FILE *file, ItemComponent *data);
 
 static void FillItemComponentPointersInFile(FILE *file, ItemComponent *data);
 
+static void ReadItemComponentFromFile(FILE *file, ItemComponent *data);
+
+static void FillItemComponentPointersFromFile(FILE *file, ItemComponent *data);
+
 static void WriteTriggerComponentToFile(FILE *file, TriggerComponent *data);
 
 static void FillTriggerComponentPointersInFile(FILE *file, TriggerComponent *data);
+
+static void ReadTriggerComponentFromFile(FILE *file, TriggerComponent *data);
+
+static void FillTriggerComponentPointersFromFile(FILE *file, TriggerComponent *data);
 
 static void WriteStorageComponentToFile(FILE *file, StorageComponent *data);
 
 static void FillStorageComponentPointersInFile(FILE *file, StorageComponent *data);
 
+static void ReadStorageComponentFromFile(FILE *file, StorageComponent *data);
+
+static void FillStorageComponentPointersFromFile(FILE *file, StorageComponent *data);
+
 static void WriteParallaxComponentToFile(FILE *file, ParallaxComponent *data);
 
 static void FillParallaxComponentPointersInFile(FILE *file, ParallaxComponent *data);
+
+static void ReadParallaxComponentFromFile(FILE *file, ParallaxComponent *data);
+
+static void FillParallaxComponentPointersFromFile(FILE *file, ParallaxComponent *data);
 
 static void WriteParticleEmitterComponentToFile(FILE *file, ParticleEmitterComponent *data);
 
 static void FillParticleEmitterComponentPointersInFile(FILE *file, ParticleEmitterComponent *data);
 
+static void ReadParticleEmitterComponentFromFile(FILE *file, ParticleEmitterComponent *data);
+
+static void FillParticleEmitterComponentPointersFromFile(FILE *file, ParticleEmitterComponent *data);
+
 static void WriteComponentSetToFile(FILE *file, ComponentSet *data);
 
 static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data);
+
+static void ReadComponentSetFromFile(FILE *file, ComponentSet *data);
+
+static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data);
 
 static void WriteCharacterEntityToFile(FILE *file, CharacterEntity *data);
 
 static void FillCharacterEntityPointersInFile(FILE *file, CharacterEntity *data);
 
+static void ReadCharacterEntityFromFile(FILE *file, CharacterEntity *data);
+
+static void FillCharacterEntityPointersFromFile(FILE *file, CharacterEntity *data);
+
 static void WriteCloudEntityToFile(FILE *file, CloudEntity *data);
 
 static void FillCloudEntityPointersInFile(FILE *file, CloudEntity *data);
+
+static void ReadCloudEntityFromFile(FILE *file, CloudEntity *data);
+
+static void FillCloudEntityPointersFromFile(FILE *file, CloudEntity *data);
 
 static void WriteGroundSegmentEntityToFile(FILE *file, GroundSegmentEntity *data);
 
 static void FillGroundSegmentEntityPointersInFile(FILE *file, GroundSegmentEntity *data);
 
+static void ReadGroundSegmentEntityFromFile(FILE *file, GroundSegmentEntity *data);
+
+static void FillGroundSegmentEntityPointersFromFile(FILE *file, GroundSegmentEntity *data);
+
 static void WriteEntityToFile(FILE *file, Entity *data);
 
 static void FillEntityPointersInFile(FILE *file, Entity *data);
+
+static void ReadEntityFromFile(FILE *file, Entity *data);
+
+static void FillEntityPointersFromFile(FILE *file, Entity *data);
 
 static void WriteCellToFile(FILE *file, Cell *data);
 
 static void FillCellPointersInFile(FILE *file, Cell *data);
 
+static void ReadCellFromFile(FILE *file, Cell *data);
+
+static void FillCellPointersFromFile(FILE *file, Cell *data);
+
 static void WriteChunkToFile(FILE *file, Chunk *data);
 
 static void FillChunkPointersInFile(FILE *file, Chunk *data);
 
+static void ReadChunkFromFile(FILE *file, Chunk *data);
+
+static void FillChunkPointersFromFile(FILE *file, Chunk *data);
+
 static void WriteWorldDataToFile(FILE *file, WorldData *data);
 
 static void FillWorldDataPointersInFile(FILE *file, WorldData *data);
+
+static void ReadWorldDataFromFile(FILE *file, WorldData *data);
+
+static void FillWorldDataPointersFromFile(FILE *file, WorldData *data);
 

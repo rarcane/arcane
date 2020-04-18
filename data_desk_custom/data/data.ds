@@ -608,6 +608,7 @@ Chunk :: struct
 	
 	cells : Cell[CHUNK_SIZE][CHUNK_SIZE];
 	
+	@DoNotSerialise
 	texture : Ts2dTexture;
 }
 
@@ -615,6 +616,7 @@ Chunk :: struct
 @SerialisableStruct
 WorldData :: struct
 {
+	test_ptr : *i32;
 	elapsed_world_time : f32;
 	
 	// TODO: need to figure out where chunks will get stored, since they will be loading
@@ -628,12 +630,6 @@ WorldData :: struct
 	free_entity_id : i32;
 	
 	entity_components : ComponentSet;
-	
-	test_ptr : *i32;
-	
-	dynamic_cells : *Cell[MAX_DYNAMIC_CELLS];
-	dynamic_cell_count : i32;
-	free_dynamic_cell_id : i32;
 }
 
 // NOTE(tjr): Temporary game data, used for run-time operations
@@ -646,6 +642,10 @@ RunData :: struct
 	chunk_texture_update_queue_count : i32;
 	
 	disable_chunk_view_loading : b8;
+	
+	dynamic_cells : *Cell[MAX_DYNAMIC_CELLS];
+	dynamic_cell_count : i32;
+	free_dynamic_cell_id : i32;
 	
 	/* ~ Editor ~ */
 	editor_state : EditorState;

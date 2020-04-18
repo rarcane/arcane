@@ -970,7 +970,306 @@ internal void GenerateSerialisationCode()
 			for (DataDeskNode *member = root->struct_declaration.first_member;
 				 member; member = member->next)
 			{
-				if (!DataDeskNodeHasTag(member, "ComponentList"))
+				if (!DataDeskNodeHasTag(member, "ComponentList") && !DataDeskNodeHasTag(member, "DoNotSerialise"))
+				{
+					if (member->type != DATA_DESK_NODE_TYPE_declaration || member->declaration.type->type != DATA_DESK_NODE_TYPE_type_usage)
+						fprintf(c_file, "uhhhhh");
+
+					b8 is_complex = 0;
+					for (i32 j = 0; j < serialisable_struct_count; j++)
+					{
+						DataDeskNode *complex_struct = serialisable_structs[j];
+						if (strcmp(complex_struct->name, member->declaration.type->name) == 0)
+						{
+							is_complex = 1;
+							break;
+						}
+					}
+
+					if (member->declaration.type->type_usage.first_array_size_expression) // NOTE(tjr): Array type
+					{
+						if (!(member->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_identifier ||
+							  member->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_numeric_constant))
+							fprintf(c_file, "\nuhhhhh\n");
+
+						if (member->declaration.type->type_usage.first_array_size_expression->next) // NOTE(tjr): 2D Array
+						{
+							fprintf(c_file, "// - 2D Arary %s %s\n", member->declaration.type->type_usage.first_array_size_expression->string, member->declaration.type->type_usage.first_array_size_expression->next->string);
+
+							fprintf(c_file, "    for (i32 i = 0; i < %s; i++)\n", member->declaration.type->type_usage.first_array_size_expression->string);
+							fprintf(c_file, "    {\n");
+							fprintf(c_file, "        for (i32 j = 0; j < %s; j++)\n", member->declaration.type->type_usage.first_array_size_expression->next->string);
+							fprintf(c_file, "        {\n");
+							if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): 2D Array of pointers
+							{
+								if (member->declaration.type->type_usage.pointer_count > 1)
+									fprintf(c_file, "No support for double or > pointers yet.\n");
+
+								fprintf(c_file, "            // '%s' pointer array in %s\n", member->name, root->name);
+								fprintf(c_file, "            if (data->%s[i])\n", member->name);
+								fprintf(c_file, "            {\n");
+								fprintf(c_file, "                i32 pos = ftell(file);\n");
+								fprintf(c_file, "                R_DEV_ASSERT(pos != -1, \"Uh oh.\");\n");
+								fprintf(c_file, "                R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, \"Max pointers reached. Consider a better design?\");\n");
+								fprintf(c_file, "                SerialisationPointer ptr = {&(data->%s[i][j]), pos};\n", member->name);
+								fprintf(c_file, "                serialisation_pointers[serialisation_pointer_count++] = ptr;\n");
+								fprintf(c_file, "                i32 empty = INT_MAX;\n");
+								fprintf(c_file, "                WriteToFile(file, &empty, sizeof(i32));\n");
+								fprintf(c_file, "            }\n");
+								fprintf(c_file, "            else\n");
+								fprintf(c_file, "            {\n");
+								fprintf(c_file, "                i32 null_ptr = 0;\n");
+								fprintf(c_file, "                WriteToFile(file, &null_ptr, sizeof(i32));\n");
+								fprintf(c_file, "            }\n\n");
+							}
+							else
+							{
+								if (is_complex) // NOTE(tjr): 2D Array of complex types
+								{
+									fprintf(c_file, "            // '%s' array in %s\n", member->name, root->name);
+									fprintf(c_file, "            Write%sToFile(file, &(data->%s[i][j]));\n", member->declaration.type->name, member->name);
+								}
+								else // NOTE(tjr): 2D Array of primative types
+								{
+									fprintf(c_file, "            // '%s' array in %s\n", member->name, root->name);
+									fprintf(c_file, "            WriteToFile(file, &data->%s[i][j], sizeof(%s));\n", member->name, member->declaration.type->name);
+								}
+							}
+							fprintf(c_file, "        }\n");
+							fprintf(c_file, "    }\n\n");
+						}
+						else // NOTE(tjr): 1D Array
+						{
+							fprintf(c_file, "    for (i32 i = 0; i < %s; i++)\n", member->declaration.type->type_usage.first_array_size_expression->string);
+							fprintf(c_file, "    {\n");
+
+							if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): Array of pointers
+							{
+								if (member->declaration.type->type_usage.pointer_count > 1)
+									fprintf(c_file, "No support for double or > pointers yet.\n");
+
+								fprintf(c_file, "        // '%s' pointer array in %s\n", member->name, root->name);
+								fprintf(c_file, "        if (data->%s[i])\n", member->name);
+								fprintf(c_file, "        {\n");
+								fprintf(c_file, "            i32 pos = ftell(file);\n");
+								fprintf(c_file, "            R_DEV_ASSERT(pos != -1, \"Uh oh.\");\n");
+								fprintf(c_file, "            R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, \"Max pointers reached. Consider a better design?\");\n");
+								fprintf(c_file, "            SerialisationPointer ptr = {&(data->%s[i]), pos};\n", member->name);
+								fprintf(c_file, "            serialisation_pointers[serialisation_pointer_count++] = ptr;\n");
+								fprintf(c_file, "            i32 empty = INT_MAX;\n");
+								fprintf(c_file, "            WriteToFile(file, &empty, sizeof(i32));\n");
+								fprintf(c_file, "        }\n");
+								fprintf(c_file, "        else\n");
+								fprintf(c_file, "        {\n");
+								fprintf(c_file, "            i32 null_ptr = 0;\n");
+								fprintf(c_file, "            WriteToFile(file, &null_ptr, sizeof(i32));\n");
+								fprintf(c_file, "        }\n\n");
+							}
+							else
+							{
+								if (is_complex) // NOTE(tjr): Array of complex types
+								{
+									fprintf(c_file, "        // '%s' array in %s\n", member->name, root->name);
+									fprintf(c_file, "        Write%sToFile(file, &(data->%s[i]));\n", member->declaration.type->name, member->name);
+								}
+								else // NOTE(tjr): Array of primative types
+								{
+									fprintf(c_file, "        // '%s' array in %s\n", member->name, root->name);
+									fprintf(c_file, "        WriteToFile(file, &data->%s[i], sizeof(%s));\n", member->name, member->declaration.type->name);
+								}
+							}
+							fprintf(c_file, "    }\n\n");
+						}
+					}
+					else // NOTE(tjr): Singular data type
+					{
+						if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): Pointer
+						{
+							if (member->declaration.type->type_usage.pointer_count > 1)
+								fprintf(c_file, "No support for double or > pointers yet.\n");
+
+							fprintf(c_file, "    // '%s' pointer in %s\n", member->name, root->name);
+							fprintf(c_file, "    if (data->%s)\n", member->name);
+							fprintf(c_file, "    {\n");
+							fprintf(c_file, "        i32 pos = ftell(file);\n");
+							fprintf(c_file, "        R_DEV_ASSERT(pos != -1, \"Uh oh.\");\n");
+							fprintf(c_file, "        R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, \"Max pointers reached. Consider a better design?\");\n");
+							fprintf(c_file, "        SerialisationPointer ptr = {&data->%s, pos};\n", member->name);
+							fprintf(c_file, "        serialisation_pointers[serialisation_pointer_count++] = ptr;\n");
+							fprintf(c_file, "        i32 empty = INT_MAX;\n");
+							fprintf(c_file, "        WriteToFile(file, &empty, sizeof(i32));\n");
+							fprintf(c_file, "    }\n");
+							fprintf(c_file, "    else\n");
+							fprintf(c_file, "    {\n");
+							fprintf(c_file, "        i32 null_ptr = 0;\n");
+							fprintf(c_file, "        WriteToFile(file, &null_ptr, sizeof(i32));\n");
+							fprintf(c_file, "    }\n");
+						}
+						else // NOTE(tjr): Structure
+						{
+							fprintf(c_file, "    // '%s' in %s\n", member->name, root->name);
+							if (is_complex)
+								fprintf(c_file, "    Write%sToFile(file, &data->%s);\n\n", member->declaration.type->name, member->name);
+							else
+								fprintf(c_file, "    WriteToFile(file, &data->%s, sizeof(data->%s));\n\n", member->name, member->name);
+						}
+					}
+				}
+			}
+			fprintf(c_file, "}\n\n");
+		}
+
+		// NOTE(tjr): Fill pointers in file
+		{
+			fprintf(h_file, "static void Fill%sPointersInFile(FILE *file, %s *data);\n\n", root->name, root->name);
+			fprintf(c_file, "static void Fill%sPointersInFile(FILE *file, %s *data)\n", root->name, root->name);
+			fprintf(c_file, "{\n");
+			for (DataDeskNode *member = root->struct_declaration.first_member;
+				 member; member = member->next)
+			{
+				if (!DataDeskNodeHasTag(member, "ComponentList") && !DataDeskNodeHasTag(member, "DoNotSerialise"))
+				{
+					if (member->type != DATA_DESK_NODE_TYPE_declaration || member->declaration.type->type != DATA_DESK_NODE_TYPE_type_usage)
+						fprintf(c_file, "uhhhhh");
+
+					b8 is_complex = 0;
+					for (i32 j = 0; j < serialisable_struct_count; j++)
+					{
+						DataDeskNode *complex_struct = serialisable_structs[j];
+						if (strcmp(complex_struct->name, member->declaration.type->name) == 0)
+						{
+							is_complex = 1;
+							break;
+						}
+					}
+
+					if (member->declaration.type->type_usage.first_array_size_expression) // NOTE(tjr): Array type
+					{
+						if (!(member->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_identifier ||
+							  member->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_numeric_constant))
+							fprintf(c_file, "\nuhhhhh\n");
+
+						if (member->declaration.type->type_usage.first_array_size_expression->next) // NOTE(tjr): 2D Array
+						{
+							// 2d array
+							fprintf(c_file, "// - 2D Arary %s %s\n", member->declaration.type->type_usage.first_array_size_expression->string, member->declaration.type->type_usage.first_array_size_expression->next->string);
+
+							fprintf(c_file, "    for (i32 i = 0; i < %s; i++)\n", member->declaration.type->type_usage.first_array_size_expression->string);
+							fprintf(c_file, "    {\n");
+							fprintf(c_file, "        for (i32 j = 0; j < %s; j++)\n", member->declaration.type->type_usage.first_array_size_expression->next->string);
+							fprintf(c_file, "        {\n");
+							if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): 2D Array of ptrs
+							{
+								if (member->declaration.type->type_usage.pointer_count > 1)
+									fprintf(c_file, "No support for double or > pointers yet.\n");
+
+								fprintf(c_file, "        // '%s' pointer array in %s\n", member->name, root->name);
+								fprintf(c_file, "        fseek(file, sizeof(i32), SEEK_CUR);\n");
+							}
+							else // NOTE(tjr): 2D Structure array
+							{
+								fprintf(c_file, "            // '%s' array in %s\n", member->name, root->name);
+								fprintf(c_file, "            for (i32 k = 0; k < serialisation_pointer_count; k++)\n");
+								fprintf(c_file, "            {\n");
+								fprintf(c_file, "                SerialisationPointer *ptr = &serialisation_pointers[k];\n");
+								fprintf(c_file, "                if (*ptr->pointer_address == &(data->%s[i][j]))\n", member->name);
+								fprintf(c_file, "                {\n");
+								fprintf(c_file, "                    i32 current_pos = ftell(file);\n");
+								fprintf(c_file, "                    R_DEV_ASSERT(current_pos != -1, \"Uh oh.\");\n");
+								fprintf(c_file, "                    fseek(file, ptr->offset, SEEK_SET);\n");
+								fprintf(c_file, "                    WriteToFile(file, &current_pos, sizeof(i32));\n");
+								fprintf(c_file, "                    fseek(file, current_pos, SEEK_SET);\n");
+								fprintf(c_file, "                }\n");
+								fprintf(c_file, "            }\n");
+								if (is_complex)
+									fprintf(c_file, "            Fill%sPointersInFile(file, &(data->%s[i][j]));\n", member->declaration.type->name, member->name);
+								else
+									fprintf(c_file, "            fseek(file, sizeof(%s), SEEK_CUR);\n", member->declaration.type->name);
+							}
+							fprintf(c_file, "        }\n");
+							fprintf(c_file, "    }\n\n");
+						}
+						else // NOTE(tjr): 1D Array
+						{
+							fprintf(c_file, "    for (i32 i = 0; i < %s; i++)\n", member->declaration.type->type_usage.first_array_size_expression->string);
+							fprintf(c_file, "    {\n");
+
+							if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): Array of ptrs
+							{
+								if (member->declaration.type->type_usage.pointer_count > 1)
+									fprintf(c_file, "No support for double or > pointers yet.\n");
+
+								fprintf(c_file, "    // '%s' pointer array in %s\n", member->name, root->name);
+								fprintf(c_file, "    fseek(file, sizeof(i32), SEEK_CUR);\n");
+							}
+							else // NOTE(tjr): Structure array
+							{
+								fprintf(c_file, "        // '%s' array in %s\n", member->name, root->name);
+								fprintf(c_file, "        for (i32 j = 0; j < serialisation_pointer_count; j++)\n");
+								fprintf(c_file, "        {\n");
+								fprintf(c_file, "            SerialisationPointer *ptr = &serialisation_pointers[j];\n");
+								fprintf(c_file, "            if (*ptr->pointer_address == &(data->%s[i]))\n", member->name);
+								fprintf(c_file, "            {\n");
+								fprintf(c_file, "                i32 current_pos = ftell(file);\n");
+								fprintf(c_file, "                R_DEV_ASSERT(current_pos != -1, \"Uh oh.\");\n");
+								fprintf(c_file, "                fseek(file, ptr->offset, SEEK_SET);\n");
+								fprintf(c_file, "                WriteToFile(file, &current_pos, sizeof(i32));\n");
+								fprintf(c_file, "                fseek(file, current_pos, SEEK_SET);\n");
+								fprintf(c_file, "            }\n");
+								fprintf(c_file, "        }\n");
+								if (is_complex)
+									fprintf(c_file, "        Fill%sPointersInFile(file, &(data->%s[i]));\n", member->declaration.type->name, member->name);
+								else
+									fprintf(c_file, "        fseek(file, sizeof(%s), SEEK_CUR);\n", member->declaration.type->name);
+							}
+							fprintf(c_file, "    }\n\n");
+						}
+					}
+					else
+					{
+						if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): Pointer
+						{
+							if (member->declaration.type->type_usage.pointer_count > 1)
+								fprintf(c_file, "No support for double or > pointers yet.\n");
+
+							fprintf(c_file, "    // '%s' pointer in %s\n", member->name, root->name);
+							fprintf(c_file, "    fseek(file, sizeof(i32), SEEK_CUR);\n\n");
+						}
+						else // NOTE(tjr): Structure
+						{
+							fprintf(c_file, "    // '%s' in %s\n", member->name, root->name);
+							fprintf(c_file, "    for (i32 i = 0; i < serialisation_pointer_count; i++)\n");
+							fprintf(c_file, "    {\n");
+							fprintf(c_file, "        SerialisationPointer *ptr = &serialisation_pointers[i];\n");
+							fprintf(c_file, "        if (*ptr->pointer_address == &data->%s)\n", member->name);
+							fprintf(c_file, "        {\n");
+							fprintf(c_file, "            i32 current_pos = ftell(file);\n");
+							fprintf(c_file, "            R_DEV_ASSERT(current_pos != -1, \"Uh oh.\");\n");
+							fprintf(c_file, "            fseek(file, ptr->offset, SEEK_SET);\n");
+							fprintf(c_file, "            WriteToFile(file, &current_pos, sizeof(i32));\n");
+							fprintf(c_file, "            fseek(file, current_pos, SEEK_SET);\n");
+							fprintf(c_file, "        }\n");
+							fprintf(c_file, "    }\n");
+							if (is_complex)
+								fprintf(c_file, "    Fill%sPointersInFile(file, &data->%s);\n\n", member->declaration.type->name, member->name);
+							else
+								fprintf(c_file, "    fseek(file, sizeof(data->%s), SEEK_CUR);\n\n", member->name);
+						}
+					}
+				}
+			}
+			fprintf(c_file, "}\n\n");
+		}
+
+		// NOTE(tjr): Read from file
+		{
+			fprintf(h_file, "static void Read%sFromFile(FILE *file, %s *data);\n\n", root->name, root->name);
+			fprintf(c_file, "static void Read%sFromFile(FILE *file, %s *data)\n", root->name, root->name);
+			fprintf(c_file, "{\n");
+			for (DataDeskNode *member = root->struct_declaration.first_member;
+				 member; member = member->next)
+			{
+				if (!DataDeskNodeHasTag(member, "ComponentList") && !DataDeskNodeHasTag(member, "DoNotSerialise"))
 				{
 					if (member->type != DATA_DESK_NODE_TYPE_declaration || member->declaration.type->type != DATA_DESK_NODE_TYPE_type_usage)
 						fprintf(c_file, "uhhhhh");
@@ -998,7 +1297,7 @@ internal void GenerateSerialisationCode()
 						}
 						else // NOTE(tjr): 1D Array
 						{
-							fprintf(c_file, "    for (i32 i = 0; i < %s; i++)\n", member->declaration.type->type_usage.first_array_size_expression->string);
+							/* fprintf(c_file, "    for (i32 i = 0; i < %s; i++)\n", member->declaration.type->type_usage.first_array_size_expression->string);
 							fprintf(c_file, "    {\n");
 
 							if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): Array of pointers
@@ -1007,13 +1306,21 @@ internal void GenerateSerialisationCode()
 									fprintf(c_file, "No support for double or > pointers yet.\n");
 
 								fprintf(c_file, "        // '%s' pointer array in %s\n", member->name, root->name);
-								fprintf(c_file, "        i32 pos = ftell(file);\n");
-								fprintf(c_file, "        R_DEV_ASSERT(pos != -1, \"Uh oh.\");\n");
-								fprintf(c_file, "        R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, \"Max pointers reached. Consider a better design?\");\n");
-								fprintf(c_file, "        SerialisationPointer ptr = {&(data->%s[i]), pos};\n", member->name);
-								fprintf(c_file, "        serialisation_pointers[serialisation_pointer_count++] = ptr;\n");
-								fprintf(c_file, "        i32 empty = INT_MAX;\n");
-								fprintf(c_file, "        WriteToFile(file, &empty, sizeof(i32));\n");
+								fprintf(c_file, "        if (data->%s[i])\n", member->name);
+								fprintf(c_file, "        {\n");
+								fprintf(c_file, "            i32 pos = ftell(file);\n");
+								fprintf(c_file, "            R_DEV_ASSERT(pos != -1, \"Uh oh.\");\n");
+								fprintf(c_file, "            R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, \"Max pointers reached. Consider a better design?\");\n");
+								fprintf(c_file, "            SerialisationPointer ptr = {&(data->%s[i]), pos};\n", member->name);
+								fprintf(c_file, "            serialisation_pointers[serialisation_pointer_count++] = ptr;\n");
+								fprintf(c_file, "            i32 empty = INT_MAX;\n");
+								fprintf(c_file, "            WriteToFile(file, &empty, sizeof(i32));\n");
+								fprintf(c_file, "        }\n");
+								fprintf(c_file, "        else\n");
+								fprintf(c_file, "        {\n");
+								fprintf(c_file, "            i32 null_ptr = 0;\n");
+								fprintf(c_file, "            WriteToFile(file, &null_ptr, sizeof(i32));\n");
+								fprintf(c_file, "        }\n\n");
 							}
 							else
 							{
@@ -1028,7 +1335,7 @@ internal void GenerateSerialisationCode()
 									fprintf(c_file, "        WriteToFile(file, &data->%s[i], sizeof(%s));\n", member->name, member->declaration.type->name);
 								}
 							}
-							fprintf(c_file, "    }\n\n");
+							fprintf(c_file, "    }\n\n"); */
 						}
 					}
 					else // NOTE(tjr): Singular data type
@@ -1040,29 +1347,25 @@ internal void GenerateSerialisationCode()
 
 							fprintf(c_file, "    // '%s' pointer in %s\n", member->name, root->name);
 							fprintf(c_file, "    {\n");
-							fprintf(c_file, "        i32 pos = ftell(file);\n");
-							fprintf(c_file, "        R_DEV_ASSERT(pos != -1, \"Uh oh.\");\n");
-							fprintf(c_file, "        R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, \"Max pointers reached. Consider a better design?\");\n");
-							fprintf(c_file, "        SerialisationPointer ptr = {&data->%s, pos};\n", member->name);
-							fprintf(c_file, "        serialisation_pointers[serialisation_pointer_count++] = ptr;\n");
-							fprintf(c_file, "        i32 empty = INT_MAX;\n");
-							fprintf(c_file, "        WriteToFile(file, &empty, sizeof(i32));\n");
-							fprintf(c_file, "    }\n\n");
+							fprintf(c_file, "        i32 pointer_offset;\n");
+							fprintf(c_file, "        ReadFromFile(file, &pointer_offset, sizeof(i32));\n");
+							fprintf(c_file, "        if (pointer_offset)\n");
+							fprintf(c_file, "        {\n");
+							fprintf(c_file, "            R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, \"Max pointers reached. Consider a better design?\");\n");
+							fprintf(c_file, "            SerialisationPointer ptr = {&data->%s, pointer_offset};\n", member->name);
+							fprintf(c_file, "            serialisation_pointers[serialisation_pointer_count++] = ptr;\n");
+							fprintf(c_file, "        }\n");
+							fprintf(c_file, "        else\n");
+							fprintf(c_file, "            data->%s = 0;\n", member->name);
+							fprintf(c_file, "    }\n");
 						}
-						else
+						else // NOTE(tjr): Structure
 						{
-							if (is_complex) // NOTE(tjr): Singular complex type
-							{
-								// A complex structure should already have its own serialisation function
-								fprintf(c_file, "    // '%s' in %s\n", member->name, root->name);
-								fprintf(c_file, "    Write%sToFile(file, &data->%s);\n\n", member->declaration.type->name, member->name);
-							}
-							else // NOTE(tjr): Singular primative type
-							{
-								// Just directly read/write the data-structure, since it just consists of primatives.
-								fprintf(c_file, "    // '%s' in %s\n", member->name, root->name);
-								fprintf(c_file, "    WriteToFile(file, &data->%s, sizeof(data->%s));\n\n", member->name, member->name);
-							}
+							fprintf(c_file, "    // '%s' in %s\n", member->name, root->name);
+							if (is_complex)
+								fprintf(c_file, "    Read%sFromFile(file, &data->%s);\n\n", member->declaration.type->name, member->name);
+							else
+								fprintf(c_file, "    ReadFromFile(file, &data->%s, sizeof(data->%s));\n\n", member->name, member->name);
 						}
 					}
 				}
@@ -1070,15 +1373,15 @@ internal void GenerateSerialisationCode()
 			fprintf(c_file, "}\n\n");
 		}
 
-		// NOTE(tjr): Fill pointers in file
+		// NOTE(tjr): Fill pointers from file
 		{
-			fprintf(h_file, "static void Fill%sPointersInFile(FILE *file, %s *data);\n\n", root->name, root->name);
-			fprintf(c_file, "static void Fill%sPointersInFile(FILE *file, %s *data)\n", root->name, root->name);
+			fprintf(h_file, "static void Fill%sPointersFromFile(FILE *file, %s *data);\n\n", root->name, root->name);
+			fprintf(c_file, "static void Fill%sPointersFromFile(FILE *file, %s *data)\n", root->name, root->name);
 			fprintf(c_file, "{\n");
 			for (DataDeskNode *member = root->struct_declaration.first_member;
 				 member; member = member->next)
 			{
-				if (!DataDeskNodeHasTag(member, "ComponentList"))
+				if (!DataDeskNodeHasTag(member, "ComponentList") && !DataDeskNodeHasTag(member, "DoNotSerialise"))
 				{
 					if (member->type != DATA_DESK_NODE_TYPE_declaration || member->declaration.type->type != DATA_DESK_NODE_TYPE_type_usage)
 						fprintf(c_file, "uhhhhh");
@@ -1094,114 +1397,82 @@ internal void GenerateSerialisationCode()
 						}
 					}
 
-					/* if (member->declaration.type->type_usage.first_array_size_expression)
+					if (member->declaration.type->type_usage.first_array_size_expression) // NOTE(tjr): Array type
 					{
-						if (!(member->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_identifier ||
+						/* if (!(member->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_identifier ||
 							  member->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_numeric_constant))
 							fprintf(c_file, "\nuhhhhh\n");
 
-						if (member->declaration.type->type_usage.first_array_size_expression->next)
+						if (member->declaration.type->type_usage.first_array_size_expression->next) // NOTE(tjr): 2D Array
 						{
 							// 2d array
 							fprintf(c_file, "// - 2D Arary %s %s\n", member->declaration.type->type_usage.first_array_size_expression->string, member->declaration.type->type_usage.first_array_size_expression->next->string);
 						}
-						else
+						else // NOTE(tjr): 1D Array
 						{
-							fprintf(c_file, "// - Arary %s\n", member->declaration.type->type_usage.first_array_size_expression->string);
-
 							fprintf(c_file, "    for (i32 i = 0; i < %s; i++)\n", member->declaration.type->type_usage.first_array_size_expression->string);
 							fprintf(c_file, "    {\n");
 
-							if (member->declaration.type->type_usage.pointer_count > 0)
+							if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): Array of ptrs
 							{
 								if (member->declaration.type->type_usage.pointer_count > 1)
 									fprintf(c_file, "No support for double or > pointers yet.\n");
 
+								fprintf(c_file, "    // '%s' pointer array in %s\n", member->name, root->name);
 								fprintf(c_file, "    fseek(file, sizeof(i32), SEEK_CUR);\n");
 							}
-							else
+							else // NOTE(tjr): Structure array
 							{
+								fprintf(c_file, "        // '%s' array in %s\n", member->name, root->name);
+								fprintf(c_file, "        for (i32 j = 0; j < serialisation_pointer_count; j++)\n");
+								fprintf(c_file, "        {\n");
+								fprintf(c_file, "            SerialisationPointer *ptr = &serialisation_pointers[j];\n");
+								fprintf(c_file, "            if (*ptr->pointer_address == &(data->%s[i]))\n", member->name);
+								fprintf(c_file, "            {\n");
+								fprintf(c_file, "                i32 current_pos = ftell(file);\n");
+								fprintf(c_file, "                R_DEV_ASSERT(current_pos != -1, \"Uh oh.\");\n");
+								fprintf(c_file, "                fseek(file, ptr->offset, SEEK_SET);\n");
+								fprintf(c_file, "                WriteToFile(file, &current_pos, sizeof(i32));\n");
+								fprintf(c_file, "                fseek(file, current_pos, SEEK_SET);\n");
+								fprintf(c_file, "            }\n");
+								fprintf(c_file, "        }\n");
 								if (is_complex)
-								{
-									fprintf(c_file, "        for (i32 j = 0; j < serialisation_pointer_count; j++)\n");
-									fprintf(c_file, "        {\n");
-									fprintf(c_file, "            SerialisationPointer *ptr = &serialisation_pointers[j];\n");
-									fprintf(c_file, "            if (*ptr->pointer_address == &(data->%s[i]))\n", member->name);
-									fprintf(c_file, "            {\n");
-									/* fprintf(c_file, "                i32 current_pos = ftell(file);\n");
-									fprintf(c_file, "        R_DEV_ASSERT(current_pos != -1, \"Uh oh.\");\n"); ..
-									fprintf(c_file, "                fseek(file, ptr->offset, SEEK_SET);\n");
-									fprintf(c_file, "                WriteToFile(file, &current_pos, sizeof(i32));\n");
-									fprintf(c_file, "                fseek(file, current_pos, SEEK_SET);\n");
-									fprintf(c_file, "            }\n");
-									fprintf(c_file, "        }\n");
 									fprintf(c_file, "        Fill%sPointersInFile(file, &(data->%s[i]));\n", member->declaration.type->name, member->name);
-								}
 								else
-								{
-									fprintf(c_file, "        for (i32 j = 0; j < serialisation_pointer_count; j++)\n");
-									fprintf(c_file, "        {\n");
-									fprintf(c_file, "            SerialisationPointer *ptr = &serialisation_pointers[j];\n");
-									fprintf(c_file, "            if (*ptr->pointer_address == &data->%s[i])\n", member->name);
-									fprintf(c_file, "            {\n");
-									/* fprintf(c_file, "                i32 current_pos = ftell(file);\n");
-									fprintf(c_file, "        R_DEV_ASSERT(current_pos != -1, \"Uh oh.\");\n"); ..
-									fprintf(c_file, "                fseek(file, ptr->offset, SEEK_SET);\n");
-									fprintf(c_file, "                WriteToFile(file, &current_pos, sizeof(i32));\n");
-									fprintf(c_file, "                fseek(file, current_pos, SEEK_SET);\n");
-									fprintf(c_file, "            }\n");
-									fprintf(c_file, "        }\n");
 									fprintf(c_file, "        fseek(file, sizeof(%s), SEEK_CUR);\n", member->declaration.type->name);
-								}
 							}
 							fprintf(c_file, "    }\n\n");
-						}
+						} */
 					}
 					else
 					{
-						if (member->declaration.type->type_usage.pointer_count > 0)
+						if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): Pointer
 						{
 							if (member->declaration.type->type_usage.pointer_count > 1)
 								fprintf(c_file, "No support for double or > pointers yet.\n");
 
+							fprintf(c_file, "    // '%s' pointer in %s\n", member->name, root->name);
 							fprintf(c_file, "    fseek(file, sizeof(i32), SEEK_CUR);\n\n");
 						}
-						else
+						else // NOTE(tjr): Structure
 						{
+							fprintf(c_file, "    // '%s' in %s\n", member->name, root->name);
+							fprintf(c_file, "    for (i32 i = 0; i < serialisation_pointer_count; i++)\n");
+							fprintf(c_file, "    {\n");
+							fprintf(c_file, "        SerialisationPointer *ptr = &serialisation_pointers[i];\n");
+							fprintf(c_file, "        i32 current_pos = ftell(file);\n");
+							fprintf(c_file, "        R_DEV_ASSERT(current_pos != -1, \"Uh oh.\");\n");
+							fprintf(c_file, "        if (ptr->offset == current_pos)\n"); // This is pre inefficient lmao
+							fprintf(c_file, "        {\n");
+							fprintf(c_file, "            *ptr->pointer_address = &data->%s;\n", member->name);
+							fprintf(c_file, "        }\n");
+							fprintf(c_file, "    }\n");
 							if (is_complex)
-							{
-								fprintf(c_file, "    for (i32 i = 0; i < serialisation_pointer_count; i++)\n");
-								fprintf(c_file, "    {\n");
-								fprintf(c_file, "        SerialisationPointer *ptr = &serialisation_pointers[i];\n");
-								fprintf(c_file, "        if (*ptr->pointer_address == &data->%s)\n", member->name);
-								fprintf(c_file, "        {\n");
-								/* fprintf(c_file, "            i32 current_pos = ftell(file);\n");
-								fprintf(c_file, "        R_DEV_ASSERT(current_pos != -1, \"Uh oh.\");\n"); ..
-								fprintf(c_file, "            fseek(file, ptr->offset, SEEK_SET);\n");
-								fprintf(c_file, "            WriteToFile(file, &current_pos, sizeof(i32));\n");
-								fprintf(c_file, "            fseek(file, current_pos, SEEK_SET);\n");
-								fprintf(c_file, "        }\n");
-								fprintf(c_file, "    }\n");
 								fprintf(c_file, "    Fill%sPointersInFile(file, &data->%s);\n\n", member->declaration.type->name, member->name);
-							}
 							else
-							{
-								fprintf(c_file, "    for (i32 i = 0; i < serialisation_pointer_count; i++)\n");
-								fprintf(c_file, "    {\n");
-								fprintf(c_file, "        SerialisationPointer *ptr = &serialisation_pointers[i];\n");
-								fprintf(c_file, "        if (*ptr->pointer_address == &data->%s)\n", member->name);
-								fprintf(c_file, "        {\n");
-								/* fprintf(c_file, "            i32 current_pos = ftell(file);\n");
-								fprintf(c_file, "        R_DEV_ASSERT(current_pos != -1, \"Uh oh.\");\n"); ..
-								fprintf(c_file, "            fseek(file, ptr->offset, SEEK_SET);\n");
-								fprintf(c_file, "            WriteToFile(file, &current_pos, sizeof(i32));\n");
-								fprintf(c_file, "            fseek(file, current_pos, SEEK_SET);\n");
-								fprintf(c_file, "        }\n");
-								fprintf(c_file, "    }\n");
 								fprintf(c_file, "    fseek(file, sizeof(data->%s), SEEK_CUR);\n\n", member->name);
-							}
 						}
-					} */
+					}
 				}
 			}
 			fprintf(c_file, "}\n\n");

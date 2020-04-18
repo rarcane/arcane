@@ -1,7 +1,6 @@
 internal void InitialiseWorldData()
 {
 	core->world_data->free_entity_id = 1;
-	core->world_data->free_dynamic_cell_id = 1;
 	InitialiseComponents();
 	InitialiseUniqueEntities();
 }
@@ -125,7 +124,7 @@ internal void CreateTestLevel()
 	}
 
 	strcpy(core->run_data->current_level, "testing");
-	// SaveLevel("testing");
+	SaveLevel("testing");
 }
 
 internal void DrawWorld()

@@ -305,6 +305,11 @@ internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v3 co
 } */
 #endif
 
+internal v2 GetMousePositionInWorldSpace()
+{
+	return v2(platform->mouse_x / core->camera_zoom - core->camera_position.x - GetZeroWorldPosition().x, platform->mouse_y / core->camera_zoom - core->camera_position.y - GetZeroWorldPosition().y);
+}
+
 internal void WriteToFile(FILE *file, void *data, size_t size_bytes)
 {
 	fwrite(data, size_bytes, 1, file);
@@ -318,7 +323,9 @@ internal void ReadFromFile(FILE *file, void *data, size_t size_bytes)
 // NOTE(tjr): Saves current data to a specified level.
 internal void SaveLevel(char *level_name)
 {
-	R_DEV_ASSERT(level_name[0], "Invalid name.");
+	/* R_DEV_ASSERT(level_name[0], "Invalid name.");
+
+	serialisation_pointer_count = 0;
 
 	char path[200] = "";
 	sprintf(path, "%s%s.save", core->run_data->res_path, level_name);
@@ -332,23 +339,38 @@ internal void SaveLevel(char *level_name)
 	fseek(save, 0, SEEK_SET);
 	FillWorldDataPointersInFile(save, core->world_data);
 	fclose(save);
+
+	Log("Level saved to %s.save", level_name); */
 }
 
 // NOTE(tjr): Loads a given level. Returns 0 if the level doesn't exist.
 internal b8 LoadLevel(char *level_name)
 {
+	/* R_DEV_ASSERT(level_name[0], "Invalid name.");
+
+	serialisation_pointer_count = 0;
+
 	char path[200] = "";
 	sprintf(path, "%s%s.save", core->run_data->res_path, level_name);
 	FILE *save = fopen(path, "r");
 	if (!save)
+	{
+		LogWarning("Level %s could not be found.", level_name);
 		return 0;
+	}
 
 	strcpy(core->run_data->current_level, level_name);
 
-	// ...
-
+	ReadWorldDataFromFile(save, core->world_data);
 	fclose(save);
-	return 1;
+
+	save = fopen(path, "r");
+	R_DEV_ASSERT(save, "Couldn't open file.");
+	FillWorldDataPointersFromFile(save, core->world_data);
+	fclose(save);
+
+	Log("Successfully loaded level data in from %s", level_name);
+	return 1; */
 }
 
 // NOTE(tjr): Attempts to move level into the root res folder. Only works if being run from arc/game/build

@@ -1,11 +1,11 @@
 internal void UpdateCells()
 {
-	for (int i = 0; i < core->world_data->dynamic_cell_count; i++)
+	for (int i = 0; i < core->run_data->dynamic_cell_count; i++)
 	{
-		Cell *cell = core->world_data->dynamic_cells[i];
+		Cell *cell = core->run_data->dynamic_cells[i];
 		if (cell)
 		{
-			R_DEV_ASSERT(core->world_data->dynamic_cells[cell->dynamic_id - 1] == cell,
+			R_DEV_ASSERT(core->run_data->dynamic_cells[cell->dynamic_id - 1] == cell,
 						 "The cell's dynamic ID is mismatched with the array.");
 			ProcessCell(cell);
 		}
@@ -252,9 +252,9 @@ internal void SwapCells(Cell *cell_1, Cell *cell_2)
 
 	// Need to update the cells with new addresses if they're dynamic.
 	if (cell_1->dynamic_id)
-		core->world_data->dynamic_cells[cell_1->dynamic_id - 1] = cell_2;
+		core->run_data->dynamic_cells[cell_1->dynamic_id - 1] = cell_2;
 	if (cell_2->dynamic_id)
-		core->world_data->dynamic_cells[cell_2->dynamic_id - 1] = cell_1;
+		core->run_data->dynamic_cells[cell_2->dynamic_id - 1] = cell_1;
 
 	cell_1->dynamic_id = cell_2->dynamic_id;
 	cell_1->material_type = cell_2->material_type;
@@ -270,30 +270,30 @@ internal void SwapCells(Cell *cell_1, Cell *cell_2)
 
 internal void MakeCellDynamic(Cell *cell)
 {
-	R_DEV_ASSERT(core->world_data->free_dynamic_cell_id != 0, "Max dynamic cells reached.");
+	R_DEV_ASSERT(core->run_data->free_dynamic_cell_id != 0, "Max dynamic cells reached.");
 
-	i32 new_id = core->world_data->free_dynamic_cell_id;
+	i32 new_id = core->run_data->free_dynamic_cell_id;
 
-	core->world_data->dynamic_cells[new_id - 1] = cell;
+	core->run_data->dynamic_cells[new_id - 1] = cell;
 	cell->dynamic_id = new_id;
 
-	if (core->world_data->dynamic_cell_count == core->world_data->free_dynamic_cell_id - 1)
+	if (core->run_data->dynamic_cell_count == core->run_data->free_dynamic_cell_id - 1)
 	{
-		core->world_data->dynamic_cell_count++;
-		core->world_data->free_dynamic_cell_id++;
+		core->run_data->dynamic_cell_count++;
+		core->run_data->free_dynamic_cell_id++;
 	}
 
-	if (core->world_data->dynamic_cell_count < MAX_DYNAMIC_CELLS)
+	if (core->run_data->dynamic_cell_count < MAX_DYNAMIC_CELLS)
 	{
 		// If the free ID isn't at the current count position, find out where it should be
-		if (core->world_data->dynamic_cell_count != core->world_data->free_dynamic_cell_id - 1)
+		if (core->run_data->dynamic_cell_count != core->run_data->free_dynamic_cell_id - 1)
 		{
 			b8 found = 0;
-			for (int i = 0; i < core->world_data->dynamic_cell_count + 1; i++)
+			for (int i = 0; i < core->run_data->dynamic_cell_count + 1; i++)
 			{
-				if (!core->world_data->dynamic_cells[i])
+				if (!core->run_data->dynamic_cells[i])
 				{
-					core->world_data->free_dynamic_cell_id = i + 1;
+					core->run_data->free_dynamic_cell_id = i + 1;
 					found = 1;
 					break;
 				}
@@ -304,7 +304,7 @@ internal void MakeCellDynamic(Cell *cell)
 	else
 	{
 		// Count has gone past the max, it's now full.
-		core->world_data->free_dynamic_cell_id = 0;
+		core->run_data->free_dynamic_cell_id = 0;
 	}
 }
 
@@ -314,12 +314,12 @@ internal void DeleteCell(Cell *cell)
 
 	if (cell->dynamic_id)
 	{
-		R_DEV_ASSERT(core->world_data->dynamic_cells[cell->dynamic_id - 1] == cell, "Mismatched cell with ID??");
+		R_DEV_ASSERT(core->run_data->dynamic_cells[cell->dynamic_id - 1] == cell, "Mismatched cell with ID??");
 
 		// Remove from the dynamic cell from the array.
-		core->world_data->dynamic_cells[cell->dynamic_id - 1] = 0;
-		if (cell->dynamic_id < core->world_data->free_dynamic_cell_id)
-			core->world_data->free_dynamic_cell_id = cell->dynamic_id;
+		core->run_data->dynamic_cells[cell->dynamic_id - 1] = 0;
+		if (cell->dynamic_id < core->run_data->free_dynamic_cell_id)
+			core->run_data->free_dynamic_cell_id = cell->dynamic_id;
 
 		cell->dynamic_id = 0;
 	}

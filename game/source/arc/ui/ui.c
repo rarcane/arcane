@@ -886,9 +886,9 @@ internal void DrawEditorUI()
 			{
 				local_persist Cell *selected_dynamic_cell = 0;
 
-				for (i32 i = 0; i < core->world_data->dynamic_cell_count; i++)
+				for (i32 i = 0; i < core->run_data->dynamic_cell_count; i++)
 				{
-					Cell *dyn_cell = core->world_data->dynamic_cells[i];
+					Cell *dyn_cell = core->run_data->dynamic_cells[i];
 					if (dyn_cell)
 					{
 						char label[20];

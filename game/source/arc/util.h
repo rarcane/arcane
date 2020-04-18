@@ -49,6 +49,8 @@ internal f32 PythagSolve(f32 a, f32 b);
 
 internal f32 GetPerlinNoise(f32 x_pos, f32 y_pos);
 
+internal v2 GetMousePositionInWorldSpace();
+
 typedef struct SerialisationPointer
 {
 	void **pointer_address;

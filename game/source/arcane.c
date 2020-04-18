@@ -65,7 +65,7 @@ GameInit(void)
 
 		core->run_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(RunData));
 		R_DEV_ASSERT(core->run_data, "Failed to allocate memory for Run Data.");
-		core->run_data->editor_flags |= EDITOR_FLAGS_draw_world;
+		InitialiseRunData();
 
 		core->world_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(WorldData));
 		R_DEV_ASSERT(core->world_data, "Failed to allocate memory for WorldData.");
@@ -113,7 +113,6 @@ GameInit(void)
 
 				};
 
-			core->run_data->res_path = MakeCStringOnMemoryArena(core->permanent_arena, "%s/res/", platform->executable_folder_absolute_path);
 			TsAssetsSetAssetRootPath(core->run_data->res_path);
 			TsAssetsSetAssetTypes(ArrayCount(asset_types), asset_types, core->permanent_arena);
 		}
@@ -122,7 +121,6 @@ GameInit(void)
 		{
 			InitialiseSpriteData();
 
-			core->run_data->editor_flags |= EDITOR_FLAGS_draw_collision;
 			core->camera_zoom = DEFAULT_CAMERA_ZOOM;
 
 			core->delta_mult = 1.0f;
@@ -407,7 +405,10 @@ GameUpdate(void)
 	}
 }
 
-internal v2 GetMousePositionInWorldSpace()
+internal void InitialiseRunData()
 {
-	return v2(platform->mouse_x / core->camera_zoom - core->camera_position.x - GetZeroWorldPosition().x, platform->mouse_y / core->camera_zoom - core->camera_position.y - GetZeroWorldPosition().y);
+	core->run_data->res_path = MakeCStringOnMemoryArena(core->permanent_arena, "%s/res/", platform->executable_folder_absolute_path);
+	core->run_data->editor_flags |= EDITOR_FLAGS_draw_world;
+	core->run_data->editor_flags |= EDITOR_FLAGS_draw_collision;
+	core->run_data->free_dynamic_cell_id = 1;
 }
