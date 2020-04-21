@@ -562,6 +562,9 @@ GeneralisedEntityType generalised_type;
 } Entity;
 
 #define FLUID_COMPRESSION (0.01f)
+#define FLUID_ITER (4)
+#define FLUID_DIFFUSION (0.0f)
+#define FLUID_VISCOSITY (0.0f)
 typedef enum CellPropertiesType CellPropertiesType;
 enum CellPropertiesType
 {
@@ -579,8 +582,11 @@ f32 pressure;
 
 typedef struct DynamicLiquidProperties
 {
+v2 prev_velocity;
+f32 prev_density;
+v2 velocity;
+f32 density;
 f32 mass;
-f32 new_mass;
 } DynamicLiquidProperties;
 
 typedef struct DynamicSolidProperties
@@ -667,6 +673,12 @@ i32 entity_count;
 i32 x_index;
 i32 y_index;
 Cell cells[CHUNK_SIZE][CHUNK_SIZE];
+f32 s[CHUNK_SIZE][CHUNK_SIZE];
+f32 density[CHUNK_SIZE][CHUNK_SIZE];
+f32 velocity_x[CHUNK_SIZE][CHUNK_SIZE];
+f32 velocity_y[CHUNK_SIZE][CHUNK_SIZE];
+f32 velocity_x_0[CHUNK_SIZE][CHUNK_SIZE];
+f32 velocity_y_0[CHUNK_SIZE][CHUNK_SIZE];
 // @DoNotSerialise 
 Ts2dTexture texture;
 } Chunk;

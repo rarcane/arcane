@@ -1,4 +1,7 @@
 internal void ProcessCell(Cell *cell);
+/* internal void ProcessAirCell(Cell *cell);
+internal void ProcessLiquidCell(Cell *cell); */
+internal void ProcessSolidCell(Cell *cell);
 // NOTE(tjr): Adds the desired chunk to texture update queue. Does nothing if the chunk is already queued.
 internal void QueueChunkForTextureUpdate(Chunk *chunk);
 

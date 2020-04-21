@@ -352,6 +352,31 @@ GameUpdate(void)
 
 		START_PERF_TIMER("Update");
 
+		// temp
+		if (platform->left_mouse_down)
+		{
+			Chunk *chunk = GetChunkAtIndex(0, -1);
+			Cell *cell = GetCellAtPosition((i32)roundf(GetMousePositionInWorldSpace().x), (i32)roundf(GetMousePositionInWorldSpace().y));
+
+			chunk->density[cell->y_position][cell->x_position] = 1.0f;
+
+			v2 vel = {platform->mouse_x - platform->last_mouse_x,
+					  platform->mouse_y - platform->last_mouse_y};
+
+			v2Normalise(&vel);
+
+			if (vel.x != 0.0f && vel.y != 0.0f)
+				Log("x: %f, y: %f", vel.x, vel.y);
+
+			chunk->velocity_x[cell->y_position][cell->x_position] += vel.x;
+			chunk->velocity_y[cell->y_position][cell->x_position] += vel.y;
+		}
+
+		Chunk *chunk = GetChunkAtIndex(0, -1);
+		chunk->density[150][100] = 1.0f;
+		chunk->velocity_x[150][100] = 1.0f;
+		chunk->velocity_y[150][100] = 0.0f;
+
 		// NOTE(tjr): Perform if the game is not paused.
 		if (core->world_delta_t != 0.0f)
 		{

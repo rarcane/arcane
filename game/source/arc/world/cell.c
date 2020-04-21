@@ -1,6 +1,127 @@
+static void set_bnd(i32 b, f32 x[CHUNK_SIZE][CHUNK_SIZE])
+{
+	for (i32 i = 1; i < CHUNK_SIZE - 1; i++)
+	{
+		x[0][i] = b == 2 ? -x[1][i] : x[1][i];
+		x[CHUNK_SIZE - 1][i] = b == 2 ? -x[CHUNK_SIZE - 2][i] : x[CHUNK_SIZE - 2][i];
+	}
+	for (i32 j = 1; j < CHUNK_SIZE - 1; j++)
+	{
+		x[j][0] = b == 1 ? -x[j][1] : x[j][1];
+		x[j][CHUNK_SIZE - 1] = b == 1 ? -x[j][CHUNK_SIZE - 2] : x[j][CHUNK_SIZE - 2];
+	}
+
+	x[0][0] = 0.5f * (x[0][1] + x[1][0]);
+	x[CHUNK_SIZE - 1][0] = 0.5f * (x[CHUNK_SIZE - 1][1] + x[CHUNK_SIZE - 2][0]);
+	x[0][CHUNK_SIZE - 1] = 0.5f * (x[0][CHUNK_SIZE - 2] + x[1][CHUNK_SIZE - 1]);
+	x[CHUNK_SIZE - 1][CHUNK_SIZE - 1] = 0.5f * (x[CHUNK_SIZE - 1][CHUNK_SIZE - 2] + x[CHUNK_SIZE - 2][CHUNK_SIZE - 1]);
+}
+
+static void lin_solve(i32 b, f32 x[CHUNK_SIZE][CHUNK_SIZE], f32 x0[CHUNK_SIZE][CHUNK_SIZE], f32 a, f32 c)
+{
+	f32 cRecip = 1.0f / c;
+	for (i32 k = 0; k < FLUID_ITER; k++)
+	{
+		for (i32 j = 1; j < CHUNK_SIZE - 1; j++)
+		{
+			for (i32 i = 1; i < CHUNK_SIZE - 1; i++)
+			{
+				x[j][i] = (x0[j][i] + a * (x[j][i + 1] + x[j][i - 1] + x[j + 1][i] + x[j - 1][i] + x[j][i] + x[j][i])) * cRecip;
+			}
+		}
+		set_bnd(b, x);
+	}
+}
+
+static void advect(i32 b, f32 d[CHUNK_SIZE][CHUNK_SIZE], f32 d0[CHUNK_SIZE][CHUNK_SIZE], f32 velocX[CHUNK_SIZE][CHUNK_SIZE], f32 velocY[CHUNK_SIZE][CHUNK_SIZE], f32 dt)
+{
+	f32 i0, i1, j0, j1;
+
+	f32 dtx = dt * (CHUNK_SIZE - 2);
+	f32 dty = dt * (CHUNK_SIZE - 2);
+
+	f32 s0, s1, t0, t1;
+	f32 tmp1, tmp2, x, y;
+
+	f32 Nfloat = CHUNK_SIZE;
+	f32 ifloat, jfloat;
+	i32 i, j;
+
+	for (j = 1, jfloat = 1; j < CHUNK_SIZE - 1; j++, jfloat++)
+	{
+		for (i = 1, ifloat = 1; i < CHUNK_SIZE - 1; i++, ifloat++)
+		{
+			tmp1 = dtx * velocX[j][i];
+			tmp2 = dty * velocY[j][i];
+			x = ifloat - tmp1;
+			y = jfloat - tmp2;
+
+			if (x < 0.5f)
+				x = 0.5f;
+			if (x > Nfloat + 0.5f)
+				x = Nfloat + 0.5f;
+			i0 = floorf(x);
+			i1 = i0 + 1.0f;
+			if (y < 0.5f)
+				y = 0.5f;
+			if (y > Nfloat + 0.5f)
+				y = Nfloat + 0.5f;
+			j0 = floorf(y);
+			j1 = j0 + 1.0f;
+
+			s1 = x - i0;
+			s0 = 1.0f - s1;
+			t1 = y - j0;
+			t0 = 1.0f - t1;
+
+			i32 i0i = (i32)i0;
+			i32 i1i = (i32)i1;
+			i32 j0i = (i32)j0;
+			i32 j1i = (i32)j1;
+
+			d[j][i] =
+				s0 * (t0 * d0[j0i][i0i] + t1 * d0[j1i][i0i]) +
+				s1 * (t0 * d0[j0i][i1i] + t1 * d0[j1i][i1i]);
+		}
+	}
+	set_bnd(b, d);
+}
+
+static void project(f32 velocX[CHUNK_SIZE][CHUNK_SIZE], f32 velocY[CHUNK_SIZE][CHUNK_SIZE], f32 p[CHUNK_SIZE][CHUNK_SIZE], f32 div[CHUNK_SIZE][CHUNK_SIZE])
+{
+	for (i32 j = 1; j < CHUNK_SIZE - 1; j++)
+	{
+		for (i32 i = 1; i < CHUNK_SIZE - 1; i++)
+		{
+			div[j][i] = -0.5f * (velocX[j][i + 1] - velocX[j][i - 1] + velocY[j + 1][i] - velocY[j - 1][i]) / CHUNK_SIZE;
+			p[j][i] = 0;
+		}
+	}
+	set_bnd(0, div);
+	set_bnd(0, p);
+	lin_solve(0, p, div, 1, 6);
+
+	for (i32 j = 1; j < CHUNK_SIZE - 1; j++)
+	{
+		for (i32 i = 1; i < CHUNK_SIZE - 1; i++)
+		{
+			velocX[j][i] -= 0.5f * (p[j][i + 1] - p[j][i - 1]) * CHUNK_SIZE;
+			velocY[j][i] -= 0.5f * (p[j + 1][i] - p[j - 1][i]) * CHUNK_SIZE;
+		}
+	}
+	set_bnd(1, velocX);
+	set_bnd(2, velocY);
+}
+
+static void diffuse(i32 b, f32 x[CHUNK_SIZE][CHUNK_SIZE], f32 x0[CHUNK_SIZE][CHUNK_SIZE], f32 diff, f32 dt)
+{
+	f32 a = dt * diff * (CHUNK_SIZE - 2) * (CHUNK_SIZE - 2);
+	lin_solve(b, x, x0, a, 1 + 6 * a);
+}
+
 internal void UpdateCells()
 {
-	for (int i = 0; i < core->run_data->dynamic_cell_count; i++)
+	for (i32 i = 0; i < core->run_data->dynamic_cell_count; i++)
 	{
 		Cell *cell = core->run_data->dynamic_cells[i];
 		if (cell)
@@ -9,6 +130,26 @@ internal void UpdateCells()
 						 "The cell's dynamic ID is mismatched with the array.");
 			ProcessCell(cell);
 		}
+	}
+
+	//for (i32 i = 0; i < core->world_data->active_chunk_count; i++)
+	{
+		Chunk *chunk = GetChunkAtIndex(0, -1);
+
+		f32 delta = core->world_delta_t;
+
+		diffuse(1, chunk->velocity_x_0, chunk->velocity_x, FLUID_VISCOSITY, delta);
+		diffuse(2, chunk->velocity_y_0, chunk->velocity_y, FLUID_VISCOSITY, delta);
+
+		project(chunk->velocity_x_0, chunk->velocity_y_0, chunk->velocity_x, chunk->velocity_y);
+
+		advect(1, chunk->velocity_x, chunk->velocity_x_0, chunk->velocity_x_0, chunk->velocity_y_0, delta);
+		advect(2, chunk->velocity_y, chunk->velocity_y_0, chunk->velocity_x_0, chunk->velocity_y_0, delta);
+
+		project(chunk->velocity_x, chunk->velocity_y, chunk->velocity_x_0, chunk->velocity_y_0);
+
+		diffuse(0, chunk->s, chunk->density, FLUID_DIFFUSION, delta);
+		advect(0, chunk->density, chunk->s, chunk->velocity_x, chunk->velocity_y, delta);
 	}
 }
 
@@ -19,51 +160,58 @@ internal void ProcessCell(Cell *cell)
 	CellMaterialTypeData *cell_type_data = &cell_material_type_data[cell->material_type];
 	switch (cell_type_data->properties_type)
 	{
+	case CELL_PROPERTIES_TYPE_solid:
+		ProcessSolidCell(cell);
+		break;
+	case CELL_PROPERTIES_TYPE_air: // Might actually implement these as basic cell movements to do a rough sim of them first, and then fluid dynamics
+		break;
+	case CELL_PROPERTIES_TYPE_liquid:
+		break;
+	default:
+		R_TODO;
+		break;
+	}
+}
+
+/* internal void ProcessAirCell(Cell *cell)
+{
+	CellMaterialTypeData *cell_type_data = &cell_material_type_data[cell->material_type];
+	StaticAirProperties *static_air_properties = &cell_type_data->static_properties.air;
+	DynamicAirProperties *dynamic_air_properties = &cell->dynamic_properties.air;
+}
+
+internal void ProcessLiquidCell(Cell *cell)
+{
+	CellMaterialTypeData *cell_type_data = &cell_material_type_data[cell->material_type];
+	StaticLiquidProperties *static_liquid_properties = &cell_type_data->static_properties.liquid;
+	DynamicLiquidProperties *dynamic_liquid_properties = &cell->dynamic_properties.liquid;
+} */
+
+internal void ProcessSolidCell(Cell *cell)
+{
+	CellMaterialTypeData *cell_type_data = &cell_material_type_data[cell->material_type];
+	StaticSolidProperties *static_solid_properties = &cell_type_data->static_properties.solid;
+	DynamicSolidProperties *dynamic_solid_properties = &cell->dynamic_properties.solid;
+
+	// TODO: Change this to a velocity-based move system. Keep it simple for now though.
+	Cell *cell_below = GetCellAtPosition(cell->x_position, cell->y_position + 1);
+	CellMaterialTypeData *cell_below_type_data = &cell_material_type_data[cell_below->material_type];
+	switch (cell_below_type_data->properties_type)
+	{
 	case CELL_PROPERTIES_TYPE_air:
 	{
-		StaticAirProperties *static_air_properties = &cell_type_data->static_properties.air;
-		DynamicAirProperties *dynamic_air_properties = &cell->dynamic_properties.air;
+		// Move solid down
+		// TODO: displace air pressure
+		SwapCells(cell, cell_below);
 
 		break;
 	}
 	case CELL_PROPERTIES_TYPE_liquid:
 	{
-		StaticLiquidProperties *static_liquid_properties = &cell_type_data->static_properties.liquid;
-		DynamicLiquidProperties *dynamic_liquid_properties = &cell->dynamic_properties.liquid;
-
 		break;
 	}
 	case CELL_PROPERTIES_TYPE_solid:
 	{
-		StaticSolidProperties *static_solid_properties = &cell_type_data->static_properties.solid;
-		DynamicSolidProperties *dynamic_solid_properties = &cell->dynamic_properties.solid;
-
-		// TODO: Change this to a velocity-based move system. Keep it simple for now though.
-		Cell *cell_below = GetCellAtPosition(cell->x_position, cell->y_position + 1);
-		CellMaterialTypeData *cell_below_type_data = &cell_material_type_data[cell_below->material_type];
-		switch (cell_below_type_data->properties_type)
-		{
-		case CELL_PROPERTIES_TYPE_air:
-		{
-			// Move solid down
-			// TODO: displace air pressure
-			SwapCells(cell, cell_below);
-
-			break;
-		}
-		case CELL_PROPERTIES_TYPE_liquid:
-		{
-			break;
-		}
-		case CELL_PROPERTIES_TYPE_solid:
-		{
-			break;
-		}
-		default:
-			R_TODO;
-			break;
-		}
-
 		break;
 	}
 	default:
@@ -94,9 +242,9 @@ internal void RenderCells()
 		unsigned char pixel_data[CHUNK_SIZE * CHUNK_SIZE * 4];
 		unsigned char *pixel_buffer = &pixel_data[0];
 
-		for (int y = 0; y < CHUNK_SIZE; y++)
+		for (i32 y = 0; y < CHUNK_SIZE; y++)
 		{
-			for (int x = 0; x < CHUNK_SIZE; x++)
+			for (i32 x = 0; x < CHUNK_SIZE; x++)
 			{
 				Cell *cell = &chunk->cells[y][x];
 				v4 colour;
@@ -169,6 +317,39 @@ internal void RenderCells()
 				{
 					colour = V4MultiplyV4(colour, v4u(0.75f));
 				}
+
+				*pixel_buffer = (unsigned char)(ClampF32(colour.r, 0.0f, 1.0f) * 255.0f);
+				pixel_buffer++;
+				*pixel_buffer = (unsigned char)(ClampF32(colour.g, 0.0f, 1.0f) * 255.0f);
+				pixel_buffer++;
+				*pixel_buffer = (unsigned char)(ClampF32(colour.b, 0.0f, 1.0f) * 255.0f);
+				pixel_buffer++;
+				*pixel_buffer = (unsigned char)(ClampF32(colour.a, 0.0f, 1.0f) * 255.0f);
+				pixel_buffer++;
+			}
+		}
+
+		chunk->texture = Ts2dTextureInit(TS2D_TEXTURE_FORMAT_R8G8B8A8,
+										 CHUNK_SIZE,
+										 CHUNK_SIZE,
+										 pixel_data);
+	}
+
+	{
+		Chunk *chunk = GetChunkAtIndex(0, -1);
+		unsigned char pixel_data[CHUNK_SIZE * CHUNK_SIZE * 4];
+		unsigned char *pixel_buffer = &pixel_data[0];
+
+		for (i32 y = 0; y < CHUNK_SIZE; y++)
+		{
+			for (i32 x = 0; x < CHUNK_SIZE; x++)
+			{
+				f32 density = chunk->density[y][x];
+
+				//R_DEV_ASSERT(density >= -1.0f && density <= 1.0f, "Out of range");
+
+				v4 colour = v4u(1.0f);
+				colour = V4MultiplyF32(colour, ClampF32(fabsf(density), 0.0f, 1.0f));
 
 				*pixel_buffer = (unsigned char)(ClampF32(colour.r, 0.0f, 1.0f) * 255.0f);
 				pixel_buffer++;
@@ -289,7 +470,7 @@ internal void MakeCellDynamic(Cell *cell)
 		if (core->run_data->dynamic_cell_count != core->run_data->free_dynamic_cell_id - 1)
 		{
 			b8 found = 0;
-			for (int i = 0; i < core->run_data->dynamic_cell_count + 1; i++)
+			for (i32 i = 0; i < core->run_data->dynamic_cell_count + 1; i++)
 			{
 				if (!core->run_data->dynamic_cells[i])
 				{
@@ -370,7 +551,7 @@ internal CellMaterial *NewCellMaterial(Cell *cell, CellMaterialType material_typ
 
 		// Free index would have been used. Find the next one.
 		b8 found = 0;
-		for (int i = 0; i < chunk->cell_material_count + 1; i++)
+		for (i32 i = 0; i < chunk->cell_material_count + 1; i++)
 		{
 			if (chunk->cell_materials[i].id == 0)
 			{
@@ -387,7 +568,7 @@ internal CellMaterial *NewCellMaterial(Cell *cell, CellMaterialType material_typ
 
 internal void DeleteMaterialFromChunk(ChunkData *chunk, CellMaterial *material)
 {
-	for (int i = 0; i < chunk->cell_material_count; i++)
+	for (i32 i = 0; i < chunk->cell_material_count; i++)
 	{
 		CellMaterial *existing = &chunk->cell_materials[i];
 		if (existing == material)
@@ -506,7 +687,7 @@ internal Cell *GetCellAtRelativePosition(Cell *relative_cell, i32 x, i32 y)
 
 internal void AddCellChunkToUpdateQueue(CellChunk *cell_chunk)
 {
-	for (int i = 0; i < core->queued_cell_chunk_count; i++)
+	for (i32 i = 0; i < core->queued_cell_chunk_count; i++)
 	{
 		CellChunk *existing = core->queued_cell_chunks_for_update[i];
 		if (existing == cell_chunk)
@@ -531,7 +712,7 @@ internal b8 ShouldMaterialHarden(CellMaterial *material)
 	CellMaterialTypeData *material_type_data = &cell_material_type_data[material->material_type];
 
 	i32 distance_from_air_above = 0;
-	for (int i = 1; i <= material_type_data->crust_depth; i++)
+	for (i32 i = 1; i <= material_type_data->crust_depth; i++)
 	{
 		Cell *neighbour_cell = GetCellAtRelativePosition(cell, 0, -i);
 		if (!neighbour_cell->material)
@@ -544,7 +725,7 @@ internal b8 ShouldMaterialHarden(CellMaterial *material)
 	if (distance_from_air_above)
 	{
 		b8 is_support_below = 0;
-		for (int i = 1; i <= material_type_data->crust_depth + 1 - distance_from_air_above; i++)
+		for (i32 i = 1; i <= material_type_data->crust_depth + 1 - distance_from_air_above; i++)
 		{
 			Cell *neighbour_cell = GetCellAtRelativePosition(cell, 0, i);
 			if (neighbour_cell->material)
@@ -601,7 +782,7 @@ internal void ProcessCellMaterial(CellMaterial *material)
 			if (abs(x_cell_steps) > 0 || abs(y_cell_steps) > 0)
 			{
 				b8 break_loop = 0;
-				for (int j = 1; j < (x_is_larger ? abs(x_cell_steps) : abs(y_cell_steps)) + 1; j++)
+				for (i32 j = 1; j < (x_is_larger ? abs(x_cell_steps) : abs(y_cell_steps)) + 1; j++)
 				{
 					if (break_loop)
 						break;
@@ -771,7 +952,7 @@ internal void ProcessCellMaterial(CellMaterial *material)
 			f32 remaining_air_pressure = material_properties->pressure;
 
 			i32 rand_start = RandomI32(0, 3);
-			for (int i = rand_start; i < rand_start + 4; i++)
+			for (i32 i = rand_start; i < rand_start + 4; i++)
 			{
 				Cell *neighbour_cell = 0;
 				if (i % 4 == 0)
@@ -933,7 +1114,7 @@ internal void ProcessCellMaterial(CellMaterial *material)
 
 internal void UpdateCellMaterials()
 {
-	for (int h = 0; h < core->world_data->active_chunk_count; h++)
+	for (i32 h = 0; h < core->world_data->active_chunk_count; h++)
 	{
 		ChunkData *chunk = &core->world_data->active_chunks[h];
 
@@ -943,11 +1124,11 @@ internal void UpdateCellMaterials()
 
 		R_DEV_ASSERT(dynamic_cell_material_count < MAX_DYNAMIC_CELLS, "Too many dynamic cells");
 
-		for (int i = 0; i < MAX_DYNAMIC_CELLS; i++)
+		for (i32 i = 0; i < MAX_DYNAMIC_CELLS; i++)
 			chunk->dynamic_cell_materials[i] = 0;
 		chunk->dynamic_cell_material_count = 0;
 
-		for (int i = 0; i < dynamic_cell_material_count; i++)
+		for (i32 i = 0; i < dynamic_cell_material_count; i++)
 		{
 			CellMaterial *material = dynamic_cell_materials[i];
 
@@ -990,7 +1171,7 @@ internal void UpdateCellMaterials()
 		}
 
 		// Process cell
-		for (int i = 0; i < dynamic_cell_material_count; i++)
+		for (i32 i = 0; i < dynamic_cell_material_count; i++)
 		{
 			CellMaterial *material = dynamic_cell_materials[i];
 			if (material->id && !material->has_been_updated)
@@ -998,7 +1179,7 @@ internal void UpdateCellMaterials()
 		}
 
 		// New mass values
-		for (int i = 0; i < chunk->dynamic_cell_material_count; i++)
+		for (i32 i = 0; i < chunk->dynamic_cell_material_count; i++)
 		{
 			CellMaterial *material = chunk->dynamic_cell_materials[i];
 			if (material->material_type == CELL_MATERIAL_TYPE_water)
@@ -1017,7 +1198,7 @@ internal void RenderCells()
 		return;
 #endif
 
-	for (int i = 0; i < core->queued_cell_chunk_count; i++)
+	for (i32 i = 0; i < core->queued_cell_chunk_count; i++)
 	{
 		CellChunk *cell_chunk = core->queued_cell_chunks_for_update[i];
 		UpdateCellChunkTexture(cell_chunk);
@@ -1025,13 +1206,13 @@ internal void RenderCells()
 	}
 	core->queued_cell_chunk_count = 0;
 
-	for (int h = 0; h < core->world_data->active_chunk_count; h++)
+	for (i32 h = 0; h < core->world_data->active_chunk_count; h++)
 	{
 		ChunkData *chunk = &core->world_data->active_chunks[h];
 
-		for (int i = 0; i < CHUNK_SIZE / CELL_CHUNK_SIZE; i++)
+		for (i32 i = 0; i < CHUNK_SIZE / CELL_CHUNK_SIZE; i++)
 		{
-			for (int j = 0; j < CHUNK_SIZE / CELL_CHUNK_SIZE; j++)
+			for (i32 j = 0; j < CHUNK_SIZE / CELL_CHUNK_SIZE; j++)
 			{
 				CellChunk *cell_chunk = &chunk->cell_chunks[i][j];
 
@@ -1049,9 +1230,9 @@ internal void RenderCells()
 
 internal void UpdateChunkTextures(ChunkData *chunk)
 {
-	for (int i = 0; i < CHUNK_SIZE / CELL_CHUNK_SIZE; i++)
+	for (i32 i = 0; i < CHUNK_SIZE / CELL_CHUNK_SIZE; i++)
 	{
-		for (int j = 0; j < CHUNK_SIZE / CELL_CHUNK_SIZE; j++)
+		for (i32 j = 0; j < CHUNK_SIZE / CELL_CHUNK_SIZE; j++)
 		{
 			CellChunk *cell_chunk = &chunk->cell_chunks[i][j];
 			UpdateCellChunkTexture(cell_chunk);
@@ -1064,9 +1245,9 @@ internal void UpdateCellChunkTexture(CellChunk *chunk)
 	unsigned char pixel_data[CHUNK_SIZE * CHUNK_SIZE * 4];
 	unsigned char *pixel_buffer = &pixel_data[0];
 
-	for (int y = 0; y < CELL_CHUNK_SIZE; y++)
+	for (i32 y = 0; y < CELL_CHUNK_SIZE; y++)
 	{
-		for (int x = 0; x < CELL_CHUNK_SIZE; x++)
+		for (i32 x = 0; x < CELL_CHUNK_SIZE; x++)
 		{
 			Cell *cell = &chunk->cells[y][x];
 			v4 colour;

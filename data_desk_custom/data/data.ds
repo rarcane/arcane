@@ -506,6 +506,10 @@ Entity :: struct
 
 FLUID_COMPRESSION :: 0.01f
 
+FLUID_ITER :: 4
+FLUID_DIFFUSION :: 0.0f
+FLUID_VISCOSITY :: 0.0f
+
 CellPropertiesType :: enum
 {
 	air,
@@ -520,9 +524,12 @@ DynamicAirProperties :: struct
 }
 DynamicLiquidProperties :: struct
 {
-	//flow : v2;
+	prev_velocity : v2;
+	prev_density : f32;
+	velocity : v2;
+	density : f32; // Dye density, not the density of the water.
+	
 	mass : f32;
-	new_mass : f32;
 }
 DynamicSolidProperties :: struct
 {
@@ -607,6 +614,13 @@ Chunk :: struct
 	y_index : i32;
 	
 	cells : Cell[CHUNK_SIZE][CHUNK_SIZE];
+	
+	s : f32[CHUNK_SIZE][CHUNK_SIZE];
+	density : f32[CHUNK_SIZE][CHUNK_SIZE];
+	velocity_x : f32[CHUNK_SIZE][CHUNK_SIZE];
+	velocity_y : f32[CHUNK_SIZE][CHUNK_SIZE];
+	velocity_x_0 : f32[CHUNK_SIZE][CHUNK_SIZE];
+	velocity_y_0 : f32[CHUNK_SIZE][CHUNK_SIZE];
 	
 	@DoNotSerialise
 	texture : Ts2dTexture;
