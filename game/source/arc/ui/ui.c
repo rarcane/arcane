@@ -813,8 +813,8 @@ internal void DrawEditorUI()
 			{
 				if (TsUIToggler("Erase", selected_material == -1))
 					selected_material = -1;
-				/* if (TsUIToggler("Air", selected_material == CELL_MATERIAL_TYPE_air))
-					selected_material = CELL_MATERIAL_TYPE_air; */
+				if (TsUIToggler("Air", selected_material == CELL_MATERIAL_TYPE_air))
+					selected_material = CELL_MATERIAL_TYPE_air;
 				if (TsUIToggler("Dirt", selected_material == CELL_MATERIAL_TYPE_dirt))
 					selected_material = CELL_MATERIAL_TYPE_dirt;
 				/* if (TsUIToggler("Sand", selected_material == CELL_MATERIAL_TYPE_sand))
@@ -886,7 +886,11 @@ internal void DrawEditorUI()
 			{
 				local_persist Cell *selected_dynamic_cell = 0;
 
-				for (i32 i = 0; i < core->run_data->dynamic_cell_count; i++)
+				char label[20];
+				sprintf(label, "Dynamic Cell Count: %i", core->run_data->dynamic_cell_count);
+				TsUILabel(label);
+
+				/* for (i32 i = 0; i < core->run_data->dynamic_cell_count; i++)
 				{
 					Cell *dyn_cell = core->run_data->dynamic_cells[i];
 					if (dyn_cell)
@@ -900,7 +904,7 @@ internal void DrawEditorUI()
 					}
 					else
 						TsUILabel("- - - - - -");
-				}
+				} */
 
 				TsUICollapsableEnd();
 			}
@@ -922,7 +926,10 @@ internal void DrawEditorUI()
 				if (selected_material != -1)
 				{
 					cell->material_type = selected_material;
-					MakeCellDynamic(cell);
+					if (cell->material_type == CELL_MATERIAL_TYPE_air)
+						cell->dynamic_properties.air.pressure = pressure;
+					if (!cell->dynamic_id)
+						MakeCellDynamic(cell);
 					QueueChunkForTextureUpdate(GetChunkAtCell(cell));
 				}
 			}
@@ -931,6 +938,10 @@ internal void DrawEditorUI()
 				if (selected_material == -1)
 				{
 					DeleteCell(cell);
+				}
+				else if (cell->material_type == CELL_MATERIAL_TYPE_air && selected_material == CELL_MATERIAL_TYPE_air)
+				{
+					cell->dynamic_properties.air.pressure = pressure;
 				}
 			}
 
@@ -949,7 +960,11 @@ internal void DrawEditorUI()
 						if (selected_material != -1)
 						{
 							cell->material_type = selected_material;
-							MakeCellDynamic(cell);
+							if (cell->material_type == CELL_MATERIAL_TYPE_air)
+								cell->dynamic_properties.air.pressure = pressure;
+							if (!cell->dynamic_id)
+								MakeCellDynamic(cell);
+							QueueChunkForTextureUpdate(GetChunkAtCell(cell));
 						}
 					}
 					else
@@ -957,6 +972,10 @@ internal void DrawEditorUI()
 						if (selected_material == -1)
 						{
 							DeleteCell(cell);
+						}
+						else if (cell->material_type == CELL_MATERIAL_TYPE_air && selected_material == CELL_MATERIAL_TYPE_air)
+						{
+							cell->dynamic_properties.air.pressure = pressure;
 						}
 					}
 				}

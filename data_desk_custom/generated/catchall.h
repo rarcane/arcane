@@ -562,9 +562,7 @@ GeneralisedEntityType generalised_type;
 } Entity;
 
 #define FLUID_COMPRESSION (0.01f)
-#define FLUID_ITER (4)
-#define FLUID_DIFFUSION (0.0f)
-#define FLUID_VISCOSITY (0.0f)
+#define MINIMUM_AIR_PRESSURE (1.0f)
 typedef enum CellPropertiesType CellPropertiesType;
 enum CellPropertiesType
 {
@@ -673,12 +671,6 @@ i32 entity_count;
 i32 x_index;
 i32 y_index;
 Cell cells[CHUNK_SIZE][CHUNK_SIZE];
-f32 s[CHUNK_SIZE][CHUNK_SIZE];
-f32 density[CHUNK_SIZE][CHUNK_SIZE];
-f32 velocity_x[CHUNK_SIZE][CHUNK_SIZE];
-f32 velocity_y[CHUNK_SIZE][CHUNK_SIZE];
-f32 velocity_x_0[CHUNK_SIZE][CHUNK_SIZE];
-f32 velocity_y_0[CHUNK_SIZE][CHUNK_SIZE];
 // @DoNotSerialise 
 Ts2dTexture texture;
 } Chunk;
@@ -715,6 +707,8 @@ b8 disable_chunk_view_loading;
 Cell *dynamic_cells[MAX_DYNAMIC_CELLS];
 i32 dynamic_cell_count;
 i32 free_dynamic_cell_id;
+Cell *queued_dynamic_cells[MAX_DYNAMIC_CELLS];
+i32 queued_dynamic_cell_count;
 EditorState editor_state;
 EditorFlags editor_flags;
 Entity *selected_entity;
