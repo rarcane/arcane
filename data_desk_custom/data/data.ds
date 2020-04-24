@@ -78,6 +78,8 @@ EditorFlags :: flags
 	draw_world,
 	draw_collision,
 	draw_chunk_grid,
+	debug_cell_view,
+	manual_step,
 }
 
 ItemFlags :: flags
@@ -522,11 +524,6 @@ DynamicAirProperties :: struct
 }
 DynamicLiquidProperties :: struct
 {
-	prev_velocity : v2;
-	prev_density : f32;
-	velocity : v2;
-	density : f32; // Dye density, not the density of the water.
-	
 	mass : f32;
 }
 DynamicSolidProperties :: struct
@@ -586,9 +583,12 @@ CellMaterialType :: enum
 @SerialisableStruct
 Cell :: struct
 {
+	// Don't serialise these
 	dynamic_id : i32;
 	x_position : i32;
 	y_position : i32;
+	parent_chunk : *Chunk;
+	// ~
 	
 	material_type : CellMaterialType;
 	dynamic_properties : DynamicCellProperties;
@@ -659,6 +659,10 @@ RunData :: struct
 	editor_flags : EditorFlags;
 	// ~ Entity Editor
 	selected_entity : *Entity;
+	// ~ Terrain editor
+	selected_cell : *Cell;
+	selection_start : v2;
+	selection_end : v2;
 	// ~ Collision editor
 	selected_ground_seg : *GroundSegmentEntity;
 	is_seg_grabbed : b8;

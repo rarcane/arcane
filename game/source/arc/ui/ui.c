@@ -781,28 +781,51 @@ internal void DrawEditorUI()
 
 	case EDITOR_STATE_terrain:
 	{
+		// NOTE(tjr): Functionality list
+		// Left click to use the selected brush
+		// Right click press to select a single cell
+		// Right click hold to select a region
+
 		local_persist CellMaterialType selected_material = -1;
 		local_persist i32 brush_size = 1;
 		local_persist f32 pressure = 100.0f;
-		local_persist v2 selection_start = {0};
-		local_persist v2 selection_end = {0};
 
+		// TODO: refactor this when the render queue is added.
 		if (platform->right_mouse_pressed)
 		{
-			selection_start = GetMousePositionInWorldSpace();
-			selection_start.x = roundf(selection_start.x);
-			selection_start.y = roundf(selection_start.y);
-			selection_end = selection_start;
+			core->run_data->selection_start = GetMousePositionInWorldSpace();
+			core->run_data->selection_start.x = floorf(core->run_data->selection_start.x);
+			core->run_data->selection_start.y = floorf(core->run_data->selection_start.y);
+			core->run_data->selection_end = core->run_data->selection_start;
+
+			if (core->run_data->selected_cell)
+				QueueChunkForTextureUpdate(core->run_data->selected_cell->parent_chunk);
+			core->run_data->selected_cell = GetCellAtPosition((i32)core->run_data->selection_start.x, (i32)core->run_data->selection_start.y);
+			QueueChunkForTextureUpdate(core->run_data->selected_cell->parent_chunk);
 		}
+		else if (core->right_mouse_released)
+		{
+			if (core->run_data->selection_start.x != core->run_data->selection_end.x && core->run_data->selection_start.y != core->run_data->selection_end.y)
+			{
+				QueueChunkForTextureUpdate(core->run_data->selected_cell->parent_chunk);
+				core->run_data->selected_cell = 0;
+			}
+		}
+
 		if (platform->right_mouse_down)
 		{
-			selection_end = GetMousePositionInWorldSpace();
-			selection_end.x = roundf(selection_end.x);
-			selection_end.y = roundf(selection_end.y);
+			core->run_data->selection_end = GetMousePositionInWorldSpace();
+			core->run_data->selection_end.x = floorf(core->run_data->selection_end.x);
+			core->run_data->selection_end.y = floorf(core->run_data->selection_end.y);
+
+			if (core->run_data->selected_cell)
+				QueueChunkForTextureUpdate(core->run_data->selected_cell->parent_chunk);
+			core->run_data->selected_cell = GetCellAtPosition((i32)core->run_data->selection_end.x, (i32)core->run_data->selection_end.y);
+			QueueChunkForTextureUpdate(core->run_data->selected_cell->parent_chunk);
 		}
 
 		v2 window_size = {300.0f, 400.0f};
-		TsUIWindowBegin("Cell Editor", v4(core->render_w - window_size.x - 10.0f, 10.0f, window_size.x, window_size.y), 0, 0);
+		TsUIWindowBegin("Sculpting", v4(core->render_w - window_size.x - 10.0f, 10.0f, window_size.x, window_size.y), 0, 0);
 		{
 			TsUIPushColumn(v2(10, 10), v2(150, 30));
 			TsUIPushWidth(270.0f);
@@ -815,12 +838,12 @@ internal void DrawEditorUI()
 					selected_material = -1;
 				if (TsUIToggler("Air", selected_material == CELL_MATERIAL_TYPE_air))
 					selected_material = CELL_MATERIAL_TYPE_air;
+				if (TsUIToggler("Water", selected_material == CELL_MATERIAL_TYPE_water))
+					selected_material = CELL_MATERIAL_TYPE_water;
 				if (TsUIToggler("Dirt", selected_material == CELL_MATERIAL_TYPE_dirt))
 					selected_material = CELL_MATERIAL_TYPE_dirt;
 				/* if (TsUIToggler("Sand", selected_material == CELL_MATERIAL_TYPE_sand))
-					selected_material = CELL_MATERIAL_TYPE_sand;
-				if (TsUIToggler("Water", selected_material == CELL_MATERIAL_TYPE_water))
-					selected_material = CELL_MATERIAL_TYPE_water; */
+					selected_material = CELL_MATERIAL_TYPE_sand; */
 
 				TsUICollapsableEnd();
 			}
@@ -829,47 +852,6 @@ internal void DrawEditorUI()
 			{
 				pressure = TsUISlider("Pressure", pressure, 0.0f, 250.0f);
 			}
-
-			// core->world_delta_mult = TsUISlider("Simulation Speed", core->world_delta_mult, 0.0f, 1.0f);
-
-			{
-				char start[50];
-				sprintf(start, "Start: %f, %f", selection_start.x, selection_start.y);
-
-				char end[50];
-				sprintf(end, "End: %f, %f", selection_end.x, selection_end.y);
-
-				TsUILabel(start);
-				TsUILabel(end);
-			}
-
-			/* if (selection_start.x != selection_end.x && selection_start.y != selection_end.y && TsUIButton("Bake Selection"))
-			{
-				v2 selection_bounds = V2SubtractV2(selection_end, selection_start);
-
-				for (int y = 1; y < fabsf(selection_bounds.y); y++)
-				{
-					for (int x = 1; x < fabsf(selection_bounds.x); x++)
-					{
-						Cell *cell = GetCellAtPosition((i32)selection_start.x + x * GetSign(selection_bounds.x), (i32)selection_start.y + y * GetSign(selection_bounds.y));
-						if (cell->material && cell->material->properties_type == CELL_PROPERTIES_TYPE_solid)
-						{
-							if (ShouldMaterialHarden(cell->material))
-							{
-								cell->material->properties.solid.hardness = 1.0f;
-								cell->material->is_material_dynamic = 0;
-								cell->material->properties.solid.velocity = v2(0.0f, 0.0f);
-								cell->material->mass = 0;
-							}
-						}
-					}
-				}
-
-				ChunkData *start_chunk = GetChunkAtPosition(selection_start);
-				ChunkData *end_chunk = GetChunkAtPosition(selection_end);
-				UpdateChunkTextures(start_chunk);
-				UpdateChunkTextures(end_chunk);
-			} */
 
 			TsUIPopWidth();
 			TsUIPopColumn();
@@ -882,15 +864,109 @@ internal void DrawEditorUI()
 			TsUIPushColumn(v2(10, 10), v2(150, 30));
 			TsUIPushWidth(270.0f);
 
-			if (TsUICollapsable("Dynamic Cell Array"))
+			// core->world_delta_mult = TsUISlider("Simulation Speed", core->world_delta_mult, 0.0f, 1.0f);
+
+			{
+				char lbl[20];
+				sprintf(lbl, "Dynamic Cell Count: %i", core->run_data->dynamic_cell_count);
+				TsUILabel(lbl);
+			}
+
+			if (core->run_data->selected_cell)
+			{
+				if (TsUICollapsable("Selected Cell"))
+				{
+					// TODO: Auto @Printable tagging in dd
+
+					TsUILabel(GetCellMaterialTypeName(core->run_data->selected_cell->material_type));
+
+					{
+						char lbl[20];
+						sprintf(lbl, "Dynamic ID #%i", core->run_data->selected_cell->dynamic_id);
+						TsUILabel(lbl);
+					}
+
+					{
+						char lbl[20];
+						sprintf(lbl, "Air Pressure: %f", core->run_data->selected_cell->dynamic_properties.air.pressure);
+						TsUILabel(lbl);
+					}
+
+					{
+						char lbl[20];
+						sprintf(lbl, "Liquid Mass: %f", core->run_data->selected_cell->dynamic_properties.liquid.mass);
+						TsUILabel(lbl);
+					}
+
+					TsUICollapsableEnd();
+				}
+
+				if (TsUIButton("Clear Selection"))
+				{
+					QueueChunkForTextureUpdate(core->run_data->selected_cell->parent_chunk);
+					core->run_data->selected_cell = 0;
+				}
+			}
+			else if (core->run_data->selection_start.x != core->run_data->selection_end.x && core->run_data->selection_start.y != core->run_data->selection_end.y)
+			{
+				{
+					char start[50];
+					sprintf(start, "Selection Start: %f, %f", core->run_data->selection_start.x, core->run_data->selection_start.y);
+
+					char end[50];
+					sprintf(end, "Selection End: %f, %f", core->run_data->selection_end.x, core->run_data->selection_end.y);
+
+					TsUILabel(start);
+					TsUILabel(end);
+				}
+
+				if (TsUIButton("Bake Selection"))
+				{
+					/* v2 selection_bounds = V2SubtractV2(core->run_data->selection_end, core->run_data->selection_start);
+
+					for (int y = 1; y < fabsf(selection_bounds.y); y++)
+					{
+						for (int x = 1; x < fabsf(selection_bounds.x); x++)
+						{
+							Cell *cell = GetCellAtPosition((i32)core->run_data->selection_start.x + x * GetSign(selection_bounds.x), (i32)core->run_data->selection_start.y + y * GetSign(selection_bounds.y));
+							if (cell->material && cell->material->properties_type == CELL_PROPERTIES_TYPE_solid)
+							{
+								if (ShouldMaterialHarden(cell->material))
+								{
+									cell->material->properties.solid.hardness = 1.0f;
+									cell->material->is_material_dynamic = 0;
+									cell->material->properties.solid.velocity = v2(0.0f, 0.0f);
+									cell->material->mass = 0;
+								}
+							}
+						}
+					}
+
+					ChunkData *start_chunk = GetChunkAtPosition(core->run_data->selection_start);
+					ChunkData *end_chunk = GetChunkAtPosition(core->run_data->selection_end);
+					UpdateChunkTextures(start_chunk);
+					UpdateChunkTextures(end_chunk); */
+				}
+
+				if (TsUIButton("Clear Region"))
+				{
+					core->run_data->selection_start = v2(0, 0);
+					core->run_data->selection_end = v2(0, 0);
+				}
+			}
+			else
+			{
+				TsUILabel("Make a selection with RMB");
+			}
+
+			if (core->world_delta_t == 0.0f && TsUIButton("Step Simulation"))
+				core->run_data->editor_flags |= EDITOR_FLAGS_manual_step;
+
+			/* if (TsUICollapsable("Dynamic Cell Array"))
 			{
 				local_persist Cell *selected_dynamic_cell = 0;
 
-				char label[20];
-				sprintf(label, "Dynamic Cell Count: %i", core->run_data->dynamic_cell_count);
-				TsUILabel(label);
-
-				/* for (i32 i = 0; i < core->run_data->dynamic_cell_count; i++)
+				for (i32 i = 0; i < core->run_data->dynamic_cell_count; i++)
 				{
 					Cell *dyn_cell = core->run_data->dynamic_cells[i];
 					if (dyn_cell)
@@ -904,10 +980,10 @@ internal void DrawEditorUI()
 					}
 					else
 						TsUILabel("- - - - - -");
-				} */
+				}
 
 				TsUICollapsableEnd();
-			}
+			} */
 
 			TsUIPopWidth();
 			TsUIPopColumn();
@@ -926,11 +1002,32 @@ internal void DrawEditorUI()
 				if (selected_material != -1)
 				{
 					cell->material_type = selected_material;
-					if (cell->material_type == CELL_MATERIAL_TYPE_air)
+
+					switch (cell_material_type_data[cell->material_type].properties_type)
+					{
+					case CELL_PROPERTIES_TYPE_air:
+					{
 						cell->dynamic_properties.air.pressure = pressure;
+						break;
+					}
+					case CELL_PROPERTIES_TYPE_liquid:
+					{
+						cell->dynamic_properties.liquid.mass = 1.0f;
+						break;
+					}
+					case CELL_PROPERTIES_TYPE_solid:
+					{
+						break;
+					}
+					default:
+						R_TODO;
+						break;
+					}
+
 					if (!cell->dynamic_id)
 						MakeCellDynamic(cell);
-					QueueChunkForTextureUpdate(GetChunkAtCell(cell));
+
+					QueueChunkForTextureUpdate(cell->parent_chunk);
 				}
 			}
 			else
@@ -960,11 +1057,32 @@ internal void DrawEditorUI()
 						if (selected_material != -1)
 						{
 							cell->material_type = selected_material;
-							if (cell->material_type == CELL_MATERIAL_TYPE_air)
+
+							switch (cell_material_type_data[cell->material_type].properties_type)
+							{
+							case CELL_PROPERTIES_TYPE_air:
+							{
 								cell->dynamic_properties.air.pressure = pressure;
+								break;
+							}
+							case CELL_PROPERTIES_TYPE_liquid:
+							{
+								cell->dynamic_properties.liquid.mass = 1.0f;
+								break;
+							}
+							case CELL_PROPERTIES_TYPE_solid:
+							{
+								break;
+							}
+							default:
+								R_TODO;
+								break;
+							}
+
 							if (!cell->dynamic_id)
 								MakeCellDynamic(cell);
-							QueueChunkForTextureUpdate(GetChunkAtCell(cell));
+
+							QueueChunkForTextureUpdate(cell->parent_chunk);
 						}
 					}
 					else

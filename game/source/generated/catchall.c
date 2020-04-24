@@ -5075,6 +5075,22 @@ static void WriteCellToFile(FILE *file, Cell *data)
     // 'y_position' in Cell
     WriteToFile(file, &data->y_position, sizeof(data->y_position));
 
+    // 'parent_chunk' pointer in Cell
+    if (data->parent_chunk)
+    {
+        i32 pos = ftell(file);
+        R_DEV_ASSERT(pos != -1, "Uh oh.");
+        R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, "Max pointers reached. Consider a better design?");
+        SerialisationPointer ptr = {&data->parent_chunk, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = INT_MAX;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+    else
+    {
+        i32 null_ptr = 0;
+        WriteToFile(file, &null_ptr, sizeof(i32));
+    }
     // 'material_type' in Cell
     WriteToFile(file, &data->material_type, sizeof(data->material_type));
 
@@ -5130,6 +5146,9 @@ static void FillCellPointersInFile(FILE *file, Cell *data)
     }
     fseek(file, sizeof(data->y_position), SEEK_CUR);
 
+    // 'parent_chunk' pointer in Cell
+    fseek(file, sizeof(i32), SEEK_CUR);
+
     // 'material_type' in Cell
     for (i32 i = 0; i < serialisation_pointer_count; i++)
     {
@@ -5173,6 +5192,19 @@ static void ReadCellFromFile(FILE *file, Cell *data)
     // 'y_position' in Cell
     ReadFromFile(file, &data->y_position, sizeof(data->y_position));
 
+    // 'parent_chunk' pointer in Cell
+    {
+        i32 pointer_offset;
+        ReadFromFile(file, &pointer_offset, sizeof(i32));
+        if (pointer_offset)
+        {
+            R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, "Max pointers reached. Consider a better design?");
+            SerialisationPointer ptr = {&data->parent_chunk, pointer_offset};
+            serialisation_pointers[serialisation_pointer_count++] = ptr;
+        }
+        else
+            data->parent_chunk = 0;
+    }
     // 'material_type' in Cell
     ReadFromFile(file, &data->material_type, sizeof(data->material_type));
 
@@ -5221,6 +5253,9 @@ static void FillCellPointersFromFile(FILE *file, Cell *data)
         }
     }
     fseek(file, sizeof(data->y_position), SEEK_CUR);
+
+    // 'parent_chunk' pointer in Cell
+    fseek(file, sizeof(i32), SEEK_CUR);
 
     // 'material_type' in Cell
     for (i32 i = 0; i < serialisation_pointer_count; i++)

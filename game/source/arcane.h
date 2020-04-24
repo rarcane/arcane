@@ -1,5 +1,5 @@
 #define DEVELOPER_TOOLS
-#define DEVELOPER_ENVIORNMENT
+#define DEVELOPER_ENVIRONMENT
 
 typedef void (*TriggerCallback)(OverlappedColliderInfo);
 

@@ -4,6 +4,11 @@ internal f32 Fade(f32 alpha)
 	return 6 * powf(alpha, 5) - 15 * powf(alpha, 4) + 10 * powf(alpha, 3);
 }
 
+internal f32 LerpF32(f32 alpha, f32 a, f32 b)
+{
+	return a + (b - a) * alpha;
+}
+
 internal void v2Normalise(v2 *v)
 {
 	f32 magnitude = PythagSolve(v->x, v->y);

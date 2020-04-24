@@ -5,11 +5,11 @@ internal void ProcessSolidCell(Cell *cell);
 // NOTE(tjr): Adds the desired chunk to texture update queue. Does nothing if the chunk is already queued.
 internal void QueueChunkForTextureUpdate(Chunk *chunk);
 
+// NOTE(tjr): Converts a cell's position into a local index within the chunk array
+internal i32 CellPositionToIndex(i32 pos);
 // NOTE(tjr): Returns a cell at the provided world position.
 // Returns NULL if the position is in an unloaded chunk.
 internal Cell *GetCellAtPosition(i32 x, i32 y);
-// NOTE(tjr): Returns the chunk that the provided cell resides in.
-internal Chunk *GetChunkAtCell(Cell *cell);
 
 // NOTE(tjr): Returns true if the provided cell is just air at room temperature (implicitly empty)
 internal b8 IsCellEmpty(Cell *cell);
@@ -30,3 +30,5 @@ internal void RemoveCellDynamism(Cell *cell);
 // NOTE(tjr): Deletes the desired cell and safely removes it from the dynamic array if it's dynamic.
 // Cell must not already be empty.
 internal void DeleteCell(Cell *cell);
+
+f32 GetStableFlowState(f32 total_mass);

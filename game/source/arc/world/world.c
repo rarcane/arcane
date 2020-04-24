@@ -405,6 +405,7 @@ internal Chunk *LoadChunkAtIndex(i32 x_index, i32 y_index)
 			Cell *cell = &chunk->cells[y][x];
 			cell->x_position = x_index * CHUNK_SIZE + x;
 			cell->y_position = y_index * CHUNK_SIZE + y;
+			cell->parent_chunk = chunk;
 		}
 	}
 

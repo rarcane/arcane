@@ -126,8 +126,11 @@ GameInit(void)
 			core->delta_mult = 1.0f;
 			core->world_delta_mult = 1.0f;
 
-#ifdef DEVELOPER_ENVIORNMENT
+#ifdef DEVELOPER_ENVIRONMENT
 			core->is_ingame = 1;
+			core->run_data->editor_flags |= EDITOR_FLAGS_draw_collision;
+			core->run_data->editor_flags |= EDITOR_FLAGS_debug_cell_view;
+
 			//if (!LoadLevel("testing"))
 			CreateTestLevel();
 #else
@@ -353,7 +356,7 @@ GameUpdate(void)
 		START_PERF_TIMER("Update");
 
 		// NOTE(tjr): Perform if the game is not paused.
-		if (core->world_delta_t != 0.0f)
+		if ((core->world_delta_t == 0.0f ? (core->run_data->editor_flags & EDITOR_FLAGS_manual_step) : 1))
 		{
 			UpdateCells();
 
@@ -365,6 +368,8 @@ GameUpdate(void)
 				TransformInGameCamera();
 
 			PostMoveUpdatePlayer();
+
+			core->run_data->editor_flags &= ~EDITOR_FLAGS_manual_step;
 		}
 
 		UpdateParallax();

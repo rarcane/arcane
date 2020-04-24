@@ -63,6 +63,8 @@ typedef uint32 PixelFlags;
 #define EDITOR_FLAGS_draw_world (1<<0)
 #define EDITOR_FLAGS_draw_collision (1<<1)
 #define EDITOR_FLAGS_draw_chunk_grid (1<<2)
+#define EDITOR_FLAGS_debug_cell_view (1<<3)
+#define EDITOR_FLAGS_manual_step (1<<4)
 typedef uint32 EditorFlags;
 
 #define ITEM_FLAGS_resource (1<<0)
@@ -580,10 +582,6 @@ f32 pressure;
 
 typedef struct DynamicLiquidProperties
 {
-v2 prev_velocity;
-f32 prev_density;
-v2 velocity;
-f32 density;
 f32 mass;
 } DynamicLiquidProperties;
 
@@ -656,6 +654,7 @@ typedef struct Cell
 i32 dynamic_id;
 i32 x_position;
 i32 y_position;
+Chunk *parent_chunk;
 CellMaterialType material_type;
 DynamicCellProperties dynamic_properties;
 } Cell;
@@ -712,6 +711,9 @@ i32 queued_dynamic_cell_count;
 EditorState editor_state;
 EditorFlags editor_flags;
 Entity *selected_entity;
+Cell *selected_cell;
+v2 selection_start;
+v2 selection_end;
 GroundSegmentEntity *selected_ground_seg;
 b8 is_seg_grabbed;
 v2 grabbed_seg_pos;

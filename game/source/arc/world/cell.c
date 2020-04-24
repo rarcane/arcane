@@ -34,7 +34,7 @@ internal void UpdateCells()
 
 internal void ProcessCell(Cell *cell)
 {
-	QueueChunkForTextureUpdate(GetChunkAtCell(cell));
+	QueueChunkForTextureUpdate(cell->parent_chunk);
 
 	CellMaterialTypeData *cell_type_data = &cell_material_type_data[cell->material_type];
 	switch (cell_type_data->properties_type)
@@ -106,6 +106,94 @@ internal void ProcessLiquidCell(Cell *cell)
 	CellMaterialTypeData *cell_type_data = &cell_material_type_data[cell->material_type];
 	StaticLiquidProperties *static_liquid_properties = &cell_type_data->static_properties.liquid;
 	DynamicLiquidProperties *dynamic_liquid_properties = &cell->dynamic_properties.liquid;
+
+	f32 remaining_mass = dynamic_liquid_properties->mass;
+	f32 flow = 0.0f;
+
+	Cell *cell_below = GetCellAtPosition(cell->x_position, cell->y_position + 1);
+	if (cell_below->material_type == CELL_MATERIAL_TYPE_air)
+	{
+		cell_below->material_type = CELL_MATERIAL_TYPE_water;
+		cell_below->dynamic_properties.liquid.mass = 0.0f;
+		if (!cell_below->dynamic_id)
+			QueueCellForDynamism(cell_below);
+	}
+	if (cell_below->material_type == CELL_MATERIAL_TYPE_water)
+	{
+		flow = GetStableFlowState(remaining_mass + cell_below->dynamic_properties.liquid.mass) - cell_below->dynamic_properties.liquid.mass;
+		flow *= 0.5f;
+		flow = ClampF32(flow, 0.0f, remaining_mass);
+
+		cell->dynamic_properties.liquid.mass -= flow;
+		cell_below->dynamic_properties.liquid.mass += flow;
+		remaining_mass -= flow;
+	}
+
+	if (remaining_mass > 0.0f)
+	{
+		Cell *cell_left = GetCellAtPosition(cell->x_position - 1, cell->y_position);
+		if (cell_left->material_type == CELL_MATERIAL_TYPE_air)
+		{
+			cell_left->material_type = CELL_MATERIAL_TYPE_water;
+			cell_left->dynamic_properties.liquid.mass = 0.0f;
+			if (!cell_left->dynamic_id)
+				QueueCellForDynamism(cell_left);
+		}
+		if (cell_left->material_type == CELL_MATERIAL_TYPE_water)
+		{
+			flow = (cell->dynamic_properties.liquid.mass - cell_left->dynamic_properties.liquid.mass) / 4.0f;
+			flow *= 0.5;
+			flow = ClampF32(flow, 0.0f, remaining_mass);
+
+			cell->dynamic_properties.liquid.mass -= flow;
+			cell_left->dynamic_properties.liquid.mass += flow;
+			remaining_mass -= flow;
+		}
+	}
+
+	if (remaining_mass > 0.0f)
+	{
+		Cell *cell_right = GetCellAtPosition(cell->x_position + 1, cell->y_position);
+		if (cell_right->material_type == CELL_MATERIAL_TYPE_air)
+		{
+			cell_right->material_type = CELL_MATERIAL_TYPE_water;
+			cell_right->dynamic_properties.liquid.mass = 0.0f;
+			if (!cell_right->dynamic_id)
+				QueueCellForDynamism(cell_right);
+		}
+		if (cell_right->material_type == CELL_MATERIAL_TYPE_water)
+		{
+			flow = (cell->dynamic_properties.liquid.mass - cell_right->dynamic_properties.liquid.mass) / 4.0f;
+			flow *= 0.5;
+			flow = ClampF32(flow, 0.0f, remaining_mass);
+
+			cell->dynamic_properties.liquid.mass -= flow;
+			cell_right->dynamic_properties.liquid.mass += flow;
+			remaining_mass -= flow;
+		}
+	}
+
+	if (remaining_mass > 0.0f)
+	{
+		Cell *cell_above = GetCellAtPosition(cell->x_position, cell->y_position - 1);
+		if (cell_above->material_type == CELL_MATERIAL_TYPE_air)
+		{
+			cell_above->material_type = CELL_MATERIAL_TYPE_water;
+			cell_above->dynamic_properties.liquid.mass = 0.0f;
+			if (!cell_above->dynamic_id)
+				QueueCellForDynamism(cell_above);
+		}
+		if (cell_above->material_type == CELL_MATERIAL_TYPE_water)
+		{
+			flow = remaining_mass - GetStableFlowState(remaining_mass + cell_above->dynamic_properties.liquid.mass);
+			flow *= 0.5f;
+			flow = ClampF32(flow, 0.0f, remaining_mass);
+
+			cell->dynamic_properties.liquid.mass -= flow;
+			cell_above->dynamic_properties.liquid.mass += flow;
+			remaining_mass -= flow;
+		}
+	}
 }
 
 internal void ProcessSolidCell(Cell *cell)
@@ -157,6 +245,7 @@ internal void QueueChunkForTextureUpdate(Chunk *chunk)
 
 internal void RenderCells()
 {
+	// NOTE(tjr): Update the textures of queued chunks
 	for (i32 i = 0; i < core->run_data->chunk_texture_update_queue_count; i++)
 	{
 		Chunk *chunk = core->run_data->chunk_texture_update_queue[i];
@@ -217,13 +306,23 @@ internal void RenderCells()
 				}
 				case CELL_MATERIAL_TYPE_water:
 				{
-					v3 water_colour = {218.0f / 360.0f, 0.58f, 0.91f};
-					f32 mass = cell->dynamic_properties.liquid.mass;
+					if (core->run_data->editor_flags & EDITOR_FLAGS_debug_cell_view)
+					{
+						v3 water_colour = {218.0f / 360.0f, 0.58f, 0.91f};
+						f32 mass = cell->dynamic_properties.liquid.mass;
 
-					v3 col = HSVToRGB(v3(water_colour.x, water_colour.y, water_colour.z));
-					colour = v4(col.r, col.g, col.b, mass);
-					colour = V4MultiplyF32(colour, 0.7f);
+						v3 col = HSVToRGB(v3(water_colour.x, water_colour.y, water_colour.z));
+						colour = v4(LerpF32(1.0f - mass, col.r, 1.0f), LerpF32(1.0f - mass, col.g, 1.0f), LerpF32(1.0f - mass, col.b, 1.0f), 1.0f);
+					}
+					else
+					{
+						v3 water_colour = {218.0f / 360.0f, 0.58f, 0.91f};
+						f32 mass = cell->dynamic_properties.liquid.mass;
 
+						v3 col = HSVToRGB(v3(water_colour.x, water_colour.y, water_colour.z));
+						colour = v4(col.r, col.g, col.b, 1.0f);
+						colour = V4MultiplyF32(colour, 0.7f * mass);
+					}
 					break;
 				}
 				default:
@@ -231,7 +330,13 @@ internal void RenderCells()
 					break;
 				}
 
-				if (cell->dynamic_id && cell->material_type != CELL_MATERIAL_TYPE_air)
+				if (core->run_data->selected_cell &&
+					CellPositionToIndex(core->run_data->selected_cell->x_position) == x &&
+					CellPositionToIndex(core->run_data->selected_cell->y_position) == y)
+				{
+					colour = v4(0.5f, 0.0f, 0.0f, 0.5f);
+				}
+				else if (cell->dynamic_id && !(cell->material_type == CELL_MATERIAL_TYPE_air || cell->material_type == CELL_MATERIAL_TYPE_water))
 				{
 					colour = V4MultiplyV4(colour, v4u(0.75f));
 				}
@@ -253,6 +358,7 @@ internal void RenderCells()
 										 pixel_data);
 	}
 
+	// Push existing chunk textures
 	for (i32 i = 0; i < core->world_data->active_chunk_count; i++)
 	{
 		Chunk *chunk = &core->world_data->active_chunks[i];
@@ -267,6 +373,35 @@ internal void RenderCells()
 	}
 
 	core->run_data->chunk_texture_update_queue_count = 0;
+
+#ifdef DEVELOPER_TOOLS
+	if (core->run_data->editor_state == EDITOR_STATE_terrain)
+	{
+		v2 cell_selection = V2SubtractV2(core->run_data->selection_end, core->run_data->selection_start);
+		if (cell_selection.x != 0.0f && cell_selection.y != 0.0f)
+		{
+			v2 pos = v2view(core->run_data->selection_start);
+			v2 size = v2zoom(cell_selection);
+			Ts2dPushFilledRect(v4(0.5f, 0.0f, 0.0f, 0.5f), v4(pos.x, pos.y, size.x, size.y));
+		}
+	}
+#endif
+}
+
+internal i32 CellPositionToIndex(i32 pos)
+{
+	i32 index;
+	if (pos >= 0)
+		index = pos % CHUNK_SIZE;
+	else
+	{
+		if (abs(pos) % CHUNK_SIZE == 0)
+			index = 0;
+		else
+			index = CHUNK_SIZE - abs(pos) % CHUNK_SIZE;
+	}
+
+	return index;
 }
 
 internal Cell *GetCellAtPosition(i32 x, i32 y)
@@ -275,36 +410,7 @@ internal Cell *GetCellAtPosition(i32 x, i32 y)
 	if (!chunk)
 		return 0;
 
-	i32 cell_x;
-	if (x >= 0)
-		cell_x = x % CHUNK_SIZE;
-	else
-	{
-		if (abs(x) % CHUNK_SIZE == 0)
-			cell_x = 0;
-		else
-			cell_x = CHUNK_SIZE - abs(x) % CHUNK_SIZE;
-	}
-
-	i32 cell_y;
-	if (y >= 0)
-		cell_y = y % CHUNK_SIZE;
-	else
-	{
-		if (abs(y) % CHUNK_SIZE == 0)
-			cell_y = 0;
-		else
-			cell_y = CHUNK_SIZE - abs(y) % CHUNK_SIZE;
-	}
-
-	return &chunk->cells[cell_y][cell_x];
-}
-
-internal Chunk *GetChunkAtCell(Cell *cell)
-{
-	Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex((f32)cell->x_position), WorldspaceToChunkIndex((f32)cell->y_position));
-	R_DEV_ASSERT(chunk, "Chunk isn't loaded, the fuccccc?");
-	return chunk;
+	return &chunk->cells[CellPositionToIndex(y)][CellPositionToIndex(x)];
 }
 
 internal b8 IsCellEmpty(Cell *cell)
@@ -330,8 +436,8 @@ internal void SwapCells(Cell *cell_1, Cell *cell_2)
 	cell_2->material_type = cell_1_copy.material_type;
 	cell_2->dynamic_properties = cell_1_copy.dynamic_properties;
 
-	QueueChunkForTextureUpdate(GetChunkAtCell(cell_1));
-	QueueChunkForTextureUpdate(GetChunkAtCell(cell_2));
+	QueueChunkForTextureUpdate(cell_1->parent_chunk);
+	QueueChunkForTextureUpdate(cell_2->parent_chunk);
 }
 
 internal void QueueCellForDynamism(Cell *cell)
@@ -440,7 +546,17 @@ internal void DeleteCell(Cell *cell)
 	DynamicCellProperties empty = {0};
 	cell->dynamic_properties = empty;
 
-	QueueChunkForTextureUpdate(GetChunkAtCell(cell));
+	QueueChunkForTextureUpdate(cell->parent_chunk);
+}
+
+f32 GetStableFlowState(f32 total_mass)
+{
+	if (total_mass <= 1.0f)
+		return 1.0f;
+	else if (total_mass < 2 * 1.0f + FLUID_COMPRESSION)
+		return (1.0f + total_mass * FLUID_COMPRESSION) / (1.0f + FLUID_COMPRESSION);
+	else
+		return (total_mass + FLUID_COMPRESSION) / 2.0f;
 }
 
 /*
