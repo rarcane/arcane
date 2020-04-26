@@ -525,6 +525,7 @@ DynamicAirProperties :: struct
 DynamicLiquidProperties :: struct
 {
 	mass : f32;
+	mass_adjustment : f32;
 }
 DynamicSolidProperties :: struct
 {

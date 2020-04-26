@@ -1,5 +1,6 @@
 internal void UpdateCells()
 {
+	// NOTE(tjr): Cull inactive cells.
 	for (i32 i = 0; i < core->run_data->dynamic_cell_count; i++)
 	{
 		Cell *cell = core->run_data->dynamic_cells[i];
@@ -12,14 +13,7 @@ internal void UpdateCells()
 		}
 	}
 
-	// Add new dynamic cells
-	for (i32 i = 0; i < core->run_data->queued_dynamic_cell_count; i++)
-	{
-		if (core->run_data->queued_dynamic_cells[i])
-			MakeCellDynamic(core->run_data->queued_dynamic_cells[i]);
-	}
-	core->run_data->queued_dynamic_cell_count = 0;
-
+	// NOTE(tjr): Cell processing update.
 	for (i32 i = 0; i < core->run_data->dynamic_cell_count; i++)
 	{
 		Cell *cell = core->run_data->dynamic_cells[i];
@@ -28,6 +22,43 @@ internal void UpdateCells()
 			R_DEV_ASSERT(core->run_data->dynamic_cells[cell->dynamic_id - 1] == cell,
 						 "The cell's dynamic ID is mismatched with the array.");
 			ProcessCell(cell);
+		}
+	}
+
+	// NOTE(tjr): Add in new dynamic cells.
+	for (i32 i = 0; i < core->run_data->queued_dynamic_cell_count; i++)
+	{
+		if (core->run_data->queued_dynamic_cells[i])
+		{
+			MakeCellDynamic(core->run_data->queued_dynamic_cells[i]);
+			core->run_data->queued_dynamic_cells[i] = 0;
+		}
+	}
+	core->run_data->queued_dynamic_cell_count = 0;
+
+	// NOTE(tjr): Post cell process update.
+	for (i32 i = 0; i < core->run_data->dynamic_cell_count; i++)
+	{
+		Cell *cell = core->run_data->dynamic_cells[i];
+		if (cell)
+		{
+			CellMaterialTypeData *cell_type_data = &cell_material_type_data[cell->material_type];
+			switch (cell_type_data->properties_type)
+			{
+			case CELL_PROPERTIES_TYPE_air:
+				break;
+			case CELL_PROPERTIES_TYPE_liquid:
+			{
+				cell->dynamic_properties.liquid.mass += cell->dynamic_properties.liquid.mass_adjustment;
+				cell->dynamic_properties.liquid.mass_adjustment = 0.0f;
+			}
+			break;
+			case CELL_PROPERTIES_TYPE_solid:
+				break;
+			default:
+				R_TODO;
+				break;
+			}
 		}
 	}
 }
@@ -124,12 +155,12 @@ internal void ProcessLiquidCell(Cell *cell)
 		flow *= 0.5f;
 		flow = ClampF32(flow, 0.0f, remaining_mass);
 
-		cell->dynamic_properties.liquid.mass -= flow;
-		cell_below->dynamic_properties.liquid.mass += flow;
+		cell->dynamic_properties.liquid.mass_adjustment -= flow;
+		cell_below->dynamic_properties.liquid.mass_adjustment += flow;
 		remaining_mass -= flow;
 	}
 
-	if (remaining_mass > 0.0f)
+	/* if (remaining_mass > 0.0f)
 	{
 		Cell *cell_left = GetCellAtPosition(cell->x_position - 1, cell->y_position);
 		if (cell_left->material_type == CELL_MATERIAL_TYPE_air)
@@ -193,7 +224,7 @@ internal void ProcessLiquidCell(Cell *cell)
 			cell_above->dynamic_properties.liquid.mass += flow;
 			remaining_mass -= flow;
 		}
-	}
+	} */
 }
 
 internal void ProcessSolidCell(Cell *cell)

@@ -583,6 +583,7 @@ f32 pressure;
 typedef struct DynamicLiquidProperties
 {
 f32 mass;
+f32 mass_adjustment;
 } DynamicLiquidProperties;
 
 typedef struct DynamicSolidProperties

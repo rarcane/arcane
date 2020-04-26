@@ -888,6 +888,18 @@ internal void DrawEditorUI()
 
 					{
 						char lbl[20];
+						sprintf(lbl, "Posx %i", core->run_data->selected_cell->x_position);
+						TsUILabel(lbl);
+					}
+
+					{
+						char lbl[20];
+						sprintf(lbl, "Posy %i", core->run_data->selected_cell->y_position);
+						TsUILabel(lbl);
+					}
+
+					{
+						char lbl[20];
 						sprintf(lbl, "Air Pressure: %f", core->run_data->selected_cell->dynamic_properties.air.pressure);
 						TsUILabel(lbl);
 					}
@@ -895,6 +907,12 @@ internal void DrawEditorUI()
 					{
 						char lbl[20];
 						sprintf(lbl, "Liquid Mass: %f", core->run_data->selected_cell->dynamic_properties.liquid.mass);
+						TsUILabel(lbl);
+					}
+
+					{
+						char lbl[20];
+						sprintf(lbl, "Liquid Mass adj: %f", core->run_data->selected_cell->dynamic_properties.liquid.mass_adjustment);
 						TsUILabel(lbl);
 					}
 
@@ -962,10 +980,8 @@ internal void DrawEditorUI()
 			if (core->world_delta_t == 0.0f && TsUIButton("Step Simulation"))
 				core->run_data->editor_flags |= EDITOR_FLAGS_manual_step;
 
-			/* if (TsUICollapsable("Dynamic Cell Array"))
+			if (TsUICollapsable("Dynamic Cell Array"))
 			{
-				local_persist Cell *selected_dynamic_cell = 0;
-
 				for (i32 i = 0; i < core->run_data->dynamic_cell_count; i++)
 				{
 					Cell *dyn_cell = core->run_data->dynamic_cells[i];
@@ -973,17 +989,49 @@ internal void DrawEditorUI()
 					{
 						char label[20];
 						sprintf(label, "[%i] %s Cell ", i, GetCellMaterialTypeName(dyn_cell->material_type));
-						if (TsUIToggler(label, selected_dynamic_cell == dyn_cell))
-							selected_dynamic_cell = dyn_cell;
+						if (TsUICollapsable(label))
+						{
+							TsUILabel(GetCellMaterialTypeName(dyn_cell->material_type));
 
-						// TODO: Data printing. Need to add functionality for just chucking @Printable tag on any struct.
+							{
+								char lbl[20];
+								sprintf(lbl, "Dynamic ID #%i", dyn_cell->dynamic_id);
+								TsUILabel(lbl);
+							}
+
+							{
+								char lbl[20];
+								sprintf(lbl, "Posx %i", dyn_cell->x_position);
+								TsUILabel(lbl);
+							}
+
+							{
+								char lbl[20];
+								sprintf(lbl, "Posy %i", dyn_cell->y_position);
+								TsUILabel(lbl);
+							}
+
+							{
+								char lbl[20];
+								sprintf(lbl, "Air Pressure: %f", dyn_cell->dynamic_properties.air.pressure);
+								TsUILabel(lbl);
+							}
+
+							{
+								char lbl[20];
+								sprintf(lbl, "Liquid Mass: %f", dyn_cell->dynamic_properties.liquid.mass);
+								TsUILabel(lbl);
+							}
+
+							TsUICollapsableEnd();
+						}
 					}
 					else
 						TsUILabel("- - - - - -");
 				}
 
 				TsUICollapsableEnd();
-			} */
+			}
 
 			TsUIPopWidth();
 			TsUIPopColumn();
