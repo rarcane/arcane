@@ -330,25 +330,20 @@ internal Chunk *GetChunkAtIndex(i32 x, i32 y)
 	return 0;
 }
 
-internal void GetVisibleChunks(Chunk **chunks, i32 *chunk_count)
+internal void GetChunksInRegion(Chunk **chunks, i32 *chunk_count, v4 rect)
 {
-	v2 top_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
-	v2 top_right = {-core->camera_position.x + core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
-	v2 bottom_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y + core->render_h / (2.0f * core->camera_zoom)};
-	v2 bottom_right = {-core->camera_position.x + core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y + core->render_h / (2.0f * core->camera_zoom)};
-
-	Chunk *tl_chunk = GetChunkAtIndex(WorldspaceToChunkIndex(top_left.x), WorldspaceToChunkIndex(top_left.y));
+	Chunk *tl_chunk = GetChunkAtIndex(WorldspaceToChunkIndex(rect.x), WorldspaceToChunkIndex(rect.y));
 	if (tl_chunk)
 		chunks[(*chunk_count)++] = tl_chunk; // Manually add the first chunk to the algo.
 	else
 		LogWarning("A visible chunk is not loaded, is this intended?");
 
-	i32 width = WorldspaceToChunkIndex(top_right.x) - WorldspaceToChunkIndex(top_left.x);
-	i32 height = WorldspaceToChunkIndex(bottom_left.y) - WorldspaceToChunkIndex(top_left.y);
+	i32 chunks_width = WorldspaceToChunkIndex(rect.x + rect.width) - WorldspaceToChunkIndex(rect.x);
+	i32 chunks_height = WorldspaceToChunkIndex(rect.y + rect.height) - WorldspaceToChunkIndex(rect.y);
 
-	for (int y = 0; y <= height; y++)
+	for (int y = 0; y <= chunks_height; y++)
 	{
-		for (int x = 0; x <= width; x++)
+		for (int x = 0; x <= chunks_width; x++)
 		{
 			if (!(x == 0 && y == 0))
 			{

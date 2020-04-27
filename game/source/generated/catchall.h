@@ -563,8 +563,9 @@ EntityFlags flags;
 GeneralisedEntityType generalised_type;
 } Entity;
 
-#define FLUID_COMPRESSION (0.01f)
 #define MINIMUM_AIR_PRESSURE (1.0f)
+#define LIQUID_RESOLUTION (0.2f)
+#define MAX_LIQUID_MASS (1.0f)
 typedef enum CellPropertiesType CellPropertiesType;
 enum CellPropertiesType
 {
@@ -583,13 +584,10 @@ f32 pressure;
 typedef struct DynamicLiquidProperties
 {
 f32 mass;
-f32 mass_adjustment;
 } DynamicLiquidProperties;
 
 typedef struct DynamicSolidProperties
 {
-v2 position;
-v2 velocity;
 f32 hardness;
 } DynamicSolidProperties;
 
@@ -644,8 +642,8 @@ CELL_MATERIAL_TYPE_MAX,
 global CellMaterialTypeData cell_material_type_data[CELL_MATERIAL_TYPE_MAX] = {
     { .static_properties.air = { .resting_temp = 2.0f, .test = 1}, CELL_PROPERTIES_TYPE_air, },
     { .static_properties.liquid = { .default_mass = 1.5f} , CELL_PROPERTIES_TYPE_liquid, },
-    { .static_properties.solid = { .default_mass = 1.0f, .max_height = 3 }, CELL_PROPERTIES_TYPE_solid, },
-    { .static_properties.solid = { .default_mass = 0.5f, .max_height = 1 }, CELL_PROPERTIES_TYPE_solid, },
+    { .static_properties.solid = { .default_mass = 1.0f, .max_height = 3, .crust_depth = 3 }, CELL_PROPERTIES_TYPE_solid, },
+    { .static_properties.solid = { .default_mass = 0.5f, .max_height = 1, .crust_depth = 6 }, CELL_PROPERTIES_TYPE_solid, },
 };
 
 static char *GetCellMaterialTypeName(CellMaterialType type);

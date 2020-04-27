@@ -506,8 +506,10 @@ Entity :: struct
 /* ----------- CELLULAR AUTOMATA ----------- */
 /* ----------------------------------------- */
 
-FLUID_COMPRESSION :: 0.01f
+//FLUID_COMPRESSION :: 0.1f
 MINIMUM_AIR_PRESSURE :: 1.0f;
+LIQUID_RESOLUTION :: 0.2f;
+MAX_LIQUID_MASS :: 1.0f;
 
 CellPropertiesType :: enum
 {
@@ -518,19 +520,14 @@ CellPropertiesType :: enum
 
 DynamicAirProperties :: struct
 {
-	//flow : v2;
 	pressure : f32;
-	//previous_pressure : f32
 }
 DynamicLiquidProperties :: struct
 {
 	mass : f32;
-	mass_adjustment : f32;
 }
 DynamicSolidProperties :: struct
 {
-	position : v2;
-	velocity : v2;
 	hardness : f32;
 }
 DynamicCellProperties :: union
@@ -575,9 +572,9 @@ CellMaterialType :: enum
 		air,
 	@Data(".static_properties.liquid = { .default_mass = 1.5f} ", CELL_PROPERTIES_TYPE_liquid)
 		water,
-	@Data(".static_properties.solid = { .default_mass = 1.0f, .max_height = 3 }", CELL_PROPERTIES_TYPE_solid)
+	@Data(".static_properties.solid = { .default_mass = 1.0f, .max_height = 3, .crust_depth = 3 }", CELL_PROPERTIES_TYPE_solid)
 		dirt,
-	@Data(".static_properties.solid = { .default_mass = 0.5f, .max_height = 1 }", CELL_PROPERTIES_TYPE_solid)
+	@Data(".static_properties.solid = { .default_mass = 0.5f, .max_height = 1, .crust_depth = 6 }", CELL_PROPERTIES_TYPE_solid)
 		sand,
 }
 

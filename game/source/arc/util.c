@@ -43,6 +43,15 @@ internal i32 GetSign(f32 x)
 	return (x > 0.0f) - (x < 0.0f);
 }
 
+// NOTE(tjr): Floors to the 1st decimal place.
+internal f32 RoundFirst(f32 x)
+{
+	x *= 10.0f;
+	x = roundf(x);
+	x /= 10.0f;
+	return x;
+}
+
 internal b8 EqualF32(f32 a, f32 b, f32 leeway)
 {
 	return (fabsf(a - b) <= leeway);
@@ -313,6 +322,18 @@ internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v3 co
 internal v2 GetMousePositionInWorldSpace()
 {
 	return v2(platform->mouse_x / core->camera_zoom - core->camera_position.x - GetZeroWorldPosition().x, platform->mouse_y / core->camera_zoom - core->camera_position.y - GetZeroWorldPosition().y);
+}
+
+internal v4 GetCameraRegionRect()
+{
+	/* 	v2 top_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
+	v2 top_right = {-core->camera_position.x + core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
+	v2 bottom_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y + core->render_h / (2.0f * core->camera_zoom)};
+	v2 bottom_right = {-core->camera_position.x + core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y + core->render_h / (2.0f * core->camera_zoom)}; */
+
+	R_TODO;
+
+	return v4u(0.0f);
 }
 
 internal void WriteToFile(FILE *file, void *data, size_t size_bytes)

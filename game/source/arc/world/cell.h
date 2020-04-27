@@ -31,4 +31,7 @@ internal void RemoveCellDynamism(Cell *cell);
 // Cell must not already be empty.
 internal void DeleteCell(Cell *cell);
 
-f32 GetStableFlowState(f32 total_mass);
+// NOTE(tjr): Determines whether or not the desired cell should be hardened based off of a few factors.
+// It can only harden if it's a Solid cell, all other types will return 0 by default.
+// If it is a solid cell, it will harden based on it's static crust_depth property according to the cells around it.
+internal b8 ShouldCellHarden(Cell *cell);

@@ -37,7 +37,7 @@ internal void UpdateCells()
 	core->run_data->queued_dynamic_cell_count = 0;
 
 	// NOTE(tjr): Post cell process update.
-	for (i32 i = 0; i < core->run_data->dynamic_cell_count; i++)
+	/* for (i32 i = 0; i < core->run_data->dynamic_cell_count; i++)
 	{
 		Cell *cell = core->run_data->dynamic_cells[i];
 		if (cell)
@@ -60,7 +60,7 @@ internal void UpdateCells()
 				break;
 			}
 		}
-	}
+	} */
 }
 
 internal void ProcessCell(Cell *cell)
@@ -138,93 +138,84 @@ internal void ProcessLiquidCell(Cell *cell)
 	StaticLiquidProperties *static_liquid_properties = &cell_type_data->static_properties.liquid;
 	DynamicLiquidProperties *dynamic_liquid_properties = &cell->dynamic_properties.liquid;
 
-	f32 remaining_mass = dynamic_liquid_properties->mass;
-	f32 flow = 0.0f;
-
+	// TODO: Use fluid dynamics to model this. Just use a basic falling sand sim for now though.
 	Cell *cell_below = GetCellAtPosition(cell->x_position, cell->y_position + 1);
-	if (cell_below->material_type == CELL_MATERIAL_TYPE_air)
+	CellMaterialTypeData *cell_below_type_data = &cell_material_type_data[cell_below->material_type];
+	if (cell_below_type_data->properties_type == CELL_PROPERTIES_TYPE_air)
 	{
-		cell_below->material_type = CELL_MATERIAL_TYPE_water;
-		cell_below->dynamic_properties.liquid.mass = 0.0f;
-		if (!cell_below->dynamic_id)
-			QueueCellForDynamism(cell_below);
-	}
-	if (cell_below->material_type == CELL_MATERIAL_TYPE_water)
-	{
-		flow = GetStableFlowState(remaining_mass + cell_below->dynamic_properties.liquid.mass) - cell_below->dynamic_properties.liquid.mass;
-		flow *= 0.5f;
-		flow = ClampF32(flow, 0.0f, remaining_mass);
-
-		cell->dynamic_properties.liquid.mass_adjustment -= flow;
-		cell_below->dynamic_properties.liquid.mass_adjustment += flow;
-		remaining_mass -= flow;
+		SwapCells(cell, cell_below);
+		return;
 	}
 
-	/* if (remaining_mass > 0.0f)
+	i32 rand = RandomI32(0, 1);
+	if (rand)
 	{
+		Cell *cell_below_left = GetCellAtPosition(cell->x_position - 1, cell->y_position + 1);
+		CellMaterialTypeData *cell_below_left_type_data = &cell_material_type_data[cell_below_left->material_type];
+		if (cell_below_left_type_data->properties_type == CELL_PROPERTIES_TYPE_air)
+		{
+			SwapCells(cell, cell_below_left);
+			return;
+		}
+
+		Cell *cell_below_right = GetCellAtPosition(cell->x_position + 1, cell->y_position + 1);
+		CellMaterialTypeData *cell_below_right_type_data = &cell_material_type_data[cell_below_right->material_type];
+		if (cell_below_right_type_data->properties_type == CELL_PROPERTIES_TYPE_air)
+		{
+			SwapCells(cell, cell_below_right);
+			return;
+		}
+
 		Cell *cell_left = GetCellAtPosition(cell->x_position - 1, cell->y_position);
-		if (cell_left->material_type == CELL_MATERIAL_TYPE_air)
+		CellMaterialTypeData *cell_left_type_data = &cell_material_type_data[cell_left->material_type];
+		if (cell_left_type_data->properties_type == CELL_PROPERTIES_TYPE_air)
 		{
-			cell_left->material_type = CELL_MATERIAL_TYPE_water;
-			cell_left->dynamic_properties.liquid.mass = 0.0f;
-			if (!cell_left->dynamic_id)
-				QueueCellForDynamism(cell_left);
+			SwapCells(cell, cell_left);
+			return;
 		}
-		if (cell_left->material_type == CELL_MATERIAL_TYPE_water)
-		{
-			flow = (cell->dynamic_properties.liquid.mass - cell_left->dynamic_properties.liquid.mass) / 4.0f;
-			flow *= 0.5;
-			flow = ClampF32(flow, 0.0f, remaining_mass);
 
-			cell->dynamic_properties.liquid.mass -= flow;
-			cell_left->dynamic_properties.liquid.mass += flow;
-			remaining_mass -= flow;
-		}
-	}
-
-	if (remaining_mass > 0.0f)
-	{
 		Cell *cell_right = GetCellAtPosition(cell->x_position + 1, cell->y_position);
-		if (cell_right->material_type == CELL_MATERIAL_TYPE_air)
+		CellMaterialTypeData *cell_right_type_data = &cell_material_type_data[cell_right->material_type];
+		if (cell_right_type_data->properties_type == CELL_PROPERTIES_TYPE_air)
 		{
-			cell_right->material_type = CELL_MATERIAL_TYPE_water;
-			cell_right->dynamic_properties.liquid.mass = 0.0f;
-			if (!cell_right->dynamic_id)
-				QueueCellForDynamism(cell_right);
-		}
-		if (cell_right->material_type == CELL_MATERIAL_TYPE_water)
-		{
-			flow = (cell->dynamic_properties.liquid.mass - cell_right->dynamic_properties.liquid.mass) / 4.0f;
-			flow *= 0.5;
-			flow = ClampF32(flow, 0.0f, remaining_mass);
-
-			cell->dynamic_properties.liquid.mass -= flow;
-			cell_right->dynamic_properties.liquid.mass += flow;
-			remaining_mass -= flow;
+			SwapCells(cell, cell_right);
+			return;
 		}
 	}
-
-	if (remaining_mass > 0.0f)
+	else
 	{
-		Cell *cell_above = GetCellAtPosition(cell->x_position, cell->y_position - 1);
-		if (cell_above->material_type == CELL_MATERIAL_TYPE_air)
+		Cell *cell_below_right = GetCellAtPosition(cell->x_position + 1, cell->y_position + 1);
+		CellMaterialTypeData *cell_below_right_type_data = &cell_material_type_data[cell_below_right->material_type];
+		if (cell_below_right_type_data->properties_type == CELL_PROPERTIES_TYPE_air)
 		{
-			cell_above->material_type = CELL_MATERIAL_TYPE_water;
-			cell_above->dynamic_properties.liquid.mass = 0.0f;
-			if (!cell_above->dynamic_id)
-				QueueCellForDynamism(cell_above);
+			SwapCells(cell, cell_below_right);
+			return;
 		}
-		if (cell_above->material_type == CELL_MATERIAL_TYPE_water)
-		{
-			flow = remaining_mass - GetStableFlowState(remaining_mass + cell_above->dynamic_properties.liquid.mass);
-			flow *= 0.5f;
-			flow = ClampF32(flow, 0.0f, remaining_mass);
 
-			cell->dynamic_properties.liquid.mass -= flow;
-			cell_above->dynamic_properties.liquid.mass += flow;
-			remaining_mass -= flow;
+		Cell *cell_below_left = GetCellAtPosition(cell->x_position - 1, cell->y_position + 1);
+		CellMaterialTypeData *cell_below_left_type_data = &cell_material_type_data[cell_below_left->material_type];
+		if (cell_below_left_type_data->properties_type == CELL_PROPERTIES_TYPE_air)
+		{
+			SwapCells(cell, cell_below_left);
+			return;
 		}
-	} */
+
+		Cell *cell_right = GetCellAtPosition(cell->x_position + 1, cell->y_position);
+		CellMaterialTypeData *cell_right_type_data = &cell_material_type_data[cell_right->material_type];
+		if (cell_right_type_data->properties_type == CELL_PROPERTIES_TYPE_air)
+		{
+			SwapCells(cell, cell_right);
+			return;
+		}
+
+		Cell *cell_left = GetCellAtPosition(cell->x_position - 1, cell->y_position);
+		CellMaterialTypeData *cell_left_type_data = &cell_material_type_data[cell_left->material_type];
+		if (cell_left_type_data->properties_type == CELL_PROPERTIES_TYPE_air)
+		{
+			SwapCells(cell, cell_left);
+			return;
+		}
+	}
 }
 
 internal void ProcessSolidCell(Cell *cell)
@@ -362,6 +353,7 @@ internal void RenderCells()
 				}
 
 				if (core->run_data->selected_cell &&
+					core->run_data->selected_cell->parent_chunk == chunk &&
 					CellPositionToIndex(core->run_data->selected_cell->x_position) == x &&
 					CellPositionToIndex(core->run_data->selected_cell->y_position) == y)
 				{
@@ -580,15 +572,63 @@ internal void DeleteCell(Cell *cell)
 	QueueChunkForTextureUpdate(cell->parent_chunk);
 }
 
-f32 GetStableFlowState(f32 total_mass)
+internal b8 ShouldCellHarden(Cell *cell)
 {
-	if (total_mass <= 1.0f)
-		return 1.0f;
-	else if (total_mass < 2 * 1.0f + FLUID_COMPRESSION)
-		return (1.0f + total_mass * FLUID_COMPRESSION) / (1.0f + FLUID_COMPRESSION);
+	CellMaterialTypeData *material_type_data = &cell_material_type_data[cell->material_type];
+	if (material_type_data->properties_type == CELL_PROPERTIES_TYPE_solid)
+	{
+		i32 distance_from_air_above = 0;
+		for (i32 i = 1; i <= material_type_data->static_properties.solid.crust_depth; i++)
+		{
+			Cell *neighbour_cell = GetCellAtPosition(cell->x_position, cell->y_position - i);
+			if (neighbour_cell->material_type != cell->material_type)
+			{
+				distance_from_air_above = i;
+				break;
+			}
+		}
+
+		if (distance_from_air_above)
+		{
+			b8 is_support_below = 0;
+			for (i32 i = 1; i <= material_type_data->static_properties.solid.crust_depth + 1 - distance_from_air_above; i++)
+			{
+				Cell *neighbour_cell = GetCellAtPosition(cell->x_position, cell->y_position + i);
+				if (neighbour_cell->material_type == cell->material_type)
+				{
+					is_support_below = 1;
+					break;
+				}
+			}
+
+			return !is_support_below;
+		}
+		else
+		{
+			return 1;
+		}
+	}
 	else
-		return (total_mass + FLUID_COMPRESSION) / 2.0f;
+		return 0;
 }
+
+/* f32 GetDownwardFlow(f32 origin_mass, f32 below_mass)
+{
+	if (below_mass >= MAX_LIQUID_MASS)
+	{
+		
+	}
+} */
+
+/* f32 GetStableFlowState(f32 total_mass)
+{
+	if (total_mass <= MAX_LIQUID_MASS)
+		return MAX_LIQUID_MASS;
+	else if (total_mass < 2 * MAX_LIQUID_MASS + LIQUID_RESOLUTION)
+		return (MAX_LIQUID_MASS * MAX_LIQUID_MASS + total_mass * LIQUID_RESOLUTION) / (MAX_LIQUID_MASS + LIQUID_RESOLUTION);
+	else
+		return (total_mass + LIQUID_RESOLUTION) / 2.0f;
+} */
 
 /*
 internal CellMaterial *NewCellMaterial(Cell *cell, CellMaterialType material_type)
