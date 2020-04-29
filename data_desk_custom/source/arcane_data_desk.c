@@ -25,10 +25,6 @@ global i32 component_nodes_count = 0;
 global DataDeskNode *component_nodes[1024];
 internal void GenerateComponentCode(void);
 
-global i32 unique_entity_count = 0;
-global DataDeskNode *unique_entities[1024];
-internal void GenerateEntityCode();
-
 global i32 xmacro_count = 0;
 global DataDeskNode *xmacro_nodes[128];
 internal DataDeskNode *GetXMacroNode(const char *name);
@@ -59,10 +55,6 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 		{
 			GenerateComponentCode();
 		}
-		else if (DataDeskNodeHasTag(root, "GenerateEntityCode"))
-		{
-			GenerateEntityCode();
-		}
 		else if (DataDeskNodeHasTag(root, "ForwardDeclare"))
 		{
 			DataDeskNode *tag = DataDeskGetNodeTag(root, "ForwardDeclare");
@@ -74,17 +66,9 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 			{
 			case DATA_DESK_NODE_TYPE_struct_declaration:
 			{
-				DataDeskNode *unique_entity_tag = DataDeskGetNodeTag(root, "UniqueEntity");
-				if (unique_entity_tag)
-				{
-					fprintf(h_file, "#define MAX_%s_COUNT (%s)\n", root->name_uppercase_with_underscores, DataDeskGetTagParameter(unique_entity_tag, 0)->name);
-					unique_entities[unique_entity_count++] = root;
-				}
-
 				fprintf(h_file, "typedef struct %s\n", root->string);
 				fprintf(h_file, "{\n");
 
-				DataDeskNode *previous_node = 0;
 				DataDeskNode *original_member = root->struct_declaration.first_member;
 				if (DataDeskNodeHasTag(root, "Component"))
 				{
@@ -97,123 +81,15 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 					DataDeskNode *node_2 = AllocNode(DATA_DESK_NODE_TYPE_declaration, "component_id");
 					node_2->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, "i32");
 					node_1->next = node_2;
-					previous_node = node_2;
 
 					component_nodes[component_nodes_count++] = root;
-				}
-				else if (unique_entity_tag)
-				{
-					DataDeskNode *comp_list_node = root->struct_declaration.first_member;
-					original_member = comp_list_node->next;
-
-					fprintf(h_file, "i32 entity_id;\n");
-					DataDeskNode *node_1 = AllocNode(DATA_DESK_NODE_TYPE_declaration, "entity_id");
-					node_1->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, "i32");
-					root->struct_declaration.first_member->next = node_1;
-
-					previous_node = node_1;
-					if (atoi(DataDeskGetTagParameter(unique_entity_tag, 0)->name) > 1)
-					{
-						fprintf(h_file, "i32 unique_entity_id;\n");
-						DataDeskNode *node_2 = AllocNode(DATA_DESK_NODE_TYPE_declaration, "unique_entity_id");
-						node_2->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, "i32");
-						node_1->next = node_2;
-						previous_node = node_2;
-					}
-
-					/* DataDeskNode *component_list_tag = DataDeskGetNodeTag(comp_list_node, "ComponentList");
-					if (component_list_tag)
-					{
-						i32 tag_index = 0;
-						DataDeskNode *tag_param = DataDeskGetTagParameter(component_list_tag, tag_index);
-						while (tag_param)
-						{
-							char variable_1_type[100];
-							sprintf(variable_1_type, "%sComponent", tag_param->name);
-							char variable_1_name[100];
-							sprintf(variable_1_name, "%s_comp", tag_param->name_lowercase_with_underscores);
-							fprintf(h_file, "%s *%s;\n",
-									variable_1_type,
-									variable_1_name);
-							DataDeskNode *comp_node = AllocNode(DATA_DESK_NODE_TYPE_declaration, variable_1_name);
-							comp_node->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, variable_1_type);
-							comp_node->declaration.type->type_usage.pointer_count = 1;
-							previous_node->next = comp_node;
-
-							previous_node = comp_node;
-							tag_param = DataDeskGetTagParameter(component_list_tag, ++tag_index);
-						}
-					}
-					else
-						fprintf(h_file, "uhhhhhh"); */
 				}
 
 				for (DataDeskNode *member = original_member;
 					 member; member = member->next)
 				{
-					if (DataDeskNodeHasTag(member, "GenerateUniqueEntityArrays"))
-					{
-						fprintf(h_file, "\n");
-						for (i32 i = 0; i < unique_entity_count; i++)
-						{
-							DataDeskNode *entity_node = unique_entities[i];
-							DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
-
-							if (atoi(DataDeskGetTagParameter(entity_node_tag, 0)->name) > 1)
-							{
-								char variable_1_type[100];
-								sprintf(variable_1_type, "%s", entity_node->name);
-								char variable_1_name[100];
-								sprintf(variable_1_name, "%s_list", entity_node->name_lowercase_with_underscores);
-								char variable_1_array_size[100];
-								sprintf(variable_1_array_size, "MAX_%s_COUNT", entity_node->name_uppercase_with_underscores);
-								fprintf(h_file, "%s %s[%s];\n",
-										variable_1_type,
-										variable_1_name,
-										variable_1_array_size);
-								DataDeskNode *node_1 = AllocNode(DATA_DESK_NODE_TYPE_declaration, variable_1_name);
-								node_1->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, variable_1_type);
-								node_1->declaration.type->type_usage.first_array_size_expression = AllocNode(DATA_DESK_NODE_TYPE_identifier, variable_1_array_size);
-								if (previous_node)
-									previous_node->next = node_1;
-
-								char variable_2_name[100];
-								sprintf(variable_2_name, "%s_count", entity_node->name_lowercase_with_underscores);
-								fprintf(h_file, "i32 %s;\n", variable_2_name);
-								DataDeskNode *node_2 = AllocNode(DATA_DESK_NODE_TYPE_declaration, variable_2_name);
-								node_2->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, "i32");
-								node_1->next = node_2;
-
-								char variable_3_name[100];
-								sprintf(variable_3_name, "free_%s_id", entity_node->name_lowercase_with_underscores);
-								fprintf(h_file, "i32 %s;\n", variable_3_name);
-								DataDeskNode *node_3 = AllocNode(DATA_DESK_NODE_TYPE_declaration, variable_3_name);
-								node_3->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, "i32");
-								node_2->next = node_3;
-
-								previous_node = node_3;
-							}
-							else
-							{
-								fprintf(h_file, "%s %s;\n", entity_node->name, entity_node->name_lowercase_with_underscores);
-								DataDeskNode *node_1 = AllocNode(DATA_DESK_NODE_TYPE_declaration, entity_node->name_lowercase_with_underscores);
-								node_1->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, entity_node->name);
-								if (previous_node)
-									previous_node->next = node_1;
-
-								previous_node = node_1;
-							}
-						}
-						fprintf(h_file, "\n");
-					}
-
-					if (previous_node)
-						previous_node->next = member;
-
 					DataDeskFWriteGraphAsC(h_file, member, 0);
 					fprintf(h_file, ";\n");
-
-					previous_node = member;
 				}
 				fprintf(h_file, "} %s;\n\n", root->string);
 
@@ -634,148 +510,6 @@ internal void GenerateComponentCode(void)
 		fprintf(c_file, "    }\n");
 		fprintf(c_file, "}\n\n");
 	} */
-}
-
-internal void GenerateEntityCode()
-{
-	FILE *h_file = global_catchall_header;
-	FILE *c_file = global_catchall_implementation;
-
-	// NOTE(tjr): Unique entity type enum.
-	fprintf(h_file, "typedef enum EntityType\n");
-	fprintf(h_file, "{\n");
-	fprintf(h_file, "    ENTITY_TYPE_generic,\n");
-	for (i32 i = 0; i < unique_entity_count; i++)
-	{
-		DataDeskNode *entity_node = unique_entities[i];
-		DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
-
-		fprintf(h_file, "    ENTITY_TYPE_%s,\n", entity_node->name_lowercase_with_underscores);
-	}
-	fprintf(h_file, "    ENTITY_TYPE_MAX\n");
-	fprintf(h_file, "} EntityType;\n\n");
-
-	// NOTE(tjr): Entity initialisation
-	{
-		fprintf(c_file, "internal void InitialiseUniqueEntities()\n");
-		fprintf(c_file, "{\n");
-		for (i32 i = 0; i < unique_entity_count; i++)
-		{
-			DataDeskNode *entity_node = unique_entities[i];
-			DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
-
-			if (atoi(DataDeskGetTagParameter(entity_node_tag, 0)->name) > 1)
-				fprintf(c_file, "    core->world_data->free_%s_id = 1;\n", entity_node->name_lowercase_with_underscores);
-		}
-		fprintf(c_file, "}\n");
-	}
-
-	for (i32 i = 0; i < unique_entity_count; i++)
-	{
-		DataDeskNode *entity_node = unique_entities[i];
-		DataDeskNode *entity_node_tag = DataDeskGetNodeTag(entity_node, "UniqueEntity");
-
-		if (atoi(DataDeskGetTagParameter(entity_node_tag, 0)->name) > 1) // NOTE(tjr): Unique entity, mulitple
-		{
-			// NOTE(tjr): New unique entity
-			{
-				fprintf(c_file, "static %s *New%s()\n", entity_node->name, entity_node->name);
-				fprintf(c_file, "{\n");
-				fprintf(c_file, "    R_DEV_ASSERT(core->world_data->free_%s_id > 0, \"Maximum amount of %s entites reached\");\n\n", entity_node->name_lowercase_with_underscores, entity_node->name);
-
-				fprintf(c_file, "    i32 new_unique_id = core->world_data->free_%s_id;\n\n", entity_node->name_lowercase_with_underscores);
-
-				fprintf(c_file, "    Entity *generic_entity = NewEntity(\"%s\", GENERALISED_ENTITY_TYPE_%s);\n", entity_node->name, DataDeskGetTagParameter(entity_node_tag, 1)->name);
-				fprintf(c_file, "    generic_entity->unique_entity_id = new_unique_id;\n");
-				fprintf(c_file, "    generic_entity->type = ENTITY_TYPE_%s;\n", entity_node->name_lowercase_with_underscores);
-				fprintf(c_file, "    %s *unique_entity = &core->world_data->%s_list[new_unique_id - 1];\n", entity_node->name, entity_node->name_lowercase_with_underscores);
-				fprintf(c_file, "    unique_entity->entity_id = generic_entity->entity_id;\n");
-				fprintf(c_file, "    unique_entity->unique_entity_id = new_unique_id;\n\n");
-
-				DataDeskNode *component_list_tag = DataDeskGetNodeTag(entity_node->struct_declaration.first_member, "ComponentList");
-				if (!component_list_tag)
-					fprintf(c_file, "uh ohh\n");
-				i32 tag_index = 0;
-				DataDeskNode *tag_param = DataDeskGetTagParameter(component_list_tag, tag_index);
-				while (tag_param)
-				{
-					fprintf(c_file, "    Add%sComponent(generic_entity);\n", tag_param->name);
-					tag_param = DataDeskGetTagParameter(component_list_tag, ++tag_index);
-				}
-
-				fprintf(c_file, "\n    if (core->world_data->%s_count == core->world_data->free_%s_id - 1)\n", entity_node->name_lowercase_with_underscores, entity_node->name_lowercase_with_underscores);
-				fprintf(c_file, "    {\n");
-				fprintf(c_file, "        core->world_data->%s_count++;\n", entity_node->name_lowercase_with_underscores);
-				fprintf(c_file, "        core->world_data->free_%s_id++;\n", entity_node->name_lowercase_with_underscores);
-				fprintf(c_file, "    }\n\n");
-
-				fprintf(c_file, "    if (core->world_data->%s_count < MAX_%s_COUNT)\n", entity_node->name_lowercase_with_underscores, entity_node->name_uppercase_with_underscores);
-				fprintf(c_file, "    {\n");
-				fprintf(c_file, "        if (core->world_data->%s_count != core->world_data->free_%s_id - 1)\n", entity_node->name_lowercase_with_underscores, entity_node->name_lowercase_with_underscores);
-				fprintf(c_file, "        {\n");
-				fprintf(c_file, "            b8 found = 0;\n");
-				fprintf(c_file, "            for (i32 i = 0; i < core->world_data->%s_count++; i++)\n", entity_node->name_lowercase_with_underscores);
-				fprintf(c_file, "            {\n");
-				fprintf(c_file, "                core->world_data->free_%s_id = i + 1;\n", entity_node->name_lowercase_with_underscores);
-				fprintf(c_file, "                found = 1;\n");
-				fprintf(c_file, "                break;\n");
-				fprintf(c_file, "            }\n");
-				fprintf(c_file, "            R_DEV_ASSERT(found, \"Couldn't find a free index?\");\n");
-				fprintf(c_file, "        }\n");
-				fprintf(c_file, "    }\n");
-				fprintf(c_file, "    else\n");
-				fprintf(c_file, "    {\n");
-				fprintf(c_file, "        core->world_data->free_%s_id = 0;\n", entity_node->name_lowercase_with_underscores);
-				fprintf(c_file, "    }\n\n");
-
-				fprintf(c_file, "    return unique_entity;\n");
-				fprintf(c_file, "}\n\n");
-			}
-
-			// NOTE(tjr): Delete unique entity
-			{
-				fprintf(c_file, "static void Delete%s(%s *entity)\n", entity_node->name, entity_node->name);
-				fprintf(c_file, "{\n");
-				fprintf(c_file, "    R_DEV_ASSERT(entity && entity->entity_id && entity->unique_entity_id, \"Invalid entity\");\n");
-				fprintf(c_file, "    Entity *generic_entity = GetEntityWithID(entity->entity_id);\n");
-				fprintf(c_file, "    R_DEV_ASSERT(generic_entity->unique_entity_id == entity->unique_entity_id, \"Mismatched id.\");\n");
-				fprintf(c_file, "    generic_entity->unique_entity_id = 0;\n");
-				fprintf(c_file, "    DeleteEntity(generic_entity);\n\n");
-
-				fprintf(c_file, "    if (entity->unique_entity_id < core->world_data->free_%s_id);\n", entity_node->name_lowercase_with_underscores);
-				fprintf(c_file, "        core->world_data->free_%s_id = entity->unique_entity_id;\n", entity_node->name_lowercase_with_underscores);
-				fprintf(c_file, "    %s empty_entity = {0};\n", entity_node->name);
-				fprintf(c_file, "    *entity = empty_entity;\n");
-				fprintf(c_file, "}\n\n");
-			}
-		}
-		else // NOTE(tjr): Unique entity, singular
-		{
-			// NOTE(tjr): New singular unique entity
-			fprintf(c_file, "static %s *Initialise%s()\n", entity_node->name, entity_node->name);
-			fprintf(c_file, "{\n");
-
-			fprintf(c_file, "    Entity *generic_entity = NewEntity(\"%s\", GENERALISED_ENTITY_TYPE_%s);\n", entity_node->name, DataDeskGetTagParameter(entity_node_tag, 1)->name);
-			fprintf(c_file, "    %s *unique_entity = &core->world_data->%s;\n", entity_node->name, entity_node->name_lowercase_with_underscores);
-			fprintf(c_file, "    generic_entity->type = ENTITY_TYPE_%s;\n", entity_node->name_lowercase_with_underscores);
-			fprintf(c_file, "    generic_entity->unique_entity_id = 1;\n");
-			fprintf(c_file, "    unique_entity->entity_id = generic_entity->entity_id;\n\n");
-
-			DataDeskNode *component_list_tag = DataDeskGetNodeTag(entity_node->struct_declaration.first_member, "ComponentList");
-			i32 tag_index = 0;
-			DataDeskNode *tag_param = DataDeskGetTagParameter(component_list_tag, tag_index);
-			while (tag_param)
-			{
-				fprintf(c_file, "    Add%sComponent(generic_entity);\n", tag_param->name);
-				tag_param = DataDeskGetTagParameter(component_list_tag, ++tag_index);
-			}
-
-			fprintf(c_file, "\n    return unique_entity;\n");
-			fprintf(c_file, "}\n\n");
-
-			// Don't really need to delete singular entities
-		}
-	}
 }
 
 internal DataDeskNode *GetXMacroNode(const char *name)

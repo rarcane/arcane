@@ -1,13 +1,13 @@
 internal void PreMoveUpdatePlayer()
 {
-	R_DEV_ASSERT(core->world_data->character_entity.entity_id, "Character hasn't been created yet.");
+	R_DEV_ASSERT(core->run_data->character_entity->entity_id, "Character hasn't been created yet.");
 
-	PositionComponent *position_comp = GetPositionComponentFromEntityID(core->world_data->character_entity.entity_id);
-	PhysicsBodyComponent *body_comp = GetPhysicsBodyComponentFromEntityID(core->world_data->character_entity.entity_id);
-	MovementComponent *movement_comp = GetMovementComponentFromEntityID(core->world_data->character_entity.entity_id);
-	ArcEntityComponent *arc_entity_comp = GetArcEntityComponentFromEntityID(core->world_data->character_entity.entity_id);
-	SpriteComponent *sprite_comp = GetSpriteComponentFromEntityID(core->world_data->character_entity.entity_id);
-	AnimationComponent *animation_comp = GetAnimationComponentFromEntityID(core->world_data->character_entity.entity_id);
+	PositionComponent *position_comp = GetPositionComponentFromEntityID(core->run_data->character_entity->entity_id);
+	PhysicsBodyComponent *body_comp = GetPhysicsBodyComponentFromEntityID(core->run_data->character_entity->entity_id);
+	MovementComponent *movement_comp = GetMovementComponentFromEntityID(core->run_data->character_entity->entity_id);
+	ArcEntityComponent *arc_entity_comp = GetArcEntityComponentFromEntityID(core->run_data->character_entity->entity_id);
+	SpriteComponent *sprite_comp = GetSpriteComponentFromEntityID(core->run_data->character_entity->entity_id);
+	AnimationComponent *animation_comp = GetAnimationComponentFromEntityID(core->run_data->character_entity->entity_id);
 
 	b8 is_sprinting = 0;
 	if (core->run_data->editor_state == EDITOR_STATE_none && platform->key_down[KEY_a])

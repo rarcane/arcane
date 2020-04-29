@@ -2,7 +2,6 @@ internal void InitialiseWorldData()
 {
 	core->world_data->free_entity_id = 1;
 	InitialiseComponents();
-	InitialiseUniqueEntities();
 }
 
 internal void CreateTestLevel()
@@ -14,8 +13,17 @@ internal void CreateTestLevel()
 	core->world_data->test_ptr = &core->world_data->free_entity_id;
 
 	{
-		CharacterEntity *character = InitialiseCharacterEntity();
-		GetEntityWithID(character->entity_id)->flags |= ENTITY_FLAGS_no_delete;
+		// scuffed lmao
+		Entity *character = NewEntity("Player", GENERALISED_ENTITY_TYPE_character);
+		core->run_data->character_entity = character;
+		AddPositionComponent(character);
+		AddSpriteComponent(character);
+		AddArcEntityComponent(character);
+		AddMovementComponent(character);
+		AddPhysicsBodyComponent(character);
+		AddAnimationComponent(character);
+
+		character->flags |= ENTITY_FLAGS_no_delete;
 		GetPositionComponentFromEntityID(character->entity_id)->position = v2(0.0f, -100.0f);
 
 		c2Capsule capsule = {
@@ -103,7 +111,9 @@ internal void CreateTestLevel()
 			last_height = (f32)terrain_height;
 		else if (((x + 1) % (i32)width) == 0)
 		{
-			GroundSegmentEntity *ground = NewGroundSegmentEntity();
+			Entity *ground = NewEntity("Ground Seg", GENERALISED_ENTITY_TYPE_ground);
+			AddPositionComponent(ground);
+			AddPhysicsBodyComponent(ground);
 			GetPositionComponentFromEntityID(ground->entity_id)->position = v2(floorf(x / width) * width - CHUNK_SIZE * 2, 0.0f);
 
 			Line line = {0};

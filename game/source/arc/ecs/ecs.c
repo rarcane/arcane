@@ -42,7 +42,7 @@ internal Entity *NewEntity(char name[], GeneralisedEntityType generalised_type)
 
 internal void DeleteEntity(Entity *entity)
 {
-	R_DEV_ASSERT(entity->entity_id && !entity->unique_entity_id, "Invalid entity. If unique, use unique delete instead.");
+	R_DEV_ASSERT(entity && entity->entity_id, "Invalid entity.");
 
 	for (i32 i = 1; i < COMPONENT_MAX; i++)
 		if (entity->component_ids[i])

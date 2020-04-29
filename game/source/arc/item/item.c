@@ -11,8 +11,8 @@ internal void ConvertToGroundItem(ItemComponent *item_comp)
 {
 	Entity *item = GetEntityWithID(item_comp->parent_entity_id);
 
-	PositionComponent *player_pos = GetPositionComponentFromEntityID(core->world_data->character_entity.entity_id);
-	SpriteComponent *player_sprite = GetSpriteComponentFromEntityID(core->world_data->character_entity.entity_id);
+	PositionComponent *player_pos = GetPositionComponentFromEntityID(core->run_data->character_entity->entity_id);
+	SpriteComponent *player_sprite = GetSpriteComponentFromEntityID(core->run_data->character_entity->entity_id);
 
 	StaticSpriteData *ground_sprite = &static_sprite_data[item_type_data[item_comp->item_type].ground_sprite];
 

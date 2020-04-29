@@ -562,10 +562,10 @@ internal void DrawGameUI()
 
 	case EDITOR_STATE_collision:
 	{
-		for (int i = 0; i < core->world_data->ground_segment_entity_count; i++)
+		for (int i = 0; i < core->world_data->entity_count; i++)
 		{
-			GroundSegmentEntity *seg_entity = &core->world_data->ground_segment_entity_list[i];
-			if (seg_entity->entity_id)
+			Entity *seg_entity = &core->world_data->entities[i];
+			if (seg_entity->entity_id && seg_entity->generalised_type == GENERALISED_ENTITY_TYPE_ground)
 			{
 				PhysicsBodyComponent *seg_body = GetPhysicsBodyComponentFromEntityID(seg_entity->entity_id);
 				PositionComponent *seg_pos = GetPositionComponentFromEntityID(seg_entity->entity_id);
@@ -605,7 +605,9 @@ internal void DrawGameUI()
 							v2 mid_point = V2DivideF32(V2SubtractV2(p2, p1), 2.0f);
 							seg_body->shape.line.p2 = V2AddV2(mid_point, seg_body->shape.line.p1);
 
-							GroundSegmentEntity *new_segment = NewGroundSegmentEntity();
+							Entity *new_segment = NewEntity("Ground Seg", GENERALISED_ENTITY_TYPE_ground);
+							AddPositionComponent(new_segment);
+							AddPhysicsBodyComponent(new_segment);
 							GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape_type = C2_SHAPE_TYPE_line;
 							GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->mass_data = seg_body->mass_data;
 							GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->material = seg_body->material;
@@ -621,11 +623,11 @@ internal void DrawGameUI()
 					}
 					else if (platform->key_pressed[KEY_delete])
 					{
-						DeleteGroundSegmentEntity(seg_entity);
-						for (int j = 0; j < core->world_data->ground_segment_entity_count; j++)
+						DeleteEntity(seg_entity);
+						for (int j = 0; j < core->world_data->entity_count; j++)
 						{
-							GroundSegmentEntity *seg_entity_2 = &core->world_data->ground_segment_entity_list[j];
-							if (seg_entity_2->entity_id)
+							Entity *seg_entity_2 = &core->world_data->entities[j];
+							if (seg_entity_2->entity_id && seg_entity_2->generalised_type == GENERALISED_ENTITY_TYPE_ground)
 							{
 								PhysicsBodyComponent *seg_body_2 = GetPhysicsBodyComponentFromEntityID(seg_entity_2->entity_id);
 								PositionComponent *seg_pos_2 = GetPositionComponentFromEntityID(seg_entity_2->entity_id);
@@ -1136,18 +1138,18 @@ internal void DrawEditorUI()
 			TsUIPushWidth(270.0f);
 
 			// List segments
-			for (int i = 0; i < core->world_data->ground_segment_entity_count; i++)
+			for (int i = 0; i < core->world_data->entity_count; i++)
 			{
-				GroundSegmentEntity *ground_seg = &core->world_data->ground_segment_entity_list[i];
-				if (ground_seg->entity_id)
+				Entity *ground_seg = &core->world_data->entities[i];
+				if (ground_seg->entity_id && ground_seg->generalised_type == GENERALISED_ENTITY_TYPE_ground)
 				{
 					char label[50];
-					sprintf(label, "Segment #%i", ground_seg->unique_entity_id);
+					sprintf(label, "Segment #%i", ground_seg->entity_id);
 					if (core->run_data->selected_ground_seg)
 					{
-						if (TsUIToggler(label, ground_seg->unique_entity_id == core->run_data->selected_ground_seg->unique_entity_id))
+						if (TsUIToggler(label, ground_seg->entity_id == core->run_data->selected_ground_seg->entity_id))
 							core->run_data->selected_ground_seg = ground_seg;
-						else if (core->run_data->selected_ground_seg->unique_entity_id == ground_seg->unique_entity_id)
+						else if (core->run_data->selected_ground_seg->entity_id == ground_seg->entity_id)
 							core->run_data->selected_ground_seg = 0;
 					}
 					else
@@ -1156,7 +1158,7 @@ internal void DrawEditorUI()
 							core->run_data->selected_ground_seg = ground_seg;
 					}
 
-					if (core->run_data->selected_ground_seg && core->run_data->selected_ground_seg->unique_entity_id == ground_seg->unique_entity_id)
+					if (core->run_data->selected_ground_seg && core->run_data->selected_ground_seg->entity_id == ground_seg->entity_id)
 					{
 						{
 							char label[50];

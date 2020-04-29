@@ -461,47 +461,6 @@ ForwardChunk :: _;
 Dummy2 :: _;
 
 
-/* --- ENTITIES --- */
-
-@UniqueEntity(1, character) @SerialisableStruct
-CharacterEntity :: struct
-{
-	@ComponentList(Position, Sprite, Animation, PhysicsBody, Movement, ArcEntity)
-	dummy : Dummy;
-}
-
-@UniqueEntity(50, scenic) @SerialisableStruct
-CloudEntity :: struct
-{
-	@ComponentList(Position, Sprite, Parallax)
-	dummy : Dummy;
-}
-
-@UniqueEntity(1024, ground) @SerialisableStruct
-GroundSegmentEntity :: struct
-{
-	@ComponentList(Position, PhysicsBody)
-	dummy : Dummy;
-}
-
-@GenerateEntityCode
-Dummy3 :: _;
-
-@SerialisableStruct
-Entity :: struct
-{
-	entity_id : i32;
-	component_ids : i32[COMPONENT_MAX];
-	name : char[20];
-	
-	unique_entity_id : i32;
-	type : EntityType;
-	
-	flags : EntityFlags;
-	generalised_type : GeneralisedEntityType;
-}
-
-
 /* ----------------------------------------- */
 /* ----------- CELLULAR AUTOMATA ----------- */
 /* ----------------------------------------- */
@@ -597,6 +556,17 @@ Cell :: struct
 /* ----------- WORLD DATA ----------- */
 /* ---------------------------------- */
 
+@SerialisableStruct
+Entity :: struct
+{
+	entity_id : i32;
+	component_ids : i32[COMPONENT_MAX];
+	name : char[20];
+	
+	flags : EntityFlags;
+	generalised_type : GeneralisedEntityType;
+}
+
 CELL_CHUNKS_IN_CHUNK :: CHUNK_SIZE / CELL_CHUNK_SIZE
 CHUNK_AREA :: CHUNK_SIZE * CHUNK_SIZE
 @SerialisableStruct
@@ -627,7 +597,6 @@ WorldData :: struct
 	active_chunks : Chunk[MAX_WORLD_CHUNKS];
 	active_chunk_count : i32;
 	
-	@GenerateUniqueEntityArrays
 	entities : Entity[MAX_ACTIVE_ENTITIES];
 	entity_count : i32;
 	free_entity_id : i32;
@@ -652,6 +621,8 @@ RunData :: struct
 	queued_dynamic_cells : *Cell[MAX_DYNAMIC_CELLS];
 	queued_dynamic_cell_count : i32;
 	
+	character_entity : *Entity;
+	
 	/* ~ Editor ~ */
 	editor_state : EditorState;
 	editor_flags : EditorFlags;
@@ -662,7 +633,7 @@ RunData :: struct
 	selection_start : v2;
 	selection_end : v2;
 	// ~ Collision editor
-	selected_ground_seg : *GroundSegmentEntity;
+	selected_ground_seg : *Entity;
 	is_seg_grabbed : b8;
 	grabbed_seg_pos : v2;
 }

@@ -31,7 +31,7 @@ static void TransformEditorCamera()
 
 static void TransformInGameCamera()
 {
-	PositionComponent *position_comp = GetPositionComponentFromEntityID(core->world_data->character_entity.entity_id);
+	PositionComponent *position_comp = GetPositionComponentFromEntityID(core->run_data->character_entity->entity_id);
 	core->camera_zoom = DEFAULT_CAMERA_ZOOM;
 	core->camera_position = V2AddV2(v2(core->camera_offset.x, core->camera_offset.y + DEFAULT_CAMERA_OFFSET_Y), V2MultiplyF32(position_comp->position, -1.0f));
 

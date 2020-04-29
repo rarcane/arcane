@@ -523,46 +523,6 @@ internal ParallaxComponent *GetParallaxComponentFromEntityID(i32 id);
 // NOTE(tjr): Gets a ParticleEmitterComponent from a specified entity, it must have one.
 internal ParticleEmitterComponent *GetParticleEmitterComponentFromEntityID(i32 id);
 internal void RemoveComponent(Entity *entity, ComponentType type);
-#define MAX_CHARACTER_ENTITY_COUNT (1)
-typedef struct CharacterEntity
-{
-i32 entity_id;
-} CharacterEntity;
-
-#define MAX_CLOUD_ENTITY_COUNT (50)
-typedef struct CloudEntity
-{
-i32 entity_id;
-i32 unique_entity_id;
-} CloudEntity;
-
-#define MAX_GROUND_SEGMENT_ENTITY_COUNT (1024)
-typedef struct GroundSegmentEntity
-{
-i32 entity_id;
-i32 unique_entity_id;
-} GroundSegmentEntity;
-
-typedef enum EntityType
-{
-    ENTITY_TYPE_generic,
-    ENTITY_TYPE_character_entity,
-    ENTITY_TYPE_cloud_entity,
-    ENTITY_TYPE_ground_segment_entity,
-    ENTITY_TYPE_MAX
-} EntityType;
-
-typedef struct Entity
-{
-i32 entity_id;
-i32 component_ids[COMPONENT_MAX];
-char name[20];
-i32 unique_entity_id;
-EntityType type;
-EntityFlags flags;
-GeneralisedEntityType generalised_type;
-} Entity;
-
 #define MINIMUM_AIR_PRESSURE (1.0f)
 #define LIQUID_RESOLUTION (0.2f)
 #define MAX_LIQUID_MASS (1.0f)
@@ -658,6 +618,15 @@ CellMaterialType material_type;
 DynamicCellProperties dynamic_properties;
 } Cell;
 
+typedef struct Entity
+{
+i32 entity_id;
+i32 component_ids[COMPONENT_MAX];
+char name[20];
+EntityFlags flags;
+GeneralisedEntityType generalised_type;
+} Entity;
+
 #define CELL_CHUNKS_IN_CHUNK ((CHUNK_SIZE/CELL_CHUNK_SIZE))
 #define CHUNK_AREA ((CHUNK_SIZE*CHUNK_SIZE))
 typedef struct Chunk
@@ -679,16 +648,6 @@ i32 *test_ptr;
 f32 elapsed_world_time;
 Chunk active_chunks[MAX_WORLD_CHUNKS];
 i32 active_chunk_count;
-
-CharacterEntity character_entity;
-CloudEntity cloud_entity_list[MAX_CLOUD_ENTITY_COUNT];
-i32 cloud_entity_count;
-i32 free_cloud_entity_id;
-GroundSegmentEntity ground_segment_entity_list[MAX_GROUND_SEGMENT_ENTITY_COUNT];
-i32 ground_segment_entity_count;
-i32 free_ground_segment_entity_id;
-
-// @GenerateUniqueEntityArrays 
 Entity entities[MAX_ACTIVE_ENTITIES];
 i32 entity_count;
 i32 free_entity_id;
@@ -707,13 +666,14 @@ i32 dynamic_cell_count;
 i32 free_dynamic_cell_id;
 Cell *queued_dynamic_cells[MAX_DYNAMIC_CELLS];
 i32 queued_dynamic_cell_count;
+Entity *character_entity;
 EditorState editor_state;
 EditorFlags editor_flags;
 Entity *selected_entity;
 Cell *selected_cell;
 v2 selection_start;
 v2 selection_end;
-GroundSegmentEntity *selected_ground_seg;
+Entity *selected_ground_seg;
 b8 is_seg_grabbed;
 v2 grabbed_seg_pos;
 } RunData;
@@ -819,29 +779,13 @@ static void ReadComponentSetFromFile(FILE *file, ComponentSet *data);
 
 static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data);
 
-static void WriteCharacterEntityToFile(FILE *file, CharacterEntity *data);
+static void WriteCellToFile(FILE *file, Cell *data);
 
-static void FillCharacterEntityPointersInFile(FILE *file, CharacterEntity *data);
+static void FillCellPointersInFile(FILE *file, Cell *data);
 
-static void ReadCharacterEntityFromFile(FILE *file, CharacterEntity *data);
+static void ReadCellFromFile(FILE *file, Cell *data);
 
-static void FillCharacterEntityPointersFromFile(FILE *file, CharacterEntity *data);
-
-static void WriteCloudEntityToFile(FILE *file, CloudEntity *data);
-
-static void FillCloudEntityPointersInFile(FILE *file, CloudEntity *data);
-
-static void ReadCloudEntityFromFile(FILE *file, CloudEntity *data);
-
-static void FillCloudEntityPointersFromFile(FILE *file, CloudEntity *data);
-
-static void WriteGroundSegmentEntityToFile(FILE *file, GroundSegmentEntity *data);
-
-static void FillGroundSegmentEntityPointersInFile(FILE *file, GroundSegmentEntity *data);
-
-static void ReadGroundSegmentEntityFromFile(FILE *file, GroundSegmentEntity *data);
-
-static void FillGroundSegmentEntityPointersFromFile(FILE *file, GroundSegmentEntity *data);
+static void FillCellPointersFromFile(FILE *file, Cell *data);
 
 static void WriteEntityToFile(FILE *file, Entity *data);
 
@@ -850,14 +794,6 @@ static void FillEntityPointersInFile(FILE *file, Entity *data);
 static void ReadEntityFromFile(FILE *file, Entity *data);
 
 static void FillEntityPointersFromFile(FILE *file, Entity *data);
-
-static void WriteCellToFile(FILE *file, Cell *data);
-
-static void FillCellPointersInFile(FILE *file, Cell *data);
-
-static void ReadCellFromFile(FILE *file, Cell *data);
-
-static void FillCellPointersFromFile(FILE *file, Cell *data);
 
 static void WriteChunkToFile(FILE *file, Chunk *data);
 
