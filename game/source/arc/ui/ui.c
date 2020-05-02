@@ -323,16 +323,16 @@ internal void DrawGameUI()
 		is_backpack_open = !is_backpack_open;
 	}
 
-	// NOTE(tjr): Draw backpack UI.
+	// NOTE(randy): Draw backpack UI.
 	/* if (is_backpack_open)
 	{
 		TsUIBeginInputGroup();
 		{
-			SubSpriteComponent *player_sub_sprite = core->world_data->character_entity.sub_sprite_comp;
+			SubSpriteComponent *player_sub_sprite = core->run_data->character_entity.sub_sprite_comp;
 
 			TsUIPushSize(v2(60, 60));
 
-			// NOTE(tjr): Render backpack.
+			// NOTE(randy): Render backpack.
 			{
 				StorageComponent *storage_comp = core->backpack->components[COMPONENT_storage];
 				i32 column_length = 3;
@@ -362,7 +362,7 @@ internal void DrawGameUI()
 				TsUIPopX();
 			}
 
-			// NOTE(tjr): Render hotbar.
+			// NOTE(randy): Render hotbar.
 			{
 				StorageComponent *hotbar_storage_comp = core->hotbar->components[COMPONENT_storage];
 
@@ -389,7 +389,7 @@ internal void DrawGameUI()
 		}
 		TsUIEndInputGroup();
 
-		// NOTE(tjr): If there's a held item but none of the slots have picked up on it's release. Throw it onto the ground.
+		// NOTE(randy): If there's a held item but none of the slots have picked up on it's release. Throw it onto the ground.
 		if (core->grabbed_inv_item_comp && !core->is_mid_right_click && core->left_mouse_released)
 		{
 			core->left_mouse_released = 0;
@@ -403,7 +403,7 @@ internal void DrawGameUI()
 			core->grabbed_inv_item_comp = 0;
 		}
 
-		// NOTE(tjr): Render grabbed item.
+		// NOTE(randy): Render grabbed item.
 		if (core->grabbed_inv_item_comp)
 		{
 			TsUIPushPosition(V2SubtractV2(v2(platform->mouse_x, platform->mouse_y), core->grabbed_inventory_item_offset));
@@ -562,9 +562,9 @@ internal void DrawGameUI()
 
 	case EDITOR_STATE_collision:
 	{
-		for (int i = 0; i < core->world_data->entity_count; i++)
+		for (int i = 0; i < core->run_data->entity_count; i++)
 		{
-			Entity *seg_entity = &core->world_data->entities[i];
+			Entity *seg_entity = &core->run_data->entities[i];
 			if (seg_entity->entity_id && seg_entity->generalised_type == GENERALISED_ENTITY_TYPE_ground)
 			{
 				PhysicsBodyComponent *seg_body = GetPhysicsBodyComponentFromEntityID(seg_entity->entity_id);
@@ -624,9 +624,9 @@ internal void DrawGameUI()
 					else if (platform->key_pressed[KEY_delete])
 					{
 						DeleteEntity(seg_entity);
-						for (int j = 0; j < core->world_data->entity_count; j++)
+						for (int j = 0; j < core->run_data->entity_count; j++)
 						{
-							Entity *seg_entity_2 = &core->world_data->entities[j];
+							Entity *seg_entity_2 = &core->run_data->entities[j];
 							if (seg_entity_2->entity_id && seg_entity_2->generalised_type == GENERALISED_ENTITY_TYPE_ground)
 							{
 								PhysicsBodyComponent *seg_body_2 = GetPhysicsBodyComponentFromEntityID(seg_entity_2->entity_id);
@@ -675,7 +675,7 @@ internal void DrawEditorUI()
 
 	local_persist b8 pin_windows = 0;
 
-	// NOTE(tjr): Drop-down menus
+	// NOTE(randy): Drop-down menus
 	if (core->run_data->editor_state)
 	{
 		TsUIPushAutoRow(v2(0, 0), 30);
@@ -772,7 +772,7 @@ internal void DrawEditorUI()
 		TsUIPopRow();
 	}
 
-	// NOTE(tjr): State-specific tools
+	// NOTE(randy): State-specific tools
 	switch (core->run_data->editor_state)
 	{
 	case EDITOR_STATE_none:
@@ -783,7 +783,7 @@ internal void DrawEditorUI()
 
 	case EDITOR_STATE_terrain:
 	{
-		// NOTE(tjr): Functionality list
+		// NOTE(randy): Functionality list
 		// Left click to use the selected brush
 		// Right click press to select a single cell
 		// Right click hold to select a region
@@ -1138,9 +1138,9 @@ internal void DrawEditorUI()
 			TsUIPushWidth(270.0f);
 
 			// List segments
-			for (int i = 0; i < core->world_data->entity_count; i++)
+			for (int i = 0; i < core->run_data->entity_count; i++)
 			{
-				Entity *ground_seg = &core->world_data->entities[i];
+				Entity *ground_seg = &core->run_data->entities[i];
 				if (ground_seg->entity_id && ground_seg->generalised_type == GENERALISED_ENTITY_TYPE_ground)
 				{
 					char label[50];
@@ -1189,7 +1189,7 @@ internal void DrawEditorUI()
 		break;
 	}
 
-	// NOTE(tjr): Time dilation
+	// NOTE(randy): Time dilation
 	if (core->run_data->editor_state)
 	{
 		TsUIBeginInputGroup();
@@ -1201,12 +1201,12 @@ internal void DrawEditorUI()
 		TsUIEndInputGroup();
 	}
 
-	// NOTE(tjr): Draw windows.
+	// NOTE(randy): Draw windows.
 	if (pin_windows || core->run_data->editor_state)
 	{
 		if (is_entity_window_open)
 		{
-			// NOTE(tjr): Entity info window.
+			// NOTE(randy): Entity info window.
 			v4 entity_info_window_rect = {core->render_w - 360, 10, 350, 300};
 			TsUIWindowBegin("Entity Info", entity_info_window_rect, 0, 0);
 			{
@@ -1282,8 +1282,8 @@ internal void DrawEditorUI()
 
 				if (is_index_mode)
 				{
-					// NOTE(tjr): Index view
-					for (int i = 1; i < core->world_data->entity_count; i++)
+					// NOTE(randy): Index view
+					for (int i = 1; i < core->run_data->entity_count; i++)
 					{
 						TsUIPushWidth(30);
 						{
@@ -1293,7 +1293,7 @@ internal void DrawEditorUI()
 						}
 						TsUIPopWidth();
 
-						Entity *entity = &core->world_data->entities[i];
+						Entity *entity = &core->run_data->entities[i];
 						if (entity->entity_id > 0)
 						{
 							TsUISameLine();
@@ -1324,14 +1324,14 @@ internal void DrawEditorUI()
 				{
 					TsUIPushWidth(entity_list_window_rect.width - 50);
 
-					// NOTE(tjr): Entity category (type) view
+					// NOTE(randy): Entity category (type) view
 					for (int i = 0; i < GENERALISED_ENTITY_TYPE_MAX; i++)
 					{
 						if (TsUICollapsable(GetGeneralisedEntityTypeName(i)))
 						{
-							for (int j = 1; j < core->world_data->entity_count; j++) // TEMP: Need to sort these before-hand. Will eventually get too inefficient.
+							for (int j = 1; j < core->run_data->entity_count; j++) // TEMP: Need to sort these before-hand. Will eventually get too inefficient.
 							{
-								Entity *entity = &core->world_data->entities[j];
+								Entity *entity = &core->run_data->entities[j];
 								if (entity->entity_id > 0 && entity->generalised_type == i)
 								{
 									if (TsUIToggler(entity->name, (core->run_data->selected_entity ? core->run_data->selected_entity->entity_id == j : 0)))
@@ -1363,12 +1363,12 @@ internal void DrawEditorUI()
 
 		if (is_performance_window_open)
 		{
-			// NOTE(tjr): Display performance data.
+			// NOTE(randy): Display performance data.
 			TsUIWindowBegin("Performance", v4(10, 500, 300, 280), 0, 0);
 			{
 				TsUIPushColumn(v2(10, 0), v2(100, 50));
 
-				f32 budget_total = 0.0f; // NOTE(tjr): Not actual amount, need to calculate this more accurately. Need to create some sort of "Unnaccounted" measurement
+				f32 budget_total = 0.0f; // NOTE(randy): Not actual amount, need to calculate this more accurately. Need to create some sort of "Unnaccounted" measurement
 				for (int i = 0; i < core->performance_timer_count; i++)
 				{
 					char label[100];
@@ -1395,7 +1395,7 @@ internal void DrawEditorUI()
 
 		if (is_debug_window_open)
 		{
-			// NOTE(tjr): Debug random stuff
+			// NOTE(randy): Debug random stuff
 			TsUIWindowBegin("Debug", v4(310, 500, 300, 200), 0, 0);
 			{
 				TsUIPushColumn(v2(10, 0), v2(200, 30));

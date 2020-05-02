@@ -1,6 +1,6 @@
 internal void UpdateCells()
 {
-	// NOTE(tjr): Cull inactive cells.
+	// Cull inactive cells.
 	for (i32 i = 0; i < core->run_data->dynamic_cell_count; i++)
 	{
 		Cell *cell = core->run_data->dynamic_cells[i];
@@ -13,7 +13,7 @@ internal void UpdateCells()
 		}
 	}
 
-	// NOTE(tjr): Cell processing update.
+	// Cell processing update.
 	for (i32 i = 0; i < core->run_data->dynamic_cell_count; i++)
 	{
 		Cell *cell = core->run_data->dynamic_cells[i];
@@ -25,7 +25,7 @@ internal void UpdateCells()
 		}
 	}
 
-	// NOTE(tjr): Add in new dynamic cells.
+	// Add in new dynamic cells.
 	for (i32 i = 0; i < core->run_data->queued_dynamic_cell_count; i++)
 	{
 		if (core->run_data->queued_dynamic_cells[i])
@@ -36,7 +36,7 @@ internal void UpdateCells()
 	}
 	core->run_data->queued_dynamic_cell_count = 0;
 
-	// NOTE(tjr): Post cell process update.
+	// Post cell process update.
 	/* for (i32 i = 0; i < core->run_data->dynamic_cell_count; i++)
 	{
 		Cell *cell = core->run_data->dynamic_cells[i];
@@ -267,7 +267,9 @@ internal void QueueChunkForTextureUpdate(Chunk *chunk)
 
 internal void RenderCells()
 {
-	// NOTE(tjr): Update the textures of queued chunks
+	// NOTE(randy): Might be an issue here, if a chunk is queued but gets unloaded.
+
+	// Update the textures of queued chunks
 	for (i32 i = 0; i < core->run_data->chunk_texture_update_queue_count; i++)
 	{
 		Chunk *chunk = core->run_data->chunk_texture_update_queue[i];
@@ -382,9 +384,9 @@ internal void RenderCells()
 	}
 
 	// Push existing chunk textures
-	for (i32 i = 0; i < core->world_data->active_chunk_count; i++)
+	for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
 	{
-		Chunk *chunk = &core->world_data->active_chunks[i];
+		Chunk *chunk = &core->run_data->active_chunks[i];
 
 		v2 render_pos = v2view(v2((f32)chunk->x_index * CHUNK_SIZE,
 								  (f32)chunk->y_index * CHUNK_SIZE));
@@ -1232,9 +1234,9 @@ internal void ProcessCellMaterial(CellMaterial *material)
 
 internal void UpdateCellMaterials()
 {
-	for (i32 h = 0; h < core->world_data->active_chunk_count; h++)
+	for (i32 h = 0; h < core->run_data->active_chunk_count; h++)
 	{
-		ChunkData *chunk = &core->world_data->active_chunks[h];
+		ChunkData *chunk = &core->run_data->active_chunks[h];
 
 		CellMaterial *dynamic_cell_materials[MAX_DYNAMIC_CELLS];
 		MemoryCopy(dynamic_cell_materials, chunk->dynamic_cell_materials, sizeof(dynamic_cell_materials));
@@ -1324,9 +1326,9 @@ internal void RenderCells()
 	}
 	core->queued_cell_chunk_count = 0;
 
-	for (i32 h = 0; h < core->world_data->active_chunk_count; h++)
+	for (i32 h = 0; h < core->run_data->active_chunk_count; h++)
 	{
-		ChunkData *chunk = &core->world_data->active_chunks[h];
+		ChunkData *chunk = &core->run_data->active_chunks[h];
 
 		for (i32 i = 0; i < CHUNK_SIZE / CELL_CHUNK_SIZE; i++)
 		{

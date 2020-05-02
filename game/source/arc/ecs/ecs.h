@@ -1,8 +1,8 @@
-// NOTE(tjr): Create a new generic entity.
+// NOTE(randy): Create a new generic entity.
 internal Entity *NewEntity(char *name, GeneralisedEntityType generalised_type);
-// NOTE(tjr): Remmoves the provided generic entity.
+// NOTE(randy): Remmoves the provided generic entity.
 internal void DeleteEntity(Entity *entity);
-// NOTE(tjr): Gets entity with the provided ID.
+// NOTE(randy): Gets entity with the provided ID.
 // indexes into entity array at ID - 1
 internal Entity *GetEntityWithID(i32 id);
 
@@ -24,7 +24,7 @@ internal AnimationComponent GetDefaultAnimationComponent()
 {
 	AnimationComponent comp = {0};
 	comp.flags = ANIMATION_FLAGS_playing | ANIMATION_FLAGS_repeat;
-	comp.frame_start_time = core->world_data->elapsed_world_time;
+	comp.frame_start_time = core->run_data->elapsed_world_time;
 	comp.interval_mult = 1.0f;
 	return comp;
 }
@@ -76,6 +76,6 @@ internal ParallaxComponent GetDefaultParallaxComponent()
 internal ParticleEmitterComponent GetDefaultParticleEmitterComponent()
 {
 	ParticleEmitterComponent comp = {0};
-	comp.start_time = core->world_data->elapsed_world_time;
+	comp.start_time = core->run_data->elapsed_world_time;
 	return comp;
 }

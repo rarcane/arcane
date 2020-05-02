@@ -16,12 +16,12 @@ internal void InitialiseSpriteData()
 
 internal void UpdateAnimations()
 {
-	for (int j = 0; j < core->world_data->entity_components.animation_component_count; j++)
+	for (int j = 0; j < core->run_data->entity_components.animation_component_count; j++)
 	{
-		AnimationComponent *animation_comp = &core->world_data->entity_components.animation_components[j];
+		AnimationComponent *animation_comp = &core->run_data->entity_components.animation_components[j];
 		if (animation_comp->component_id)
 		{
-			Entity *entity = &core->world_data->entities[animation_comp->parent_entity_id - 1];
+			Entity *entity = &core->run_data->entities[animation_comp->parent_entity_id - 1];
 			SpriteComponent *sprite_comp = GetSpriteComponentFromEntityID(entity->entity_id);
 
 			DynamicSpriteData *dynamic_sprite = &dynamic_sprite_data[sprite_comp->sprite_data.dynamic_sprite];
@@ -29,7 +29,7 @@ internal void UpdateAnimations()
 			b8 animation_flags = animation_comp->flags;
 			if (animation_flags & ANIMATION_FLAGS_playing) // ((animation_flags & (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat)) == (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat))
 			{
-				if (core->world_data->elapsed_world_time >= animation_comp->frame_start_time + dynamic_sprite->frame_interval * animation_comp->interval_mult)
+				if (core->run_data->elapsed_world_time >= animation_comp->frame_start_time + dynamic_sprite->frame_interval * animation_comp->interval_mult)
 				{
 					// Frame is complete
 					if (animation_flags & ANIMATION_FLAGS_reversing)
@@ -69,7 +69,7 @@ internal void UpdateAnimations()
 						}
 					}
 
-					animation_comp->frame_start_time = core->world_data->elapsed_world_time;
+					animation_comp->frame_start_time = core->run_data->elapsed_world_time;
 				}
 			}
 		}
@@ -92,12 +92,12 @@ internal void RenderBackgroundSprites()
 		AnimationComponent *animation_comp;
 	} SpriteRenderable;
 
-	SpriteRenderable ordered_sprites[MAX_ACTIVE_ENTITIES * MAX_SUB_SPRITES] = {0};
+	SpriteRenderable ordered_sprites[MAX_ENTITIES] = {0};
 	i32 ordered_sprite_count = 0;
 
-	for (int j = 0; j < core->world_data->entity_components.sprite_component_count; j++)
+	for (int j = 0; j < core->run_data->entity_components.sprite_component_count; j++)
 	{
-		SpriteComponent *sprite_component = &core->world_data->entity_components.sprite_components[j];
+		SpriteComponent *sprite_component = &core->run_data->entity_components.sprite_components[j];
 		if (sprite_component->component_id && sprite_component->is_background_sprite) // Validate entity & check if it's a background sprite
 		{
 			Entity *entity = GetEntityWithID(sprite_component->parent_entity_id);
@@ -147,12 +147,12 @@ internal void RenderBackgroundSprites()
 
 			v2 render_size = v2zoom(v2(dynamic_sprite->source.z * ordered_sprites[i].scale.x * (ordered_sprites[i].is_flipped ? -1.0f : 1.0f), dynamic_sprite->source.w * ordered_sprites[i].scale.y));
 
-			// NOTE(tjr): Determine proper position of the Sprite - Offset is defaulted to BottomCentre
+			// NOTE(randy): Determine proper position of the Sprite - Offset is defaulted to BottomCentre
 			v2 render_pos = v2view(ordered_sprites[i].position_comp->position);
 			render_pos = V2AddV2(render_pos, v2(render_size.x / -2.0f, -render_size.y));
 			render_pos = V2AddV2(render_pos, v2zoom(v2((dynamic_sprite->offset.x + ordered_sprites[i].offset.x) * (ordered_sprites[i].is_flipped ? -1.0f : 1.0f), dynamic_sprite->offset.y + ordered_sprites[i].offset.y)));
 
-			// NOTE(tjr): The X source pos is translated to the right depending on the current frame.
+			// NOTE(randy): The X source pos is translated to the right depending on the current frame.
 			v2 source_pos = v2(dynamic_sprite->source.x + dynamic_sprite->source.z * animation_comp->current_frame, dynamic_sprite->source.y);
 
 			Ts2dPushTintedTexture(dynamic_sprite->texture_atlas,
@@ -169,7 +169,7 @@ internal void RenderBackgroundSprites()
 
 			v2 render_size = v2zoom(v2(static_sprite->source.z * ordered_sprites[i].scale.x * (ordered_sprites[i].is_flipped ? -1.0f : 1.0f), static_sprite->source.w * ordered_sprites[i].scale.y));
 
-			// NOTE(tjr): Determine proper position of the Sprite - Offset is defaulted to BottomCentre
+			// NOTE(randy): Determine proper position of the Sprite - Offset is defaulted to BottomCentre
 			v2 render_pos = v2view(ordered_sprites[i].position_comp->position);
 			render_pos = V2AddV2(render_pos, v2(render_size.x / -2.0f, -render_size.y));
 			render_pos = V2AddV2(render_pos, v2zoom(v2((static_sprite->offset.x + ordered_sprites[i].offset.x) * (ordered_sprites[i].is_flipped ? -1.0f : 1.0f), static_sprite->offset.y + ordered_sprites[i].offset.y)));
@@ -202,12 +202,12 @@ internal void RenderForegroundSprites()
 		AnimationComponent *animation_comp;
 	} SpriteRenderable;
 
-	SpriteRenderable ordered_sprites[MAX_ACTIVE_ENTITIES * MAX_SUB_SPRITES] = {0};
+	SpriteRenderable ordered_sprites[MAX_ENTITIES] = {0};
 	i32 ordered_sprite_count = 0;
 
-	for (int j = 0; j < core->world_data->entity_components.sprite_component_count; j++)
+	for (int j = 0; j < core->run_data->entity_components.sprite_component_count; j++)
 	{
-		SpriteComponent *sprite_component = &core->world_data->entity_components.sprite_components[j];
+		SpriteComponent *sprite_component = &core->run_data->entity_components.sprite_components[j];
 		if (sprite_component->component_id && !sprite_component->is_background_sprite) // Validate entity & check if it's not a background sprite
 		{
 			Entity *entity = GetEntityWithID(sprite_component->parent_entity_id);
@@ -257,12 +257,12 @@ internal void RenderForegroundSprites()
 
 			v2 render_size = v2zoom(v2(dynamic_sprite->source.z * ordered_sprites[i].scale.x * (ordered_sprites[i].is_flipped ? -1.0f : 1.0f), dynamic_sprite->source.w * ordered_sprites[i].scale.y));
 
-			// NOTE(tjr): Determine proper position of the Sprite - Offset is defaulted to BottomCentre
+			// NOTE(randy): Determine proper position of the Sprite - Offset is defaulted to BottomCentre
 			v2 render_pos = v2view(ordered_sprites[i].position_comp->position);
 			render_pos = V2AddV2(render_pos, v2(render_size.x / -2.0f, -render_size.y));
 			render_pos = V2AddV2(render_pos, v2zoom(v2((dynamic_sprite->offset.x + ordered_sprites[i].offset.x) * (ordered_sprites[i].is_flipped ? -1.0f : 1.0f), dynamic_sprite->offset.y + ordered_sprites[i].offset.y)));
 
-			// NOTE(tjr): The X source pos is translated to the right depending on the current frame.
+			// NOTE(randy): The X source pos is translated to the right depending on the current frame.
 			v2 source_pos = v2(dynamic_sprite->source.x + dynamic_sprite->source.z * animation_comp->current_frame, dynamic_sprite->source.y);
 
 			Ts2dPushTintedTexture(dynamic_sprite->texture_atlas,
@@ -279,7 +279,7 @@ internal void RenderForegroundSprites()
 
 			v2 render_size = v2zoom(v2(static_sprite->source.z * ordered_sprites[i].scale.x * (ordered_sprites[i].is_flipped ? -1.0f : 1.0f), static_sprite->source.w * ordered_sprites[i].scale.y));
 
-			// NOTE(tjr): Determine proper position of the Sprite - Offset is defaulted to BottomCentre
+			// NOTE(randy): Determine proper position of the Sprite - Offset is defaulted to BottomCentre
 			v2 render_pos = v2view(ordered_sprites[i].position_comp->position);
 			render_pos = V2AddV2(render_pos, v2(render_size.x / -2.0f, -render_size.y));
 			render_pos = V2AddV2(render_pos, v2zoom(v2((static_sprite->offset.x + ordered_sprites[i].offset.x) * (ordered_sprites[i].is_flipped ? -1.0f : 1.0f), static_sprite->offset.y + ordered_sprites[i].offset.y)));

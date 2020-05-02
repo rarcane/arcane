@@ -31,16 +31,16 @@ struct Core
 	float camera_zoom;
 	v2 camera_offset;
 
-	// NOTE(tjr): Temp entity stores
+	// Temp entity stores
 	Entity *backpack;
 	Entity *sword;
 
-	// NOTE(tjr): Grabbed inventory item.
+	// Grabbed inventory item.
 	ItemComponent *grabbed_inv_item_comp;
 	i32 grabbed_inv_item_origin_slot;
 	StorageComponent *grabbed_inv_item_origin_storage_comp;
 	v2 grabbed_inventory_item_offset;
-	// NOTE(tjr): Hotbar & held item.
+	// Hotbar & held item.
 	Entity *held_item;
 	Entity *hotbar;
 	i32 active_hotbar_slot;
@@ -52,8 +52,7 @@ struct Core
 
 	v2 random_field[256][256];
 
-	// NOTE(tjr): Data stores
-	WorldData *world_data;
+	// Data stores
 	RunData *run_data;
 	ClientData *client_data;
 
@@ -72,25 +71,25 @@ struct Core
 		v2 render_size;
 	};
 
-	// NOTE(tjr): Input stuff.
+	// Input stuff.
 	b8 is_mid_left_click;
 	b8 left_mouse_released;
 	b8 is_mid_right_click;
 	b8 right_mouse_released;
 	b8 capture_release_key;
 
-	// NOTE(tjr): Application time data.
+	// Application time data.
 	f32 raw_delta_t;
 	f32 delta_mult;
 	f32 delta_t;
-	// NOTE(tjr): World time data.
+	// World time data.
 	f32 world_delta_mult;
 	f32 world_delta_t;
 
-	// NOTE(tjr): Perfomance profiling.
+	// Perfomance profiling.
 	BlockTimer performance_timers[20];
 	i32 performance_timer_count;
-	// NOTE(tjr): Debug line rendering.
+	// Debug line rendering.
 	DebugLine debug_lines[MAX_DEBUG_LINES];
 	i32 debug_line_count;
 	i32 free_debug_line_index;

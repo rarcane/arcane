@@ -4,9 +4,9 @@ internal void RenderColliders()
 	if (!(core->run_data->editor_flags & EDITOR_FLAGS_draw_collision))
 		return;
 
-	for (int i = 0; i < core->world_data->entity_components.physics_body_component_count; i++)
+	for (int i = 0; i < core->run_data->entity_components.physics_body_component_count; i++)
 	{
-		PhysicsBodyComponent *body_comp = &core->world_data->entity_components.physics_body_components[i];
+		PhysicsBodyComponent *body_comp = &core->run_data->entity_components.physics_body_components[i];
 		if (body_comp->component_id)
 		{
 			PositionComponent *pos_comp = GetPositionComponentFromEntityID(body_comp->parent_entity_id);
@@ -22,9 +22,9 @@ internal void RenderColliders()
 	}
 
 	if (core->run_data->editor_flags & EDITOR_FLAGS_draw_chunk_grid)
-		for (int i = 0; i < core->world_data->active_chunk_count; i++)
+		for (int i = 0; i < core->run_data->active_chunk_count; i++)
 		{
-			Chunk *chunk = &core->world_data->active_chunks[i];
+			Chunk *chunk = &core->run_data->active_chunks[i];
 
 			PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index),
 						  v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
@@ -44,9 +44,9 @@ internal void RenderColliders()
 
 internal void UpdatePhysics()
 {
-	for (int i = 0; i < core->world_data->entity_components.physics_body_component_count; i++)
+	for (int i = 0; i < core->run_data->entity_components.physics_body_component_count; i++)
 	{
-		PhysicsBodyComponent *body_comp = &core->world_data->entity_components.physics_body_components[i];
+		PhysicsBodyComponent *body_comp = &core->run_data->entity_components.physics_body_components[i];
 		if (body_comp->component_id)
 		{
 			PositionComponent *pos_comp = GetPositionComponentFromEntityID(body_comp->parent_entity_id);
@@ -142,14 +142,14 @@ internal void UpdatePhysics()
 
 internal void GenerateCollisionPairs(CollisionPair pairs[], i32 *count)
 {
-	for (int i = 0; i < core->world_data->entity_components.physics_body_component_count; i++)
+	for (int i = 0; i < core->run_data->entity_components.physics_body_component_count; i++)
 	{
-		PhysicsBodyComponent *body_comp_a = &core->world_data->entity_components.physics_body_components[i];
+		PhysicsBodyComponent *body_comp_a = &core->run_data->entity_components.physics_body_components[i];
 		if (body_comp_a->component_id)
 		{
-			for (int j = 0; j < core->world_data->entity_components.physics_body_component_count; j++)
+			for (int j = 0; j < core->run_data->entity_components.physics_body_component_count; j++)
 			{
-				PhysicsBodyComponent *body_comp_b = &core->world_data->entity_components.physics_body_components[j];
+				PhysicsBodyComponent *body_comp_b = &core->run_data->entity_components.physics_body_components[j];
 				if (body_comp_b->component_id)
 				{
 					if (body_comp_a != body_comp_b)

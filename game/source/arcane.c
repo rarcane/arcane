@@ -6,6 +6,9 @@
 #define ARCANE_UI_STYLE_GAME (1 << 1)
 #define TSUI_STYLE_CALLS_FILE "tsarcane/arcane_tsui_style_calls.inc"
 
+#include "Windows.h"
+#include "fileapi.h" // TODO(randy): Windows-only, used in util.c - MakeDirectory
+
 // NOTE(rjf): Core Header Code
 #include "telescope/telescope.h"
 #include "arc/util.h"
@@ -13,7 +16,7 @@
 #include "tsarcane/assets.h"
 #include "arcane.h"
 #include "core.h"
-// NOTE(tjr): Game Header Code
+// NOTE(randy): Game Header Code
 #include "arc/sprite/sprite.h"
 #include "arc/world/particle.h"
 #include "generated/catchall.h"
@@ -30,7 +33,7 @@
 #include "telescope/telescope.c"
 #include "tsarcane/assets.c"
 #include "tsarcane/arcane_tsui_callbacks.c"
-// NOTE(tjr): Game Implementation Code
+// NOTE(randy): Game Implementation Code
 #include "arc/util.c"
 #include "tsarcane/terminalcommands.c"
 #include "arc/sprite/sprite.c"
@@ -66,9 +69,6 @@ GameInit(void)
 		core->run_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(RunData));
 		R_DEV_ASSERT(core->run_data, "Failed to allocate memory for Run Data.");
 		InitialiseRunData();
-
-		core->world_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(WorldData));
-		R_DEV_ASSERT(core->world_data, "Failed to allocate memory for WorldData.");
 
 		// NOTE(rjf): Initialize TsDevTerminal.
 		{
@@ -117,7 +117,7 @@ GameInit(void)
 			TsAssetsSetAssetTypes(ArrayCount(asset_types), asset_types, core->permanent_arena);
 		}
 
-		// NOTE(tjr): Initialise Arcane data.
+		// NOTE(randy): Initialise Arcane data.
 		{
 			InitialiseSpriteData();
 
@@ -162,14 +162,14 @@ GameUpdate(void)
 		core->raw_delta_t = (f32)(1.f / platform->target_frames_per_second);
 	}
 
-	// NOTE(tjr): Key stuff
+	// NOTE(randy): Key stuff
 	{
-		// NOTE(tjr): Entering / exiting full-screen
+		// NOTE(randy): Entering / exiting full-screen
 		if (platform->key_pressed[KEY_f11])
 			platform->fullscreen = !platform->fullscreen;
 
 #ifdef DEVELOPER_TOOLS
-		// NOTE(tjr): Enter editor mode
+		// NOTE(randy): Enter editor mode
 		if (platform->key_pressed[KEY_f1])
 		{
 			if (core->run_data->editor_state == EDITOR_STATE_entity)
@@ -301,15 +301,15 @@ GameUpdate(void)
 		}
 	}
 
-	// NOTE(tjr): Calculate delta times.
+	// NOTE(randy): Calculate delta times.
 	{
 		core->delta_t = core->raw_delta_t * core->delta_mult;
 		core->world_delta_t = core->delta_t * core->world_delta_mult;
-		core->world_data->elapsed_world_time += core->world_delta_t;
+		core->run_data->elapsed_world_time += core->world_delta_t;
 	}
 
 #ifdef DEVELOPER_TOOLS
-	// NOTE(tjr): Application-wide slow-motion controls
+	// NOTE(randy): Application-wide slow-motion controls
 	{
 		static b8 is_time_dilated = 0;
 		static f32 last_multiplier = 0.25f;
@@ -343,51 +343,7 @@ GameUpdate(void)
 	// NOTE(rjf): Update.
 	if (core->is_ingame)
 	{
-		UpdateChunks();
-
-#ifdef DEVELOPER_TOOLS
-		DrawEditorUI();
-		if (core->run_data->editor_state)
-			TransformEditorCamera();
-#endif
-
-		core->performance_timer_count = 0;
-
-		START_PERF_TIMER("Update");
-
-		// NOTE(tjr): Perform if the game is not paused.
-		if ((core->world_delta_t == 0.0f ? (core->run_data->editor_flags & EDITOR_FLAGS_manual_step) : 1))
-		{
-			UpdateCells();
-
-			PreMoveUpdatePlayer();
-
-			UpdatePhysics();
-
-			if (!core->run_data->editor_state)
-				TransformInGameCamera();
-
-			PostMoveUpdatePlayer();
-
-			core->run_data->editor_flags &= ~EDITOR_FLAGS_manual_step;
-		}
-
-		UpdateParallax();
-
-		DrawWorld();
-		RenderCells();
-
-#ifdef DEVELOPER_TOOLS
-		RenderColliders();
-#endif
-
-		UpdateParticleEmitters();
-		DrawGameUI();
-#ifdef DEVELOPER_TOOLS
-		DrawDebugLines();
-#endif
-
-		END_PERF_TIMER;
+		WorldUpdate();
 	}
 	else
 	{
@@ -412,7 +368,7 @@ GameUpdate(void)
 
 internal void InitialiseRunData()
 {
-	core->run_data->res_path = MakeCStringOnMemoryArena(core->permanent_arena, "%s/res/", platform->executable_folder_absolute_path);
+	core->run_data->res_path = MakeCStringOnMemoryArena(core->permanent_arena, "%sres\\", platform->executable_folder_absolute_path);
 	core->run_data->editor_flags |= EDITOR_FLAGS_draw_world;
 	core->run_data->editor_flags |= EDITOR_FLAGS_draw_collision;
 	core->run_data->free_dynamic_cell_id = 1;

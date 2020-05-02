@@ -1,15 +1,12 @@
-#define MAX_ENTITIES_PER_CHUNK (256)
-#define MAX_ACTIVE_ENTITIES (1024)
+#define MAX_POSITIONAL_ENTITIES (1024)
+#define MAX_FLOATING_ENTITIES (128)
+#define MAX_ENTITIES ((MAX_POSITIONAL_ENTITIES+MAX_FLOATING_ENTITIES))
 #define MAX_OVERLAPPING_COLLIDERS (50)
 #define MAX_COLLISION_PAIRS (2048)
-#define MAX_ENTITY_REFERENCES (10)
-#define MAX_SUB_COLLIDERS (3)
 #define MAX_STORAGE_SIZE (30)
 #define MAX_PARTICLE_AMOUNT (300)
 #define MAX_WORLD_CHUNKS (128)
 #define CHUNK_SIZE (256)
-#define CELL_CHUNK_SIZE (128)
-#define MAX_PIXEL_CLUSTER_LENGTH (64)
 #define MAX_DYNAMIC_CELLS (16384)
 typedef enum GeneralisedEntityType GeneralisedEntityType;
 enum GeneralisedEntityType
@@ -465,62 +462,62 @@ COMPONENT_MAX,
 
 typedef struct ComponentSet
 {
-PositionComponent position_components[MAX_ACTIVE_ENTITIES];
+PositionComponent position_components[MAX_ENTITIES];
 i32 position_component_count;
 i32 free_position_component_id;
-SpriteComponent sprite_components[MAX_ACTIVE_ENTITIES];
+SpriteComponent sprite_components[MAX_ENTITIES];
 i32 sprite_component_count;
 i32 free_sprite_component_id;
-AnimationComponent animation_components[MAX_ACTIVE_ENTITIES];
+AnimationComponent animation_components[MAX_ENTITIES];
 i32 animation_component_count;
 i32 free_animation_component_id;
-PhysicsBodyComponent physics_body_components[MAX_ACTIVE_ENTITIES];
+PhysicsBodyComponent physics_body_components[MAX_ENTITIES];
 i32 physics_body_component_count;
 i32 free_physics_body_component_id;
-MovementComponent movement_components[MAX_ACTIVE_ENTITIES];
+MovementComponent movement_components[MAX_ENTITIES];
 i32 movement_component_count;
 i32 free_movement_component_id;
-ArcEntityComponent arc_entity_components[MAX_ACTIVE_ENTITIES];
+ArcEntityComponent arc_entity_components[MAX_ENTITIES];
 i32 arc_entity_component_count;
 i32 free_arc_entity_component_id;
-ItemComponent item_components[MAX_ACTIVE_ENTITIES];
+ItemComponent item_components[MAX_ENTITIES];
 i32 item_component_count;
 i32 free_item_component_id;
-TriggerComponent trigger_components[MAX_ACTIVE_ENTITIES];
+TriggerComponent trigger_components[MAX_ENTITIES];
 i32 trigger_component_count;
 i32 free_trigger_component_id;
-StorageComponent storage_components[MAX_ACTIVE_ENTITIES];
+StorageComponent storage_components[MAX_ENTITIES];
 i32 storage_component_count;
 i32 free_storage_component_id;
-ParallaxComponent parallax_components[MAX_ACTIVE_ENTITIES];
+ParallaxComponent parallax_components[MAX_ENTITIES];
 i32 parallax_component_count;
 i32 free_parallax_component_id;
-ParticleEmitterComponent particle_emitter_components[MAX_ACTIVE_ENTITIES];
+ParticleEmitterComponent particle_emitter_components[MAX_ENTITIES];
 i32 particle_emitter_component_count;
 i32 free_particle_emitter_component_id;
 } ComponentSet;
 
-// NOTE(tjr): Gets a PositionComponent from a specified entity, it must have one.
+// NOTE(randy): Gets a PositionComponent from a specified entity, it must have one.
 internal PositionComponent *GetPositionComponentFromEntityID(i32 id);
-// NOTE(tjr): Gets a SpriteComponent from a specified entity, it must have one.
+// NOTE(randy): Gets a SpriteComponent from a specified entity, it must have one.
 internal SpriteComponent *GetSpriteComponentFromEntityID(i32 id);
-// NOTE(tjr): Gets a AnimationComponent from a specified entity, it must have one.
+// NOTE(randy): Gets a AnimationComponent from a specified entity, it must have one.
 internal AnimationComponent *GetAnimationComponentFromEntityID(i32 id);
-// NOTE(tjr): Gets a PhysicsBodyComponent from a specified entity, it must have one.
+// NOTE(randy): Gets a PhysicsBodyComponent from a specified entity, it must have one.
 internal PhysicsBodyComponent *GetPhysicsBodyComponentFromEntityID(i32 id);
-// NOTE(tjr): Gets a MovementComponent from a specified entity, it must have one.
+// NOTE(randy): Gets a MovementComponent from a specified entity, it must have one.
 internal MovementComponent *GetMovementComponentFromEntityID(i32 id);
-// NOTE(tjr): Gets a ArcEntityComponent from a specified entity, it must have one.
+// NOTE(randy): Gets a ArcEntityComponent from a specified entity, it must have one.
 internal ArcEntityComponent *GetArcEntityComponentFromEntityID(i32 id);
-// NOTE(tjr): Gets a ItemComponent from a specified entity, it must have one.
+// NOTE(randy): Gets a ItemComponent from a specified entity, it must have one.
 internal ItemComponent *GetItemComponentFromEntityID(i32 id);
-// NOTE(tjr): Gets a TriggerComponent from a specified entity, it must have one.
+// NOTE(randy): Gets a TriggerComponent from a specified entity, it must have one.
 internal TriggerComponent *GetTriggerComponentFromEntityID(i32 id);
-// NOTE(tjr): Gets a StorageComponent from a specified entity, it must have one.
+// NOTE(randy): Gets a StorageComponent from a specified entity, it must have one.
 internal StorageComponent *GetStorageComponentFromEntityID(i32 id);
-// NOTE(tjr): Gets a ParallaxComponent from a specified entity, it must have one.
+// NOTE(randy): Gets a ParallaxComponent from a specified entity, it must have one.
 internal ParallaxComponent *GetParallaxComponentFromEntityID(i32 id);
-// NOTE(tjr): Gets a ParticleEmitterComponent from a specified entity, it must have one.
+// NOTE(randy): Gets a ParticleEmitterComponent from a specified entity, it must have one.
 internal ParticleEmitterComponent *GetParticleEmitterComponentFromEntityID(i32 id);
 internal void RemoveComponent(Entity *entity, ComponentType type);
 #define MINIMUM_AIR_PRESSURE (1.0f)
@@ -633,7 +630,7 @@ typedef struct Chunk
 {
 b8 is_valid;
 b8 remain_loaded;
-i32 entity_ids[MAX_ENTITIES_PER_CHUNK];
+i32 *entity_ids;
 i32 entity_count;
 i32 x_index;
 i32 y_index;
@@ -642,22 +639,21 @@ Cell cells[CHUNK_SIZE][CHUNK_SIZE];
 Ts2dTexture texture;
 } Chunk;
 
-typedef struct WorldData
-{
-i32 *test_ptr;
-f32 elapsed_world_time;
-Chunk active_chunks[MAX_WORLD_CHUNKS];
-i32 active_chunk_count;
-Entity entities[MAX_ACTIVE_ENTITIES];
-i32 entity_count;
-i32 free_entity_id;
-ComponentSet entity_components;
-} WorldData;
-
 typedef struct RunData
 {
+Chunk active_chunks[MAX_WORLD_CHUNKS];
+i32 active_chunk_count;
+Entity entities[MAX_ENTITIES];
+i32 entity_count;
+i32 free_entity_id;
+i32 positional_entity_ids[MAX_POSITIONAL_ENTITIES];
+i32 floating_entity_ids[MAX_FLOATING_ENTITIES];
+i32 floating_entity_id_count;
+ComponentSet entity_components;
 char *res_path;
 char current_level[20];
+f32 elapsed_world_time;
+i32 *test_ptr;
 Chunk *chunk_texture_update_queue[MAX_WORLD_CHUNKS];
 i32 chunk_texture_update_queue_count;
 b8 disable_chunk_view_loading;
@@ -682,6 +678,8 @@ typedef struct ClientData
 {
 b32 bloom;
 } ClientData;
+
+SerialiseEntityComponentsFromChunk(FILE *file, Chunk *chunk, ComponentType type);
 
 static void WritePositionComponentToFile(FILE *file, PositionComponent *data);
 
@@ -802,12 +800,4 @@ static void FillChunkPointersInFile(FILE *file, Chunk *data);
 static void ReadChunkFromFile(FILE *file, Chunk *data);
 
 static void FillChunkPointersFromFile(FILE *file, Chunk *data);
-
-static void WriteWorldDataToFile(FILE *file, WorldData *data);
-
-static void FillWorldDataPointersInFile(FILE *file, WorldData *data);
-
-static void ReadWorldDataFromFile(FILE *file, WorldData *data);
-
-static void FillWorldDataPointersFromFile(FILE *file, WorldData *data);
 

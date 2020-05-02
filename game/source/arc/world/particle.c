@@ -1,17 +1,17 @@
 internal void UpdateParticleEmitters()
 {
-	for (int i = 0; i < core->world_data->entity_components.particle_emitter_component_count; i++)
+	for (int i = 0; i < core->run_data->entity_components.particle_emitter_component_count; i++)
 	{
-		ParticleEmitterComponent *emitter_comp = &core->world_data->entity_components.particle_emitter_components[i];
+		ParticleEmitterComponent *emitter_comp = &core->run_data->entity_components.particle_emitter_components[i];
 		if (emitter_comp->component_id)
 		{
 			PositionComponent *position_comp = GetPositionComponentFromEntityID(emitter_comp->parent_entity_id);
 
-			if (core->world_data->elapsed_world_time >= emitter_comp->start_time + emitter_comp->life_time)
+			if (core->run_data->elapsed_world_time >= emitter_comp->start_time + emitter_comp->life_time)
 			{
 				if (emitter_comp->flags & PARTICLE_EMITTER_FLAGS_repeat)
 				{
-					emitter_comp->start_time = core->world_data->elapsed_world_time;
+					emitter_comp->start_time = core->run_data->elapsed_world_time;
 					emitter_comp->begin_callback(emitter_comp);
 				}
 				else
@@ -23,18 +23,18 @@ internal void UpdateParticleEmitters()
 					emitter_comp->finish_callback(emitter_comp);
 			}
 
-			// NOTE(tjr): Update particles
+			// NOTE(randy): Update particles
 			for (int j = 0; j < emitter_comp->particle_count; j++)
 			{
 				Particle *particle = &emitter_comp->particles[j];
 
 				if (particle->is_valid)
 				{
-					if (core->world_data->elapsed_world_time >= particle->spawn_time + particle->life_time)
+					if (core->run_data->elapsed_world_time >= particle->spawn_time + particle->life_time)
 						DeleteParticle(emitter_comp, j);
 					else
 					{
-						f32 life_alpha = 1.0f - (core->world_data->elapsed_world_time - particle->spawn_time) / particle->life_time;
+						f32 life_alpha = 1.0f - (core->run_data->elapsed_world_time - particle->spawn_time) / particle->life_time;
 
 						particle->position.x += particle->velocity.x * core->world_delta_t;
 						particle->position.y += particle->velocity.y * core->world_delta_t;
@@ -79,7 +79,7 @@ internal void NewParticle(ParticleEmitterComponent *emitter, f32 life_time, v2 i
 
 	emitter->particles[index].is_valid = 1;
 	emitter->particles[index].life_time = life_time;
-	emitter->particles[index].spawn_time = core->world_data->elapsed_world_time;
+	emitter->particles[index].spawn_time = core->run_data->elapsed_world_time;
 	emitter->particles[index].position = initial_pos;
 	emitter->particles[index].velocity = velocity;
 	emitter->particles[index].colour = colour;

@@ -1,4 +1,5 @@
 internal void DrawGameUI();
+internal void DrawEditorUI();
 
 typedef struct InventoryIconCanvasData
 {

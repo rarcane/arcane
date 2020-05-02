@@ -69,23 +69,24 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 				fprintf(h_file, "typedef struct %s\n", root->string);
 				fprintf(h_file, "{\n");
 
-				DataDeskNode *original_member = root->struct_declaration.first_member;
+				// DataDeskNode *original_member = root->struct_declaration.first_member;
 				if (DataDeskNodeHasTag(root, "Component"))
 				{
 					fprintf(h_file, "i32 parent_entity_id;\n");
-					DataDeskNode *node_1 = AllocNode(DATA_DESK_NODE_TYPE_declaration, "parent_entity_id");
+					/* DataDeskNode *node_1 = AllocNode(DATA_DESK_NODE_TYPE_declaration, "parent_entity_id");
 					node_1->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, "i32");
-					root->struct_declaration.first_member = node_1;
+					root->struct_declaration.first_member = node_1; */
 
 					fprintf(h_file, "i32 component_id;\n");
-					DataDeskNode *node_2 = AllocNode(DATA_DESK_NODE_TYPE_declaration, "component_id");
+					/* DataDeskNode *node_2 = AllocNode(DATA_DESK_NODE_TYPE_declaration, "component_id");
 					node_2->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, "i32");
 					node_1->next = node_2;
+					node_2->next = original_member; */
 
 					component_nodes[component_nodes_count++] = root;
 				}
 
-				for (DataDeskNode *member = original_member;
+				for (DataDeskNode *member = root->struct_declaration.first_member;
 					 member; member = member->next)
 				{
 					DataDeskFWriteGraphAsC(h_file, member, 0);
@@ -136,7 +137,7 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 					fprintf(h_file, "};\n");
 				}
 
-				// NOTE(tjr): X-Macro initialisation
+				// NOTE(randy): X-Macro initialisation
 				if (DataDeskNodeHasTag(root, "XMacro"))
 				{
 					char name[50];
@@ -185,7 +186,7 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 					}
 				}
 
-				// NOTE(tjr): Generate enum print function implementation.
+				// NOTE(randy): Generate enum print function implementation.
 				{
 					fprintf(h_file, "static char *Get%sName(%s type);\n\n", root->name, root->name);
 					fprintf(c_file, "static char *Get%sName(%s type)\n", root->name, root->name);
@@ -197,7 +198,7 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 						fprintf(c_file, "case %s_%s:\n", root->name_uppercase_with_underscores, field->string);
 						fprintf(c_file, "return \"");
 
-						// NOTE(tjr): Make enum name look pretty.
+						// NOTE(randy): Make enum name look pretty.
 						i32 string_length = 0;
 						for (; field->string[string_length]; ++string_length)
 						{
@@ -297,7 +298,7 @@ internal void GenerateComponentCode(void)
 		fprintf(h_file, "} ComponentType;\n\n");
 	}
 
-	// NOTE(tjr): Generate component set structure.
+	// NOTE(randy): Generate component set structure.
 	{
 		DataDeskNode *struct_node = AllocNode(DATA_DESK_NODE_TYPE_struct_declaration, "ComponentSet");
 
@@ -310,12 +311,12 @@ internal void GenerateComponentCode(void)
 
 			char variable_1_name[100];
 			sprintf(variable_1_name, "%ss", comp_node->name_lowercase_with_underscores);
-			fprintf(h_file, "%s %s[MAX_ACTIVE_ENTITIES];\n",
+			fprintf(h_file, "%s %s[MAX_ENTITIES];\n",
 					comp_node->name,
 					variable_1_name);
 			DataDeskNode *node_1 = AllocNode(DATA_DESK_NODE_TYPE_declaration, variable_1_name);
 			node_1->declaration.type = AllocNode(DATA_DESK_NODE_TYPE_type_usage, comp_node->name);
-			node_1->declaration.type->type_usage.first_array_size_expression = AllocNode(DATA_DESK_NODE_TYPE_identifier, "MAX_ACTIVE_ENTITIES");
+			node_1->declaration.type->type_usage.first_array_size_expression = AllocNode(DATA_DESK_NODE_TYPE_identifier, "MAX_ENTITIES");
 			if (!previous_node)
 				struct_node->struct_declaration.first_member = node_1;
 			else
@@ -342,7 +343,7 @@ internal void GenerateComponentCode(void)
 		serialisable_structs[serialisable_struct_count++] = struct_node;
 	}
 
-	// NOTE(tjr): Component add/remove functions, and helpers
+	// NOTE(randy): Component add/remove functions, and helpers
 	for (i32 i = 0; i < component_nodes_count; i++)
 	{
 		DataDeskNode *comp_node = component_nodes[i];
@@ -355,36 +356,36 @@ internal void GenerateComponentCode(void)
 		strcpy(trimmed_lowercase_name, comp_node->name_lowercase_with_underscores);
 		trimmed_lowercase_name[string_length - 10] = '\0';
 
-		// NOTE(tjr): Add Component function.
+		// NOTE(randy): Add Component function.
 		{
 			fprintf(c_file, "internal %s *Add%s(Entity *entity)\n", comp_node->name, comp_node->name);
 			fprintf(c_file, "{\n");
-			fprintf(c_file, "    R_DEV_ASSERT(core->world_data->entity_components.free_%s_id > 0, \"Max %s reached.\");\n", comp_node->name_lowercase_with_underscores, comp_node->name);
+			fprintf(c_file, "    R_DEV_ASSERT(core->run_data->entity_components.free_%s_id > 0, \"Max %s reached.\");\n", comp_node->name_lowercase_with_underscores, comp_node->name);
 			fprintf(c_file, "    R_DEV_ASSERT(entity->component_ids[COMPONENT_%s] == 0, \"Entity already has a %s\");\n", trimmed_lowercase_name, comp_node->name);
-			fprintf(c_file, "    i32 new_comp_id = core->world_data->entity_components.free_%s_id;\n\n", comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "    i32 new_comp_id = core->run_data->entity_components.free_%s_id;\n\n", comp_node->name_lowercase_with_underscores);
 
-			fprintf(c_file, "    %s *comp = &core->world_data->entity_components.%ss[new_comp_id - 1];\n", comp_node->name, comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "    %s *comp = &core->run_data->entity_components.%ss[new_comp_id - 1];\n", comp_node->name, comp_node->name_lowercase_with_underscores);
 			fprintf(c_file, "    *comp = GetDefault%s();\n", comp_node->name);
 			fprintf(c_file, "    comp->parent_entity_id = entity->entity_id;\n");
 			fprintf(c_file, "    comp->component_id = new_comp_id;\n");
 			fprintf(c_file, "    entity->component_ids[COMPONENT_%s] = new_comp_id;\n\n", trimmed_lowercase_name);
 
-			fprintf(c_file, "    if (core->world_data->entity_components.%s_count == core->world_data->entity_components.free_%s_id - 1)\n", comp_node->name_lowercase_with_underscores, comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "    if (core->run_data->entity_components.%s_count == core->run_data->entity_components.free_%s_id - 1)\n", comp_node->name_lowercase_with_underscores, comp_node->name_lowercase_with_underscores);
 			fprintf(c_file, "    {\n");
-			fprintf(c_file, "        core->world_data->entity_components.%s_count++;\n", comp_node->name_lowercase_with_underscores);
-			fprintf(c_file, "        core->world_data->entity_components.free_%s_id++;\n", comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "        core->run_data->entity_components.%s_count++;\n", comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "        core->run_data->entity_components.free_%s_id++;\n", comp_node->name_lowercase_with_underscores);
 			fprintf(c_file, "    }\n\n");
 
-			fprintf(c_file, "    if (core->world_data->entity_components.%s_count < MAX_ACTIVE_ENTITIES)\n", comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "    if (core->run_data->entity_components.%s_count < MAX_ENTITIES)\n", comp_node->name_lowercase_with_underscores);
 			fprintf(c_file, "    {\n");
-			fprintf(c_file, "        if (core->world_data->entity_components.%s_count != core->world_data->entity_components.free_%s_id - 1)\n", comp_node->name_lowercase_with_underscores, comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "        if (core->run_data->entity_components.%s_count != core->run_data->entity_components.free_%s_id - 1)\n", comp_node->name_lowercase_with_underscores, comp_node->name_lowercase_with_underscores);
 			fprintf(c_file, "        {\n");
 			fprintf(c_file, "            b8 found = 0;\n");
-			fprintf(c_file, "            for (i32 i = 0; i < core->world_data->entity_components.%s_count; i++)\n", comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "            for (i32 i = 0; i < core->run_data->entity_components.%s_count; i++)\n", comp_node->name_lowercase_with_underscores);
 			fprintf(c_file, "            {\n");
-			fprintf(c_file, "                if (core->world_data->entity_components.%ss[i].component_id)\n", comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "                if (core->run_data->entity_components.%ss[i].component_id)\n", comp_node->name_lowercase_with_underscores);
 			fprintf(c_file, "                {\n");
-			fprintf(c_file, "                    core->world_data->entity_components.free_%s_id = i + 1;\n", comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "                    core->run_data->entity_components.free_%s_id = i + 1;\n", comp_node->name_lowercase_with_underscores);
 			fprintf(c_file, "                    found = 1;\n");
 			fprintf(c_file, "                    break;\n");
 			fprintf(c_file, "                }\n");
@@ -393,22 +394,22 @@ internal void GenerateComponentCode(void)
 			fprintf(c_file, "    }\n");
 			fprintf(c_file, "    else\n");
 			fprintf(c_file, "    {\n");
-			fprintf(c_file, "        core->world_data->entity_components.free_%s_id = 0;\n", comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "        core->run_data->entity_components.free_%s_id = 0;\n", comp_node->name_lowercase_with_underscores);
 			fprintf(c_file, "    }\n\n");
 
 			fprintf(c_file, "    return comp;\n");
 			fprintf(c_file, "}\n\n");
 		}
 
-		// NOTE(tjr): Remove Component function.
+		// NOTE(randy): Remove Component function.
 		{
 			fprintf(c_file, "internal void Remove%s(Entity *entity)\n", comp_node->name);
 			fprintf(c_file, "{\n");
 			fprintf(c_file, "    R_DEV_ASSERT(entity->component_ids[COMPONENT_%s] != 0, \"Entity does not have a %s\");\n", trimmed_lowercase_name, comp_node->name);
-			fprintf(c_file, "    %s *comp = &core->world_data->entity_components.%ss[entity->component_ids[COMPONENT_%s] - 1];\n\n", comp_node->name, comp_node->name_lowercase_with_underscores, trimmed_lowercase_name);
+			fprintf(c_file, "    %s *comp = &core->run_data->entity_components.%ss[entity->component_ids[COMPONENT_%s] - 1];\n\n", comp_node->name, comp_node->name_lowercase_with_underscores, trimmed_lowercase_name);
 
-			fprintf(c_file, "    if (comp->component_id < core->world_data->entity_components.free_%s_id)\n", comp_node->name_lowercase_with_underscores);
-			fprintf(c_file, "        core->world_data->entity_components.free_%s_id = comp->component_id;\n\n", comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "    if (comp->component_id < core->run_data->entity_components.free_%s_id)\n", comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "        core->run_data->entity_components.free_%s_id = comp->component_id;\n\n", comp_node->name_lowercase_with_underscores);
 
 			fprintf(c_file, "    %s empty_comp = {0};\n", comp_node->name);
 			fprintf(c_file, "    *comp = empty_comp;\n", comp_node->name_lowercase_with_underscores);
@@ -416,22 +417,22 @@ internal void GenerateComponentCode(void)
 			fprintf(c_file, "}\n\n");
 		}
 
-		// NOTE(tjr): Get component helper function.
+		// NOTE(randy): Get component helper function.
 		{
-			fprintf(h_file, "// NOTE(tjr): Gets a %s from a specified entity, it must have one.\n", comp_node->name);
+			fprintf(h_file, "// NOTE(randy): Gets a %s from a specified entity, it must have one.\n", comp_node->name);
 			fprintf(h_file, "internal %s *Get%sFromEntityID(i32 id);\n", comp_node->name, comp_node->name);
 			fprintf(c_file, "internal %s *Get%sFromEntityID(i32 id)\n", comp_node->name, comp_node->name);
 			fprintf(c_file, "{\n");
 			fprintf(c_file, "    Entity *entity = GetEntityWithID(id);\n");
 			fprintf(c_file, "    R_DEV_ASSERT(entity->component_ids[COMPONENT_%s], \"Entity doesn't have a %s\");\n", trimmed_lowercase_name, comp_node->name);
-			fprintf(c_file, "    %s *comp = &core->world_data->entity_components.%ss[entity->component_ids[COMPONENT_%s] - 1];\n", comp_node->name, comp_node->name_lowercase_with_underscores, trimmed_lowercase_name);
+			fprintf(c_file, "    %s *comp = &core->run_data->entity_components.%ss[entity->component_ids[COMPONENT_%s] - 1];\n", comp_node->name, comp_node->name_lowercase_with_underscores, trimmed_lowercase_name);
 			fprintf(c_file, "    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_%s], \"IDs are mismatched.\");\n", trimmed_lowercase_name);
 			fprintf(c_file, "    return comp;\n");
 			fprintf(c_file, "}\n\n");
 		}
 	}
 
-	// NOTE(tjr): Generic component removal
+	// NOTE(randy): Generic component removal
 	{
 		fprintf(h_file, "internal void RemoveComponent(Entity *entity, ComponentType type);\n");
 		fprintf(c_file, "internal void RemoveComponent(Entity *entity, ComponentType type)\n");
@@ -466,19 +467,19 @@ internal void GenerateComponentCode(void)
 		fprintf(c_file, "}\n");
 	}
 
-	// NOTE(tjr): Component initialisation
+	// NOTE(randy): Component initialisation
 	{
 		fprintf(c_file, "internal void InitialiseComponents()\n");
 		fprintf(c_file, "{\n");
 		for (i32 i = 0; i < component_nodes_count; i++)
 		{
 			DataDeskNode *comp_node = component_nodes[i];
-			fprintf(c_file, "    core->world_data->entity_components.free_%s_id = 1;\n", comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "    core->run_data->entity_components.free_%s_id = 1;\n", comp_node->name_lowercase_with_underscores);
 		}
 		fprintf(c_file, "}\n");
 	}
 
-	// NOTE(tjr): Generate Component UI print function.
+	// NOTE(randy): Generate Component UI print function.
 	/* {
 		fprintf(c_file, "internal void PrintComponentDataUI(void *component_data, ComponentType type)\n");
 		fprintf(c_file, "{\n");
@@ -685,6 +686,145 @@ internal void GeneratePrintUICodeForAST(FILE *file, DataDeskNode *root, char *ac
 	}
 }
 
+internal void WriteMemberToFile(FILE *file, DataDeskNode *node, char *access_string)
+{
+	if (!DataDeskNodeHasTag(node, "DoNotSerialise"))
+	{
+		if (node->type != DATA_DESK_NODE_TYPE_declaration || node->declaration.type->type != DATA_DESK_NODE_TYPE_type_usage)
+			fprintf(file, "Node is not a member declaration.");
+
+		b8 is_complex = 0;
+		for (i32 j = 0; j < serialisable_struct_count; j++)
+		{
+			DataDeskNode *complex_struct = serialisable_structs[j];
+			if (strcmp(complex_struct->name, node->declaration.type->name) == 0)
+			{
+				is_complex = 1;
+				break;
+			}
+		}
+
+		if (node->declaration.type->type_usage.first_array_size_expression) // Array type
+		{
+			if (!(node->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_identifier ||
+				  node->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_numeric_constant))
+				fprintf(file, "\nArray doesn't have proper type expressions?\n");
+
+			if (node->declaration.type->type_usage.first_array_size_expression->next) // 2D Array
+			{
+				fprintf(file, "    for (i32 i = 0; i < %s; i++)\n", node->declaration.type->type_usage.first_array_size_expression->string);
+				fprintf(file, "    {\n");
+				fprintf(file, "        for (i32 j = 0; j < %s; j++)\n", node->declaration.type->type_usage.first_array_size_expression->next->string);
+				fprintf(file, "        {\n");
+				if (node->declaration.type->type_usage.pointer_count > 0) // 2D Array of pointers
+				{
+					if (node->declaration.type->type_usage.pointer_count > 1)
+						fprintf(file, "No support for double or > pointers yet.\n");
+
+					fprintf(file, "            if (%s%s[i])\n", access_string, node->name);
+					fprintf(file, "            {\n");
+					fprintf(file, "                i32 pos = ftell(file);\n");
+					fprintf(file, "                R_DEV_ASSERT(pos != -1, \"Uh oh.\");\n");
+					fprintf(file, "                R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, \"Max pointers reached. Consider a better design?\");\n");
+					fprintf(file, "                SerialisationPointer ptr = {&(%s%s[i][j]), pos};\n", access_string, node->name);
+					fprintf(file, "                serialisation_pointers[serialisation_pointer_count++] = ptr;\n");
+					fprintf(file, "                i32 empty = INT_MAX;\n");
+					fprintf(file, "                WriteToFile(file, &empty, sizeof(i32));\n");
+					fprintf(file, "            }\n");
+					fprintf(file, "            else\n");
+					fprintf(file, "            {\n");
+					fprintf(file, "                i32 null_ptr = 0;\n");
+					fprintf(file, "                WriteToFile(file, &null_ptr, sizeof(i32));\n");
+					fprintf(file, "            }\n\n");
+				}
+				else
+				{
+					if (is_complex) // 2D Array of complex types
+					{
+						fprintf(file, "            Write%sToFile(file, &(%s%s[i][j]));\n", node->declaration.type->name, access_string, node->name);
+					}
+					else // 2D Array of primative types
+					{
+						fprintf(file, "            WriteToFile(file, &%s%s[i][j], sizeof(%s));\n", access_string, node->name, node->declaration.type->name);
+					}
+				}
+				fprintf(file, "        }\n");
+				fprintf(file, "    }\n\n");
+			}
+			else // 1D Array
+			{
+				fprintf(file, "    for (i32 i = 0; i < %s; i++)\n", node->declaration.type->type_usage.first_array_size_expression->string);
+				fprintf(file, "    {\n");
+
+				if (node->declaration.type->type_usage.pointer_count > 0) // Array of pointers
+				{
+					if (node->declaration.type->type_usage.pointer_count > 1)
+						fprintf(file, "No support for double or > pointers yet.\n");
+
+					fprintf(file, "        if (%s%s[i])\n", access_string, node->name);
+					fprintf(file, "        {\n");
+					fprintf(file, "            i32 pos = ftell(file);\n");
+					fprintf(file, "            R_DEV_ASSERT(pos != -1, \"Uh oh.\");\n");
+					fprintf(file, "            R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, \"Max pointers reached. Consider a better design?\");\n");
+					fprintf(file, "            SerialisationPointer ptr = {&(%s%s[i]), pos};\n", access_string, node->name);
+					fprintf(file, "            serialisation_pointers[serialisation_pointer_count++] = ptr;\n");
+					fprintf(file, "            i32 empty = INT_MAX;\n");
+					fprintf(file, "            WriteToFile(file, &empty, sizeof(i32));\n");
+					fprintf(file, "        }\n");
+					fprintf(file, "        else\n");
+					fprintf(file, "        {\n");
+					fprintf(file, "            i32 null_ptr = 0;\n");
+					fprintf(file, "            WriteToFile(file, &null_ptr, sizeof(i32));\n");
+					fprintf(file, "        }\n\n");
+				}
+				else
+				{
+					if (is_complex) // Array of complex types
+					{
+						fprintf(file, "        Write%sToFile(file, &(%s%s[i]));\n", node->declaration.type->name, access_string, node->name);
+					}
+					else // Array of primative types
+					{
+						fprintf(file, "        WriteToFile(file, &%s%s[i], sizeof(%s));\n", access_string, node->name, node->declaration.type->name);
+					}
+				}
+				fprintf(file, "    }\n\n");
+			}
+		}
+		else // Singular data type
+		{
+			if (node->declaration.type->type_usage.pointer_count > 0) // Pointer
+			{
+				if (node->declaration.type->type_usage.pointer_count > 1)
+					fprintf(file, "No support for double or > pointers yet.\n");
+
+				fprintf(file, "    if (%s%s)\n", access_string, node->name);
+				fprintf(file, "    {\n");
+				fprintf(file, "        i32 pos = ftell(file);\n");
+				fprintf(file, "        R_DEV_ASSERT(pos != -1, \"Uh oh.\");\n");
+				fprintf(file, "        R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, \"Max pointers reached. Consider a better design?\");\n");
+				fprintf(file, "        SerialisationPointer ptr = {&%s%s, pos};\n", access_string, node->name);
+				fprintf(file, "        serialisation_pointers[serialisation_pointer_count++] = ptr;\n");
+				fprintf(file, "        i32 empty = INT_MAX;\n");
+				fprintf(file, "        WriteToFile(file, &empty, sizeof(i32));\n");
+				fprintf(file, "    }\n");
+				fprintf(file, "    else\n");
+				fprintf(file, "    {\n");
+				fprintf(file, "        i32 null_ptr = 0;\n");
+				fprintf(file, "        WriteToFile(file, &null_ptr, sizeof(i32));\n");
+				fprintf(file, "    }\n");
+			}
+			else // Structure
+			{
+				if (is_complex)
+					fprintf(file, "    Write%sToFile(file, &%s%s);\n\n", node->declaration.type->name, access_string, node->name);
+				else
+					fprintf(file, "    WriteToFile(file, &%s%s, sizeof(%s%s));\n\n", access_string, node->name, access_string, node->name);
+			}
+		}
+	}
+}
+
 internal void GenerateSerialisationCode()
 {
 	FILE *h_file = global_catchall_header;
@@ -692,11 +832,76 @@ internal void GenerateSerialisationCode()
 	if (!h_file || !c_file)
 		return;
 
+	{
+		fprintf(h_file, "SerialiseEntityComponentsFromChunk(FILE *file, Chunk *chunk, ComponentType type);\n\n");
+		fprintf(c_file, "SerialiseEntityComponentsFromChunk(FILE *file, Chunk *chunk, ComponentType type)\n");
+		fprintf(c_file, "{\n");
+		fprintf(c_file, "    switch (type)\n");
+		fprintf(c_file, "    {\n");
+		for (i32 i = 0; i < component_nodes_count; i++)
+		{
+			DataDeskNode *comp_node = component_nodes[i];
+
+			i32 string_length = 0;
+			for (; comp_node->name_lowercase_with_underscores[string_length]; ++string_length)
+			{
+			}
+			char trimmed_lowercase_name[50];
+			strcpy(trimmed_lowercase_name, comp_node->name_lowercase_with_underscores);
+			trimmed_lowercase_name[string_length - 10] = '\0';
+
+			fprintf(c_file, "        case COMPONENT_%s:\n", trimmed_lowercase_name);
+			fprintf(c_file, "        {\n");
+			fprintf(c_file, "            typedef struct ComponentSave {\n");
+			fprintf(c_file, "                i32 entity_offset;\n");
+			fprintf(c_file, "                %s *comp_data;\n", comp_node->name);
+			fprintf(c_file, "            } ComponentSave;\n");
+			fprintf(c_file, "            ComponentSave comps[MAX_ENTITIES];\n");
+			fprintf(c_file, "            i32 comp_count = 0;\n\n");
+
+			fprintf(c_file, "            for (i32 i = 0; i < chunk->entity_count; i++)\n");
+			fprintf(c_file, "            {\n");
+			fprintf(c_file, "                if (core->run_data->entities[chunk->entity_ids[i] - 1].component_ids[type])\n");
+			fprintf(c_file, "                {\n");
+			fprintf(c_file, "                    comps[comp_count].entity_offset = i;\n");
+			fprintf(c_file, "                    comps[comp_count].comp_data = &core->run_data->entity_components.%ss[core->run_data->entities[chunk->entity_ids[i] - 1].component_ids[type]];\n", comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "                    comp_count++;\n");
+			fprintf(c_file, "                }\n");
+			fprintf(c_file, "            }\n\n");
+
+			// Give components the ID of its Entity, that way when deserialising it can look up to an
+			// already constructed entity in constant time.
+
+			fprintf(c_file, "            WriteToFile(file, &comp_count, sizeof(comp_count));\n");
+			fprintf(c_file, "            for (i32 i = 0; i < comp_count; i++)\n");
+			fprintf(c_file, "            {\n");
+			fprintf(c_file, "                WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));\n");
+			fprintf(c_file, "                Write%sToFile(file, comps[i].comp_data);\n", comp_node->name);
+			fprintf(c_file, "            }\n");
+			fprintf(c_file, "        } break;\n");
+		}
+		fprintf(c_file, "    }\n");
+		fprintf(c_file, "}\n\n");
+	}
+
+	/* for (DataDeskNode *member = comp_node->struct_declaration.first_member->next->next;
+		 member; member = member->next)
+	{
+		fprintf(c_file, "                %s %s;\n", member->declaration.type->name, member->name);
+	} */
+
+	{
+		/* fprintf(c_file, "            typedef struct CompSave\n");
+		fprintf(c_file, "            {\n");
+		fprintf(c_file, "                i32 entity_index;\n");
+		fprintf(c_file, "            } CompSave;\n"); */
+	}
+
 	for (i32 i = 0; i < serialisable_struct_count; i++)
 	{
 		DataDeskNode *root = serialisable_structs[i];
 
-		// NOTE(tjr): Write to file
+		// NOTE(randy): Write to file
 		{
 			fprintf(h_file, "static void Write%sToFile(FILE *file, %s *data);\n\n", root->name, root->name);
 			fprintf(c_file, "static void Write%sToFile(FILE *file, %s *data)\n", root->name, root->name);
@@ -704,156 +909,12 @@ internal void GenerateSerialisationCode()
 			for (DataDeskNode *member = root->struct_declaration.first_member;
 				 member; member = member->next)
 			{
-				if (!DataDeskNodeHasTag(member, "ComponentList") && !DataDeskNodeHasTag(member, "DoNotSerialise"))
-				{
-					if (member->type != DATA_DESK_NODE_TYPE_declaration || member->declaration.type->type != DATA_DESK_NODE_TYPE_type_usage)
-						fprintf(c_file, "uhhhhh");
-
-					b8 is_complex = 0;
-					for (i32 j = 0; j < serialisable_struct_count; j++)
-					{
-						DataDeskNode *complex_struct = serialisable_structs[j];
-						if (strcmp(complex_struct->name, member->declaration.type->name) == 0)
-						{
-							is_complex = 1;
-							break;
-						}
-					}
-
-					if (member->declaration.type->type_usage.first_array_size_expression) // NOTE(tjr): Array type
-					{
-						if (!(member->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_identifier ||
-							  member->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_numeric_constant))
-							fprintf(c_file, "\nuhhhhh\n");
-
-						if (member->declaration.type->type_usage.first_array_size_expression->next) // NOTE(tjr): 2D Array
-						{
-							fprintf(c_file, "// - 2D Arary %s %s\n", member->declaration.type->type_usage.first_array_size_expression->string, member->declaration.type->type_usage.first_array_size_expression->next->string);
-
-							fprintf(c_file, "    for (i32 i = 0; i < %s; i++)\n", member->declaration.type->type_usage.first_array_size_expression->string);
-							fprintf(c_file, "    {\n");
-							fprintf(c_file, "        for (i32 j = 0; j < %s; j++)\n", member->declaration.type->type_usage.first_array_size_expression->next->string);
-							fprintf(c_file, "        {\n");
-							if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): 2D Array of pointers
-							{
-								if (member->declaration.type->type_usage.pointer_count > 1)
-									fprintf(c_file, "No support for double or > pointers yet.\n");
-
-								fprintf(c_file, "            // '%s' pointer array in %s\n", member->name, root->name);
-								fprintf(c_file, "            if (data->%s[i])\n", member->name);
-								fprintf(c_file, "            {\n");
-								fprintf(c_file, "                i32 pos = ftell(file);\n");
-								fprintf(c_file, "                R_DEV_ASSERT(pos != -1, \"Uh oh.\");\n");
-								fprintf(c_file, "                R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, \"Max pointers reached. Consider a better design?\");\n");
-								fprintf(c_file, "                SerialisationPointer ptr = {&(data->%s[i][j]), pos};\n", member->name);
-								fprintf(c_file, "                serialisation_pointers[serialisation_pointer_count++] = ptr;\n");
-								fprintf(c_file, "                i32 empty = INT_MAX;\n");
-								fprintf(c_file, "                WriteToFile(file, &empty, sizeof(i32));\n");
-								fprintf(c_file, "            }\n");
-								fprintf(c_file, "            else\n");
-								fprintf(c_file, "            {\n");
-								fprintf(c_file, "                i32 null_ptr = 0;\n");
-								fprintf(c_file, "                WriteToFile(file, &null_ptr, sizeof(i32));\n");
-								fprintf(c_file, "            }\n\n");
-							}
-							else
-							{
-								if (is_complex) // NOTE(tjr): 2D Array of complex types
-								{
-									fprintf(c_file, "            // '%s' array in %s\n", member->name, root->name);
-									fprintf(c_file, "            Write%sToFile(file, &(data->%s[i][j]));\n", member->declaration.type->name, member->name);
-								}
-								else // NOTE(tjr): 2D Array of primative types
-								{
-									fprintf(c_file, "            // '%s' array in %s\n", member->name, root->name);
-									fprintf(c_file, "            WriteToFile(file, &data->%s[i][j], sizeof(%s));\n", member->name, member->declaration.type->name);
-								}
-							}
-							fprintf(c_file, "        }\n");
-							fprintf(c_file, "    }\n\n");
-						}
-						else // NOTE(tjr): 1D Array
-						{
-							fprintf(c_file, "    for (i32 i = 0; i < %s; i++)\n", member->declaration.type->type_usage.first_array_size_expression->string);
-							fprintf(c_file, "    {\n");
-
-							if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): Array of pointers
-							{
-								if (member->declaration.type->type_usage.pointer_count > 1)
-									fprintf(c_file, "No support for double or > pointers yet.\n");
-
-								fprintf(c_file, "        // '%s' pointer array in %s\n", member->name, root->name);
-								fprintf(c_file, "        if (data->%s[i])\n", member->name);
-								fprintf(c_file, "        {\n");
-								fprintf(c_file, "            i32 pos = ftell(file);\n");
-								fprintf(c_file, "            R_DEV_ASSERT(pos != -1, \"Uh oh.\");\n");
-								fprintf(c_file, "            R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, \"Max pointers reached. Consider a better design?\");\n");
-								fprintf(c_file, "            SerialisationPointer ptr = {&(data->%s[i]), pos};\n", member->name);
-								fprintf(c_file, "            serialisation_pointers[serialisation_pointer_count++] = ptr;\n");
-								fprintf(c_file, "            i32 empty = INT_MAX;\n");
-								fprintf(c_file, "            WriteToFile(file, &empty, sizeof(i32));\n");
-								fprintf(c_file, "        }\n");
-								fprintf(c_file, "        else\n");
-								fprintf(c_file, "        {\n");
-								fprintf(c_file, "            i32 null_ptr = 0;\n");
-								fprintf(c_file, "            WriteToFile(file, &null_ptr, sizeof(i32));\n");
-								fprintf(c_file, "        }\n\n");
-							}
-							else
-							{
-								if (is_complex) // NOTE(tjr): Array of complex types
-								{
-									fprintf(c_file, "        // '%s' array in %s\n", member->name, root->name);
-									fprintf(c_file, "        Write%sToFile(file, &(data->%s[i]));\n", member->declaration.type->name, member->name);
-								}
-								else // NOTE(tjr): Array of primative types
-								{
-									fprintf(c_file, "        // '%s' array in %s\n", member->name, root->name);
-									fprintf(c_file, "        WriteToFile(file, &data->%s[i], sizeof(%s));\n", member->name, member->declaration.type->name);
-								}
-							}
-							fprintf(c_file, "    }\n\n");
-						}
-					}
-					else // NOTE(tjr): Singular data type
-					{
-						if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): Pointer
-						{
-							if (member->declaration.type->type_usage.pointer_count > 1)
-								fprintf(c_file, "No support for double or > pointers yet.\n");
-
-							fprintf(c_file, "    // '%s' pointer in %s\n", member->name, root->name);
-							fprintf(c_file, "    if (data->%s)\n", member->name);
-							fprintf(c_file, "    {\n");
-							fprintf(c_file, "        i32 pos = ftell(file);\n");
-							fprintf(c_file, "        R_DEV_ASSERT(pos != -1, \"Uh oh.\");\n");
-							fprintf(c_file, "        R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, \"Max pointers reached. Consider a better design?\");\n");
-							fprintf(c_file, "        SerialisationPointer ptr = {&data->%s, pos};\n", member->name);
-							fprintf(c_file, "        serialisation_pointers[serialisation_pointer_count++] = ptr;\n");
-							fprintf(c_file, "        i32 empty = INT_MAX;\n");
-							fprintf(c_file, "        WriteToFile(file, &empty, sizeof(i32));\n");
-							fprintf(c_file, "    }\n");
-							fprintf(c_file, "    else\n");
-							fprintf(c_file, "    {\n");
-							fprintf(c_file, "        i32 null_ptr = 0;\n");
-							fprintf(c_file, "        WriteToFile(file, &null_ptr, sizeof(i32));\n");
-							fprintf(c_file, "    }\n");
-						}
-						else // NOTE(tjr): Structure
-						{
-							fprintf(c_file, "    // '%s' in %s\n", member->name, root->name);
-							if (is_complex)
-								fprintf(c_file, "    Write%sToFile(file, &data->%s);\n\n", member->declaration.type->name, member->name);
-							else
-								fprintf(c_file, "    WriteToFile(file, &data->%s, sizeof(data->%s));\n\n", member->name, member->name);
-						}
-					}
-				}
+				WriteMemberToFile(c_file, member, "data->");
 			}
 			fprintf(c_file, "}\n\n");
 		}
 
-		// NOTE(tjr): Fill pointers in file
+		// NOTE(randy): Fill pointers in file
 		{
 			fprintf(h_file, "static void Fill%sPointersInFile(FILE *file, %s *data);\n\n", root->name, root->name);
 			fprintf(c_file, "static void Fill%sPointersInFile(FILE *file, %s *data)\n", root->name, root->name);
@@ -877,13 +938,13 @@ internal void GenerateSerialisationCode()
 						}
 					}
 
-					if (member->declaration.type->type_usage.first_array_size_expression) // NOTE(tjr): Array type
+					if (member->declaration.type->type_usage.first_array_size_expression) // NOTE(randy): Array type
 					{
 						if (!(member->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_identifier ||
 							  member->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_numeric_constant))
 							fprintf(c_file, "\nuhhhhh\n");
 
-						if (member->declaration.type->type_usage.first_array_size_expression->next) // NOTE(tjr): 2D Array
+						if (member->declaration.type->type_usage.first_array_size_expression->next) // NOTE(randy): 2D Array
 						{
 							// 2d array
 							fprintf(c_file, "// - 2D Arary %s %s\n", member->declaration.type->type_usage.first_array_size_expression->string, member->declaration.type->type_usage.first_array_size_expression->next->string);
@@ -892,7 +953,7 @@ internal void GenerateSerialisationCode()
 							fprintf(c_file, "    {\n");
 							fprintf(c_file, "        for (i32 j = 0; j < %s; j++)\n", member->declaration.type->type_usage.first_array_size_expression->next->string);
 							fprintf(c_file, "        {\n");
-							if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): 2D Array of ptrs
+							if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(randy): 2D Array of ptrs
 							{
 								if (member->declaration.type->type_usage.pointer_count > 1)
 									fprintf(c_file, "No support for double or > pointers yet.\n");
@@ -900,7 +961,7 @@ internal void GenerateSerialisationCode()
 								fprintf(c_file, "        // '%s' pointer array in %s\n", member->name, root->name);
 								fprintf(c_file, "        fseek(file, sizeof(i32), SEEK_CUR);\n");
 							}
-							else // NOTE(tjr): 2D Structure array
+							else // NOTE(randy): 2D Structure array
 							{
 								fprintf(c_file, "            // '%s' array in %s\n", member->name, root->name);
 								fprintf(c_file, "            for (i32 k = 0; k < serialisation_pointer_count; k++)\n");
@@ -923,12 +984,12 @@ internal void GenerateSerialisationCode()
 							fprintf(c_file, "        }\n");
 							fprintf(c_file, "    }\n\n");
 						}
-						else // NOTE(tjr): 1D Array
+						else // NOTE(randy): 1D Array
 						{
 							fprintf(c_file, "    for (i32 i = 0; i < %s; i++)\n", member->declaration.type->type_usage.first_array_size_expression->string);
 							fprintf(c_file, "    {\n");
 
-							if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): Array of ptrs
+							if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(randy): Array of ptrs
 							{
 								if (member->declaration.type->type_usage.pointer_count > 1)
 									fprintf(c_file, "No support for double or > pointers yet.\n");
@@ -936,7 +997,7 @@ internal void GenerateSerialisationCode()
 								fprintf(c_file, "    // '%s' pointer array in %s\n", member->name, root->name);
 								fprintf(c_file, "    fseek(file, sizeof(i32), SEEK_CUR);\n");
 							}
-							else // NOTE(tjr): Structure array
+							else // NOTE(randy): Structure array
 							{
 								fprintf(c_file, "        // '%s' array in %s\n", member->name, root->name);
 								fprintf(c_file, "        for (i32 j = 0; j < serialisation_pointer_count; j++)\n");
@@ -961,7 +1022,7 @@ internal void GenerateSerialisationCode()
 					}
 					else
 					{
-						if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): Pointer
+						if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(randy): Pointer
 						{
 							if (member->declaration.type->type_usage.pointer_count > 1)
 								fprintf(c_file, "No support for double or > pointers yet.\n");
@@ -969,7 +1030,7 @@ internal void GenerateSerialisationCode()
 							fprintf(c_file, "    // '%s' pointer in %s\n", member->name, root->name);
 							fprintf(c_file, "    fseek(file, sizeof(i32), SEEK_CUR);\n\n");
 						}
-						else // NOTE(tjr): Structure
+						else // NOTE(randy): Structure
 						{
 							fprintf(c_file, "    // '%s' in %s\n", member->name, root->name);
 							fprintf(c_file, "    for (i32 i = 0; i < serialisation_pointer_count; i++)\n");
@@ -995,7 +1056,7 @@ internal void GenerateSerialisationCode()
 			fprintf(c_file, "}\n\n");
 		}
 
-		// NOTE(tjr): Read from file
+		// NOTE(randy): Read from file
 		{
 			fprintf(h_file, "static void Read%sFromFile(FILE *file, %s *data);\n\n", root->name, root->name);
 			fprintf(c_file, "static void Read%sFromFile(FILE *file, %s *data)\n", root->name, root->name);
@@ -1019,22 +1080,22 @@ internal void GenerateSerialisationCode()
 						}
 					}
 
-					if (member->declaration.type->type_usage.first_array_size_expression) // NOTE(tjr): Array type
+					if (member->declaration.type->type_usage.first_array_size_expression) // NOTE(randy): Array type
 					{
 						if (!(member->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_identifier ||
 							  member->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_numeric_constant))
 							fprintf(c_file, "\nuhhhhh\n");
 
-						if (member->declaration.type->type_usage.first_array_size_expression->next) // NOTE(tjr): 2D Array
+						if (member->declaration.type->type_usage.first_array_size_expression->next) // NOTE(randy): 2D Array
 						{
 							fprintf(c_file, "// - 2D Arary %s %s\n", member->declaration.type->type_usage.first_array_size_expression->string, member->declaration.type->type_usage.first_array_size_expression->next->string);
 						}
-						else // NOTE(tjr): 1D Array
+						else // NOTE(randy): 1D Array
 						{
 							/* fprintf(c_file, "    for (i32 i = 0; i < %s; i++)\n", member->declaration.type->type_usage.first_array_size_expression->string);
 							fprintf(c_file, "    {\n");
 
-							if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): Array of pointers
+							if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(randy): Array of pointers
 							{
 								if (member->declaration.type->type_usage.pointer_count > 1)
 									fprintf(c_file, "No support for double or > pointers yet.\n");
@@ -1058,12 +1119,12 @@ internal void GenerateSerialisationCode()
 							}
 							else
 							{
-								if (is_complex) // NOTE(tjr): Array of complex types
+								if (is_complex) // NOTE(randy): Array of complex types
 								{
 									fprintf(c_file, "        // '%s' array in %s\n", member->name, root->name);
 									fprintf(c_file, "        Write%sToFile(file, &(data->%s[i]));\n", member->declaration.type->name, member->name);
 								}
-								else // NOTE(tjr): Array of primative types
+								else // NOTE(randy): Array of primative types
 								{
 									fprintf(c_file, "        // '%s' array in %s\n", member->name, root->name);
 									fprintf(c_file, "        WriteToFile(file, &data->%s[i], sizeof(%s));\n", member->name, member->declaration.type->name);
@@ -1072,9 +1133,9 @@ internal void GenerateSerialisationCode()
 							fprintf(c_file, "    }\n\n"); */
 						}
 					}
-					else // NOTE(tjr): Singular data type
+					else // NOTE(randy): Singular data type
 					{
-						if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): Pointer
+						if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(randy): Pointer
 						{
 							if (member->declaration.type->type_usage.pointer_count > 1)
 								fprintf(c_file, "No support for double or > pointers yet.\n");
@@ -1093,7 +1154,7 @@ internal void GenerateSerialisationCode()
 							fprintf(c_file, "            data->%s = 0;\n", member->name);
 							fprintf(c_file, "    }\n");
 						}
-						else // NOTE(tjr): Structure
+						else // NOTE(randy): Structure
 						{
 							fprintf(c_file, "    // '%s' in %s\n", member->name, root->name);
 							if (is_complex)
@@ -1107,7 +1168,7 @@ internal void GenerateSerialisationCode()
 			fprintf(c_file, "}\n\n");
 		}
 
-		// NOTE(tjr): Fill pointers from file
+		// NOTE(randy): Fill pointers from file
 		{
 			fprintf(h_file, "static void Fill%sPointersFromFile(FILE *file, %s *data);\n\n", root->name, root->name);
 			fprintf(c_file, "static void Fill%sPointersFromFile(FILE *file, %s *data)\n", root->name, root->name);
@@ -1131,23 +1192,23 @@ internal void GenerateSerialisationCode()
 						}
 					}
 
-					if (member->declaration.type->type_usage.first_array_size_expression) // NOTE(tjr): Array type
+					if (member->declaration.type->type_usage.first_array_size_expression) // NOTE(randy): Array type
 					{
 						/* if (!(member->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_identifier ||
 							  member->declaration.type->type_usage.first_array_size_expression->type == DATA_DESK_NODE_TYPE_numeric_constant))
 							fprintf(c_file, "\nuhhhhh\n");
 
-						if (member->declaration.type->type_usage.first_array_size_expression->next) // NOTE(tjr): 2D Array
+						if (member->declaration.type->type_usage.first_array_size_expression->next) // NOTE(randy): 2D Array
 						{
 							// 2d array
 							fprintf(c_file, "// - 2D Arary %s %s\n", member->declaration.type->type_usage.first_array_size_expression->string, member->declaration.type->type_usage.first_array_size_expression->next->string);
 						}
-						else // NOTE(tjr): 1D Array
+						else // NOTE(randy): 1D Array
 						{
 							fprintf(c_file, "    for (i32 i = 0; i < %s; i++)\n", member->declaration.type->type_usage.first_array_size_expression->string);
 							fprintf(c_file, "    {\n");
 
-							if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): Array of ptrs
+							if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(randy): Array of ptrs
 							{
 								if (member->declaration.type->type_usage.pointer_count > 1)
 									fprintf(c_file, "No support for double or > pointers yet.\n");
@@ -1155,7 +1216,7 @@ internal void GenerateSerialisationCode()
 								fprintf(c_file, "    // '%s' pointer array in %s\n", member->name, root->name);
 								fprintf(c_file, "    fseek(file, sizeof(i32), SEEK_CUR);\n");
 							}
-							else // NOTE(tjr): Structure array
+							else // NOTE(randy): Structure array
 							{
 								fprintf(c_file, "        // '%s' array in %s\n", member->name, root->name);
 								fprintf(c_file, "        for (i32 j = 0; j < serialisation_pointer_count; j++)\n");
@@ -1180,7 +1241,7 @@ internal void GenerateSerialisationCode()
 					}
 					else
 					{
-						if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(tjr): Pointer
+						if (member->declaration.type->type_usage.pointer_count > 0) // NOTE(randy): Pointer
 						{
 							if (member->declaration.type->type_usage.pointer_count > 1)
 								fprintf(c_file, "No support for double or > pointers yet.\n");
@@ -1188,7 +1249,7 @@ internal void GenerateSerialisationCode()
 							fprintf(c_file, "    // '%s' pointer in %s\n", member->name, root->name);
 							fprintf(c_file, "    fseek(file, sizeof(i32), SEEK_CUR);\n\n");
 						}
-						else // NOTE(tjr): Structure
+						else // NOTE(randy): Structure
 						{
 							fprintf(c_file, "    // '%s' in %s\n", member->name, root->name);
 							fprintf(c_file, "    for (i32 i = 0; i < serialisation_pointer_count; i++)\n");

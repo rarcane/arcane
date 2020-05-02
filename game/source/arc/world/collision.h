@@ -19,6 +19,7 @@ typedef struct CollisionPair
 	PhysicsBodyComponent *b;
 } CollisionPair;
 
+internal void UpdatePhysics();
 internal void RenderColliders();
 internal void GenerateCollisionPairs(CollisionPair pairs[], i32 *count);
 internal void GenerateCollisionManifold(PhysicsBodyComponent *a_body_comp, v2 a_body_world_pos, PhysicsBodyComponent *b_body_comp, v2 b_body_world_pos, c2Manifold *manifold);

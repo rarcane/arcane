@@ -1,14 +1,14 @@
 // TODO: Properly organise for Ts integration with asserts & logging
 #define R_TODO __debugbreak()
 
-// NOTE(tjr): Breaks excecution with a error message
+// NOTE(randy): Breaks excecution with a error message
 #define R_BREAK(...)           \
 	{                          \
 		LogError(__VA_ARGS__); \
 		__debugbreak();        \
 	}
 
-// NOTE(tjr): Shipped with release build. Should be used sparingly for critical system failure.
+// NOTE(randy): Shipped with release build. Should be used sparingly for critical system failure.
 #define R_HARD_ASSERT(x, ...)     \
 	{                             \
 		if (!(x))                 \
@@ -17,7 +17,7 @@
 		}                         \
 	}
 
-// NOTE(tjr): Can be disabled for release builds. Just used to ensure no fuckery is going on while developing new systems; with enough usage this can safely be ruled out.
+// NOTE(randy): Can be disabled for release builds. Just used to ensure no fuckery is going on while developing new systems; with enough usage this can safely be ruled out.
 #define R_DEV_ASSERT(x, ...)      \
 	{                             \
 		if (!(x))                 \

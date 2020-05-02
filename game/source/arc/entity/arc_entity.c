@@ -12,7 +12,7 @@ internal void SetArcEntityAnimationState(ArcEntityComponent *arc_entity_comp, Ar
 
 		sprite_comp->sprite_data.dynamic_sprite = arc_entity_animation_state_data[new_animation_state].dynamic_sprite;
 
-		animation_comp->frame_start_time = core->world_data->elapsed_world_time;
+		animation_comp->frame_start_time = core->run_data->elapsed_world_time;
 		animation_comp->current_frame = 0;
 		animation_comp->flags = animation_flags;
 

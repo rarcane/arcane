@@ -1,6 +1,6 @@
 internal void InitialiseWorldData()
 {
-	core->world_data->free_entity_id = 1;
+	core->run_data->free_entity_id = 1;
 	InitialiseComponents();
 }
 
@@ -10,7 +10,7 @@ internal void CreateTestLevel()
 
 	InitialiseWorldData();
 
-	core->world_data->test_ptr = &core->world_data->free_entity_id;
+	core->run_data->test_ptr = &core->run_data->free_entity_id;
 
 	{
 		// scuffed lmao
@@ -97,7 +97,7 @@ internal void CreateTestLevel()
 
 			Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex((f32)x_pos), WorldspaceToChunkIndex((f32)y_pos));
 			if (!chunk)
-				chunk = LoadChunkAtIndex(WorldspaceToChunkIndex((f32)x_pos), WorldspaceToChunkIndex((f32)y_pos));
+				chunk = LoadChunkFromDisk(WorldspaceToChunkIndex((f32)x_pos), WorldspaceToChunkIndex((f32)y_pos));
 
 			Cell *cell = GetCellAtPosition(x_pos, y_pos);
 			cell->material_type = CELL_MATERIAL_TYPE_dirt;
@@ -134,7 +134,56 @@ internal void CreateTestLevel()
 	}
 
 	strcpy(core->run_data->current_level, "testing");
-	SaveLevel("testing");
+	//SaveLevel("testing");
+}
+
+internal void WorldUpdate()
+{
+#ifdef DEVELOPER_TOOLS
+	DrawEditorUI();
+	if (core->run_data->editor_state)
+		TransformEditorCamera();
+#endif
+
+	core->performance_timer_count = 0;
+
+	START_PERF_TIMER("Update");
+
+	// NOTE(randy): Perform if the game is not paused.
+	if ((core->world_delta_t == 0.0f ? (core->run_data->editor_flags & EDITOR_FLAGS_manual_step) : 1))
+	{
+		UpdateCells();
+
+		PreMoveUpdatePlayer();
+
+		UpdatePhysics();
+
+		if (!core->run_data->editor_state)
+			TransformInGameCamera();
+
+		PostMoveUpdatePlayer();
+
+		core->run_data->editor_flags &= ~EDITOR_FLAGS_manual_step;
+	}
+
+	UpdateParallax();
+
+	UpdateChunks();
+
+	DrawWorld();
+	RenderCells();
+
+#ifdef DEVELOPER_TOOLS
+	RenderColliders();
+#endif
+
+	UpdateParticleEmitters();
+	DrawGameUI();
+#ifdef DEVELOPER_TOOLS
+	DrawDebugLines();
+#endif
+
+	END_PERF_TIMER;
 }
 
 internal void DrawWorld()
@@ -182,7 +231,7 @@ internal void DrawWorld()
 
 	Ts2dPushWorldBegin(&world_info);
 
-	// NOTE(tjr): Sprite rendering.
+	// NOTE(randy): Sprite rendering.
 	{
 		UpdateAnimations();
 		// PostUpdateWorldAnimations();
@@ -199,12 +248,12 @@ internal void DrawWorld()
 
 	Ts2dPushWorldEnd();
 
-	// NOTE(tjr): Draw velocity projection.
+	// NOTE(randy): Draw velocity projection.
 	/* if (core->draw_velocity)
     {
-       for (int j = 0; j < core->world_data->entity_components.velocity_component_count; j++)
+       for (int j = 0; j < core->run_data->entity_components.velocity_component_count; j++)
        {
-          VelocityComponent *velocity_comp = &core->world_data->entity_components.velocity_components[j];
+          VelocityComponent *velocity_comp = &core->run_data->entity_components.velocity_components[j];
           PositionComponent *PositionComponent = velocity_comp->parent_entity->components[COMPONENT_position];
  
           Ts2dPushLine(
@@ -218,9 +267,9 @@ internal void DrawWorld()
 
 internal void UpdateParallax()
 {
-	for (int j = 0; j < core->world_data->entity_components.parallax_component_count; j++)
+	for (int j = 0; j < core->run_data->entity_components.parallax_component_count; j++)
 	{
-		ParallaxComponent *parallax_comp = &core->world_data->entity_components.parallax_components[j];
+		ParallaxComponent *parallax_comp = &core->run_data->entity_components.parallax_components[j];
 		if (parallax_comp->component_id)
 		{
 			PositionComponent *position_comp = GetPositionComponentFromEntityID(parallax_comp->parent_entity_id);
@@ -238,10 +287,76 @@ internal void UpdateParallax()
 
 internal void UpdateChunks()
 {
-	// Unload any chunks that haven't been marked as 'remain_loaded' by now
-	for (i32 i = 0; i < core->world_data->active_chunk_count; i++)
+	// Reset counts
+	core->run_data->floating_entity_id_count = 0;
+	for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
 	{
-		Chunk *chunk = &core->world_data->active_chunks[i];
+		Chunk *chunk = &core->run_data->active_chunks[i];
+		chunk->entity_count = 0;
+		chunk->entity_ids = 0;
+	}
+
+	// Decide where each entity belongs
+	{
+		Entity *positional_entities[MAX_POSITIONAL_ENTITIES];
+		i32 positional_entity_count = 0;
+
+		for (i32 i = 0; i < core->run_data->entity_count; i++)
+		{
+			Entity *entity = &core->run_data->entities[i];
+
+			v2 position = {0.0f, 0.0f};
+			if (entity->component_ids[COMPONENT_position])
+			{
+				position = GetPositionComponentFromEntityID(entity->entity_id)->position;
+				if (entity->component_ids[COMPONENT_parallax])
+				{
+					position = GetParallaxComponentFromEntityID(entity->entity_id)->desired_position;
+				}
+				Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex(position.x), WorldspaceToChunkIndex(position.y));
+
+				chunk->entity_count++;
+				positional_entities[positional_entity_count++] = entity;
+			}
+			else
+			{
+				core->run_data->floating_entity_ids[core->run_data->floating_entity_id_count++] = entity->entity_id;
+			}
+		}
+
+		// Set each chunk's local array
+		i32 id_count = 0;
+		for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
+		{
+			Chunk *chunk = &core->run_data->active_chunks[i];
+			if (chunk->entity_count)
+			{
+				chunk->entity_ids = &core->run_data->positional_entity_ids[id_count];
+				id_count += chunk->entity_count;
+				chunk->entity_count = 0;
+			}
+		}
+
+		// Put all positional entities into their desired chunk arrays
+		for (i32 i = 0; i < positional_entity_count; i++)
+		{
+			Entity *entity = positional_entities[i];
+
+			v2 position = GetPositionComponentFromEntityID(entity->entity_id)->position;
+			if (entity->component_ids[COMPONENT_parallax])
+			{
+				position = GetParallaxComponentFromEntityID(entity->entity_id)->desired_position;
+			}
+			Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex(position.x), WorldspaceToChunkIndex(position.y));
+
+			chunk->entity_ids[chunk->entity_count++] = entity->entity_id;
+		}
+	}
+
+	// Unload any chunks that haven't been marked as 'remain_loaded' by now
+	for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
+	{
+		Chunk *chunk = &core->run_data->active_chunks[i];
 		if (!chunk->remain_loaded)
 		{
 			// unload chunk
@@ -269,25 +384,23 @@ internal void UpdateChunks()
 				Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex(top_left.x) + x, WorldspaceToChunkIndex(top_left.y) + y);
 				if (!chunk)
 				{
-					chunk = LoadChunkAtIndex(WorldspaceToChunkIndex(top_left.x) + x, WorldspaceToChunkIndex(top_left.y) + y);
+					chunk = LoadChunkFromDisk(WorldspaceToChunkIndex(top_left.x) + x, WorldspaceToChunkIndex(top_left.y) + y);
 					chunk->remain_loaded = 1;
 				}
 			}
 		}
 	}
 
-	// Give a new entity list for chunks
-	// TODO: This shouldn't be completely stored for each chunk, should be setup as a radix sort type thingy
-	for (int i = 0; i < core->world_data->active_chunk_count; i++)
+	/* for (int i = 0; i < core->run_data->active_chunk_count; i++)
 	{
-		core->world_data->active_chunks[i].entity_count = 0;
+		core->run_data->active_chunks[i].entity_count = 0;
 	}
 
-	for (int i = 0; i < core->world_data->entity_count; i++)
+	for (int i = 0; i < core->run_data->entity_count; i++)
 	{
-		if (core->world_data->entities[i].entity_id > 0)
+		if (core->run_data->entities[i].entity_id > 0)
 		{
-			Entity *entity = &core->world_data->entities[i];
+			Entity *entity = &core->run_data->entities[i];
 
 			b8 is_positional_entity = 0;
 			v2 world_position;
@@ -317,7 +430,7 @@ internal void UpdateChunks()
 				chunk->entity_ids[chunk->entity_count++] = entity->entity_id;
 			}
 		}
-	}
+	} */
 }
 
 internal i32 WorldspaceToChunkIndex(f32 world_space_coordinate)
@@ -327,9 +440,9 @@ internal i32 WorldspaceToChunkIndex(f32 world_space_coordinate)
 
 internal Chunk *GetChunkAtIndex(i32 x, i32 y)
 {
-	for (int i = 0; i < core->world_data->active_chunk_count; i++)
+	for (int i = 0; i < core->run_data->active_chunk_count; i++)
 	{
-		Chunk *chunk = &core->world_data->active_chunks[i];
+		Chunk *chunk = &core->run_data->active_chunks[i];
 		if (chunk->is_valid)
 			if (x == chunk->x_index &&
 				y == chunk->y_index)
@@ -393,12 +506,65 @@ internal void GetSurroundingChunks(Chunk **chunks, v2 position)
 								WorldspaceToChunkIndex(position.y + CHUNK_SIZE));
 }
 
-// Loading isn't done from disk, for now.
-internal Chunk *LoadChunkAtIndex(i32 x_index, i32 y_index)
+internal void SaveChunkToDisk(char *path, Chunk *chunk)
 {
-	R_DEV_ASSERT(core->world_data->active_chunk_count + 1 < MAX_WORLD_CHUNKS, "Too many chunccs are loaded bruh.");
+	char chunk_file_path[100];
+	sprintf(chunk_file_path, "%s%i.%i.chunk", path, chunk->x_index, chunk->y_index);
+	FILE *file = fopen(chunk_file_path, "w");
+	R_DEV_ASSERT(file, "Couldn't open file.");
 
-	Chunk *chunk = &core->world_data->active_chunks[core->world_data->active_chunk_count++];
+	// NOTE(randy): Write cells to file.
+	for (i32 y = 0; y < CHUNK_SIZE; y++)
+	{
+		for (i32 x = 0; x < CHUNK_SIZE; x++)
+		{
+			Cell *cell = &chunk->cells[y][x];
+
+			typedef struct CellSave
+			{
+				CellMaterialType type;
+				DynamicCellProperties dynamic_properties;
+			} CellSave;
+
+			CellSave cell_save = {cell->material_type, cell->dynamic_properties};
+			WriteToFile(file, &cell_save, sizeof(CellSave));
+		}
+	}
+
+	// NOTE(randy): Write entities into the chunk file. Layout is as follows.
+	// entity count, all entities, component1 count, all component1s, component2 count, all component2s...
+	WriteToFile(file, &chunk->entity_count, sizeof(chunk->entity_count));
+	for (i32 i = 0; i < chunk->entity_count; i++)
+	{
+		Entity *entity = &core->run_data->entities[chunk->entity_ids[i] - 1];
+
+		typedef struct EntitySave
+		{
+			char name[20]; // Do we really need this?
+			EntityFlags flags;
+			GeneralisedEntityType type;
+		} EntitySave;
+
+		EntitySave entity_save = {.flags = entity->flags, .type = entity->generalised_type};
+		MemoryCopy(entity_save.name, entity->name, sizeof(entity_save.name));
+
+		WriteToFile(file, &entity_save, sizeof(EntitySave));
+	}
+
+	// NOTE(randy): Write all the entity components from this chunk into file.
+	for (i32 i = 1; i < COMPONENT_MAX; i++)
+	{
+		SerialiseEntityComponentsFromChunk(file, chunk, i);
+	}
+
+	fclose(file);
+}
+
+internal Chunk *LoadChunkFromDisk(i32 x_index, i32 y_index)
+{
+	R_DEV_ASSERT(core->run_data->active_chunk_count + 1 < MAX_WORLD_CHUNKS, "Too many chunccs are loaded bruh.");
+
+	Chunk *chunk = &core->run_data->active_chunks[core->run_data->active_chunk_count++];
 	chunk->is_valid = 1;
 	chunk->x_index = x_index;
 	chunk->y_index = y_index;

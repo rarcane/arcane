@@ -1,4 +1,4 @@
-// NOTE(tjr): Smooths a linear 0.0 -> 1.0
+// NOTE(randy): Smooths a linear 0.0 -> 1.0
 internal f32 Fade(f32 alpha)
 {
 	return 6 * powf(alpha, 5) - 15 * powf(alpha, 4) + 10 * powf(alpha, 3);
@@ -43,7 +43,7 @@ internal i32 GetSign(f32 x)
 	return (x > 0.0f) - (x < 0.0f);
 }
 
-// NOTE(tjr): Floors to the 1st decimal place.
+// NOTE(randy): Floors to the 1st decimal place.
 internal f32 RoundFirst(f32 x)
 {
 	x *= 10.0f;
@@ -188,7 +188,7 @@ internal void PushDebugLineForDuration(v2 p1, v2 p2, v3 colour, f32 lifetime)
 		colour,
 		1,
 		lifetime,
-		core->world_data->elapsed_world_time,
+		core->run_data->elapsed_world_time,
 	};
 
 	if (core->debug_line_count == core->free_debug_line_index)
@@ -221,7 +221,7 @@ internal void DrawDebugLines()
 	{
 		DebugLine *debug_line = &core->debug_lines[i];
 
-		if (debug_line->is_valid && debug_line->has_duration && debug_line->start_time + debug_line->lifetime <= core->world_data->elapsed_world_time)
+		if (debug_line->is_valid && debug_line->has_duration && debug_line->start_time + debug_line->lifetime <= core->run_data->elapsed_world_time)
 		{
 			DebugLine empty_debug_line = {0};
 			core->debug_lines[i] = empty_debug_line;
@@ -234,7 +234,7 @@ internal void DrawDebugLines()
 		{
 			f32 alpha;
 			if (debug_line->has_duration)
-				alpha = ((debug_line->start_time + debug_line->lifetime) - core->world_data->elapsed_world_time) / debug_line->lifetime;
+				alpha = ((debug_line->start_time + debug_line->lifetime) - core->run_data->elapsed_world_time) / debug_line->lifetime;
 			else
 				alpha = 1.0f;
 
@@ -336,6 +336,23 @@ internal v4 GetCameraRegionRect()
 	return v4u(0.0f);
 }
 
+// TODO(randy): windows-only, put in #ifdefs or some shit
+
+internal b8 MakeDirectory(char *directory_path)
+{
+	return CreateDirectoryA(directory_path, 0);
+}
+
+internal b8 DoesDirectoryExist(char *directory_path)
+{
+	DWORD dwAttrib = GetFileAttributes(directory_path);
+
+	return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
+			(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+}
+
+// ~~~
+
 internal void WriteToFile(FILE *file, void *data, size_t size_bytes)
 {
 	fwrite(data, size_bytes, 1, file);
@@ -346,30 +363,62 @@ internal void ReadFromFile(FILE *file, void *data, size_t size_bytes)
 	fread(data, size_bytes, 1, file);
 }
 
-// NOTE(tjr): Saves current data to a specified level.
+// NOTE(randy): Saves current data to a specified level.
 internal void SaveLevel(char *level_name)
 {
-	/* R_DEV_ASSERT(level_name[0], "Invalid name.");
+	R_DEV_ASSERT(level_name[0], "Invalid name.");
 
 	serialisation_pointer_count = 0;
 
 	char path[200] = "";
-	sprintf(path, "%s%s.save", core->run_data->res_path, level_name);
-	FILE *save = fopen(path, "w");
-	R_DEV_ASSERT(save, "Couldn't open file.");
+	sprintf(path, "%sworlds\\", core->run_data->res_path);
 
-	WriteWorldDataToFile(save, core->world_data);
-	fclose(save);
+	if (!DoesDirectoryExist(path))
+		MakeDirectory(path);
 
+	strcat(path, level_name);
+	strcat(path, "\\");
+	if (!DoesDirectoryExist(path))
+		MakeDirectory(path);
+
+	// NOTE(randy): Write basic data to world_data.save
+	{
+		char file_path[200] = "";
+		sprintf(file_path, "%sworld_data.save", path);
+		FILE *save = fopen(file_path, "w");
+		R_DEV_ASSERT(save, "Couldn't open file.");
+
+		// ...
+
+		// Write non-positional entities into this file as well.
+
+		fclose(save);
+	}
+
+	// NOTE(randy): Save currently loaded chunks to the chunk folder
+	{
+		char file_path[200] = "";
+		sprintf(file_path, "%schunks\\", path);
+
+		if (!DoesDirectoryExist(file_path))
+			MakeDirectory(file_path);
+
+		for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
+		{
+			SaveChunkToDisk(file_path, &core->run_data->active_chunks[i]);
+		}
+	}
+
+	Log("Level saved to %s.save", level_name);
+
+	/* WriteWorldDataToFile(save, core->run_data);
 	save = fopen(path, "r+");
 	fseek(save, 0, SEEK_SET);
-	FillWorldDataPointersInFile(save, core->world_data);
-	fclose(save);
-
-	Log("Level saved to %s.save", level_name); */
+	FillWorldDataPointersInFile(save, core->run_data);
+	fclose(save); */
 }
 
-// NOTE(tjr): Loads a given level. Returns 0 if the level doesn't exist.
+// NOTE(randy): Loads a given level. Returns 0 if the level doesn't exist.
 internal b8 LoadLevel(char *level_name)
 {
 	/* R_DEV_ASSERT(level_name[0], "Invalid name.");
@@ -387,19 +436,19 @@ internal b8 LoadLevel(char *level_name)
 
 	strcpy(core->run_data->current_level, level_name);
 
-	ReadWorldDataFromFile(save, core->world_data);
+	ReadWorldDataFromFile(save, core->run_data);
 	fclose(save);
 
 	save = fopen(path, "r");
 	R_DEV_ASSERT(save, "Couldn't open file.");
-	FillWorldDataPointersFromFile(save, core->world_data);
+	FillWorldDataPointersFromFile(save, core->run_data);
 	fclose(save);
 
 	Log("Successfully loaded level data in from %s", level_name);
 	return 1; */
 }
 
-// NOTE(tjr): Attempts to move level into the root res folder. Only works if being run from arc/game/build
+// NOTE(randy): Attempts to move level into the root res folder. Only works if being run from arc/game/build
 internal void CommitLevel(char *level_name)
 {
 }
