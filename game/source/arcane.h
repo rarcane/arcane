@@ -11,3 +11,4 @@ typedef struct OverlappedColliderInfo
 } OverlappedColliderInfo;
 
 internal void InitialiseRunData();
+internal void FreeRunData();

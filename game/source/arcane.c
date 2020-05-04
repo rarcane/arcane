@@ -75,6 +75,7 @@ GameInit(void)
 			TsDevTerminalCommand commands[] =
 				{
 					{"save", "[Level name]", "Saves current data to the provided level name. If left blank, uses the current level name.", 1, SaveLevelCommand},
+					{"load", "[Level name]", "Loads data in from the specified level.", 1, LoadLevelCommand},
 				};
 
 			TsDevTerminalVariable variables[] =
@@ -131,8 +132,8 @@ GameInit(void)
 			core->run_data->editor_flags |= EDITOR_FLAGS_draw_collision;
 			core->run_data->editor_flags |= EDITOR_FLAGS_debug_cell_view;
 
-			//if (!LoadLevel("testing"))
-			CreateTestLevel();
+			if (!LoadLevel("testing"))
+				CreateTestLevel();
 #else
 			core->is_ingame = 0;
 #endif
@@ -179,7 +180,7 @@ GameUpdate(void)
 			else
 			{
 				core->run_data->editor_state = EDITOR_STATE_entity;
-				core->run_data->disable_chunk_view_loading = 1;
+				core->run_data->disable_chunk_loaded_based_off_view = 1;
 			}
 		}
 		else if (platform->key_pressed[KEY_f2])
@@ -191,7 +192,7 @@ GameUpdate(void)
 			else
 			{
 				core->run_data->editor_state = EDITOR_STATE_terrain;
-				core->run_data->disable_chunk_view_loading = 1;
+				core->run_data->disable_chunk_loaded_based_off_view = 1;
 			}
 		}
 		else if (platform->key_pressed[KEY_f3])
@@ -203,7 +204,7 @@ GameUpdate(void)
 			else
 			{
 				core->run_data->editor_state = EDITOR_STATE_collision;
-				core->run_data->disable_chunk_view_loading = 1;
+				core->run_data->disable_chunk_loaded_based_off_view = 1;
 			}
 		}
 #endif
@@ -305,7 +306,7 @@ GameUpdate(void)
 	{
 		core->delta_t = core->raw_delta_t * core->delta_mult;
 		core->world_delta_t = core->delta_t * core->world_delta_mult;
-		core->run_data->elapsed_world_time += core->world_delta_t;
+		core->run_data->world.elapsed_world_time += core->world_delta_t;
 	}
 
 #ifdef DEVELOPER_TOOLS
@@ -372,4 +373,12 @@ internal void InitialiseRunData()
 	core->run_data->editor_flags |= EDITOR_FLAGS_draw_world;
 	core->run_data->editor_flags |= EDITOR_FLAGS_draw_collision;
 	core->run_data->free_dynamic_cell_id = 1;
+}
+
+internal void FreeRunData()
+{
+	for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
+	{
+		Ts2dTextureCleanUp(&core->run_data->active_chunks[i].texture);
+	}
 }

@@ -176,7 +176,7 @@ internal void PostMoveUpdatePlayer()
 		}
 	} */
 
-	// NOTE(randy): Check for a hotbar slot update.
+	/* // NOTE(randy): Check for a hotbar slot update.
 	{
 		StorageComponent *hotbar_storage = GetStorageComponentFromEntityID(core->hotbar->entity_id);
 		for (int i = 0; i < hotbar_storage->storage_size; i++)
@@ -222,9 +222,9 @@ internal void PostMoveUpdatePlayer()
 	// NOTE(randy): Update held item to player hand position.
 	if (core->held_item)
 	{
-	}
+	} */
 }
-
+/* 
 internal void RemoveHeldItem()
 {
 	R_DEV_ASSERT(core->held_item, "No held iem active.");
@@ -233,4 +233,4 @@ internal void RemoveHeldItem()
 	RemoveSpriteComponent(core->held_item);
 	core->held_item = 0;
 	core->active_hotbar_slot = 0;
-}
+} */

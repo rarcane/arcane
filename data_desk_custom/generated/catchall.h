@@ -639,6 +639,12 @@ Cell cells[CHUNK_SIZE][CHUNK_SIZE];
 Ts2dTexture texture;
 } Chunk;
 
+typedef struct WorldSaveData
+{
+f32 elapsed_world_time;
+i32 *test_ptr;
+} WorldSaveData;
+
 typedef struct RunData
 {
 Chunk active_chunks[MAX_WORLD_CHUNKS];
@@ -647,16 +653,16 @@ Entity entities[MAX_ENTITIES];
 i32 entity_count;
 i32 free_entity_id;
 i32 positional_entity_ids[MAX_POSITIONAL_ENTITIES];
+i32 positional_entity_id_count;
 i32 floating_entity_ids[MAX_FLOATING_ENTITIES];
 i32 floating_entity_id_count;
 ComponentSet entity_components;
 char *res_path;
 char current_level[20];
-f32 elapsed_world_time;
-i32 *test_ptr;
+WorldSaveData world;
 Chunk *chunk_texture_update_queue[MAX_WORLD_CHUNKS];
 i32 chunk_texture_update_queue_count;
-b8 disable_chunk_view_loading;
+b8 disable_chunk_loaded_based_off_view;
 Cell *dynamic_cells[MAX_DYNAMIC_CELLS];
 i32 dynamic_cell_count;
 i32 free_dynamic_cell_id;
@@ -679,7 +685,11 @@ typedef struct ClientData
 b32 bloom;
 } ClientData;
 
-SerialiseEntityComponentsFromChunk(FILE *file, Chunk *chunk, ComponentType type);
+WriteComponentToFile(FILE *file, i32 comp_id, ComponentType type);
+ReadComponentFromFile(FILE *file, Entity *entity, ComponentType type);
+SerialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, ComponentType type);
+
+DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, ComponentType type);
 
 static void WritePositionComponentToFile(FILE *file, PositionComponent *data);
 
@@ -800,4 +810,12 @@ static void FillChunkPointersInFile(FILE *file, Chunk *data);
 static void ReadChunkFromFile(FILE *file, Chunk *data);
 
 static void FillChunkPointersFromFile(FILE *file, Chunk *data);
+
+static void WriteWorldSaveDataToFile(FILE *file, WorldSaveData *data);
+
+static void FillWorldSaveDataPointersInFile(FILE *file, WorldSaveData *data);
+
+static void ReadWorldSaveDataFromFile(FILE *file, WorldSaveData *data);
+
+static void FillWorldSaveDataPointersFromFile(FILE *file, WorldSaveData *data);
 

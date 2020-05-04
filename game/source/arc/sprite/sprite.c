@@ -29,7 +29,7 @@ internal void UpdateAnimations()
 			b8 animation_flags = animation_comp->flags;
 			if (animation_flags & ANIMATION_FLAGS_playing) // ((animation_flags & (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat)) == (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat))
 			{
-				if (core->run_data->elapsed_world_time >= animation_comp->frame_start_time + dynamic_sprite->frame_interval * animation_comp->interval_mult)
+				if (core->run_data->world.elapsed_world_time >= animation_comp->frame_start_time + dynamic_sprite->frame_interval * animation_comp->interval_mult)
 				{
 					// Frame is complete
 					if (animation_flags & ANIMATION_FLAGS_reversing)
@@ -69,7 +69,7 @@ internal void UpdateAnimations()
 						}
 					}
 
-					animation_comp->frame_start_time = core->run_data->elapsed_world_time;
+					animation_comp->frame_start_time = core->run_data->world.elapsed_world_time;
 				}
 			}
 		}

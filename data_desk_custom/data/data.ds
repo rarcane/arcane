@@ -583,6 +583,13 @@ Chunk :: struct
 	texture : Ts2dTexture;
 }
 
+@SerialisableStruct
+WorldSaveData :: struct
+{
+	elapsed_world_time : f32;
+	test_ptr : *i32;
+}
+
 RunData :: struct // Game data used for run-time operations
 {
 	active_chunks : Chunk[MAX_WORLD_CHUNKS];
@@ -592,6 +599,7 @@ RunData :: struct // Game data used for run-time operations
 	entity_count : i32;
 	free_entity_id : i32;
 	positional_entity_ids : i32[MAX_POSITIONAL_ENTITIES];
+	positional_entity_id_count : i32;
 	floating_entity_ids : i32[MAX_FLOATING_ENTITIES];
 	floating_entity_id_count : i32;
 	
@@ -600,13 +608,12 @@ RunData :: struct // Game data used for run-time operations
 	res_path : *char;
 	current_level : char[20];
 	
-	elapsed_world_time : f32;
-	test_ptr : *i32;
+	world : WorldSaveData;
 	
 	chunk_texture_update_queue : *Chunk[MAX_WORLD_CHUNKS];
 	chunk_texture_update_queue_count : i32;
 	
-	disable_chunk_view_loading : b8;
+	disable_chunk_loaded_based_off_view : b8;
 	
 	dynamic_cells : *Cell[MAX_DYNAMIC_CELLS];
 	dynamic_cell_count : i32;

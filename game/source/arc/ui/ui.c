@@ -1,6 +1,6 @@
 internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mouse, void *user_data)
 {
-	InventoryIconCanvasData *icon_data = user_data;
+	/* InventoryIconCanvasData *icon_data = user_data;
 
 	if (mouse.x >= 0.0f && mouse.x < rect.z && mouse.y >= 0.0f && mouse.y < rect.w)
 		icon_data->is_hovered = 1;
@@ -143,12 +143,12 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 				}
 			}
 		}
-	}
+	} */
 }
 
 internal void inventory_icon_canvas_render_callback(char *name, v4 rect, v2 mouse, void *user_data)
 {
-	InventoryIconCanvasData *icon_data = user_data;
+	/* InventoryIconCanvasData *icon_data = user_data;
 
 	Ts2dPushRect(v4(1.0f, 1.0f, 1.0f, 0.8f), rect);
 
@@ -175,12 +175,12 @@ internal void inventory_icon_canvas_render_callback(char *name, v4 rect, v2 mous
 	if (icon_data->is_hovered)
 	{
 		Ts2dPushFilledRect(v4(0.0f, 0.0f, 0.0f, 0.2f), rect);
-	}
+	} */
 }
 
 internal void hotbar_icon_canvas_update_callback(char *name, v4 rect, v2 mouse, void *user_data)
 {
-	InventoryIconCanvasData *icon_data = user_data;
+	/* InventoryIconCanvasData *icon_data = user_data;
 
 	if (mouse.x >= 0.0f && mouse.x < rect.z && mouse.y >= 0.0f && mouse.y < rect.w)
 		icon_data->is_hovered = 1;
@@ -251,12 +251,12 @@ internal void hotbar_icon_canvas_update_callback(char *name, v4 rect, v2 mouse, 
 				}
 			}
 		}
-	}
+	} */
 }
 
 internal void hotbar_icon_canvas_render_callback(char *name, v4 rect, v2 mouse, void *user_data)
 {
-	InventoryIconCanvasData *icon_data = user_data;
+	/* InventoryIconCanvasData *icon_data = user_data;
 
 	Ts2dPushRect(v4(1.0f, 1.0f, 1.0f, 0.8f), rect);
 
@@ -288,7 +288,7 @@ internal void hotbar_icon_canvas_render_callback(char *name, v4 rect, v2 mouse, 
 	{
 		f32 padding = 5.0f;
 		Ts2dPushRect(v4(1.0f, 0.0f, 0.0f, 0.8f), v4(rect.x - padding / 2.0f, rect.y - padding / 2.0f, rect.z + padding, rect.w + padding));
-	}
+	} */
 }
 
 internal void grabbed_icon_canvas_update_callback(char *name, v4 rect, v2 mouse, void *user_data)
@@ -297,7 +297,7 @@ internal void grabbed_icon_canvas_update_callback(char *name, v4 rect, v2 mouse,
 
 internal void grabbed_icon_canvas_render_callback(char *name, v4 rect, v2 mouse, void *user_data)
 {
-	GrabbedIconCanvasData *texture_data = user_data;
+	/* 	GrabbedIconCanvasData *texture_data = user_data;
 
 	Ts2dPushTexture(texture_data->static_sprite->texture_atlas, texture_data->static_sprite->source, rect);
 
@@ -312,7 +312,7 @@ internal void grabbed_icon_canvas_render_callback(char *name, v4 rect, v2 mouse,
 						rect.y + rect.w),
 					 0.35f,
 					 txt);
-	}
+	} */
 }
 
 internal void DrawGameUI()
@@ -974,7 +974,7 @@ internal void DrawEditorUI()
 						}
 					}
 
-					Chunk *chunks[MAX_WORLD_CHUNKS];
+					SkeletonChunk chunks[MAX_WORLD_CHUNKS];
 					i32 chunk_count = 0;
 
 					v2 absolute_start_pos;
@@ -987,10 +987,14 @@ internal void DrawEditorUI()
 					else
 						absolute_start_pos.y = core->run_data->selection_start.y;
 
-					GetChunksInRegion(chunks, &chunk_count, v4(absolute_start_pos.x, absolute_start_pos.y, fabsf(selection_bounds.width), fabsf(selection_bounds.height)));
+					GetSkeletonChunksInRegion(chunks, &chunk_count, v4(absolute_start_pos.x, absolute_start_pos.y, fabsf(selection_bounds.width), fabsf(selection_bounds.height)), 0);
 					for (i32 i = 0; i < chunk_count; i++)
 					{
-						QueueChunkForTextureUpdate(chunks[i]);
+						Chunk *chunk = GetChunkAtIndex(chunks[i].x_index, chunks[i].y_index);
+						if (chunk)
+							QueueChunkForTextureUpdate(chunk);
+						else
+							LogWarning("Selected region has an unloaded chunk, is this intended?");
 					}
 
 					core->run_data->selection_start = v2(0, 0);

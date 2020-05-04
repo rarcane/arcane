@@ -10,7 +10,7 @@ internal void CreateTestLevel()
 
 	InitialiseWorldData();
 
-	core->run_data->test_ptr = &core->run_data->free_entity_id;
+	core->run_data->world.test_ptr = &core->run_data->free_entity_id;
 
 	{
 		// scuffed lmao
@@ -49,7 +49,7 @@ internal void CreateTestLevel()
 		sprite_comp->sprite_data.dynamic_sprite = DYNAMIC_SPRITE_player_idle;
 	}
 
-	{
+	/* {
 		core->sword = NewEntity("Sword", GENERALISED_ENTITY_TYPE_item);
 		core->sword->flags |= ENTITY_FLAGS_no_delete;
 		ItemComponent *sword_item = AddItemComponent(core->sword);
@@ -67,7 +67,7 @@ internal void CreateTestLevel()
 		hotbar_storage->storage_size = 2;
 
 		AddItemToStorage(sword_item, backpack_storage, 2);
-	}
+	} */
 
 	ShufflePerlinNoise();
 	f32 last_height = 0.0f;
@@ -97,7 +97,7 @@ internal void CreateTestLevel()
 
 			Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex((f32)x_pos), WorldspaceToChunkIndex((f32)y_pos));
 			if (!chunk)
-				chunk = LoadChunkFromDisk(WorldspaceToChunkIndex((f32)x_pos), WorldspaceToChunkIndex((f32)y_pos));
+				chunk = CreateNewChunk(WorldspaceToChunkIndex((f32)x_pos), WorldspaceToChunkIndex((f32)y_pos));
 
 			Cell *cell = GetCellAtPosition(x_pos, y_pos);
 			cell->material_type = CELL_MATERIAL_TYPE_dirt;
@@ -134,7 +134,6 @@ internal void CreateTestLevel()
 	}
 
 	strcpy(core->run_data->current_level, "testing");
-	//SaveLevel("testing");
 }
 
 internal void WorldUpdate()
@@ -289,6 +288,7 @@ internal void UpdateChunks()
 {
 	// Reset counts
 	core->run_data->floating_entity_id_count = 0;
+	core->run_data->positional_entity_id_count = 0;
 	for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
 	{
 		Chunk *chunk = &core->run_data->active_chunks[i];
@@ -304,6 +304,8 @@ internal void UpdateChunks()
 		for (i32 i = 0; i < core->run_data->entity_count; i++)
 		{
 			Entity *entity = &core->run_data->entities[i];
+			if (entity == core->run_data->character_entity)
+				continue;
 
 			v2 position = {0.0f, 0.0f};
 			if (entity->component_ids[COMPONENT_position])
@@ -314,6 +316,8 @@ internal void UpdateChunks()
 					position = GetParallaxComponentFromEntityID(entity->entity_id)->desired_position;
 				}
 				Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex(position.x), WorldspaceToChunkIndex(position.y));
+
+				// NOTE(randy): Chunk does not exist for some reason?
 
 				chunk->entity_count++;
 				positional_entities[positional_entity_count++] = entity;
@@ -333,6 +337,7 @@ internal void UpdateChunks()
 			{
 				chunk->entity_ids = &core->run_data->positional_entity_ids[id_count];
 				id_count += chunk->entity_count;
+				core->run_data->positional_entity_id_count += chunk->entity_count;
 				chunk->entity_count = 0;
 			}
 		}
@@ -366,76 +371,31 @@ internal void UpdateChunks()
 	}
 
 	// Load in chunks that should be visible to the player + a buffer
-	if (!core->run_data->disable_chunk_view_loading)
+	if (!core->run_data->disable_chunk_loaded_based_off_view)
 	{
 		const i32 buffer = 1;
 
-		v2 top_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
-		v2 top_right = {-core->camera_position.x + core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
-		v2 bottom_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y + core->render_h / (2.0f * core->camera_zoom)};
+		SkeletonChunk chunks[MAX_WORLD_CHUNKS];
+		i32 chunk_count;
+		GetSkeletonChunksInRegion(chunks, &chunk_count, GetCameraRegionRect(), 1);
 
-		i32 width = WorldspaceToChunkIndex(top_right.x) - WorldspaceToChunkIndex(top_left.x);
-		i32 height = WorldspaceToChunkIndex(bottom_left.y) - WorldspaceToChunkIndex(top_left.y);
-
-		for (int y = -buffer; y <= height + buffer; y++)
+		for (i32 i = 0; i < chunk_count; i++)
 		{
-			for (int x = -buffer; x <= width + buffer; x++)
+			Chunk *chunk = GetChunkAtIndex(chunks[i].x_index, chunks[i].y_index);
+			if (!chunk)
 			{
-				Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex(top_left.x) + x, WorldspaceToChunkIndex(top_left.y) + y);
+				char file_path[200] = "";
+				sprintf(file_path, "%s\\worlds\\%s\\chunks\\", core->run_data->res_path, core->run_data->current_level);
+				chunk = LoadChunkFromDisk(file_path, chunks[i].x_index, chunks[i].y_index);
 				if (!chunk)
 				{
-					chunk = LoadChunkFromDisk(WorldspaceToChunkIndex(top_left.x) + x, WorldspaceToChunkIndex(top_left.y) + y);
-					chunk->remain_loaded = 1;
-				}
-			}
-		}
-	}
-
-	/* for (int i = 0; i < core->run_data->active_chunk_count; i++)
-	{
-		core->run_data->active_chunks[i].entity_count = 0;
-	}
-
-	for (int i = 0; i < core->run_data->entity_count; i++)
-	{
-		if (core->run_data->entities[i].entity_id > 0)
-		{
-			Entity *entity = &core->run_data->entities[i];
-
-			b8 is_positional_entity = 0;
-			v2 world_position;
-
-			if (entity->component_ids[COMPONENT_parallax])
-			{
-				ParallaxComponent *parallax_comp = GetParallaxComponentFromEntityID(entity->entity_id);
-				PositionComponent *position_comp = GetPositionComponentFromEntityID(entity->entity_id);
-
-				is_positional_entity = 1;
-				world_position = parallax_comp->desired_position;
-			}
-			else
-			{
-				if (entity->component_ids[COMPONENT_position])
-				{
-					PositionComponent *position_comp = GetPositionComponentFromEntityID(entity->entity_id);
-					is_positional_entity = 1;
-					world_position = position_comp->position;
+					chunk = CreateNewChunk(chunks[i].x_index, chunks[i].y_index);
 				}
 			}
 
-			if (is_positional_entity)
-			{
-				Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex(world_position.x), WorldspaceToChunkIndex(world_position.y));
-
-				chunk->entity_ids[chunk->entity_count++] = entity->entity_id;
-			}
+			// chunk->remain_loaded = 1;
 		}
-	} */
-}
-
-internal i32 WorldspaceToChunkIndex(f32 world_space_coordinate)
-{
-	return (i32)floorf(world_space_coordinate / CHUNK_SIZE);
+	}
 }
 
 internal Chunk *GetChunkAtIndex(i32 x, i32 y)
@@ -451,35 +411,6 @@ internal Chunk *GetChunkAtIndex(i32 x, i32 y)
 
 	// Chunk isn't loaded.
 	return 0;
-}
-
-internal void GetChunksInRegion(Chunk **chunks, i32 *chunk_count, v4 rect)
-{
-	Chunk *tl_chunk = GetChunkAtIndex(WorldspaceToChunkIndex(rect.x), WorldspaceToChunkIndex(rect.y));
-	if (tl_chunk)
-		chunks[(*chunk_count)++] = tl_chunk; // Manually add the first chunk to the algo.
-	else
-		LogWarning("A visible chunk is not loaded, is this intended?");
-
-	i32 chunks_width = WorldspaceToChunkIndex(rect.x + rect.width) - WorldspaceToChunkIndex(rect.x);
-	i32 chunks_height = WorldspaceToChunkIndex(rect.y + rect.height) - WorldspaceToChunkIndex(rect.y);
-
-	for (int y = 0; y <= chunks_height; y++)
-	{
-		for (int x = 0; x <= chunks_width; x++)
-		{
-			if (!(x == 0 && y == 0))
-			{
-				Chunk *chunk = GetChunkAtIndex(tl_chunk->x_index + x, tl_chunk->y_index + y);
-				if (chunk)
-					chunks[(*chunk_count)++] = chunk;
-				else
-					LogWarning("A visible chunk is not loaded, is this intended?");
-			}
-		}
-	}
-
-	R_DEV_ASSERT(*chunk_count < MAX_WORLD_CHUNKS, "Visible chunks exceed MAX_WORLD_CHUNKS, how is this possible?");
 }
 
 internal void GetSurroundingChunks(Chunk **chunks, v2 position)
@@ -506,61 +437,7 @@ internal void GetSurroundingChunks(Chunk **chunks, v2 position)
 								WorldspaceToChunkIndex(position.y + CHUNK_SIZE));
 }
 
-internal void SaveChunkToDisk(char *path, Chunk *chunk)
-{
-	char chunk_file_path[100];
-	sprintf(chunk_file_path, "%s%i.%i.chunk", path, chunk->x_index, chunk->y_index);
-	FILE *file = fopen(chunk_file_path, "w");
-	R_DEV_ASSERT(file, "Couldn't open file.");
-
-	// NOTE(randy): Write cells to file.
-	for (i32 y = 0; y < CHUNK_SIZE; y++)
-	{
-		for (i32 x = 0; x < CHUNK_SIZE; x++)
-		{
-			Cell *cell = &chunk->cells[y][x];
-
-			typedef struct CellSave
-			{
-				CellMaterialType type;
-				DynamicCellProperties dynamic_properties;
-			} CellSave;
-
-			CellSave cell_save = {cell->material_type, cell->dynamic_properties};
-			WriteToFile(file, &cell_save, sizeof(CellSave));
-		}
-	}
-
-	// NOTE(randy): Write entities into the chunk file. Layout is as follows.
-	// entity count, all entities, component1 count, all component1s, component2 count, all component2s...
-	WriteToFile(file, &chunk->entity_count, sizeof(chunk->entity_count));
-	for (i32 i = 0; i < chunk->entity_count; i++)
-	{
-		Entity *entity = &core->run_data->entities[chunk->entity_ids[i] - 1];
-
-		typedef struct EntitySave
-		{
-			char name[20]; // Do we really need this?
-			EntityFlags flags;
-			GeneralisedEntityType type;
-		} EntitySave;
-
-		EntitySave entity_save = {.flags = entity->flags, .type = entity->generalised_type};
-		MemoryCopy(entity_save.name, entity->name, sizeof(entity_save.name));
-
-		WriteToFile(file, &entity_save, sizeof(EntitySave));
-	}
-
-	// NOTE(randy): Write all the entity components from this chunk into file.
-	for (i32 i = 1; i < COMPONENT_MAX; i++)
-	{
-		SerialiseEntityComponentsFromChunk(file, chunk, i);
-	}
-
-	fclose(file);
-}
-
-internal Chunk *LoadChunkFromDisk(i32 x_index, i32 y_index)
+internal Chunk *CreateNewChunk(i32 x_index, i32 y_index)
 {
 	R_DEV_ASSERT(core->run_data->active_chunk_count + 1 < MAX_WORLD_CHUNKS, "Too many chunccs are loaded bruh.");
 
@@ -583,6 +460,121 @@ internal Chunk *LoadChunkFromDisk(i32 x_index, i32 y_index)
 	QueueChunkForTextureUpdate(chunk);
 
 	return chunk;
+}
+
+internal void SaveChunkToDisk(char *path, Chunk *chunk)
+{
+	R_DEV_ASSERT(path[0] && chunk, "Invalid params.");
+
+	char chunk_file_path[100];
+	sprintf(chunk_file_path, "%s%i.%i.chunk", path, chunk->x_index, chunk->y_index);
+	FILE *file = fopen(chunk_file_path, "w");
+	R_DEV_ASSERT(file, "Couldn't open file.");
+
+	// NOTE(randy): Write cells to file.
+	for (i32 y = 0; y < CHUNK_SIZE; y++)
+	{
+		for (i32 x = 0; x < CHUNK_SIZE; x++)
+		{
+			Cell *cell = &chunk->cells[y][x];
+
+			CellSave cell_save = {cell->material_type, cell->dynamic_properties, (cell->dynamic_id != 0)};
+			WriteToFile(file, &cell_save, sizeof(CellSave));
+		}
+	}
+
+	// NOTE(randy): Write entities into the chunk file. Layout is as follows.
+	// entity count, all entities, component1 count, all component1s, component2 count, all component2s...
+	WriteToFile(file, &chunk->entity_count, sizeof(chunk->entity_count));
+	for (i32 i = 0; i < chunk->entity_count; i++)
+	{
+		Entity *entity = &core->run_data->entities[chunk->entity_ids[i] - 1];
+
+		EntitySave entity_save = {.flags = entity->flags, .type = entity->generalised_type};
+		MemoryCopy(entity_save.name, entity->name, sizeof(entity_save.name));
+
+		WriteToFile(file, &entity_save, sizeof(EntitySave));
+	}
+
+	// NOTE(randy): Write all the entity components from this chunk into file.
+	for (i32 i = 1; i < COMPONENT_MAX; i++)
+	{
+		SerialiseEntityComponentsFromIDList(file, chunk->entity_ids, chunk->entity_count, i);
+	}
+
+	fclose(file);
+}
+
+internal Chunk *LoadChunkFromDisk(char *path, i32 x_index, i32 y_index)
+{
+	R_DEV_ASSERT(core->run_data->active_chunk_count + 1 < MAX_WORLD_CHUNKS, "Too many chunccs are loaded bruh.");
+	R_DEV_ASSERT(!GetChunkAtIndex(x_index, y_index), "Chunk already loaded.");
+
+	char chunk_file_path[100];
+	sprintf(chunk_file_path, "%s%i.%i.chunk", path, x_index, y_index);
+	FILE *file = fopen(chunk_file_path, "r");
+	if (file)
+	{
+		Chunk *chunk = &core->run_data->active_chunks[core->run_data->active_chunk_count++];
+		chunk->is_valid = 1;
+		chunk->x_index = x_index;
+		chunk->y_index = y_index;
+
+		// Read in cells
+		{
+			for (int y = 0; y < CHUNK_SIZE; y++)
+			{
+				for (int x = 0; x < CHUNK_SIZE; x++)
+				{
+					Cell *cell = &chunk->cells[y][x];
+					cell->x_position = x_index * CHUNK_SIZE + x;
+					cell->y_position = y_index * CHUNK_SIZE + y;
+					cell->parent_chunk = chunk;
+
+					CellSave cell_save;
+					ReadFromFile(file, &cell_save, sizeof(CellSave));
+					cell->material_type = cell_save.type;
+					cell->dynamic_properties = cell_save.dynamic_properties;
+					if (cell_save.is_dynamic)
+						MakeCellDynamic(cell);
+				}
+			}
+
+			QueueChunkForTextureUpdate(chunk);
+		}
+
+		// Read in entities
+		{
+			ReadFromFile(file, &chunk->entity_count, sizeof(i32));
+
+			// Allocate a segment in the id array for it.
+			chunk->entity_ids = &core->run_data->positional_entity_ids[core->run_data->positional_entity_id_count];
+			core->run_data->positional_entity_id_count += chunk->entity_count;
+
+			for (i32 i = 0; i < chunk->entity_count; i++)
+			{
+				EntitySave entity_save;
+				ReadFromFile(file, &entity_save, sizeof(EntitySave));
+
+				Entity *entity = NewEntity(entity_save.name, entity_save.type);
+				entity->flags = entity_save.flags;
+
+				chunk->entity_ids[i] = entity->entity_id;
+			}
+
+			for (i32 i = 1; i < COMPONENT_MAX; i++)
+			{
+				DeserialiseEntityComponentsFromIDList(file, chunk->entity_ids, chunk->entity_count, i);
+			}
+		}
+
+		fclose(file);
+		return chunk;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 internal void UnloadChunk(Chunk *chunk_to_unload)

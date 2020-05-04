@@ -24,7 +24,7 @@ internal AnimationComponent GetDefaultAnimationComponent()
 {
 	AnimationComponent comp = {0};
 	comp.flags = ANIMATION_FLAGS_playing | ANIMATION_FLAGS_repeat;
-	comp.frame_start_time = core->run_data->elapsed_world_time;
+	comp.frame_start_time = core->run_data->world.elapsed_world_time;
 	comp.interval_mult = 1.0f;
 	return comp;
 }
@@ -76,6 +76,6 @@ internal ParallaxComponent GetDefaultParallaxComponent()
 internal ParticleEmitterComponent GetDefaultParticleEmitterComponent()
 {
 	ParticleEmitterComponent comp = {0};
-	comp.start_time = core->run_data->elapsed_world_time;
+	comp.start_time = core->run_data->world.elapsed_world_time;
 	return comp;
 }

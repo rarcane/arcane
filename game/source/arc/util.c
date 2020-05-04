@@ -1,4 +1,4 @@
-// NOTE(randy): Smooths a linear 0.0 -> 1.0
+// Smooths a linear 0.0 -> 1.0
 internal f32 Fade(f32 alpha)
 {
 	return 6 * powf(alpha, 5) - 15 * powf(alpha, 4) + 10 * powf(alpha, 3);
@@ -43,7 +43,7 @@ internal i32 GetSign(f32 x)
 	return (x > 0.0f) - (x < 0.0f);
 }
 
-// NOTE(randy): Floors to the 1st decimal place.
+// Floors to the 1st decimal place.
 internal f32 RoundFirst(f32 x)
 {
 	x *= 10.0f;
@@ -188,7 +188,7 @@ internal void PushDebugLineForDuration(v2 p1, v2 p2, v3 colour, f32 lifetime)
 		colour,
 		1,
 		lifetime,
-		core->run_data->elapsed_world_time,
+		core->run_data->world.elapsed_world_time,
 	};
 
 	if (core->debug_line_count == core->free_debug_line_index)
@@ -221,7 +221,7 @@ internal void DrawDebugLines()
 	{
 		DebugLine *debug_line = &core->debug_lines[i];
 
-		if (debug_line->is_valid && debug_line->has_duration && debug_line->start_time + debug_line->lifetime <= core->run_data->elapsed_world_time)
+		if (debug_line->is_valid && debug_line->has_duration && debug_line->start_time + debug_line->lifetime <= core->run_data->world.elapsed_world_time)
 		{
 			DebugLine empty_debug_line = {0};
 			core->debug_lines[i] = empty_debug_line;
@@ -234,7 +234,7 @@ internal void DrawDebugLines()
 		{
 			f32 alpha;
 			if (debug_line->has_duration)
-				alpha = ((debug_line->start_time + debug_line->lifetime) - core->run_data->elapsed_world_time) / debug_line->lifetime;
+				alpha = ((debug_line->start_time + debug_line->lifetime) - core->run_data->world.elapsed_world_time) / debug_line->lifetime;
 			else
 				alpha = 1.0f;
 
@@ -326,14 +326,32 @@ internal v2 GetMousePositionInWorldSpace()
 
 internal v4 GetCameraRegionRect()
 {
-	/* 	v2 top_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
+	v2 top_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
 	v2 top_right = {-core->camera_position.x + core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
 	v2 bottom_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y + core->render_h / (2.0f * core->camera_zoom)};
-	v2 bottom_right = {-core->camera_position.x + core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y + core->render_h / (2.0f * core->camera_zoom)}; */
 
-	R_TODO;
+	// TODO(randy): simplify
 
-	return v4u(0.0f);
+	return v4(top_left.x, top_left.y, top_right.x - top_left.x, bottom_left.y - top_left.y);
+}
+
+internal void GetSkeletonChunksInRegion(SkeletonChunk *chunks, i32 *chunk_count, v4 rect, i32 buffer)
+{
+	*chunk_count = 0;
+
+	i32 width = WorldspaceToChunkIndex(rect.x + rect.width) - WorldspaceToChunkIndex(rect.x);
+	i32 height = WorldspaceToChunkIndex(rect.y + rect.height) - WorldspaceToChunkIndex(rect.y);
+
+	for (int y = -buffer; y <= height + buffer; y++)
+	{
+		for (int x = -buffer; x <= width + buffer; x++)
+		{
+			R_DEV_ASSERT(*chunk_count + 1 < MAX_WORLD_CHUNKS, "Chunks in region exceed the max.");
+
+			SkeletonChunk chunk = {WorldspaceToChunkIndex(rect.x) + x, WorldspaceToChunkIndex(rect.y) + y};
+			chunks[(*chunk_count)++] = chunk;
+		}
+	}
 }
 
 // TODO(randy): windows-only, put in #ifdefs or some shit
@@ -363,7 +381,7 @@ internal void ReadFromFile(FILE *file, void *data, size_t size_bytes)
 	fread(data, size_bytes, 1, file);
 }
 
-// NOTE(randy): Saves current data to a specified level.
+// Saves current data to a specified level.
 internal void SaveLevel(char *level_name)
 {
 	R_DEV_ASSERT(level_name[0], "Invalid name.");
@@ -381,21 +399,54 @@ internal void SaveLevel(char *level_name)
 	if (!DoesDirectoryExist(path))
 		MakeDirectory(path);
 
-	// NOTE(randy): Write basic data to world_data.save
+	// Write basic data to world_data.save
 	{
 		char file_path[200] = "";
 		sprintf(file_path, "%sworld_data.save", path);
 		FILE *save = fopen(file_path, "w");
 		R_DEV_ASSERT(save, "Couldn't open file.");
 
-		// ...
+		// Save the player entity
+		{
+			EntitySave entity_save = {.flags = core->run_data->character_entity->flags, .type = core->run_data->character_entity->generalised_type};
+			MemoryCopy(entity_save.name, core->run_data->character_entity->name, sizeof(entity_save.name));
 
-		// Write non-positional entities into this file as well.
+			WriteToFile(save, &entity_save, sizeof(EntitySave));
+
+			WriteToFile(save, &core->run_data->character_entity->component_ids, sizeof(core->run_data->character_entity->component_ids));
+			for (i32 i = 1; i < COMPONENT_MAX; i++)
+			{
+				if (core->run_data->character_entity->component_ids[i])
+				{
+					WriteComponentToFile(save, core->run_data->character_entity->component_ids[i], i);
+				}
+			}
+		}
+
+		// Save world data struct
+		WriteWorldSaveDataToFile(save, &core->run_data->world);
+
+		// Save all of the entities that don't belong to chunks.
+		WriteToFile(save, &core->run_data->floating_entity_id_count, sizeof(i32));
+		for (i32 i = 0; i < core->run_data->floating_entity_id_count; i++)
+		{
+			Entity *entity = &core->run_data->entities[core->run_data->floating_entity_ids[i] - 1];
+
+			EntitySave entity_save = {.flags = entity->flags, .type = entity->generalised_type};
+			MemoryCopy(entity_save.name, entity->name, sizeof(entity_save.name));
+
+			WriteToFile(save, &entity_save, sizeof(EntitySave));
+		}
+
+		for (i32 i = 1; i < COMPONENT_MAX; i++)
+		{
+			SerialiseEntityComponentsFromIDList(save, core->run_data->floating_entity_ids, core->run_data->floating_entity_id_count, i);
+		}
 
 		fclose(save);
 	}
 
-	// NOTE(randy): Save currently loaded chunks to the chunk folder
+	// Save currently loaded chunks to the chunk folder
 	{
 		char file_path[200] = "";
 		sprintf(file_path, "%schunks\\", path);
@@ -418,37 +469,111 @@ internal void SaveLevel(char *level_name)
 	fclose(save); */
 }
 
-// NOTE(randy): Loads a given level. Returns 0 if the level doesn't exist.
+// Loads a given level. Returns 0 if the level doesn't exist.
 internal b8 LoadLevel(char *level_name)
 {
-	/* R_DEV_ASSERT(level_name[0], "Invalid name.");
-
-	serialisation_pointer_count = 0;
+	R_DEV_ASSERT(level_name[0], "Invalid level name.");
 
 	char path[200] = "";
-	sprintf(path, "%s%s.save", core->run_data->res_path, level_name);
-	FILE *save = fopen(path, "r");
-	if (!save)
-	{
-		LogWarning("Level %s could not be found.", level_name);
+	sprintf(path, "%sworlds\\%s\\", core->run_data->res_path, level_name);
+
+	if (!DoesDirectoryExist(path))
 		return 0;
+
+	serialisation_pointer_count = 0;
+	FreeRunData();
+	MemorySet(core->run_data, 0, sizeof(RunData));
+	InitialiseRunData();
+	InitialiseWorldData();
+	// NOTE(randy): Might want to seperate some run data that is permanent
+	// and will not change between saves
+
+	// Read in basic data from the world_data.save
+	{
+		char file_path[200] = "";
+		sprintf(file_path, "%sworld_data.save", path);
+		FILE *save = fopen(file_path, "r");
+		R_DEV_ASSERT(save, "Failed to read world_data.save from directory %s", path);
+		// TODO(randy): Figure out a proper way of doing these asserts.
+		// Start using the in-built telescope assert and really think through crashing, error messages, warnings, etc.
+
+		// Read the player entity in
+		{
+			EntitySave entity_save;
+			ReadFromFile(save, &entity_save, sizeof(EntitySave));
+
+			Entity *entity = NewEntity(entity_save.name, entity_save.type);
+			entity->flags = entity_save.flags;
+
+			i32 component_ids[COMPONENT_MAX];
+			ReadFromFile(save, &component_ids, sizeof(component_ids));
+			for (i32 i = 1; i < COMPONENT_MAX; i++)
+			{
+				if (component_ids[i])
+					ReadComponentFromFile(save, entity, i);
+			}
+
+			core->run_data->character_entity = entity;
+		}
+
+		// Read in basic world data
+		ReadWorldSaveDataFromFile(save, &core->run_data->world);
+
+		// Read in floating entities
+		ReadFromFile(save, &core->run_data->floating_entity_id_count, sizeof(i32));
+		for (i32 i = 0; i < core->run_data->floating_entity_id_count; i++)
+		{
+			EntitySave entity_save;
+			ReadFromFile(save, &entity_save, sizeof(EntitySave));
+
+			Entity *entity = NewEntity(entity_save.name, entity_save.type);
+			entity->flags = entity_save.flags;
+
+			core->run_data->floating_entity_ids[i] = entity->entity_id;
+		}
+
+		for (i32 i = 1; i < COMPONENT_MAX; i++)
+		{
+			DeserialiseEntityComponentsFromIDList(save, core->run_data->floating_entity_ids, core->run_data->floating_entity_id_count, i);
+		}
+
+		fclose(save);
+	}
+
+	// Load some surrounding chunks in based off of the player's position.
+	{
+		char file_path[200] = "";
+		sprintf(file_path, "%schunks\\", path);
+		R_DEV_ASSERT(DoesDirectoryExist(file_path), "Chunk directory does not exist.");
+
+		TransformInGameCamera();
+
+		SkeletonChunk chunks[MAX_WORLD_CHUNKS];
+		i32 chunk_count;
+		GetSkeletonChunksInRegion(chunks, &chunk_count, GetCameraRegionRect(), 1);
+
+		for (i32 i = 0; i < chunk_count; i++)
+		{
+			Chunk *chunk = LoadChunkFromDisk(file_path, chunks[i].x_index, chunks[i].y_index);
+
+			// NOTE(randy): Maybe Dev Asserts get switched into simple error logs in release builds?
+			// R_DEV_ASSERT(chunk, "A surrounding chunk in the player's region doesn't exist, is this intended?");
+			if (!chunk)
+				LogError("A surrounding chunk in the player's region doesn't exist, is this intended?");
+		}
 	}
 
 	strcpy(core->run_data->current_level, level_name);
+	Log("Successfully loaded level data in from %s", level_name);
+	return 1;
 
-	ReadWorldDataFromFile(save, core->run_data);
-	fclose(save);
-
-	save = fopen(path, "r");
+	/* save = fopen(path, "r");
 	R_DEV_ASSERT(save, "Couldn't open file.");
 	FillWorldDataPointersFromFile(save, core->run_data);
-	fclose(save);
-
-	Log("Successfully loaded level data in from %s", level_name);
-	return 1; */
+	fclose(save); */
 }
 
-// NOTE(randy): Attempts to move level into the root res folder. Only works if being run from arc/game/build
+// Attempts to move level into the root res folder. Only works if being run from arc/game/build
 internal void CommitLevel(char *level_name)
 {
 }

@@ -35,5 +35,5 @@ static void TransformInGameCamera()
 	core->camera_zoom = DEFAULT_CAMERA_ZOOM;
 	core->camera_position = V2AddV2(v2(core->camera_offset.x, core->camera_offset.y + DEFAULT_CAMERA_OFFSET_Y), V2MultiplyF32(position_comp->position, -1.0f));
 
-	core->run_data->disable_chunk_view_loading = 0;
+	core->run_data->disable_chunk_loaded_based_off_view = 0;
 }

@@ -833,8 +833,69 @@ internal void GenerateSerialisationCode()
 		return;
 
 	{
-		fprintf(h_file, "SerialiseEntityComponentsFromChunk(FILE *file, Chunk *chunk, ComponentType type);\n\n");
-		fprintf(c_file, "SerialiseEntityComponentsFromChunk(FILE *file, Chunk *chunk, ComponentType type)\n");
+		fprintf(h_file, "WriteComponentToFile(FILE *file, i32 comp_id, ComponentType type);\n");
+		fprintf(c_file, "WriteComponentToFile(FILE *file, i32 comp_id, ComponentType type)\n");
+		fprintf(c_file, "{\n");
+		fprintf(c_file, "    switch (type)\n");
+		fprintf(c_file, "    {\n");
+		for (i32 i = 0; i < component_nodes_count; i++)
+		{
+			DataDeskNode *comp_node = component_nodes[i];
+
+			i32 string_length = 0;
+			for (; comp_node->name_lowercase_with_underscores[string_length]; ++string_length)
+			{
+			}
+			char trimmed_lowercase_name[50];
+			strcpy(trimmed_lowercase_name, comp_node->name_lowercase_with_underscores);
+			trimmed_lowercase_name[string_length - 10] = '\0';
+
+			fprintf(c_file, "        case COMPONENT_%s:\n", trimmed_lowercase_name);
+			fprintf(c_file, "        {\n");
+			fprintf(c_file, "            Write%sToFile(file, &core->run_data->entity_components.%ss[comp_id - 1]);\n", comp_node->name, comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "        } break;\n");
+		}
+		fprintf(c_file, "    }\n");
+		fprintf(c_file, "}\n");
+	}
+
+	{
+		fprintf(h_file, "ReadComponentFromFile(FILE *file, Entity *entity, ComponentType type);\n");
+		fprintf(c_file, "ReadComponentFromFile(FILE *file, Entity *entity, ComponentType type)\n");
+		fprintf(c_file, "{\n");
+		fprintf(c_file, "    switch (type)\n");
+		fprintf(c_file, "    {\n");
+		for (i32 i = 0; i < component_nodes_count; i++)
+		{
+			DataDeskNode *comp_node = component_nodes[i];
+
+			i32 string_length = 0;
+			for (; comp_node->name_lowercase_with_underscores[string_length]; ++string_length)
+			{
+			}
+			char trimmed_lowercase_name[50];
+			strcpy(trimmed_lowercase_name, comp_node->name_lowercase_with_underscores);
+			trimmed_lowercase_name[string_length - 10] = '\0';
+
+			fprintf(c_file, "        case COMPONENT_%s:\n", trimmed_lowercase_name);
+			fprintf(c_file, "        {\n");
+			fprintf(c_file, "            %s component;\n", comp_node->name);
+			fprintf(c_file, "            Read%sFromFile(file, &component);\n", comp_node->name);
+
+			fprintf(c_file, "            %s *new_comp = Add%s(entity);\n", comp_node->name, comp_node->name);
+			fprintf(c_file, "            i32 new_comp_id = new_comp->component_id;\n");
+			fprintf(c_file, "            *new_comp = component;\n");
+			fprintf(c_file, "            new_comp->component_id = new_comp_id;\n");
+			fprintf(c_file, "            new_comp->parent_entity_id = entity->entity_id;\n");
+			fprintf(c_file, "        } break;\n");
+		}
+		fprintf(c_file, "    }\n");
+		fprintf(c_file, "}\n");
+	}
+
+	{
+		fprintf(h_file, "SerialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, ComponentType type);\n\n");
+		fprintf(c_file, "SerialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, ComponentType type)\n");
 		fprintf(c_file, "{\n");
 		fprintf(c_file, "    switch (type)\n");
 		fprintf(c_file, "    {\n");
@@ -859,12 +920,12 @@ internal void GenerateSerialisationCode()
 			fprintf(c_file, "            ComponentSave comps[MAX_ENTITIES];\n");
 			fprintf(c_file, "            i32 comp_count = 0;\n\n");
 
-			fprintf(c_file, "            for (i32 i = 0; i < chunk->entity_count; i++)\n");
+			fprintf(c_file, "            for (i32 i = 0; i < id_count; i++)\n");
 			fprintf(c_file, "            {\n");
-			fprintf(c_file, "                if (core->run_data->entities[chunk->entity_ids[i] - 1].component_ids[type])\n");
+			fprintf(c_file, "                if (core->run_data->entities[ids[i] - 1].component_ids[type])\n");
 			fprintf(c_file, "                {\n");
 			fprintf(c_file, "                    comps[comp_count].entity_offset = i;\n");
-			fprintf(c_file, "                    comps[comp_count].comp_data = &core->run_data->entity_components.%ss[core->run_data->entities[chunk->entity_ids[i] - 1].component_ids[type]];\n", comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "                    comps[comp_count].comp_data = &core->run_data->entity_components.%ss[core->run_data->entities[ids[i] - 1].component_ids[type] - 1];\n", comp_node->name_lowercase_with_underscores);
 			fprintf(c_file, "                    comp_count++;\n");
 			fprintf(c_file, "                }\n");
 			fprintf(c_file, "            }\n\n");
@@ -884,17 +945,50 @@ internal void GenerateSerialisationCode()
 		fprintf(c_file, "}\n\n");
 	}
 
-	/* for (DataDeskNode *member = comp_node->struct_declaration.first_member->next->next;
-		 member; member = member->next)
 	{
-		fprintf(c_file, "                %s %s;\n", member->declaration.type->name, member->name);
-	} */
+		// NOTE(randy): remove count
+		fprintf(h_file, "DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, ComponentType type);\n\n");
+		fprintf(c_file, "DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, ComponentType type)\n");
+		fprintf(c_file, "{\n");
+		fprintf(c_file, "    switch (type)\n");
+		fprintf(c_file, "    {\n");
+		for (i32 i = 0; i < component_nodes_count; i++)
+		{
+			DataDeskNode *comp_node = component_nodes[i];
 
-	{
-		/* fprintf(c_file, "            typedef struct CompSave\n");
-		fprintf(c_file, "            {\n");
-		fprintf(c_file, "                i32 entity_index;\n");
-		fprintf(c_file, "            } CompSave;\n"); */
+			i32 string_length = 0;
+			for (; comp_node->name_lowercase_with_underscores[string_length]; ++string_length)
+			{
+			}
+			char trimmed_lowercase_name[50];
+			strcpy(trimmed_lowercase_name, comp_node->name_lowercase_with_underscores);
+			trimmed_lowercase_name[string_length - 10] = '\0';
+
+			fprintf(c_file, "        case COMPONENT_%s:\n", trimmed_lowercase_name);
+			fprintf(c_file, "        {\n");
+			fprintf(c_file, "            i32 comp_count = 0;\n");
+			fprintf(c_file, "            ReadFromFile(file, &comp_count, sizeof(comp_count));\n");
+			fprintf(c_file, "            for (i32 i = 0; i < comp_count; i++)\n");
+			fprintf(c_file, "            {\n");
+			fprintf(c_file, "                i32 entity_offset;\n");
+			fprintf(c_file, "                ReadFromFile(file, &entity_offset, sizeof(i32));\n");
+
+			fprintf(c_file, "                Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];\n");
+			fprintf(c_file, "                R_DEV_ASSERT(entity->entity_id, \"Entity does not exist.\")\n");
+
+			fprintf(c_file, "                %s component;\n", comp_node->name);
+			fprintf(c_file, "                Read%sFromFile(file, &component);\n", comp_node->name);
+
+			fprintf(c_file, "                %s *new_comp = Add%s(entity);\n", comp_node->name, comp_node->name);
+			fprintf(c_file, "                i32 new_comp_id = new_comp->component_id;\n");
+			fprintf(c_file, "                *new_comp = component;\n");
+			fprintf(c_file, "                new_comp->component_id = new_comp_id;\n");
+			fprintf(c_file, "                new_comp->parent_entity_id = entity->entity_id;\n");
+			fprintf(c_file, "            }\n");
+			fprintf(c_file, "        } break;\n");
+		}
+		fprintf(c_file, "    }\n");
+		fprintf(c_file, "}\n\n");
 	}
 
 	for (i32 i = 0; i < serialisable_struct_count; i++)

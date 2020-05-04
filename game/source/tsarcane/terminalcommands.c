@@ -18,3 +18,18 @@ TSDEVTERMINAL_COMMAND_PROC(SaveLevelCommand)
 
 	return 0;
 }
+
+TSDEVTERMINAL_COMMAND_PROC(LoadLevelCommand)
+{
+	if (word_count == 0)
+	{
+		LogError("Please provide a level name.");
+	}
+	else
+	{
+		if (!LoadLevel(words[0]))
+			LogError("Failed to load %s", words[0]);
+	}
+
+	return 0;
+}

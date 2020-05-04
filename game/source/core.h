@@ -32,23 +32,21 @@ struct Core
 	v2 camera_offset;
 
 	// Temp entity stores
-	Entity *backpack;
-	Entity *sword;
+	//Entity *backpack;
+	//Entity *sword;
 
 	// Grabbed inventory item.
-	ItemComponent *grabbed_inv_item_comp;
-	i32 grabbed_inv_item_origin_slot;
-	StorageComponent *grabbed_inv_item_origin_storage_comp;
-	v2 grabbed_inventory_item_offset;
+	//ItemComponent *grabbed_inv_item_comp;
+	//i32 grabbed_inv_item_origin_slot;
+	//StorageComponent *grabbed_inv_item_origin_storage_comp;
+	//v2 grabbed_inventory_item_offset;
 	// Hotbar & held item.
-	Entity *held_item;
-	Entity *hotbar;
-	i32 active_hotbar_slot;
+	//Entity *held_item;
+	//Entity *hotbar;
+	//i32 active_hotbar_slot;
 
 	// Temp
 	b32 is_ingame;
-	Entity *clouds[MAX_CLOUDS];
-	i32 cloud_count;
 
 	v2 random_field[256][256];
 

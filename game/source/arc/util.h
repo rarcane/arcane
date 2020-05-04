@@ -57,6 +57,21 @@ typedef struct SerialisationPointer
 	i32 offset;
 } SerialisationPointer;
 
+typedef uint32 EntityFlags;
+typedef enum GeneralisedEntityType GeneralisedEntityType;
+typedef struct EntitySave
+{
+	char name[20]; // Do we really need this?
+	EntityFlags flags;
+	GeneralisedEntityType type;
+} EntitySave;
+
+typedef struct SkeletonChunk
+{
+	i32 x_index;
+	i32 y_index;
+} SkeletonChunk;
+
 #define MAX_SERIALISATION_POINTERS 10240
 global i32 serialisation_pointer_count = 0;
 global SerialisationPointer serialisation_pointers[MAX_SERIALISATION_POINTERS];
