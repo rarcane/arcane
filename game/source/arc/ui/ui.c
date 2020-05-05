@@ -779,7 +779,109 @@ internal void DrawEditorUI()
 		break;
 
 	case EDITOR_STATE_entity:
+	{
+		local_persist b8 prev = 0;
+		local_persist SkeletonChunk prev_chunk;
+
+		{
+			v2 window_size = {300.0f, 400.0f};
+			TsUIWindowBegin("Chunks", v4(core->render_w - window_size.x - 10.0f, 10.0f, window_size.x, window_size.y), 0, 0);
+			{
+				TsUIPushColumn(v2(10, 10), v2(150, 30));
+				TsUIPushWidth(270.0f);
+
+				for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
+				{
+					Chunk *chunk = &core->run_data->active_chunks[i];
+					if (chunk->is_valid)
+					{
+						char title[100];
+						sprintf(title, "#%i Chunk%i.%i", i, chunk->x_index, chunk->y_index);
+
+						if (TsUICollapsable(title))
+						{
+							{
+								char label[100];
+								sprintf(label, "Entity Count: %i", chunk->entity_count);
+								TsUILabel(label);
+							}
+
+							if (TsUICollapsable("Entity IDs"))
+							{
+								for (i32 j = 0; j < chunk->entity_count; j++)
+								{
+									char label[100];
+									sprintf(label, "[%i] #%i", j, chunk->entity_ids[j]);
+									TsUILabel(label);
+								}
+
+								TsUICollapsableEnd();
+							}
+
+							if (TsUIToggler("Selected", core->run_data->selected_chunk == chunk))
+							{
+								core->run_data->selected_chunk = chunk;
+								prev_chunk.x_index = chunk->x_index;
+								prev_chunk.y_index = chunk->y_index;
+								prev = 1;
+							}
+
+							TsUICollapsableEnd();
+						}
+					}
+				}
+
+				if (core->run_data->selected_chunk)
+					if (TsUIButton("Unload Chunk"))
+					{
+						UnloadChunk(core->run_data->selected_chunk);
+						core->run_data->selected_chunk = 0;
+					}
+
+				if (prev)
+				{
+					char label[100];
+					sprintf(label, "Load Chunk %i.%i", prev_chunk.x_index, prev_chunk.y_index);
+					if (TsUIButton(label))
+					{
+						LoadChunkFromDisk(core->run_data->world_chunks_path, prev_chunk.x_index, prev_chunk.y_index);
+					}
+				}
+
+				TsUIPopWidth();
+				TsUIPopColumn();
+			}
+			TsUIWindowEnd();
+		}
+
+		{
+			v2 window_size = {300.0f, 400.0f};
+			TsUIWindowBegin("Entities", v4(0.0f, 10.0f, window_size.x, window_size.y), 0, 0);
+			{
+				TsUIPushColumn(v2(10, 10), v2(150, 30));
+				TsUIPushWidth(270.0f);
+
+				{
+					char label[100];
+					sprintf(label, "Entity Count: %i", core->run_data->entity_count);
+					TsUILabel(label);
+				}
+
+				for (i32 i = 0; i < core->run_data->entity_count; i++)
+				{
+					char label[100];
+					sprintf(label, "[%i] #%i %s", i, core->run_data->entities[i].entity_id, core->run_data->entities[i].name);
+					TsUILabel(label);
+				}
+
+				TsUIPopWidth();
+				TsUIPopColumn();
+			}
+			TsUIWindowEnd();
+		}
+
 		break;
+	}
 
 	case EDITOR_STATE_terrain:
 	{

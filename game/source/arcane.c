@@ -63,6 +63,8 @@ GameInit(void)
 
 	// NOTE(rjf): Initialize core systems.
 	{
+		core->res_path = MakeCStringOnMemoryArena(core->permanent_arena, "%sres\\", platform->executable_folder_absolute_path);
+
 		core->client_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(ClientData));
 		R_DEV_ASSERT(core->client_data, "Failed to allocate memory for ClientData.");
 
@@ -114,7 +116,7 @@ GameInit(void)
 
 				};
 
-			TsAssetsSetAssetRootPath(core->run_data->res_path);
+			TsAssetsSetAssetRootPath(core->res_path);
 			TsAssetsSetAssetTypes(ArrayCount(asset_types), asset_types, core->permanent_arena);
 		}
 
@@ -132,7 +134,7 @@ GameInit(void)
 			core->run_data->editor_flags |= EDITOR_FLAGS_draw_collision;
 			core->run_data->editor_flags |= EDITOR_FLAGS_debug_cell_view;
 
-			if (!LoadLevel("testing"))
+			if (!LoadWorld("testing"))
 				CreateTestLevel();
 #else
 			core->is_ingame = 0;
@@ -369,9 +371,9 @@ GameUpdate(void)
 
 internal void InitialiseRunData()
 {
-	core->run_data->res_path = MakeCStringOnMemoryArena(core->permanent_arena, "%sres\\", platform->executable_folder_absolute_path);
 	core->run_data->editor_flags |= EDITOR_FLAGS_draw_world;
 	core->run_data->editor_flags |= EDITOR_FLAGS_draw_collision;
+	core->run_data->editor_flags |= EDITOR_FLAGS_draw_chunk_grid;
 	core->run_data->free_dynamic_cell_id = 1;
 }
 

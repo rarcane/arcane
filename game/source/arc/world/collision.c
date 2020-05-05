@@ -25,19 +25,25 @@ internal void RenderColliders()
 		for (int i = 0; i < core->run_data->active_chunk_count; i++)
 		{
 			Chunk *chunk = &core->run_data->active_chunks[i];
+			if (chunk->is_valid)
+			{
+				v3 colour = v3(1.0f, 1.0f, 1.0f);
+				if (chunk == core->run_data->selected_chunk)
+					colour = v3(1.0f, 0.0f, 0.0f);
 
-			PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index),
-						  v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
-						  v3(1.0f, 1.0f, 1.0f));
-			PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk->y_index),
-						  v2((f32)CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
-						  v3(1.0f, 1.0f, 1.0f));
-			PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index),
-						  v2((f32)CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk->y_index),
-						  v3(1.0f, 1.0f, 1.0f));
-			PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
-						  v2((f32)CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
-						  v3(1.0f, 1.0f, 1.0f));
+				PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index),
+							  v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
+							  colour);
+				PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk->y_index),
+							  v2((f32)CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
+							  colour);
+				PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index),
+							  v2((f32)CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk->y_index),
+							  colour);
+				PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
+							  v2((f32)CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
+							  colour);
+			}
 		}
 }
 #endif

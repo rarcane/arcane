@@ -381,53 +381,70 @@ internal void ReadFromFile(FILE *file, void *data, size_t size_bytes)
 	fread(data, size_bytes, 1, file);
 }
 
-// Saves current data to a specified level.
-internal void SaveLevel(char *level_name)
+internal b8 CreateWorld(char *world_name)
 {
-	R_DEV_ASSERT(level_name[0], "Invalid name.");
+	R_DEV_ASSERT(world_name[0], "Invalid name.");
 
-	serialisation_pointer_count = 0;
+	char path[300] = "";
+	sprintf(path, "%sworlds\\", core->res_path);
 
-	char path[200] = "";
-	sprintf(path, "%sworlds\\", core->run_data->res_path);
-
+	// Make the worlds directory if it doesn't already exist.
 	if (!DoesDirectoryExist(path))
 		MakeDirectory(path);
 
-	strcat(path, level_name);
+	// Attempt to create the world folder
+	strcat(path, world_name);
 	strcat(path, "\\");
-	if (!DoesDirectoryExist(path))
-		MakeDirectory(path);
+	if (DoesDirectoryExist(path))
+		return 0;
+	MakeDirectory(path);
 
-	// Write basic data to world_data.save
+	// Create chunks folder
+	char chunks_path[300] = "";
+	sprintf(chunks_path, "%schunks\\", path);
+	MakeDirectory(chunks_path);
+
+	strcpy(core->run_data->world_name, world_name);
+	strcpy(core->run_data->world_path, path);
+	strcpy(core->run_data->world_chunks_path, chunks_path);
+
+	SaveLevelData();
+	Log("Created new world '%s' successfully.", world_name);
+	return 1;
+}
+
+internal void SaveLevelData()
+{
+	R_DEV_ASSERT(core->run_data->world_path[0], "No level active to save.");
+
+	char file_path[200] = "";
+	sprintf(file_path, "%slevel_data.save", core->run_data->world_path);
+	FILE *file = fopen(file_path, "w");
+	R_DEV_ASSERT(file, "Couldn't open file.");
+
+	// Save the player entity
 	{
-		char file_path[200] = "";
-		sprintf(file_path, "%sworld_data.save", path);
-		FILE *save = fopen(file_path, "w");
-		R_DEV_ASSERT(save, "Couldn't open file.");
+		EntitySave entity_save = {.flags = core->run_data->character_entity->flags, .type = core->run_data->character_entity->generalised_type};
+		MemoryCopy(entity_save.name, core->run_data->character_entity->name, sizeof(entity_save.name));
 
-		// Save the player entity
+		WriteToFile(file, &entity_save, sizeof(EntitySave));
+
+		WriteToFile(file, &core->run_data->character_entity->component_ids, sizeof(core->run_data->character_entity->component_ids));
+		for (i32 i = 1; i < COMPONENT_MAX; i++)
 		{
-			EntitySave entity_save = {.flags = core->run_data->character_entity->flags, .type = core->run_data->character_entity->generalised_type};
-			MemoryCopy(entity_save.name, core->run_data->character_entity->name, sizeof(entity_save.name));
-
-			WriteToFile(save, &entity_save, sizeof(EntitySave));
-
-			WriteToFile(save, &core->run_data->character_entity->component_ids, sizeof(core->run_data->character_entity->component_ids));
-			for (i32 i = 1; i < COMPONENT_MAX; i++)
+			if (core->run_data->character_entity->component_ids[i])
 			{
-				if (core->run_data->character_entity->component_ids[i])
-				{
-					WriteComponentToFile(save, core->run_data->character_entity->component_ids[i], i);
-				}
+				WriteComponentToFile(file, core->run_data->character_entity->component_ids[i], i);
 			}
 		}
+	}
 
-		// Save world data struct
-		WriteWorldSaveDataToFile(save, &core->run_data->world);
+	// Save world data struct
+	WriteWorldSaveDataToFile(file, &core->run_data->world);
 
-		// Save all of the entities that don't belong to chunks.
-		WriteToFile(save, &core->run_data->floating_entity_id_count, sizeof(i32));
+	// Save all of the entities that don't belong to chunks.
+	{
+		WriteToFile(file, &core->run_data->floating_entity_id_count, sizeof(i32));
 		for (i32 i = 0; i < core->run_data->floating_entity_id_count; i++)
 		{
 			Entity *entity = &core->run_data->entities[core->run_data->floating_entity_ids[i] - 1];
@@ -435,65 +452,62 @@ internal void SaveLevel(char *level_name)
 			EntitySave entity_save = {.flags = entity->flags, .type = entity->generalised_type};
 			MemoryCopy(entity_save.name, entity->name, sizeof(entity_save.name));
 
-			WriteToFile(save, &entity_save, sizeof(EntitySave));
+			WriteToFile(file, &entity_save, sizeof(EntitySave));
 		}
 
 		for (i32 i = 1; i < COMPONENT_MAX; i++)
 		{
-			SerialiseEntityComponentsFromIDList(save, core->run_data->floating_entity_ids, core->run_data->floating_entity_id_count, i);
-		}
-
-		fclose(save);
-	}
-
-	// Save currently loaded chunks to the chunk folder
-	{
-		char file_path[200] = "";
-		sprintf(file_path, "%schunks\\", path);
-
-		if (!DoesDirectoryExist(file_path))
-			MakeDirectory(file_path);
-
-		for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
-		{
-			SaveChunkToDisk(file_path, &core->run_data->active_chunks[i]);
+			SerialiseEntityComponentsFromIDList(file, core->run_data->floating_entity_ids, core->run_data->floating_entity_id_count, i);
 		}
 	}
 
-	Log("Level saved to %s.save", level_name);
-
-	/* WriteWorldDataToFile(save, core->run_data);
-	save = fopen(path, "r+");
-	fseek(save, 0, SEEK_SET);
-	FillWorldDataPointersInFile(save, core->run_data);
-	fclose(save); */
+	fclose(file);
+	Log("Level data saved to %s", file_path);
 }
 
-// Loads a given level. Returns 0 if the level doesn't exist.
-internal b8 LoadLevel(char *level_name)
+internal void SaveWorld()
 {
-	R_DEV_ASSERT(level_name[0], "Invalid level name.");
+	SaveLevelData();
 
-	char path[200] = "";
-	sprintf(path, "%sworlds\\%s\\", core->run_data->res_path, level_name);
+	for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
+	{
+		if (core->run_data->active_chunks[i].is_valid)
+			SaveChunkToDisk(core->run_data->world_chunks_path, &core->run_data->active_chunks[i]);
+	}
+}
+
+internal b8 LoadWorld(char *world_name)
+{
+	// TODO(randy): bulletproof world name sizing
+	R_DEV_ASSERT(world_name[0] && strlen(world_name) < sizeof(core->run_data->world_name), "Invalid level name.");
+
+	char path[300] = "";
+	sprintf(path, "%sworlds\\%s\\", core->res_path, world_name);
 
 	if (!DoesDirectoryExist(path))
 		return 0;
 
-	serialisation_pointer_count = 0;
-	FreeRunData();
-	MemorySet(core->run_data, 0, sizeof(RunData));
-	InitialiseRunData();
-	InitialiseWorldData();
-	// NOTE(randy): Might want to seperate some run data that is permanent
-	// and will not change between saves
+	if (core->run_data)
+	{
+		FreeRunData();
+		MemorySet(core->run_data, 0, sizeof(RunData));
+		strcpy(core->run_data->world_name, world_name);
+		strcpy(core->run_data->world_path, path);
+
+		// TODO: refactor this
+		InitialiseRunData();
+		InitialiseWorldData();
+		// NOTE(randy): Might want to seperate out some run data that is permanent
+		// and will not change between saves
+	}
 
 	// Read in basic data from the world_data.save
 	{
 		char file_path[200] = "";
-		sprintf(file_path, "%sworld_data.save", path);
+		sprintf(file_path, "%slevel_data.save", path);
 		FILE *save = fopen(file_path, "r");
 		R_DEV_ASSERT(save, "Failed to read world_data.save from directory %s", path);
+
 		// TODO(randy): Figure out a proper way of doing these asserts.
 		// Start using the in-built telescope assert and really think through crashing, error messages, warnings, etc.
 
@@ -542,9 +556,10 @@ internal b8 LoadLevel(char *level_name)
 
 	// Load some surrounding chunks in based off of the player's position.
 	{
-		char file_path[200] = "";
+		char file_path[300] = "";
 		sprintf(file_path, "%schunks\\", path);
 		R_DEV_ASSERT(DoesDirectoryExist(file_path), "Chunk directory does not exist.");
+		strcpy(core->run_data->world_chunks_path, file_path);
 
 		TransformInGameCamera();
 
@@ -563,17 +578,6 @@ internal b8 LoadLevel(char *level_name)
 		}
 	}
 
-	strcpy(core->run_data->current_level, level_name);
-	Log("Successfully loaded level data in from %s", level_name);
+	Log("Successfully loaded world \'%s\'", world_name);
 	return 1;
-
-	/* save = fopen(path, "r");
-	R_DEV_ASSERT(save, "Couldn't open file.");
-	FillWorldDataPointersFromFile(save, core->run_data);
-	fclose(save); */
-}
-
-// Attempts to move level into the root res folder. Only works if being run from arc/game/build
-internal void CommitLevel(char *level_name)
-{
 }

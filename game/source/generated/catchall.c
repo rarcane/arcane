@@ -353,15 +353,16 @@ internal PositionComponent *AddPositionComponent(Entity *entity)
         if (core->run_data->entity_components.position_component_count != core->run_data->entity_components.free_position_component_id - 1)
         {
             b8 found = 0;
-            for (i32 i = 0; i < core->run_data->entity_components.position_component_count; i++)
+            for (i32 i = 0; i < core->run_data->entity_components.position_component_count + 1; i++)
             {
-                if (core->run_data->entity_components.position_components[i].component_id)
+                if (!core->run_data->entity_components.position_components[i].component_id)
                 {
                     core->run_data->entity_components.free_position_component_id = i + 1;
                     found = 1;
                     break;
                 }
             }
+            R_DEV_ASSERT(found, "Couldn't find a free index?");
         }
     }
     else
@@ -417,15 +418,16 @@ internal SpriteComponent *AddSpriteComponent(Entity *entity)
         if (core->run_data->entity_components.sprite_component_count != core->run_data->entity_components.free_sprite_component_id - 1)
         {
             b8 found = 0;
-            for (i32 i = 0; i < core->run_data->entity_components.sprite_component_count; i++)
+            for (i32 i = 0; i < core->run_data->entity_components.sprite_component_count + 1; i++)
             {
-                if (core->run_data->entity_components.sprite_components[i].component_id)
+                if (!core->run_data->entity_components.sprite_components[i].component_id)
                 {
                     core->run_data->entity_components.free_sprite_component_id = i + 1;
                     found = 1;
                     break;
                 }
             }
+            R_DEV_ASSERT(found, "Couldn't find a free index?");
         }
     }
     else
@@ -481,15 +483,16 @@ internal AnimationComponent *AddAnimationComponent(Entity *entity)
         if (core->run_data->entity_components.animation_component_count != core->run_data->entity_components.free_animation_component_id - 1)
         {
             b8 found = 0;
-            for (i32 i = 0; i < core->run_data->entity_components.animation_component_count; i++)
+            for (i32 i = 0; i < core->run_data->entity_components.animation_component_count + 1; i++)
             {
-                if (core->run_data->entity_components.animation_components[i].component_id)
+                if (!core->run_data->entity_components.animation_components[i].component_id)
                 {
                     core->run_data->entity_components.free_animation_component_id = i + 1;
                     found = 1;
                     break;
                 }
             }
+            R_DEV_ASSERT(found, "Couldn't find a free index?");
         }
     }
     else
@@ -545,15 +548,16 @@ internal PhysicsBodyComponent *AddPhysicsBodyComponent(Entity *entity)
         if (core->run_data->entity_components.physics_body_component_count != core->run_data->entity_components.free_physics_body_component_id - 1)
         {
             b8 found = 0;
-            for (i32 i = 0; i < core->run_data->entity_components.physics_body_component_count; i++)
+            for (i32 i = 0; i < core->run_data->entity_components.physics_body_component_count + 1; i++)
             {
-                if (core->run_data->entity_components.physics_body_components[i].component_id)
+                if (!core->run_data->entity_components.physics_body_components[i].component_id)
                 {
                     core->run_data->entity_components.free_physics_body_component_id = i + 1;
                     found = 1;
                     break;
                 }
             }
+            R_DEV_ASSERT(found, "Couldn't find a free index?");
         }
     }
     else
@@ -609,15 +613,16 @@ internal MovementComponent *AddMovementComponent(Entity *entity)
         if (core->run_data->entity_components.movement_component_count != core->run_data->entity_components.free_movement_component_id - 1)
         {
             b8 found = 0;
-            for (i32 i = 0; i < core->run_data->entity_components.movement_component_count; i++)
+            for (i32 i = 0; i < core->run_data->entity_components.movement_component_count + 1; i++)
             {
-                if (core->run_data->entity_components.movement_components[i].component_id)
+                if (!core->run_data->entity_components.movement_components[i].component_id)
                 {
                     core->run_data->entity_components.free_movement_component_id = i + 1;
                     found = 1;
                     break;
                 }
             }
+            R_DEV_ASSERT(found, "Couldn't find a free index?");
         }
     }
     else
@@ -673,15 +678,16 @@ internal ArcEntityComponent *AddArcEntityComponent(Entity *entity)
         if (core->run_data->entity_components.arc_entity_component_count != core->run_data->entity_components.free_arc_entity_component_id - 1)
         {
             b8 found = 0;
-            for (i32 i = 0; i < core->run_data->entity_components.arc_entity_component_count; i++)
+            for (i32 i = 0; i < core->run_data->entity_components.arc_entity_component_count + 1; i++)
             {
-                if (core->run_data->entity_components.arc_entity_components[i].component_id)
+                if (!core->run_data->entity_components.arc_entity_components[i].component_id)
                 {
                     core->run_data->entity_components.free_arc_entity_component_id = i + 1;
                     found = 1;
                     break;
                 }
             }
+            R_DEV_ASSERT(found, "Couldn't find a free index?");
         }
     }
     else
@@ -737,15 +743,16 @@ internal ItemComponent *AddItemComponent(Entity *entity)
         if (core->run_data->entity_components.item_component_count != core->run_data->entity_components.free_item_component_id - 1)
         {
             b8 found = 0;
-            for (i32 i = 0; i < core->run_data->entity_components.item_component_count; i++)
+            for (i32 i = 0; i < core->run_data->entity_components.item_component_count + 1; i++)
             {
-                if (core->run_data->entity_components.item_components[i].component_id)
+                if (!core->run_data->entity_components.item_components[i].component_id)
                 {
                     core->run_data->entity_components.free_item_component_id = i + 1;
                     found = 1;
                     break;
                 }
             }
+            R_DEV_ASSERT(found, "Couldn't find a free index?");
         }
     }
     else
@@ -801,15 +808,16 @@ internal TriggerComponent *AddTriggerComponent(Entity *entity)
         if (core->run_data->entity_components.trigger_component_count != core->run_data->entity_components.free_trigger_component_id - 1)
         {
             b8 found = 0;
-            for (i32 i = 0; i < core->run_data->entity_components.trigger_component_count; i++)
+            for (i32 i = 0; i < core->run_data->entity_components.trigger_component_count + 1; i++)
             {
-                if (core->run_data->entity_components.trigger_components[i].component_id)
+                if (!core->run_data->entity_components.trigger_components[i].component_id)
                 {
                     core->run_data->entity_components.free_trigger_component_id = i + 1;
                     found = 1;
                     break;
                 }
             }
+            R_DEV_ASSERT(found, "Couldn't find a free index?");
         }
     }
     else
@@ -865,15 +873,16 @@ internal StorageComponent *AddStorageComponent(Entity *entity)
         if (core->run_data->entity_components.storage_component_count != core->run_data->entity_components.free_storage_component_id - 1)
         {
             b8 found = 0;
-            for (i32 i = 0; i < core->run_data->entity_components.storage_component_count; i++)
+            for (i32 i = 0; i < core->run_data->entity_components.storage_component_count + 1; i++)
             {
-                if (core->run_data->entity_components.storage_components[i].component_id)
+                if (!core->run_data->entity_components.storage_components[i].component_id)
                 {
                     core->run_data->entity_components.free_storage_component_id = i + 1;
                     found = 1;
                     break;
                 }
             }
+            R_DEV_ASSERT(found, "Couldn't find a free index?");
         }
     }
     else
@@ -929,15 +938,16 @@ internal ParallaxComponent *AddParallaxComponent(Entity *entity)
         if (core->run_data->entity_components.parallax_component_count != core->run_data->entity_components.free_parallax_component_id - 1)
         {
             b8 found = 0;
-            for (i32 i = 0; i < core->run_data->entity_components.parallax_component_count; i++)
+            for (i32 i = 0; i < core->run_data->entity_components.parallax_component_count + 1; i++)
             {
-                if (core->run_data->entity_components.parallax_components[i].component_id)
+                if (!core->run_data->entity_components.parallax_components[i].component_id)
                 {
                     core->run_data->entity_components.free_parallax_component_id = i + 1;
                     found = 1;
                     break;
                 }
             }
+            R_DEV_ASSERT(found, "Couldn't find a free index?");
         }
     }
     else
@@ -993,15 +1003,16 @@ internal ParticleEmitterComponent *AddParticleEmitterComponent(Entity *entity)
         if (core->run_data->entity_components.particle_emitter_component_count != core->run_data->entity_components.free_particle_emitter_component_id - 1)
         {
             b8 found = 0;
-            for (i32 i = 0; i < core->run_data->entity_components.particle_emitter_component_count; i++)
+            for (i32 i = 0; i < core->run_data->entity_components.particle_emitter_component_count + 1; i++)
             {
-                if (core->run_data->entity_components.particle_emitter_components[i].component_id)
+                if (!core->run_data->entity_components.particle_emitter_components[i].component_id)
                 {
                     core->run_data->entity_components.free_particle_emitter_component_id = i + 1;
                     found = 1;
                     break;
                 }
             }
+            R_DEV_ASSERT(found, "Couldn't find a free index?");
         }
     }
     else

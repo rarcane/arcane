@@ -387,14 +387,16 @@ internal void RenderCells()
 	for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
 	{
 		Chunk *chunk = &core->run_data->active_chunks[i];
+		if (chunk->is_valid)
+		{
+			v2 render_pos = v2view(v2((f32)chunk->x_index * CHUNK_SIZE,
+									  (f32)chunk->y_index * CHUNK_SIZE));
+			v2 render_size = v2zoom(v2(CHUNK_SIZE, CHUNK_SIZE));
 
-		v2 render_pos = v2view(v2((f32)chunk->x_index * CHUNK_SIZE,
-								  (f32)chunk->y_index * CHUNK_SIZE));
-		v2 render_size = v2zoom(v2(CHUNK_SIZE, CHUNK_SIZE));
-
-		Ts2dPushTexture(&chunk->texture,
-						v4(0.0f, 0.0f, CHUNK_SIZE, CHUNK_SIZE),
-						v4(render_pos.x, render_pos.y, render_size.x, render_size.y));
+			Ts2dPushTexture(&chunk->texture,
+							v4(0.0f, 0.0f, CHUNK_SIZE, CHUNK_SIZE),
+							v4(render_pos.x, render_pos.y, render_size.x, render_size.y));
+		}
 	}
 
 	core->run_data->chunk_texture_update_queue_count = 0;

@@ -44,13 +44,6 @@ typedef struct BlockTimer
 	f32 finish_time;
 } BlockTimer;
 
-internal f32 Fade(f32 alpha);
-internal f32 PythagSolve(f32 a, f32 b);
-
-internal f32 GetPerlinNoise(f32 x_pos, f32 y_pos);
-
-internal v2 GetMousePositionInWorldSpace();
-
 typedef struct SerialisationPointer
 {
 	void **pointer_address;
@@ -75,3 +68,21 @@ typedef struct SkeletonChunk
 #define MAX_SERIALISATION_POINTERS 10240
 global i32 serialisation_pointer_count = 0;
 global SerialisationPointer serialisation_pointers[MAX_SERIALISATION_POINTERS];
+
+internal f32 Fade(f32 alpha);
+internal f32 PythagSolve(f32 a, f32 b);
+
+internal f32 GetPerlinNoise(f32 x_pos, f32 y_pos);
+
+internal v2 GetMousePositionInWorldSpace();
+
+// Creates a new world with the specified name.
+// Returns 0 if the world already exists.
+internal b8 CreateWorld(char *world_name);
+// Saves the currently loaded world's basic level data.
+internal void SaveLevelData();
+// Saves the currently loaded world in its entirety
+internal void SaveWorld();
+// Loads the given world from disk.
+// Returns 0 if that world doesn't exist.
+internal b8 LoadWorld(char *world_name);

@@ -43,8 +43,18 @@
 				"label": ""
 			},
 			{
-				"line": 504,
+				"line": 505,
 				"column": 39,
+				"label": ""
+			}
+		]
+	},
+	{
+		"path": "$ROOTPATH$\\game\\source\\arc\\world\\world.c",
+		"bookmarks": [
+			{
+				"line": 311,
+				"column": 17,
 				"label": ""
 			}
 		]

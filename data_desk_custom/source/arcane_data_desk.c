@@ -381,15 +381,16 @@ internal void GenerateComponentCode(void)
 			fprintf(c_file, "        if (core->run_data->entity_components.%s_count != core->run_data->entity_components.free_%s_id - 1)\n", comp_node->name_lowercase_with_underscores, comp_node->name_lowercase_with_underscores);
 			fprintf(c_file, "        {\n");
 			fprintf(c_file, "            b8 found = 0;\n");
-			fprintf(c_file, "            for (i32 i = 0; i < core->run_data->entity_components.%s_count; i++)\n", comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "            for (i32 i = 0; i < core->run_data->entity_components.%s_count + 1; i++)\n", comp_node->name_lowercase_with_underscores);
 			fprintf(c_file, "            {\n");
-			fprintf(c_file, "                if (core->run_data->entity_components.%ss[i].component_id)\n", comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "                if (!core->run_data->entity_components.%ss[i].component_id)\n", comp_node->name_lowercase_with_underscores);
 			fprintf(c_file, "                {\n");
 			fprintf(c_file, "                    core->run_data->entity_components.free_%s_id = i + 1;\n", comp_node->name_lowercase_with_underscores);
 			fprintf(c_file, "                    found = 1;\n");
 			fprintf(c_file, "                    break;\n");
 			fprintf(c_file, "                }\n");
 			fprintf(c_file, "            }\n");
+			fprintf(c_file, "            R_DEV_ASSERT(found, \"Couldn't find a free index?\");\n");
 			fprintf(c_file, "        }\n");
 			fprintf(c_file, "    }\n");
 			fprintf(c_file, "    else\n");

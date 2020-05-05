@@ -1,6 +1,6 @@
 internal void PreMoveUpdatePlayer()
 {
-	R_DEV_ASSERT(core->run_data->character_entity->entity_id, "Character hasn't been created yet.");
+	R_DEV_ASSERT(core->run_data->character_entity && core->run_data->character_entity->entity_id, "Character is invalid.");
 
 	PositionComponent *position_comp = GetPositionComponentFromEntityID(core->run_data->character_entity->entity_id);
 	PhysicsBodyComponent *body_comp = GetPhysicsBodyComponentFromEntityID(core->run_data->character_entity->entity_id);

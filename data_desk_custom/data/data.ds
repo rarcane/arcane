@@ -605,8 +605,9 @@ RunData :: struct // Game data used for run-time operations
 	
 	entity_components : ComponentSet;
 	
-	res_path : *char;
-	current_level : char[20];
+	world_name : char[50];
+	world_path : char[300];
+	world_chunks_path : char[300];
 	
 	world : WorldSaveData;
 	
@@ -628,6 +629,7 @@ RunData :: struct // Game data used for run-time operations
 	editor_flags : EditorFlags;
 	// ~ Entity Editor
 	selected_entity : *Entity;
+	selected_chunk : *Chunk;
 	// ~ Terrain editor
 	selected_cell : *Cell;
 	selection_start : v2;

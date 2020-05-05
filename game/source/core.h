@@ -27,6 +27,8 @@ struct Core
 	MemoryArena *permanent_arena;
 	MemoryArena *frame_arena;
 
+	char *res_path;
+
 	v2 camera_position;
 	float camera_zoom;
 	v2 camera_offset;

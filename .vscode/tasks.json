@@ -12,7 +12,7 @@
 				"cwd": "${workspaceFolder}"
 			},
 			"windows": {
-				"command": "call \"D:\\ArcaneStartup.bat\" && ${cwd}\\build.bat"
+				"command": "call \"D:\\ArcaneStartup.bat\" && ${cwd}\\clean.bat && ${cwd}\\build.bat"
 			},
 			"presentation": {
 				"echo": true,
@@ -21,7 +21,8 @@
 				"panel": "shared",
 				"showReuseMessage": false,
 				"clear": true
-			}
+			},
+			"problemMatcher": []
 		}
 	]
 }

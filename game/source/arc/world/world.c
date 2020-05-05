@@ -6,7 +6,7 @@ internal void InitialiseWorldData()
 
 internal void CreateTestLevel()
 {
-	R_DEV_ASSERT(!core->run_data->current_level[0], "A level is already loaded in.");
+	R_DEV_ASSERT(!core->run_data->world_name[0], "A level is already loaded in.");
 
 	InitialiseWorldData();
 
@@ -133,7 +133,7 @@ internal void CreateTestLevel()
 		}
 	}
 
-	strcpy(core->run_data->current_level, "testing");
+	CreateWorld("testing");
 }
 
 internal void WorldUpdate()
@@ -289,6 +289,8 @@ internal void UpdateChunks()
 	// Reset counts
 	core->run_data->floating_entity_id_count = 0;
 	core->run_data->positional_entity_id_count = 0;
+	MemorySet(core->run_data->positional_entity_ids, 0, sizeof(core->run_data->positional_entity_ids));
+	MemorySet(core->run_data->floating_entity_ids, 0, sizeof(core->run_data->floating_entity_ids));
 	for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
 	{
 		Chunk *chunk = &core->run_data->active_chunks[i];
@@ -304,27 +306,28 @@ internal void UpdateChunks()
 		for (i32 i = 0; i < core->run_data->entity_count; i++)
 		{
 			Entity *entity = &core->run_data->entities[i];
-			if (entity == core->run_data->character_entity)
-				continue;
-
-			v2 position = {0.0f, 0.0f};
-			if (entity->component_ids[COMPONENT_position])
+			if (entity->entity_id)
 			{
-				position = GetPositionComponentFromEntityID(entity->entity_id)->position;
-				if (entity->component_ids[COMPONENT_parallax])
+				if (entity == core->run_data->character_entity)
+					continue;
+
+				v2 position = {0.0f, 0.0f};
+				if (entity->component_ids[COMPONENT_position])
 				{
-					position = GetParallaxComponentFromEntityID(entity->entity_id)->desired_position;
+					position = GetPositionComponentFromEntityID(entity->entity_id)->position;
+					if (entity->component_ids[COMPONENT_parallax])
+					{
+						position = GetParallaxComponentFromEntityID(entity->entity_id)->desired_position;
+					}
+					Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex(position.x), WorldspaceToChunkIndex(position.y));
+
+					chunk->entity_count++;
+					positional_entities[positional_entity_count++] = entity;
 				}
-				Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex(position.x), WorldspaceToChunkIndex(position.y));
-
-				// NOTE(randy): Chunk does not exist for some reason?
-
-				chunk->entity_count++;
-				positional_entities[positional_entity_count++] = entity;
-			}
-			else
-			{
-				core->run_data->floating_entity_ids[core->run_data->floating_entity_id_count++] = entity->entity_id;
+				else
+				{
+					core->run_data->floating_entity_ids[core->run_data->floating_entity_id_count++] = entity->entity_id;
+				}
 			}
 		}
 
@@ -333,7 +336,7 @@ internal void UpdateChunks()
 		for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
 		{
 			Chunk *chunk = &core->run_data->active_chunks[i];
-			if (chunk->entity_count)
+			if (chunk->is_valid && chunk->entity_count)
 			{
 				chunk->entity_ids = &core->run_data->positional_entity_ids[id_count];
 				id_count += chunk->entity_count;
@@ -362,38 +365,47 @@ internal void UpdateChunks()
 	for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
 	{
 		Chunk *chunk = &core->run_data->active_chunks[i];
-		if (!chunk->remain_loaded)
+		if (chunk->is_valid)
 		{
-			// unload chunk
+			if (!chunk->remain_loaded)
+				UnloadChunk(chunk);
+			else
+				chunk->remain_loaded = 0;
 		}
-		else
-			chunk->remain_loaded = 0; // Reset
 	}
 
 	// Load in chunks that should be visible to the player + a buffer
 	if (!core->run_data->disable_chunk_loaded_based_off_view)
 	{
-		const i32 buffer = 1;
-
 		SkeletonChunk chunks[MAX_WORLD_CHUNKS];
 		i32 chunk_count;
 		GetSkeletonChunksInRegion(chunks, &chunk_count, GetCameraRegionRect(), 1);
-
 		for (i32 i = 0; i < chunk_count; i++)
 		{
 			Chunk *chunk = GetChunkAtIndex(chunks[i].x_index, chunks[i].y_index);
 			if (!chunk)
 			{
-				char file_path[200] = "";
-				sprintf(file_path, "%s\\worlds\\%s\\chunks\\", core->run_data->res_path, core->run_data->current_level);
-				chunk = LoadChunkFromDisk(file_path, chunks[i].x_index, chunks[i].y_index);
+				chunk = LoadChunkFromDisk(core->run_data->world_chunks_path, chunks[i].x_index, chunks[i].y_index);
 				if (!chunk)
 				{
 					chunk = CreateNewChunk(chunks[i].x_index, chunks[i].y_index);
 				}
 			}
 
-			// chunk->remain_loaded = 1;
+			chunk->remain_loaded = 1;
+		}
+	}
+	else
+	{
+		// TODO(randy): Cache the player's previous view region or something nd just keep using that or smth.
+		// Temporarily force load all chuks for now.
+		for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
+		{
+			Chunk *chunk = &core->run_data->active_chunks[i];
+			if (chunk->is_valid)
+			{
+				chunk->remain_loaded = 1;
+			}
 		}
 	}
 }
@@ -440,9 +452,25 @@ internal void GetSurroundingChunks(Chunk **chunks, v2 position)
 internal Chunk *CreateNewChunk(i32 x_index, i32 y_index)
 {
 	R_DEV_ASSERT(core->run_data->active_chunk_count + 1 < MAX_WORLD_CHUNKS, "Too many chunccs are loaded bruh.");
+	R_DEV_ASSERT(!GetChunkAtIndex(x_index, y_index), "Can't create a chunk at %i.%i, there's already an existing chunk there.", x_index, y_index);
 
-	Chunk *chunk = &core->run_data->active_chunks[core->run_data->active_chunk_count++];
+	// TODO: This will shit the bed eventually. Might need to give chunks an ID/free system
+	i32 chunk_index = -1;
+	for (i32 i = 0; i < core->run_data->active_chunk_count + 1; i++)
+	{
+		if (!core->run_data->active_chunks[i].is_valid)
+		{
+			chunk_index = i;
+			break;
+		}
+	}
+	if (chunk_index == core->run_data->active_chunk_count)
+		core->run_data->active_chunk_count++;
+	R_DEV_ASSERT(chunk_index != -1, "Uh oh.");
+
+	Chunk *chunk = &core->run_data->active_chunks[chunk_index];
 	chunk->is_valid = 1;
+	chunk->remain_loaded = 1;
 	chunk->x_index = x_index;
 	chunk->y_index = y_index;
 
@@ -462,11 +490,22 @@ internal Chunk *CreateNewChunk(i32 x_index, i32 y_index)
 	return chunk;
 }
 
+internal void DeleteChunk(Chunk *chunk)
+{
+	for (i32 i = 0; i < chunk->entity_count; i++)
+	{
+		DeleteEntity(&core->run_data->entities[chunk->entity_ids[i] - 1]);
+	}
+
+	Ts2dTextureCleanUp(&chunk->texture);
+	MemorySet(chunk, 0, sizeof(Chunk));
+}
+
 internal void SaveChunkToDisk(char *path, Chunk *chunk)
 {
-	R_DEV_ASSERT(path[0] && chunk, "Invalid params.");
+	R_DEV_ASSERT(path[0] && chunk && chunk->is_valid, "Invalid params.");
 
-	char chunk_file_path[100];
+	char chunk_file_path[300];
 	sprintf(chunk_file_path, "%s%i.%i.chunk", path, chunk->x_index, chunk->y_index);
 	FILE *file = fopen(chunk_file_path, "w");
 	R_DEV_ASSERT(file, "Couldn't open file.");
@@ -503,6 +542,7 @@ internal void SaveChunkToDisk(char *path, Chunk *chunk)
 	}
 
 	fclose(file);
+	Log("Chunk %i.%i has been saved", chunk->x_index, chunk->y_index);
 }
 
 internal Chunk *LoadChunkFromDisk(char *path, i32 x_index, i32 y_index)
@@ -517,6 +557,7 @@ internal Chunk *LoadChunkFromDisk(char *path, i32 x_index, i32 y_index)
 	{
 		Chunk *chunk = &core->run_data->active_chunks[core->run_data->active_chunk_count++];
 		chunk->is_valid = 1;
+		chunk->remain_loaded = 1;
 		chunk->x_index = x_index;
 		chunk->y_index = y_index;
 
@@ -569,6 +610,7 @@ internal Chunk *LoadChunkFromDisk(char *path, i32 x_index, i32 y_index)
 		}
 
 		fclose(file);
+		Log("Chunk %i.%i successfully loaded from disk", chunk->x_index, chunk->y_index);
 		return chunk;
 	}
 	else
@@ -577,8 +619,21 @@ internal Chunk *LoadChunkFromDisk(char *path, i32 x_index, i32 y_index)
 	}
 }
 
-internal void UnloadChunk(Chunk *chunk_to_unload)
+internal void UnloadChunk(Chunk *chunk)
 {
-	R_TODO;
-	// Will sort this out (along with proper world save structure) when we need infinite gen.
+	R_DEV_ASSERT(chunk && chunk->is_valid, "Invalid chunk.");
+
+	SaveChunkToDisk(core->run_data->world_chunks_path, chunk);
+
+	// TODO(randy): debug this. set the chunk view region to 1.
+
+	for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
+	{
+		if (chunk == &core->run_data->active_chunks[i])
+		{
+			Log("Successfully unloaded chunk at %i.%i", chunk->x_index, chunk->y_index);
+			DeleteChunk(chunk);
+			return;
+		}
+	}
 }

@@ -38,4 +38,5 @@ internal void SaveChunkToDisk(char *path, Chunk *chunk);
 // NOTE(randy): Loads a chunk in from disk at the specified index.
 // Returns 0 if the chunk file cannot be found.
 internal Chunk *LoadChunkFromDisk(char *path, i32 x_index, i32 y_index);
-internal void UnloadChunk(Chunk *chunk_to_unload);
+// NOTE(randy): Unloads the specified chunk to disk.
+internal void UnloadChunk(Chunk *chunk);
