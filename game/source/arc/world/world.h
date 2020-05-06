@@ -32,7 +32,7 @@ internal Chunk *GetChunkAtIndex(i32 x, i32 y);
 internal void GetSurroundingChunks(Chunk **chunks, v2 position);
 
 // NOTE(randy): Creates a brand new chunk at the specified indices.
-internal Chunk *CreateNewChunk(i32 x_index, i32 y_index);
+internal Chunk *GenerateNewChunk(i32 x_index, i32 y_index);
 // NOTE(randy): Saves the specified chunk's data to disk
 internal void SaveChunkToDisk(char *path, Chunk *chunk);
 // NOTE(randy): Loads a chunk in from disk at the specified index.

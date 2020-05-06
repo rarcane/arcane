@@ -69,70 +69,6 @@ internal void CreateTestLevel()
 		AddItemToStorage(sword_item, backpack_storage, 2);
 	} */
 
-	ShufflePerlinNoise();
-	f32 last_height = 0.0f;
-	for (int x = 0; x < CHUNK_SIZE * 4; x++)
-	{
-		i32 octaves = 4;
-		f32 frequency = 0.5f;
-		f32 amplitude = 1.0f;
-		f32 max_value = 0.0f;
-
-		f32 noise_amount = 0.0f;
-		for (int k = 0; k < octaves; k++)
-		{
-			noise_amount += GetPerlinNoise(((f32)x / (f32)CHUNK_SIZE) * frequency, 0.0f) * amplitude;
-			max_value += amplitude;
-			frequency *= 2.0f;
-			amplitude *= 0.5f;
-		}
-
-		f32 noise = noise_amount / max_value;
-
-		i32 terrain_height = (i32)floorf(200.0f + 50.0f * noise);
-		for (int y = -1; y > -terrain_height - 1; y--)
-		{
-			i32 x_pos = x - CHUNK_SIZE * 2;
-			i32 y_pos = y + 200;
-
-			Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex((f32)x_pos), WorldspaceToChunkIndex((f32)y_pos));
-			if (!chunk)
-				chunk = CreateNewChunk(WorldspaceToChunkIndex((f32)x_pos), WorldspaceToChunkIndex((f32)y_pos));
-
-			Cell *cell = GetCellAtPosition(x_pos, y_pos);
-			cell->material_type = CELL_MATERIAL_TYPE_dirt;
-
-			QueueChunkForTextureUpdate(chunk);
-		}
-
-		f32 width = ((f32)CHUNK_SIZE * 4.0f) / 32.0f;
-
-		if (x == 0)
-			last_height = (f32)terrain_height;
-		else if (((x + 1) % (i32)width) == 0)
-		{
-			Entity *ground = NewEntity("Ground Seg", GENERALISED_ENTITY_TYPE_ground);
-			AddPositionComponent(ground);
-			AddPhysicsBodyComponent(ground);
-			GetPositionComponentFromEntityID(ground->entity_id)->position = v2(floorf(x / width) * width - CHUNK_SIZE * 2, 0.0f);
-
-			Line line = {0};
-			line.p1.y = 200.0f - (f32)last_height;
-			line.p2.x = width;
-			line.p2.y = 200.0f - (f32)terrain_height;
-
-			PhysicsBodyComponent *phys_body_comp = GetPhysicsBodyComponentFromEntityID(ground->entity_id);
-			phys_body_comp->shape.line = line;
-			phys_body_comp->shape_type = C2_SHAPE_TYPE_line;
-			phys_body_comp->material.static_friction = 0.2f;
-			phys_body_comp->material.dynamic_friction = 0.2f;
-			phys_body_comp->mass_data.mass = 0.0f;
-			phys_body_comp->mass_data.inv_mass = 0.0f;
-
-			last_height = (f32)terrain_height;
-		}
-	}
-
 	CreateWorld("testing");
 }
 
@@ -388,7 +324,7 @@ internal void UpdateChunks()
 				chunk = LoadChunkFromDisk(core->run_data->world_chunks_path, chunks[i].x_index, chunks[i].y_index);
 				if (!chunk)
 				{
-					chunk = CreateNewChunk(chunks[i].x_index, chunks[i].y_index);
+					chunk = GenerateNewChunk(chunks[i].x_index, chunks[i].y_index);
 				}
 			}
 
@@ -425,6 +361,68 @@ internal Chunk *GetChunkAtIndex(i32 x, i32 y)
 	return 0;
 }
 
+internal f32 GetTerrainHeight(f32 x_pos)
+{
+	f32 world_height = 300.0f;
+	x_pos /= PERLIN_NOISE_LENGTH; // Makes the scale a bit more friendly
+
+	i32 octaves = 8;
+	f32 frequency = 0.1f;
+	f32 amplitude = 1.0f;
+
+	f32 max_noise_value = 0.0f;
+	f32 noise_amount = 0.0f;
+	for (int k = 0; k < octaves; k++)
+	{
+		noise_amount += GetPerlinNoise(x_pos * frequency, 0.0f) * amplitude;
+		max_noise_value += amplitude;
+		frequency *= 2.0f;
+		amplitude *= 0.5f;
+	}
+
+	f32 noise = noise_amount / max_noise_value;
+
+	return world_height * noise;
+
+	/* 	f32 last_height = 0.0f;
+	for (int x = 0; x < CHUNK_SIZE * 4; x++)
+	{
+		i32 octaves = 4;
+		f32 frequency = 0.5f;
+		f32 amplitude = 1.0f;
+		f32 max_value = 0.0f;
+
+		f32 noise_amount = 0.0f;
+		for (int k = 0; k < octaves; k++)
+		{
+			noise_amount += GetPerlinNoise(((f32)x / (f32)CHUNK_SIZE) * frequency, 0.0f) * amplitude;
+			max_value += amplitude;
+			frequency *= 2.0f;
+			amplitude *= 0.5f;
+		}
+
+		f32 noise = noise_amount / max_value;
+
+		i32 terrain_height = (i32)floorf(200.0f + 50.0f * noise);
+		for (int y = -1; y > -terrain_height - 1; y--)
+		{
+			i32 x_pos = x - CHUNK_SIZE * 2;
+			i32 y_pos = y + 200;
+
+			Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex((f32)x_pos), WorldspaceToChunkIndex((f32)y_pos));
+			if (!chunk)
+				chunk = GenerateNewChunk(WorldspaceToChunkIndex((f32)x_pos), WorldspaceToChunkIndex((f32)y_pos));
+
+			Cell *cell = GetCellAtPosition(x_pos, y_pos);
+			cell->material_type = CELL_MATERIAL_TYPE_dirt;
+
+			QueueChunkForTextureUpdate(chunk);
+		}
+
+		f32 width = ((f32)CHUNK_SIZE * 4.0f) / 32.0f;
+	} */
+}
+
 internal void GetSurroundingChunks(Chunk **chunks, v2 position)
 {
 	R_TODO; // What's this func for again?
@@ -449,7 +447,7 @@ internal void GetSurroundingChunks(Chunk **chunks, v2 position)
 								WorldspaceToChunkIndex(position.y + CHUNK_SIZE));
 }
 
-internal Chunk *CreateNewChunk(i32 x_index, i32 y_index)
+internal Chunk *GenerateNewChunk(i32 x_index, i32 y_index)
 {
 	R_DEV_ASSERT(core->run_data->active_chunk_count + 1 < MAX_WORLD_CHUNKS, "Too many chunccs are loaded bruh.");
 	R_DEV_ASSERT(!GetChunkAtIndex(x_index, y_index), "Can't create a chunk at %i.%i, there's already an existing chunk there.", x_index, y_index);
@@ -474,6 +472,57 @@ internal Chunk *CreateNewChunk(i32 x_index, i32 y_index)
 	chunk->x_index = x_index;
 	chunk->y_index = y_index;
 
+	/* if (x == 0)
+		last_height = (f32)terrain_height;
+	else if (((x + 1) % (i32)width) == 0)
+	{
+		Entity *ground = NewEntity("Ground Seg", GENERALISED_ENTITY_TYPE_ground);
+		AddPositionComponent(ground);
+		AddPhysicsBodyComponent(ground);
+		GetPositionComponentFromEntityID(ground->entity_id)->position = v2(floorf(x / width) * width - CHUNK_SIZE * 2, 0.0f);
+
+		Line line = {0};
+		line.p1.y = 200.0f - (f32)last_height;
+		line.p2.x = width;
+		line.p2.y = 200.0f - (f32)terrain_height;
+
+		PhysicsBodyComponent *phys_body_comp = GetPhysicsBodyComponentFromEntityID(ground->entity_id);
+		phys_body_comp->shape.line = line;
+		phys_body_comp->shape_type = C2_SHAPE_TYPE_line;
+		phys_body_comp->material.static_friction = 0.2f;
+		phys_body_comp->material.dynamic_friction = 0.2f;
+		phys_body_comp->mass_data.mass = 0.0f;
+		phys_body_comp->mass_data.inv_mass = 0.0f;
+
+		last_height = (f32)terrain_height;
+	} */
+
+	if (y_index == 0)
+	{
+		i32 ground_segments_per_chunk = 16;
+		f32 segment_width = (f32)CHUNK_SIZE / (f32)ground_segments_per_chunk;
+		for (i32 i = 0; i < ground_segments_per_chunk; i++)
+		{
+			Entity *entity = NewEntity("floor", GENERALISED_ENTITY_TYPE_ground);
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			f32 x_pos = (f32)x_index * (f32)CHUNK_SIZE + segment_width * i;
+			f32 y_pos = GetTerrainHeight(x_pos);
+			pos_comp->position = v2(x_pos, y_pos);
+
+			Line line = {0};
+			line.p2.x = segment_width;
+			line.p2.y = GetTerrainHeight(x_pos + segment_width) - y_pos;
+
+			PhysicsBodyComponent *body_comp = AddPhysicsBodyComponent(entity);
+			body_comp->shape.line = line;
+			body_comp->shape_type = C2_SHAPE_TYPE_line;
+			body_comp->material.static_friction = 0.2f;
+			body_comp->material.dynamic_friction = 0.2f;
+			body_comp->mass_data.mass = 0.0f;
+			body_comp->mass_data.inv_mass = 0.0f;
+		}
+	}
+
 	for (int y = 0; y < CHUNK_SIZE; y++)
 	{
 		for (int x = 0; x < CHUNK_SIZE; x++)
@@ -482,6 +531,11 @@ internal Chunk *CreateNewChunk(i32 x_index, i32 y_index)
 			cell->x_position = x_index * CHUNK_SIZE + x;
 			cell->y_position = y_index * CHUNK_SIZE + y;
 			cell->parent_chunk = chunk;
+
+			if (cell->y_position > GetTerrainHeight((f32)cell->x_position) && cell->y_position < 500.0f)
+			{
+				cell->material_type = CELL_MATERIAL_TYPE_dirt;
+			}
 		}
 	}
 

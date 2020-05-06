@@ -123,6 +123,7 @@ GameInit(void)
 		// NOTE(randy): Initialise Arcane data.
 		{
 			InitialiseSpriteData();
+			ShufflePerlinNoise();
 
 			core->camera_zoom = DEFAULT_CAMERA_ZOOM;
 

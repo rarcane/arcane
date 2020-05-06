@@ -64,9 +64,9 @@ internal b8 EqualV2(v2 a, v2 b, f32 leeway)
 
 internal void ShufflePerlinNoise()
 {
-	for (int i = 0; i < 256; i++)
+	for (int i = 0; i < PERLIN_NOISE_LENGTH; i++)
 	{
-		for (int j = 0; j < 256; j++)
+		for (int j = 0; j < PERLIN_NOISE_LENGTH; j++)
 		{
 			core->random_field[j][i].x = (RandomI32(0, 1) ? -1.0f : 1.0f);
 			core->random_field[i][j].y = (RandomI32(0, 1) ? -1.0f : 1.0f);
@@ -76,13 +76,31 @@ internal void ShufflePerlinNoise()
 
 internal f32 GetPerlinNoise(f32 x_pos, f32 y_pos)
 {
+	if (x_pos >= 0)
+		x_pos = fmodf(x_pos, PERLIN_NOISE_LENGTH);
+	else
+	{
+		if (fmodf(fabsf(x_pos), PERLIN_NOISE_LENGTH) == 0)
+			x_pos = 0;
+		else
+			x_pos = PERLIN_NOISE_LENGTH - fmodf(fabsf(x_pos), PERLIN_NOISE_LENGTH);
+	}
+
+	if (y_pos >= 0)
+		y_pos = fmodf(y_pos, PERLIN_NOISE_LENGTH);
+	else
+	{
+		if (fmodf(fabsf(y_pos), PERLIN_NOISE_LENGTH) == 0)
+			y_pos = 0;
+		else
+			y_pos = PERLIN_NOISE_LENGTH - fmodf(fabsf(y_pos), PERLIN_NOISE_LENGTH);
+	}
+
 	i32 x_min = (i32)floorf(x_pos);
 	i32 x_max = (i32)floorf(x_pos) + 1;
 
 	i32 y_min = (i32)floorf(y_pos);
 	i32 y_max = (i32)floorf(y_pos) + 1;
-
-	R_DEV_ASSERT(x_min < 256 && y_min < 256, "Noise out of bonds."); // TODO: Wrap around
 
 	v2 g0 = core->random_field[y_min][x_min];
 	v2 g1 = core->random_field[y_min][x_min + 1];

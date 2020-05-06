@@ -1,5 +1,6 @@
 #define MAX_DEBUG_LINES 1024
-#define MAX_CLOUDS 50
+
+#define PERLIN_NOISE_LENGTH 256
 
 typedef struct Entity Entity;
 typedef struct CollisionInfo CollisionInfo;
@@ -50,7 +51,7 @@ struct Core
 	// Temp
 	b32 is_ingame;
 
-	v2 random_field[256][256];
+	v2 random_field[PERLIN_NOISE_LENGTH][PERLIN_NOISE_LENGTH];
 
 	// Data stores
 	RunData *run_data;
