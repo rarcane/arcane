@@ -1,41 +1,13 @@
-// TODO: Properly organise for Ts integration with asserts & logging
-#define R_TODO __debugbreak()
+#define BLOCK_TIMER(timer_name, ...) { f32 timer_start = platform->GetTime(); {__VA_ARGS__} LogWarning(timer_name " timer took %fms", (platform->GetTime() - timer_start) * 1000.0f); }
+#define BLOCK_TIMER_IF(timer_name, conditional, ...) { f32 timer_start = platform->GetTime(); {__VA_ARGS__} f32 timer_length = (platform->GetTime() - timer_start) * 1000.0f;  if (conditional) {LogWarning(timer_name " timer took %fms", timer_length);} }
 
-// NOTE(randy): Breaks excecution with a error message
-#define R_BREAK(...)           \
-	{                          \
-		LogError(__VA_ARGS__); \
-		__debugbreak();        \
-	}
-
-// NOTE(randy): Shipped with release build. Should be used sparingly for critical system failure.
-#define R_HARD_ASSERT(x, ...)     \
-	{                             \
-		if (!(x))                 \
-		{                         \
-			R_BREAK(__VA_ARGS__); \
-		}                         \
-	}
-
-// NOTE(randy): Can be disabled for release builds. Just used to ensure no fuckery is going on while developing new systems; with enough usage this can safely be ruled out.
-#define R_DEV_ASSERT(x, ...)      \
-	{                             \
-		if (!(x))                 \
-		{                         \
-			R_BREAK(__VA_ARGS__); \
-		}                         \
-	}
-
-#define R_DEBUG_BREAK_KEY(x)                 \
-	{                                        \
-		if (platform->key_down[KEY_f2] && x) \
-			__debugbreak();                  \
-	}
+#define START_TIMER f32 timer_start = platform->GetTime()
+#define END_TIMER f32 timer_length = platform->GetTime() - timer_start
 
 #define START_PERF_TIMER(name) BlockTimer block_timer = {name, platform->GetTime(), 0}
 #define END_PERF_TIMER                             \
-	block_timer.finish_time = platform->GetTime(); \
-	core->performance_timers[core->performance_timer_count++] = block_timer
+block_timer.finish_time = platform->GetTime(); \
+core->performance_timers[core->performance_timer_count++] = block_timer
 
 typedef struct BlockTimer
 {
@@ -86,3 +58,5 @@ internal void SaveWorld();
 // Loads the given world from disk.
 // Returns 0 if that world doesn't exist.
 internal b8 LoadWorld(char *world_name);
+// Unloads the current world and returns to main menu.
+internal void UnloadWorld();

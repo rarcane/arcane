@@ -1,14 +1,14 @@
 internal void PreMoveUpdatePlayer()
 {
-	R_DEV_ASSERT(core->run_data->character_entity && core->run_data->character_entity->entity_id, "Character is invalid.");
-
+	Assert(core->run_data->character_entity && core->run_data->character_entity->entity_id);
+	
 	PositionComponent *position_comp = GetPositionComponentFromEntityID(core->run_data->character_entity->entity_id);
 	PhysicsBodyComponent *body_comp = GetPhysicsBodyComponentFromEntityID(core->run_data->character_entity->entity_id);
 	MovementComponent *movement_comp = GetMovementComponentFromEntityID(core->run_data->character_entity->entity_id);
 	ArcEntityComponent *arc_entity_comp = GetArcEntityComponentFromEntityID(core->run_data->character_entity->entity_id);
 	SpriteComponent *sprite_comp = GetSpriteComponentFromEntityID(core->run_data->character_entity->entity_id);
 	AnimationComponent *animation_comp = GetAnimationComponentFromEntityID(core->run_data->character_entity->entity_id);
-
+	
 	b8 is_sprinting = 0;
 	if (core->run_data->editor_state == EDITOR_STATE_none && platform->key_down[KEY_a])
 	{
@@ -48,15 +48,15 @@ internal void PreMoveUpdatePlayer()
 	{
 		movement_comp->axis_x = 0.0f;
 	}
-
+	
 	if (fabsf(body_comp->velocity.x) < fabsf(movement_comp->move_speed * movement_comp->axis_x))
 		body_comp->force.x = movement_comp->axis_x * (1200 / body_comp->mass_data.inv_mass);
-
+	
 	if (core->run_data->editor_state == EDITOR_STATE_none && platform->key_pressed[KEY_space])
 	{
 		body_comp->force.y = -10000.0f / body_comp->mass_data.inv_mass;
 	}
-
+	
 	// NOTE(randy): Update animation state
 	{
 		if (movement_comp->axis_x < 0.0f)
@@ -67,7 +67,7 @@ internal void PreMoveUpdatePlayer()
 		{
 			sprite_comp->is_flipped = 0;
 		}
-
+		
 		if (movement_comp->axis_x == 0)
 		{
 			SetArcEntityAnimationState(arc_entity_comp, ARC_ENTITY_ANIMATION_STATE_player_idle, ANIMATION_FLAGS_playing | ANIMATION_FLAGS_repeat, 0);
@@ -84,7 +84,7 @@ internal void PreMoveUpdatePlayer()
 			}
 		}
 	}
-
+	
 	// Acceleration calculations?
 }
 
@@ -111,7 +111,7 @@ internal void PostMoveUpdatePlayer()
 
 			closest_item = overlapping_colliders[0]->parent_entity;
 			closest_item_comp = closest_item->components[COMPONENT_item];
-			R_DEV_ASSERT(closest_item_comp, "Collider entity does not have an item component attached?");
+			Assert(closest_item_comp, "Collider entity does not have an item component attached?");
 		}
 
 		if (closest_item)
@@ -175,7 +175,7 @@ internal void PostMoveUpdatePlayer()
 			}
 		}
 	} */
-
+	
 	/* // NOTE(randy): Check for a hotbar slot update.
 	{
 		StorageComponent *hotbar_storage = GetStorageComponentFromEntityID(core->hotbar->entity_id);
@@ -224,10 +224,10 @@ internal void PostMoveUpdatePlayer()
 	{
 	} */
 }
-/* 
+/*
 internal void RemoveHeldItem()
 {
-	R_DEV_ASSERT(core->held_item, "No held iem active.");
+	Assert(core->held_item, "No held iem active.");
 
 	RemovePositionComponent(core->held_item);
 	RemoveSpriteComponent(core->held_item);

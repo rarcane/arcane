@@ -1,17 +1,20 @@
 internal void InitialiseWorldData()
 {
+	core->run_data->save_job_index = -1;
 	core->run_data->free_entity_id = 1;
 	InitialiseComponents();
 }
 
 internal void CreateTestLevel()
 {
-	R_DEV_ASSERT(!core->run_data->world_name[0], "A level is already loaded in.");
-
+	Assert(!core->run_data->world_name[0]); // NOTE(randy): A level is already loaded in.
+    
+	InitialiseRunData();
 	InitialiseWorldData();
-
+	core->is_ingame = 1;
+    
 	core->run_data->world.test_ptr = &core->run_data->free_entity_id;
-
+    
 	{
 		// scuffed lmao
 		Entity *character = NewEntity("Player", GENERALISED_ENTITY_TYPE_character);
@@ -22,33 +25,34 @@ internal void CreateTestLevel()
 		AddMovementComponent(character);
 		AddPhysicsBodyComponent(character);
 		AddAnimationComponent(character);
-
+        
 		character->flags |= ENTITY_FLAGS_no_delete;
 		GetPositionComponentFromEntityID(character->entity_id)->position = v2(0.0f, -100.0f);
-
+        
 		c2Capsule capsule = {
 			.a = c2V(0.0f, -10.0f),
 			.b = c2V(0.0f, -50.0f),
 			.r = 10.0f,
 		};
+        
 		PhysicsBodyComponent *phys_body_comp = GetPhysicsBodyComponentFromEntityID(character->entity_id);
 		phys_body_comp->shape.capsule = capsule;
 		phys_body_comp->shape_type = C2_SHAPE_TYPE_capsule;
-
+        
 		phys_body_comp->mass_data.mass = 60.0f;
 		phys_body_comp->mass_data.inv_mass = 1.0f / phys_body_comp->mass_data.mass;
 		phys_body_comp->material.restitution = 0.4f;
 		phys_body_comp->material.static_friction = 0.5f;
 		phys_body_comp->material.dynamic_friction = 0.5f;
 		phys_body_comp->gravity_multiplier = 1.0f;
-
+        
 		GetMovementComponentFromEntityID(character->entity_id)->move_speed = 100.0f;
 		GetArcEntityComponentFromEntityID(character->entity_id)->entity_type = ARC_ENTITY_TYPE_player;
 		GetArcEntityComponentFromEntityID(character->entity_id)->current_animation_state = ARC_ENTITY_ANIMATION_STATE_player_idle;
 		SpriteComponent *sprite_comp = GetSpriteComponentFromEntityID(character->entity_id);
 		sprite_comp->sprite_data.dynamic_sprite = DYNAMIC_SPRITE_player_idle;
 	}
-
+    
 	/* {
 		core->sword = NewEntity("Sword", GENERALISED_ENTITY_TYPE_item);
 		core->sword->flags |= ENTITY_FLAGS_no_delete;
@@ -68,56 +72,66 @@ internal void CreateTestLevel()
 
 		AddItemToStorage(sword_item, backpack_storage, 2);
 	} */
-
+    
 	CreateWorld("testing");
 }
 
 internal void WorldUpdate()
 {
+	if (core->run_data->save_job_index != -1)
+	{
+		if (platform->WaitForJob(core->run_data->save_job_index, 0))
+		{
+			core->run_data->chunk_save_count = 0;
+			core->run_data->save_job_index = -1;
+			Log("Queued chunk save complete");
+		}
+	}
+	
 #ifdef DEVELOPER_TOOLS
 	DrawEditorUI();
 	if (core->run_data->editor_state)
 		TransformEditorCamera();
 #endif
-
+    
 	core->performance_timer_count = 0;
-
+    
 	START_PERF_TIMER("Update");
-
+    
 	// NOTE(randy): Perform if the game is not paused.
 	if ((core->world_delta_t == 0.0f ? (core->run_data->editor_flags & EDITOR_FLAGS_manual_step) : 1))
 	{
 		UpdateCells();
-
+		
 		PreMoveUpdatePlayer();
-
+        
 		UpdatePhysics();
-
+        
 		if (!core->run_data->editor_state)
 			TransformInGameCamera();
-
+        
 		PostMoveUpdatePlayer();
-
+        
 		core->run_data->editor_flags &= ~EDITOR_FLAGS_manual_step;
 	}
-
+    
 	UpdateParallax();
-
+    
 	UpdateChunks();
-
+    
 	DrawWorld();
 	RenderCells();
-
+    
 #ifdef DEVELOPER_TOOLS
 	RenderColliders();
 #endif
-
+    
 	UpdateParticleEmitters();
 	DrawGameUI();
 #ifdef DEVELOPER_TOOLS
 	DrawDebugLines();
 #endif
-
+    
 	END_PERF_TIMER;
 }
 
@@ -127,29 +141,29 @@ internal void DrawWorld()
 	if (!(core->run_data->editor_flags & EDITOR_FLAGS_draw_world))
 		return;
 #endif
-
+    
 	Ts2dPushBackgroundBegin();
 	{
 		v4 top_sky_colour = v4(88.0f / 255.0f, 152.0f / 255.0f, 194.0f / 255.0f, 1.0f);
 		v4 middle_sky_colour = v4(203.0f / 255.0f, 232.0f / 255.0f, 238.0f / 255.0f, 1.0f);
 		v4 bottom_sky_colour = v4(130.0f / 255.0f, 81.0f / 255.0f, 77.0f / 255.0f, 1.0f);
-
+        
 		Ts2dPushFilledVertexColoredRect(top_sky_colour,
 										middle_sky_colour,
 										top_sky_colour,
 										middle_sky_colour,
 										v4(0.0f, 0.0f, core->render_width, core->render_height / 2.0f));
-
+        
 		Ts2dPushFilledVertexColoredRect(middle_sky_colour,
 										bottom_sky_colour,
 										middle_sky_colour,
 										bottom_sky_colour,
 										v4(0.0f, core->render_height / 2.0f, core->render_width, core->render_height / 2.0f));
-
+        
 		RenderBackgroundSprites();
 	}
 	Ts2dPushBackgroundEnd();
-
+    
 	Ts2dWorldInfo world_info = {0};
 	{
 		world_info.flags |= TS2D_BLUR_SHADOWS;
@@ -163,16 +177,16 @@ internal void DrawWorld()
 		world_info.brightness = 1.0f;
 		world_info.grayscale = 0.f;
 	}
-
+    
 	Ts2dPushWorldBegin(&world_info);
-
+    
 	// NOTE(randy): Sprite rendering.
 	{
 		UpdateAnimations();
 		// PostUpdateWorldAnimations();
 		RenderForegroundSprites();
 	}
-
+    
 	/* v2 pos = v2view(v2(-350.0f, 35.0f));
                 v2 size = v2zoom(v2(700.0f, 200.0f));
                 Ts2dPushReflectiveRect(
@@ -180,9 +194,9 @@ internal void DrawWorld()
                 v4(pos.x, pos.y, size.x, size.y),
                 v4(1.0f, 1.0f, 1.0f, 1.0f),
                 0.0f, 0.75f); */
-
+    
 	Ts2dPushWorldEnd();
-
+    
 	// NOTE(randy): Draw velocity projection.
 	/* if (core->draw_velocity)
     {
@@ -208,12 +222,12 @@ internal void UpdateParallax()
 		if (parallax_comp->component_id)
 		{
 			PositionComponent *position_comp = GetPositionComponentFromEntityID(parallax_comp->parent_entity_id);
-			R_DEV_ASSERT(position_comp, "Parallax must be attached with a position to update.");
-
+			Assert(position_comp); // NOTE(randy): Parallax must be attached with a position to update.
+            
 			// TODO: Need to find a way to centralise the desired_position of the parallax, whilst still maintaining spatial consistency across sprites
 			position_comp->position.x = parallax_comp->desired_position.x + -core->camera_position.x * parallax_comp->parallax_amount.x;
 			position_comp->position.y = parallax_comp->desired_position.y + (-core->camera_position.y + DEFAULT_CAMERA_OFFSET_Y) * parallax_comp->parallax_amount.y;
-
+            
 			// position_comp->position.x = parallax_comp->desired_position.x - (parallax_comp->desired_position.x - player_pos->position.x + core->camera_offset.x) * parallax_comp->parallax_amount.x;
 			// position_comp->position.y = parallax_comp->desired_position.y - (parallax_comp->desired_position.y - player_pos->position.y + core->camera_offset.y) * parallax_comp->parallax_amount.y;
 		}
@@ -233,12 +247,12 @@ internal void UpdateChunks()
 		chunk->entity_count = 0;
 		chunk->entity_ids = 0;
 	}
-
-	// Decide where each entity belongs
+    
+	// NOTE(randy):  Decide where each entity belongs
 	{
 		Entity *positional_entities[MAX_POSITIONAL_ENTITIES];
 		i32 positional_entity_count = 0;
-
+        
 		for (i32 i = 0; i < core->run_data->entity_count; i++)
 		{
 			Entity *entity = &core->run_data->entities[i];
@@ -246,7 +260,7 @@ internal void UpdateChunks()
 			{
 				if (entity == core->run_data->character_entity)
 					continue;
-
+                
 				v2 position = {0.0f, 0.0f};
 				if (entity->component_ids[COMPONENT_position])
 				{
@@ -256,7 +270,7 @@ internal void UpdateChunks()
 						position = GetParallaxComponentFromEntityID(entity->entity_id)->desired_position;
 					}
 					Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex(position.x), WorldspaceToChunkIndex(position.y));
-
+                    
 					chunk->entity_count++;
 					positional_entities[positional_entity_count++] = entity;
 				}
@@ -266,8 +280,8 @@ internal void UpdateChunks()
 				}
 			}
 		}
-
-		// Set each chunk's local array
+        
+		// NOTE(randy): Set each chunk's local array
 		i32 id_count = 0;
 		for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
 		{
@@ -280,37 +294,68 @@ internal void UpdateChunks()
 				chunk->entity_count = 0;
 			}
 		}
-
-		// Put all positional entities into their desired chunk arrays
+        
+		// NOTE(randy): Put all positional entities into their desired chunk arrays
 		for (i32 i = 0; i < positional_entity_count; i++)
 		{
 			Entity *entity = positional_entities[i];
-
+            
 			v2 position = GetPositionComponentFromEntityID(entity->entity_id)->position;
 			if (entity->component_ids[COMPONENT_parallax])
 			{
 				position = GetParallaxComponentFromEntityID(entity->entity_id)->desired_position;
 			}
 			Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex(position.x), WorldspaceToChunkIndex(position.y));
-
+            
 			chunk->entity_ids[chunk->entity_count++] = entity->entity_id;
 		}
 	}
-
-	// Unload any chunks that haven't been marked as 'remain_loaded' by now
+    
+	// NOTE(randy): Unload any chunks that haven't been marked as 'remain_loaded' by now
+#define MAX_CHUNK_UNLOAD_COUNT 8
+	Chunk *chunks_to_unload[MAX_CHUNK_UNLOAD_COUNT];
+	i32 chunks_to_unload_count = 0;
 	for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
 	{
 		Chunk *chunk = &core->run_data->active_chunks[i];
 		if (chunk->is_valid)
 		{
 			if (!chunk->remain_loaded)
-				UnloadChunk(chunk);
+			{
+				Assert(chunks_to_unload_count + 1 < MAX_CHUNK_UNLOAD_COUNT);
+				chunks_to_unload[chunks_to_unload_count++] = chunk;
+			}
 			else
+			{
 				chunk->remain_loaded = 0;
+			}
 		}
 	}
-
-	// Load in chunks that should be visible to the player + a buffer
+	
+	if (chunks_to_unload_count > 0 && core->run_data->save_job_index == -1)
+	{
+		//BLOCK_TIMER("Unload copy",
+		// NOTE(randy): Snapshot the current world data
+		MemoryCopy(&core->run_data->entities_snapshot, &core->run_data->entities, sizeof(core->run_data->entities));
+		MemoryCopy(&core->run_data->entity_count_snapshot, &core->run_data->entity_count, sizeof(core->run_data->entity_count));
+		MemoryCopy(&core->run_data->entity_components_snapshot, &core->run_data->entity_components, sizeof(core->run_data->entity_components));
+		MemoryCopy(&core->run_data->positional_entity_ids_snapshot, &core->run_data->positional_entity_ids,
+				   sizeof(core->run_data->positional_entity_ids));
+		MemoryCopy(&core->run_data->positional_entity_id_count_snapshot, &core->run_data->positional_entity_id_count, sizeof(core->run_data->positional_entity_id_count));
+		
+		for (i32 i = 0; i < chunks_to_unload_count; i++)
+		{
+			Chunk *chunk = chunks_to_unload[i];
+			Assert(QueueChunkForSave(chunk));
+			
+			DeleteChunk(chunk);
+		}
+		
+		core->run_data->save_job_index = platform->QueueJob(0, SaveQueuedChunks, 0);
+		//);
+	}
+	
+	// NOTE(randy): Load in chunks that should be visible to the player + a buffer
 	if (!core->run_data->disable_chunk_loaded_based_off_view)
 	{
 		SkeletonChunk chunks[MAX_WORLD_CHUNKS];
@@ -327,14 +372,13 @@ internal void UpdateChunks()
 					chunk = GenerateNewChunk(chunks[i].x_index, chunks[i].y_index);
 				}
 			}
-
+            
 			chunk->remain_loaded = 1;
 		}
 	}
 	else
 	{
-		// TODO(randy): Cache the player's previous view region or something nd just keep using that or smth.
-		// Temporarily force load all chuks for now.
+		// TODO(randy): Cache the player's previous view region or something nd just keep using that or smth. Temporarily force load all chuks for now.
 		for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
 		{
 			Chunk *chunk = &core->run_data->active_chunks[i];
@@ -354,9 +398,9 @@ internal Chunk *GetChunkAtIndex(i32 x, i32 y)
 		if (chunk->is_valid)
 			if (x == chunk->x_index &&
 				y == chunk->y_index)
-				return chunk;
+            return chunk;
 	}
-
+    
 	// Chunk isn't loaded.
 	return 0;
 }
@@ -365,11 +409,11 @@ internal f32 GetTerrainHeight(f32 x_pos)
 {
 	f32 world_height = 300.0f;
 	x_pos /= PERLIN_NOISE_LENGTH; // Makes the scale a bit more friendly
-
+    
 	i32 octaves = 8;
 	f32 frequency = 0.1f;
 	f32 amplitude = 1.0f;
-
+    
 	f32 max_noise_value = 0.0f;
 	f32 noise_amount = 0.0f;
 	for (int k = 0; k < octaves; k++)
@@ -379,11 +423,11 @@ internal f32 GetTerrainHeight(f32 x_pos)
 		frequency *= 2.0f;
 		amplitude *= 0.5f;
 	}
-
+    
 	f32 noise = noise_amount / max_noise_value;
-
+    
 	return world_height * noise;
-
+    
 	/* 	f32 last_height = 0.0f;
 	for (int x = 0; x < CHUNK_SIZE * 4; x++)
 	{
@@ -425,8 +469,8 @@ internal f32 GetTerrainHeight(f32 x_pos)
 
 internal void GetSurroundingChunks(Chunk **chunks, v2 position)
 {
-	R_TODO; // What's this func for again?
-
+	Assert(0); // What's this func for again?
+    
 	chunks[0] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x - CHUNK_SIZE),
 								WorldspaceToChunkIndex(position.y - CHUNK_SIZE));
 	chunks[1] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x),
@@ -449,9 +493,9 @@ internal void GetSurroundingChunks(Chunk **chunks, v2 position)
 
 internal Chunk *GenerateNewChunk(i32 x_index, i32 y_index)
 {
-	R_DEV_ASSERT(core->run_data->active_chunk_count + 1 < MAX_WORLD_CHUNKS, "Too many chunccs are loaded bruh.");
-	R_DEV_ASSERT(!GetChunkAtIndex(x_index, y_index), "Can't create a chunk at %i.%i, there's already an existing chunk there.", x_index, y_index);
-
+	Assert(core->run_data->active_chunk_count + 1 < MAX_WORLD_CHUNKS);
+	Assert(!GetChunkAtIndex(x_index, y_index));
+    
 	// TODO: This will shit the bed eventually. Might need to give chunks an ID/free system
 	i32 chunk_index = -1;
 	for (i32 i = 0; i < core->run_data->active_chunk_count + 1; i++)
@@ -464,14 +508,14 @@ internal Chunk *GenerateNewChunk(i32 x_index, i32 y_index)
 	}
 	if (chunk_index == core->run_data->active_chunk_count)
 		core->run_data->active_chunk_count++;
-	R_DEV_ASSERT(chunk_index != -1, "Uh oh.");
-
+	Assert(chunk_index != -1);
+    
 	Chunk *chunk = &core->run_data->active_chunks[chunk_index];
 	chunk->is_valid = 1;
 	chunk->remain_loaded = 1;
 	chunk->x_index = x_index;
 	chunk->y_index = y_index;
-
+    
 	/* if (x == 0)
 		last_height = (f32)terrain_height;
 	else if (((x + 1) % (i32)width) == 0)
@@ -496,7 +540,7 @@ internal Chunk *GenerateNewChunk(i32 x_index, i32 y_index)
 
 		last_height = (f32)terrain_height;
 	} */
-
+    
 	if (y_index == 0)
 	{
 		i32 ground_segments_per_chunk = 16;
@@ -508,11 +552,11 @@ internal Chunk *GenerateNewChunk(i32 x_index, i32 y_index)
 			f32 x_pos = (f32)x_index * (f32)CHUNK_SIZE + segment_width * i;
 			f32 y_pos = GetTerrainHeight(x_pos);
 			pos_comp->position = v2(x_pos, y_pos);
-
+            
 			Line line = {0};
 			line.p2.x = segment_width;
 			line.p2.y = GetTerrainHeight(x_pos + segment_width) - y_pos;
-
+            
 			PhysicsBodyComponent *body_comp = AddPhysicsBodyComponent(entity);
 			body_comp->shape.line = line;
 			body_comp->shape_type = C2_SHAPE_TYPE_line;
@@ -522,25 +566,27 @@ internal Chunk *GenerateNewChunk(i32 x_index, i32 y_index)
 			body_comp->mass_data.inv_mass = 0.0f;
 		}
 	}
-
+    
 	for (int y = 0; y < CHUNK_SIZE; y++)
 	{
 		for (int x = 0; x < CHUNK_SIZE; x++)
 		{
 			Cell *cell = &chunk->cells[y][x];
-			cell->x_position = x_index * CHUNK_SIZE + x;
-			cell->y_position = y_index * CHUNK_SIZE + y;
-			cell->parent_chunk = chunk;
-
-			if (cell->y_position > GetTerrainHeight((f32)cell->x_position) && cell->y_position < 500.0f)
+			i32 x_pos = x_index * CHUNK_SIZE + x;
+			i32 y_pos = y_index * CHUNK_SIZE + y;
+			//cell->x_position = x_index * CHUNK_SIZE + x;
+			//cell->y_position = y_index * CHUNK_SIZE + y;
+			//cell->parent_chunk = chunk;
+            
+			if (y_pos > GetTerrainHeight((f32)x_pos) && y_pos < 500.0f)
 			{
 				cell->material_type = CELL_MATERIAL_TYPE_dirt;
 			}
 		}
 	}
-
+    
 	QueueChunkForTextureUpdate(chunk);
-
+    
 	return chunk;
 }
 
@@ -550,60 +596,16 @@ internal void DeleteChunk(Chunk *chunk)
 	{
 		DeleteEntity(&core->run_data->entities[chunk->entity_ids[i] - 1]);
 	}
-
+    
 	Ts2dTextureCleanUp(&chunk->texture);
 	MemorySet(chunk, 0, sizeof(Chunk));
 }
 
-internal void SaveChunkToDisk(char *path, Chunk *chunk)
-{
-	R_DEV_ASSERT(path[0] && chunk && chunk->is_valid, "Invalid params.");
-
-	char chunk_file_path[300];
-	sprintf(chunk_file_path, "%s%i.%i.chunk", path, chunk->x_index, chunk->y_index);
-	FILE *file = fopen(chunk_file_path, "w");
-	R_DEV_ASSERT(file, "Couldn't open file.");
-
-	// NOTE(randy): Write cells to file.
-	for (i32 y = 0; y < CHUNK_SIZE; y++)
-	{
-		for (i32 x = 0; x < CHUNK_SIZE; x++)
-		{
-			Cell *cell = &chunk->cells[y][x];
-
-			CellSave cell_save = {cell->material_type, cell->dynamic_properties, (cell->dynamic_id != 0)};
-			WriteToFile(file, &cell_save, sizeof(CellSave));
-		}
-	}
-
-	// NOTE(randy): Write entities into the chunk file. Layout is as follows.
-	// entity count, all entities, component1 count, all component1s, component2 count, all component2s...
-	WriteToFile(file, &chunk->entity_count, sizeof(chunk->entity_count));
-	for (i32 i = 0; i < chunk->entity_count; i++)
-	{
-		Entity *entity = &core->run_data->entities[chunk->entity_ids[i] - 1];
-
-		EntitySave entity_save = {.flags = entity->flags, .type = entity->generalised_type};
-		MemoryCopy(entity_save.name, entity->name, sizeof(entity_save.name));
-
-		WriteToFile(file, &entity_save, sizeof(EntitySave));
-	}
-
-	// NOTE(randy): Write all the entity components from this chunk into file.
-	for (i32 i = 1; i < COMPONENT_MAX; i++)
-	{
-		SerialiseEntityComponentsFromIDList(file, chunk->entity_ids, chunk->entity_count, i);
-	}
-
-	fclose(file);
-	Log("Chunk %i.%i has been saved", chunk->x_index, chunk->y_index);
-}
-
 internal Chunk *LoadChunkFromDisk(char *path, i32 x_index, i32 y_index)
 {
-	R_DEV_ASSERT(core->run_data->active_chunk_count + 1 < MAX_WORLD_CHUNKS, "Too many chunccs are loaded bruh.");
-	R_DEV_ASSERT(!GetChunkAtIndex(x_index, y_index), "Chunk already loaded.");
-
+	Assert(core->run_data->active_chunk_count + 1 < MAX_WORLD_CHUNKS);
+	Assert(!GetChunkAtIndex(x_index, y_index));
+    
 	char chunk_file_path[100];
 	sprintf(chunk_file_path, "%s%i.%i.chunk", path, x_index, y_index);
 	FILE *file = fopen(chunk_file_path, "r");
@@ -614,55 +616,39 @@ internal Chunk *LoadChunkFromDisk(char *path, i32 x_index, i32 y_index)
 		chunk->remain_loaded = 1;
 		chunk->x_index = x_index;
 		chunk->y_index = y_index;
-
+        
 		// Read in cells
 		{
-			for (int y = 0; y < CHUNK_SIZE; y++)
-			{
-				for (int x = 0; x < CHUNK_SIZE; x++)
-				{
-					Cell *cell = &chunk->cells[y][x];
-					cell->x_position = x_index * CHUNK_SIZE + x;
-					cell->y_position = y_index * CHUNK_SIZE + y;
-					cell->parent_chunk = chunk;
-
-					CellSave cell_save;
-					ReadFromFile(file, &cell_save, sizeof(CellSave));
-					cell->material_type = cell_save.type;
-					cell->dynamic_properties = cell_save.dynamic_properties;
-					if (cell_save.is_dynamic)
-						MakeCellDynamic(cell);
-				}
-			}
-
+			ReadFromFile(file, &chunk->cells, sizeof(Cell) * CHUNK_SIZE * CHUNK_SIZE);
 			QueueChunkForTextureUpdate(chunk);
 		}
-
+		
+        
 		// Read in entities
 		{
 			ReadFromFile(file, &chunk->entity_count, sizeof(i32));
-
+            
 			// Allocate a segment in the id array for it.
 			chunk->entity_ids = &core->run_data->positional_entity_ids[core->run_data->positional_entity_id_count];
 			core->run_data->positional_entity_id_count += chunk->entity_count;
-
+            
 			for (i32 i = 0; i < chunk->entity_count; i++)
 			{
 				EntitySave entity_save;
 				ReadFromFile(file, &entity_save, sizeof(EntitySave));
-
+                
 				Entity *entity = NewEntity(entity_save.name, entity_save.type);
 				entity->flags = entity_save.flags;
-
+                
 				chunk->entity_ids[i] = entity->entity_id;
 			}
-
+            
 			for (i32 i = 1; i < COMPONENT_MAX; i++)
 			{
 				DeserialiseEntityComponentsFromIDList(file, chunk->entity_ids, chunk->entity_count, i);
 			}
 		}
-
+        
 		fclose(file);
 		Log("Chunk %i.%i successfully loaded from disk", chunk->x_index, chunk->y_index);
 		return chunk;
@@ -675,18 +661,20 @@ internal Chunk *LoadChunkFromDisk(char *path, i32 x_index, i32 y_index)
 
 internal void UnloadChunk(Chunk *chunk)
 {
-	R_DEV_ASSERT(chunk && chunk->is_valid, "Invalid chunk.");
-
-	SaveChunkToDisk(core->run_data->world_chunks_path, chunk);
-
-	// TODO(randy): debug this. set the chunk view region to 1.
-
+	Assert(0);
+	Assert(chunk && chunk->is_valid);
+    
+	//BLOCK_TIMER("save",
+	//SaveChunkToDisk(core->run_data->world_chunks_path, chunk);
+	//);
+	
 	for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
 	{
 		if (chunk == &core->run_data->active_chunks[i])
 		{
-			Log("Successfully unloaded chunk at %i.%i", chunk->x_index, chunk->y_index);
+			//BLOCK_TIMER("delete",
 			DeleteChunk(chunk);
+			//);
 			return;
 		}
 	}

@@ -6,9 +6,6 @@
 #define ARCANE_UI_STYLE_GAME (1 << 1)
 #define TSUI_STYLE_CALLS_FILE "tsarcane/arcane_tsui_style_calls.inc"
 
-#include "Windows.h"
-#include "fileapi.h" // TODO(randy): Windows-only, used in util.c - MakeDirectory
-
 // NOTE(rjf): Core Header Code
 #include "telescope/telescope.h"
 #include "arc/util.h"
@@ -54,94 +51,89 @@ GameInit(void)
 {
 	core = MemoryArenaAllocateAndZero(&platform->permanent_arena, sizeof(*core));
 	HardAssert(core != 0);
-
+    
 	// NOTE(rjf): Initialize memory arenas.
 	{
 		core->permanent_arena = &platform->permanent_arena;
 		core->frame_arena = &platform->scratch_arena;
 	}
-
+    
 	// NOTE(rjf): Initialize core systems.
 	{
 		core->res_path = MakeCStringOnMemoryArena(core->permanent_arena, "%sres\\", platform->executable_folder_absolute_path);
-
+        
 		core->client_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(ClientData));
-		R_DEV_ASSERT(core->client_data, "Failed to allocate memory for ClientData.");
-
+		Assert(core->client_data);
+        
 		core->run_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(RunData));
-		R_DEV_ASSERT(core->run_data, "Failed to allocate memory for Run Data.");
-		InitialiseRunData();
-
+		Assert(core->run_data);
+        
 		// NOTE(rjf): Initialize TsDevTerminal.
 		{
 			TsDevTerminalCommand commands[] =
-				{
-					{"save", "[Level name]", "Saves current data to the provided level name. If left blank, uses the current level name.", 1, SaveLevelCommand},
-					{"load", "[Level name]", "Loads data in from the specified level.", 1, LoadLevelCommand},
-				};
-
+            {
+                {"save", "[Level name]", "Saves current data to the provided level name. If left blank, uses the current level name.", 1, SaveLevelCommand},
+                {"load", "[Level name]", "Loads data in from the specified level.", 1, LoadLevelCommand},
+            };
+            
 			TsDevTerminalVariable variables[] =
-				{
-					{"camera_zoom", TSDEVTERMINAL_VARIABLE_TYPE_f32, &core->camera_zoom},
-					{"camera_offset", TSDEVTERMINAL_VARIABLE_TYPE_v2, &core->camera_offset},
-					{"fullscreen", TSDEVTERMINAL_VARIABLE_TYPE_b32, &platform->fullscreen},
-					{"bloom", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->client_data->bloom},
-				};
-
+            {
+                {"camera_zoom", TSDEVTERMINAL_VARIABLE_TYPE_f32, &core->camera_zoom},
+                {"camera_offset", TSDEVTERMINAL_VARIABLE_TYPE_v2, &core->camera_offset},
+                {"fullscreen", TSDEVTERMINAL_VARIABLE_TYPE_b32, &platform->fullscreen},
+                {"bloom", TSDEVTERMINAL_VARIABLE_TYPE_b32, &core->client_data->bloom},
+            };
+            
 			TsDevTerminalSetCommands(ArrayCount(commands), commands, core->permanent_arena);
 			TsDevTerminalSetVariables(ArrayCount(variables), variables, core->permanent_arena);
 		}
-
+        
 		// NOTE(rjf): Initialize TsAssets.
 		{
 			TsAssetType asset_types[] =
-				{
-
+            {
+                
 #define TsAssetsAssetType(name, load_info_name, max, pre_load, load, post_load, clean_up, is_loaded, folder) \
-	{                                                                                                        \
-		#name,                                                                                               \
-		#load_info_name,                                                                                     \
-		folder,                                                                                              \
-		sizeof(name),                                                                                        \
-		sizeof(load_info_name),                                                                              \
-		max,                                                                                                 \
-		pre_load,                                                                                            \
-		load,                                                                                                \
-		post_load,                                                                                           \
-		clean_up,                                                                                            \
-		is_loaded,                                                                                           \
-	},
+                {                                                                                                        \
+#name,                                                                                               \
+#load_info_name,                                                                                     \
+                    folder,                                                                                              \
+                    sizeof(name),                                                                                        \
+                    sizeof(load_info_name),                                                                              \
+                    max,                                                                                                 \
+                    pre_load,                                                                                            \
+                    load,                                                                                                \
+                    post_load,                                                                                           \
+                    clean_up,                                                                                            \
+                    is_loaded,                                                                                           \
+                },
 #include "arcane_asset_types.inc"
 #undef TsAssetsAssetType
-
-				};
-
+                
+            };
+            
 			TsAssetsSetAssetRootPath(core->res_path);
 			TsAssetsSetAssetTypes(ArrayCount(asset_types), asset_types, core->permanent_arena);
 		}
-
+        
 		// NOTE(randy): Initialise Arcane data.
 		{
 			InitialiseSpriteData();
 			ShufflePerlinNoise();
-
+            
 			core->camera_zoom = DEFAULT_CAMERA_ZOOM;
-
+            
 			core->delta_mult = 1.0f;
 			core->world_delta_mult = 1.0f;
-
+            
 #ifdef DEVELOPER_ENVIRONMENT
-			core->is_ingame = 1;
-			core->run_data->editor_flags |= EDITOR_FLAGS_draw_collision;
-			core->run_data->editor_flags |= EDITOR_FLAGS_debug_cell_view;
-
 			if (!LoadWorld("testing"))
 				CreateTestLevel();
 #else
 			core->is_ingame = 0;
 #endif
 		}
-
+        
 		Ts2dSetDefaultFont(TsAssetsRequestAssetByName(ASSET_TYPE_Ts2dFont, "mono"));
 	}
 }
@@ -165,13 +157,13 @@ GameUpdate(void)
 		core->render_h = (f32)platform->window_height;
 		core->raw_delta_t = (f32)(1.f / platform->target_frames_per_second);
 	}
-
+    
 	// NOTE(randy): Key stuff
 	{
 		// NOTE(randy): Entering / exiting full-screen
 		if (platform->key_pressed[KEY_f11])
 			platform->fullscreen = !platform->fullscreen;
-
+        
 #ifdef DEVELOPER_TOOLS
 		// NOTE(randy): Enter editor mode
 		if (platform->key_pressed[KEY_f1])
@@ -211,17 +203,17 @@ GameUpdate(void)
 			}
 		}
 #endif
-
+        
 		{
 			local_persist b8 initiated_click = 0;
 			local_persist b8 has_released = 0;
-
+            
 			if (has_released)
 			{
 				core->left_mouse_released = 0;
 				has_released = 0;
 			}
-
+            
 			if (initiated_click && !platform->left_mouse_down)
 			{
 				// Normal release
@@ -229,36 +221,38 @@ GameUpdate(void)
 				initiated_click = 0;
 				has_released = 1;
 			}
-
+            
 			if (initiated_click && platform->left_mouse_pressed)
 			{
 				// double click
 				core->left_mouse_released = 1;
 				initiated_click = 0;
 				has_released = 1;
-
+                
 				platform->left_mouse_pressed = 0;
 			}
-
+            
 			if (platform->left_mouse_pressed && core->left_mouse_released)
-				R_BREAK("Both a press and a release can not occur at the same time.");
-
+			{
+				Assert(0); // NOTE(randy): Both a press and a release can not occur at the same time.
+			}
+            
 			if (platform->left_mouse_pressed)
 			{
 				initiated_click = 1;
 			}
 		}
-
+        
 		{
 			local_persist b8 initiated_click = 0;
 			local_persist b8 has_released = 0;
-
+            
 			if (has_released)
 			{
 				core->right_mouse_released = 0;
 				has_released = 0;
 			}
-
+            
 			if (initiated_click && !platform->right_mouse_down)
 			{
 				// Normal release
@@ -266,26 +260,29 @@ GameUpdate(void)
 				initiated_click = 0;
 				has_released = 1;
 			}
-
+            
 			if (initiated_click && platform->right_mouse_pressed)
 			{
 				// double click
 				core->right_mouse_released = 1;
 				initiated_click = 0;
 				has_released = 1;
-
+                
 				platform->right_mouse_pressed = 0;
 			}
-
+            
 			if (platform->right_mouse_pressed && core->right_mouse_released)
-				R_BREAK("Both a press and a release can not occur at the same time.");
-
+			{
+				// NOTE(randy): Both a press and a release can not occur at the same time.
+				Assert(0);
+            }
+			
 			if (platform->right_mouse_pressed)
 			{
 				initiated_click = 1;
 			}
 		}
-
+        
 		if (!core->is_mid_right_click && platform->left_mouse_pressed)
 		{
 			core->is_mid_left_click = 1;
@@ -294,7 +291,7 @@ GameUpdate(void)
 		{
 			core->is_mid_left_click = 0;
 		}
-
+        
 		if (!core->is_mid_left_click && platform->right_mouse_pressed)
 		{
 			core->is_mid_right_click = 1;
@@ -304,14 +301,14 @@ GameUpdate(void)
 			core->is_mid_right_click = 0;
 		}
 	}
-
+    
 	// NOTE(randy): Calculate delta times.
 	{
 		core->delta_t = core->raw_delta_t * core->delta_mult;
 		core->world_delta_t = core->delta_t * core->world_delta_mult;
 		core->run_data->world.elapsed_world_time += core->world_delta_t;
 	}
-
+    
 #ifdef DEVELOPER_TOOLS
 	// NOTE(randy): Application-wide slow-motion controls
 	{
@@ -331,7 +328,7 @@ GameUpdate(void)
 				is_time_dilated = 1;
 			}
 		}
-
+        
 		if (is_time_dilated)
 		{
 			TsUIPushPosition(v2(10.0f, core->render_h - 70.0f));
@@ -343,7 +340,7 @@ GameUpdate(void)
 		}
 	}
 #endif
-
+    
 	// NOTE(rjf): Update.
 	if (core->is_ingame)
 	{
@@ -354,11 +351,12 @@ GameUpdate(void)
 		TsUIBeginInputGroup();
 		TsUIPushCenteredColumn(v2(200, 50), 3);
 		{
-			TsUIMenuTitle("Arcane");
+            TsUIMenuTitle("Arcane");
 			TsUIDivider();
 			if (TsUIMenuButton("Play"))
 			{
-				CreateTestLevel();
+				if (!LoadWorld("testing"))
+					CreateTestLevel();
 			}
 			if (TsUIMenuButton("Quit"))
 			{
@@ -373,8 +371,11 @@ GameUpdate(void)
 internal void InitialiseRunData()
 {
 	core->run_data->editor_flags |= EDITOR_FLAGS_draw_world;
+#ifdef DEVELOPER_ENVIRONMENT
 	core->run_data->editor_flags |= EDITOR_FLAGS_draw_collision;
 	core->run_data->editor_flags |= EDITOR_FLAGS_draw_chunk_grid;
+	core->run_data->editor_flags |= EDITOR_FLAGS_debug_cell_view;
+#endif
 	core->run_data->free_dynamic_cell_id = 1;
 }
 

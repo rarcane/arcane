@@ -12,7 +12,7 @@
 				"cwd": "${workspaceFolder}"
 			},
 			"windows": {
-				"command": "call \"D:\\ArcaneStartup.bat\" && ${cwd}\\clean.bat && ${cwd}\\build.bat"
+				"command": "call ${cwd}\\build.bat"
 			},
 			"presentation": {
 				"echo": true,

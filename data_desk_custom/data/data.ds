@@ -140,7 +140,7 @@ StaticSprite :: enum
 		cloud_v6,
 	
 	// Forest
-	@Data("'scenic/forest_ground'", "{0.0f, 40.0f, 100.0f, 90.0f }", "{20.0f, 87.0f}")	
+	@Data("'scenic/forest_ground'", "{0.0f, 40.0f, 100.0f, 90.0f }", "{20.0f, 87.0f}")
 		ground_forest_flat,
 	@Data("'scenic/forest_ground'", "{100.0f, 25.0f, 100.0f, 105.0f}", "{0.0f, 87.0f}")
 		ground_forest_10_degree,
@@ -535,18 +535,20 @@ CellMaterialType :: enum
 		sand,
 }
 
-@SerialisableStruct
 Cell :: struct
 {
-	// Don't serialise these
+	material_type : CellMaterialType;
+	dynamic_properties : DynamicCellProperties;
+}
+
+CellHelper :: struct
+{
+	cell : *Cell;
+	
 	dynamic_id : i32;
 	x_position : i32;
 	y_position : i32;
 	parent_chunk : *Chunk;
-	// ~
-	
-	material_type : CellMaterialType;
-	dynamic_properties : DynamicCellProperties;
 }
 
 
@@ -567,7 +569,6 @@ Entity :: struct
 
 CELL_CHUNKS_IN_CHUNK :: CHUNK_SIZE / CELL_CHUNK_SIZE
 CHUNK_AREA :: CHUNK_SIZE * CHUNK_SIZE
-@SerialisableStruct
 Chunk :: struct
 {
 	is_valid : b8;
@@ -578,9 +579,15 @@ Chunk :: struct
 	y_index : i32;
 	
 	cells : Cell[CHUNK_SIZE][CHUNK_SIZE];
-	
-	@DoNotSerialise
 	texture : Ts2dTexture;
+}
+
+ChunkSave :: struct
+{
+	skele_chunk : SkeletonChunk;
+	cells : Cell[CHUNK_SIZE][CHUNK_SIZE];
+	entity_count : i32;
+	entity_ids : *i32;
 }
 
 @SerialisableStruct
@@ -594,7 +601,16 @@ RunData :: struct // Game data used for run-time operations
 {
 	active_chunks : Chunk[MAX_WORLD_CHUNKS];
 	active_chunk_count : i32;
-	
+
+	save_job_index : i32;
+	entities_snapshot : Entity[MAX_ENTITIES];
+	entity_count_snapshot : i32;
+	entity_components_snapshot : ComponentSet;
+	positional_entity_ids_snapshot : i32[MAX_POSITIONAL_ENTITIES];
+	positional_entity_id_count_snapshot : i32;
+	chunk_saves : ChunkSave[MAX_WORLD_CHUNKS];
+	chunk_save_count : i32;
+
 	entities : Entity[MAX_ENTITIES];
 	entity_count : i32;
 	free_entity_id : i32;
@@ -616,10 +632,10 @@ RunData :: struct // Game data used for run-time operations
 	
 	disable_chunk_loaded_based_off_view : b8;
 	
-	dynamic_cells : *Cell[MAX_DYNAMIC_CELLS];
+	dynamic_cells : CellHelper[MAX_DYNAMIC_CELLS];
 	dynamic_cell_count : i32;
 	free_dynamic_cell_id : i32;
-	queued_dynamic_cells : *Cell[MAX_DYNAMIC_CELLS];
+	queued_dynamic_cells : CellHelper[MAX_DYNAMIC_CELLS];
 	queued_dynamic_cell_count : i32;
 	
 	character_entity : *Entity;

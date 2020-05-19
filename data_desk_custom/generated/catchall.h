@@ -607,13 +607,18 @@ static char *GetCellMaterialTypeName(CellMaterialType type);
 
 typedef struct Cell
 {
+CellMaterialType material_type;
+DynamicCellProperties dynamic_properties;
+} Cell;
+
+typedef struct CellHelper
+{
+Cell *cell;
 i32 dynamic_id;
 i32 x_position;
 i32 y_position;
 Chunk *parent_chunk;
-CellMaterialType material_type;
-DynamicCellProperties dynamic_properties;
-} Cell;
+} CellHelper;
 
 typedef struct Entity
 {
@@ -635,9 +640,16 @@ i32 entity_count;
 i32 x_index;
 i32 y_index;
 Cell cells[CHUNK_SIZE][CHUNK_SIZE];
-// @DoNotSerialise 
 Ts2dTexture texture;
 } Chunk;
+
+typedef struct ChunkSave
+{
+SkeletonChunk skele_chunk;
+Cell cells[CHUNK_SIZE][CHUNK_SIZE];
+i32 entity_count;
+i32 *entity_ids;
+} ChunkSave;
 
 typedef struct WorldSaveData
 {
@@ -649,6 +661,14 @@ typedef struct RunData
 {
 Chunk active_chunks[MAX_WORLD_CHUNKS];
 i32 active_chunk_count;
+i32 save_job_index;
+Entity entities_snapshot[MAX_ENTITIES];
+i32 entity_count_snapshot;
+ComponentSet entity_components_snapshot;
+i32 positional_entity_ids_snapshot[MAX_POSITIONAL_ENTITIES];
+i32 positional_entity_id_count_snapshot;
+ChunkSave chunk_saves[MAX_WORLD_CHUNKS];
+i32 chunk_save_count;
 Entity entities[MAX_ENTITIES];
 i32 entity_count;
 i32 free_entity_id;
@@ -664,10 +684,10 @@ WorldSaveData world;
 Chunk *chunk_texture_update_queue[MAX_WORLD_CHUNKS];
 i32 chunk_texture_update_queue_count;
 b8 disable_chunk_loaded_based_off_view;
-Cell *dynamic_cells[MAX_DYNAMIC_CELLS];
+CellHelper dynamic_cells[MAX_DYNAMIC_CELLS];
 i32 dynamic_cell_count;
 i32 free_dynamic_cell_id;
-Cell *queued_dynamic_cells[MAX_DYNAMIC_CELLS];
+CellHelper queued_dynamic_cells[MAX_DYNAMIC_CELLS];
 i32 queued_dynamic_cell_count;
 Entity *character_entity;
 EditorState editor_state;
@@ -689,7 +709,7 @@ b32 bloom;
 
 WriteComponentToFile(FILE *file, i32 comp_id, ComponentType type);
 ReadComponentFromFile(FILE *file, Entity *entity, ComponentType type);
-SerialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, ComponentType type);
+SerialiseEntityComponentsFromIDList(FILE *file, Entity *entity_list, ComponentSet *component_set, i32 *ids, i32 id_count, ComponentType type);
 
 DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, ComponentType type);
 
@@ -789,14 +809,6 @@ static void ReadComponentSetFromFile(FILE *file, ComponentSet *data);
 
 static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data);
 
-static void WriteCellToFile(FILE *file, Cell *data);
-
-static void FillCellPointersInFile(FILE *file, Cell *data);
-
-static void ReadCellFromFile(FILE *file, Cell *data);
-
-static void FillCellPointersFromFile(FILE *file, Cell *data);
-
 static void WriteEntityToFile(FILE *file, Entity *data);
 
 static void FillEntityPointersInFile(FILE *file, Entity *data);
@@ -804,14 +816,6 @@ static void FillEntityPointersInFile(FILE *file, Entity *data);
 static void ReadEntityFromFile(FILE *file, Entity *data);
 
 static void FillEntityPointersFromFile(FILE *file, Entity *data);
-
-static void WriteChunkToFile(FILE *file, Chunk *data);
-
-static void FillChunkPointersInFile(FILE *file, Chunk *data);
-
-static void ReadChunkFromFile(FILE *file, Chunk *data);
-
-static void FillChunkPointersFromFile(FILE *file, Chunk *data);
 
 static void WriteWorldSaveDataToFile(FILE *file, WorldSaveData *data);
 

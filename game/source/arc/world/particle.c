@@ -6,7 +6,7 @@ internal void UpdateParticleEmitters()
 		if (emitter_comp->component_id)
 		{
 			PositionComponent *position_comp = GetPositionComponentFromEntityID(emitter_comp->parent_entity_id);
-
+			
 			if (core->run_data->world.elapsed_world_time >= emitter_comp->start_time + emitter_comp->life_time)
 			{
 				if (emitter_comp->flags & PARTICLE_EMITTER_FLAGS_repeat)
@@ -16,18 +16,18 @@ internal void UpdateParticleEmitters()
 				}
 				else
 				{
-					R_TODO; // Delete emitter
+					Assert(0); // TODO(randy): Delete emitter
 				}
-
+				
 				if (emitter_comp->finish_callback)
 					emitter_comp->finish_callback(emitter_comp);
 			}
-
+			
 			// NOTE(randy): Update particles
 			for (int j = 0; j < emitter_comp->particle_count; j++)
 			{
 				Particle *particle = &emitter_comp->particles[j];
-
+				
 				if (particle->is_valid)
 				{
 					if (core->run_data->world.elapsed_world_time >= particle->spawn_time + particle->life_time)
@@ -35,12 +35,12 @@ internal void UpdateParticleEmitters()
 					else
 					{
 						f32 life_alpha = 1.0f - (core->run_data->world.elapsed_world_time - particle->spawn_time) / particle->life_time;
-
+						
 						particle->position.x += particle->velocity.x * core->world_delta_t;
 						particle->position.y += particle->velocity.y * core->world_delta_t;
-
+						
 						v2 particle_position = v2view(V2AddV2(position_comp->position, particle->position));
-
+						
 						Ts2dPushFilledRect(V4MultiplyF32(particle->colour, life_alpha),
 										   v4(particle_position.x,
 											  particle_position.y,
@@ -55,8 +55,8 @@ internal void UpdateParticleEmitters()
 
 internal void NewParticle(ParticleEmitterComponent *emitter, f32 life_time, v2 initial_pos, v2 velocity, v4 colour)
 {
-	R_DEV_ASSERT(emitter->particle_count < MAX_PARTICLE_AMOUNT - 1, "Woah there bucko.");
-
+	Assert(emitter->particle_count < MAX_PARTICLE_AMOUNT - 1);
+	
 	i32 index;
 	if (emitter->particle_count == emitter->free_particle_index)
 	{
@@ -76,7 +76,7 @@ internal void NewParticle(ParticleEmitterComponent *emitter, f32 life_time, v2 i
 			}
 		}
 	}
-
+	
 	emitter->particles[index].is_valid = 1;
 	emitter->particles[index].life_time = life_time;
 	emitter->particles[index].spawn_time = core->run_data->world.elapsed_world_time;
@@ -89,7 +89,7 @@ internal void DeleteParticle(ParticleEmitterComponent *emitter, i32 particle_ind
 {
 	Particle empty_particle = {0};
 	emitter->particles[particle_index] = empty_particle;
-
+	
 	if (particle_index < emitter->free_particle_index)
 		emitter->free_particle_index = particle_index;
 }

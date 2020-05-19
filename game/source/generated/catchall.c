@@ -332,8 +332,8 @@ break;
 
 internal PositionComponent *AddPositionComponent(Entity *entity)
 {
-    R_DEV_ASSERT(core->run_data->entity_components.free_position_component_id > 0, "Max PositionComponent reached.");
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_position] == 0, "Entity already has a PositionComponent");
+    Assert(core->run_data->entity_components.free_position_component_id > 0);
+    Assert(entity->component_ids[COMPONENT_position] == 0);
     i32 new_comp_id = core->run_data->entity_components.free_position_component_id;
 
     PositionComponent *comp = &core->run_data->entity_components.position_components[new_comp_id - 1];
@@ -362,7 +362,7 @@ internal PositionComponent *AddPositionComponent(Entity *entity)
                     break;
                 }
             }
-            R_DEV_ASSERT(found, "Couldn't find a free index?");
+            Assert(found);
         }
     }
     else
@@ -375,7 +375,7 @@ internal PositionComponent *AddPositionComponent(Entity *entity)
 
 internal void RemovePositionComponent(Entity *entity)
 {
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_position] != 0, "Entity does not have a PositionComponent");
+    Assert(entity->component_ids[COMPONENT_position] != 0);
     PositionComponent *comp = &core->run_data->entity_components.position_components[entity->component_ids[COMPONENT_position] - 1];
 
     if (comp->component_id < core->run_data->entity_components.free_position_component_id)
@@ -389,16 +389,16 @@ internal void RemovePositionComponent(Entity *entity)
 internal PositionComponent *GetPositionComponentFromEntityID(i32 id)
 {
     Entity *entity = GetEntityWithID(id);
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_position], "Entity doesn't have a PositionComponent");
+    Assert(entity->component_ids[COMPONENT_position]);
     PositionComponent *comp = &core->run_data->entity_components.position_components[entity->component_ids[COMPONENT_position] - 1];
-    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_position], "IDs are mismatched.");
+    Assert(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_position]);
     return comp;
 }
 
 internal SpriteComponent *AddSpriteComponent(Entity *entity)
 {
-    R_DEV_ASSERT(core->run_data->entity_components.free_sprite_component_id > 0, "Max SpriteComponent reached.");
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_sprite] == 0, "Entity already has a SpriteComponent");
+    Assert(core->run_data->entity_components.free_sprite_component_id > 0);
+    Assert(entity->component_ids[COMPONENT_sprite] == 0);
     i32 new_comp_id = core->run_data->entity_components.free_sprite_component_id;
 
     SpriteComponent *comp = &core->run_data->entity_components.sprite_components[new_comp_id - 1];
@@ -427,7 +427,7 @@ internal SpriteComponent *AddSpriteComponent(Entity *entity)
                     break;
                 }
             }
-            R_DEV_ASSERT(found, "Couldn't find a free index?");
+            Assert(found);
         }
     }
     else
@@ -440,7 +440,7 @@ internal SpriteComponent *AddSpriteComponent(Entity *entity)
 
 internal void RemoveSpriteComponent(Entity *entity)
 {
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_sprite] != 0, "Entity does not have a SpriteComponent");
+    Assert(entity->component_ids[COMPONENT_sprite] != 0);
     SpriteComponent *comp = &core->run_data->entity_components.sprite_components[entity->component_ids[COMPONENT_sprite] - 1];
 
     if (comp->component_id < core->run_data->entity_components.free_sprite_component_id)
@@ -454,16 +454,16 @@ internal void RemoveSpriteComponent(Entity *entity)
 internal SpriteComponent *GetSpriteComponentFromEntityID(i32 id)
 {
     Entity *entity = GetEntityWithID(id);
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_sprite], "Entity doesn't have a SpriteComponent");
+    Assert(entity->component_ids[COMPONENT_sprite]);
     SpriteComponent *comp = &core->run_data->entity_components.sprite_components[entity->component_ids[COMPONENT_sprite] - 1];
-    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_sprite], "IDs are mismatched.");
+    Assert(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_sprite]);
     return comp;
 }
 
 internal AnimationComponent *AddAnimationComponent(Entity *entity)
 {
-    R_DEV_ASSERT(core->run_data->entity_components.free_animation_component_id > 0, "Max AnimationComponent reached.");
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_animation] == 0, "Entity already has a AnimationComponent");
+    Assert(core->run_data->entity_components.free_animation_component_id > 0);
+    Assert(entity->component_ids[COMPONENT_animation] == 0);
     i32 new_comp_id = core->run_data->entity_components.free_animation_component_id;
 
     AnimationComponent *comp = &core->run_data->entity_components.animation_components[new_comp_id - 1];
@@ -492,7 +492,7 @@ internal AnimationComponent *AddAnimationComponent(Entity *entity)
                     break;
                 }
             }
-            R_DEV_ASSERT(found, "Couldn't find a free index?");
+            Assert(found);
         }
     }
     else
@@ -505,7 +505,7 @@ internal AnimationComponent *AddAnimationComponent(Entity *entity)
 
 internal void RemoveAnimationComponent(Entity *entity)
 {
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_animation] != 0, "Entity does not have a AnimationComponent");
+    Assert(entity->component_ids[COMPONENT_animation] != 0);
     AnimationComponent *comp = &core->run_data->entity_components.animation_components[entity->component_ids[COMPONENT_animation] - 1];
 
     if (comp->component_id < core->run_data->entity_components.free_animation_component_id)
@@ -519,16 +519,16 @@ internal void RemoveAnimationComponent(Entity *entity)
 internal AnimationComponent *GetAnimationComponentFromEntityID(i32 id)
 {
     Entity *entity = GetEntityWithID(id);
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_animation], "Entity doesn't have a AnimationComponent");
+    Assert(entity->component_ids[COMPONENT_animation]);
     AnimationComponent *comp = &core->run_data->entity_components.animation_components[entity->component_ids[COMPONENT_animation] - 1];
-    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_animation], "IDs are mismatched.");
+    Assert(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_animation]);
     return comp;
 }
 
 internal PhysicsBodyComponent *AddPhysicsBodyComponent(Entity *entity)
 {
-    R_DEV_ASSERT(core->run_data->entity_components.free_physics_body_component_id > 0, "Max PhysicsBodyComponent reached.");
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_physics_body] == 0, "Entity already has a PhysicsBodyComponent");
+    Assert(core->run_data->entity_components.free_physics_body_component_id > 0);
+    Assert(entity->component_ids[COMPONENT_physics_body] == 0);
     i32 new_comp_id = core->run_data->entity_components.free_physics_body_component_id;
 
     PhysicsBodyComponent *comp = &core->run_data->entity_components.physics_body_components[new_comp_id - 1];
@@ -557,7 +557,7 @@ internal PhysicsBodyComponent *AddPhysicsBodyComponent(Entity *entity)
                     break;
                 }
             }
-            R_DEV_ASSERT(found, "Couldn't find a free index?");
+            Assert(found);
         }
     }
     else
@@ -570,7 +570,7 @@ internal PhysicsBodyComponent *AddPhysicsBodyComponent(Entity *entity)
 
 internal void RemovePhysicsBodyComponent(Entity *entity)
 {
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_physics_body] != 0, "Entity does not have a PhysicsBodyComponent");
+    Assert(entity->component_ids[COMPONENT_physics_body] != 0);
     PhysicsBodyComponent *comp = &core->run_data->entity_components.physics_body_components[entity->component_ids[COMPONENT_physics_body] - 1];
 
     if (comp->component_id < core->run_data->entity_components.free_physics_body_component_id)
@@ -584,16 +584,16 @@ internal void RemovePhysicsBodyComponent(Entity *entity)
 internal PhysicsBodyComponent *GetPhysicsBodyComponentFromEntityID(i32 id)
 {
     Entity *entity = GetEntityWithID(id);
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_physics_body], "Entity doesn't have a PhysicsBodyComponent");
+    Assert(entity->component_ids[COMPONENT_physics_body]);
     PhysicsBodyComponent *comp = &core->run_data->entity_components.physics_body_components[entity->component_ids[COMPONENT_physics_body] - 1];
-    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_physics_body], "IDs are mismatched.");
+    Assert(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_physics_body]);
     return comp;
 }
 
 internal MovementComponent *AddMovementComponent(Entity *entity)
 {
-    R_DEV_ASSERT(core->run_data->entity_components.free_movement_component_id > 0, "Max MovementComponent reached.");
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_movement] == 0, "Entity already has a MovementComponent");
+    Assert(core->run_data->entity_components.free_movement_component_id > 0);
+    Assert(entity->component_ids[COMPONENT_movement] == 0);
     i32 new_comp_id = core->run_data->entity_components.free_movement_component_id;
 
     MovementComponent *comp = &core->run_data->entity_components.movement_components[new_comp_id - 1];
@@ -622,7 +622,7 @@ internal MovementComponent *AddMovementComponent(Entity *entity)
                     break;
                 }
             }
-            R_DEV_ASSERT(found, "Couldn't find a free index?");
+            Assert(found);
         }
     }
     else
@@ -635,7 +635,7 @@ internal MovementComponent *AddMovementComponent(Entity *entity)
 
 internal void RemoveMovementComponent(Entity *entity)
 {
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_movement] != 0, "Entity does not have a MovementComponent");
+    Assert(entity->component_ids[COMPONENT_movement] != 0);
     MovementComponent *comp = &core->run_data->entity_components.movement_components[entity->component_ids[COMPONENT_movement] - 1];
 
     if (comp->component_id < core->run_data->entity_components.free_movement_component_id)
@@ -649,16 +649,16 @@ internal void RemoveMovementComponent(Entity *entity)
 internal MovementComponent *GetMovementComponentFromEntityID(i32 id)
 {
     Entity *entity = GetEntityWithID(id);
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_movement], "Entity doesn't have a MovementComponent");
+    Assert(entity->component_ids[COMPONENT_movement]);
     MovementComponent *comp = &core->run_data->entity_components.movement_components[entity->component_ids[COMPONENT_movement] - 1];
-    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_movement], "IDs are mismatched.");
+    Assert(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_movement]);
     return comp;
 }
 
 internal ArcEntityComponent *AddArcEntityComponent(Entity *entity)
 {
-    R_DEV_ASSERT(core->run_data->entity_components.free_arc_entity_component_id > 0, "Max ArcEntityComponent reached.");
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_arc_entity] == 0, "Entity already has a ArcEntityComponent");
+    Assert(core->run_data->entity_components.free_arc_entity_component_id > 0);
+    Assert(entity->component_ids[COMPONENT_arc_entity] == 0);
     i32 new_comp_id = core->run_data->entity_components.free_arc_entity_component_id;
 
     ArcEntityComponent *comp = &core->run_data->entity_components.arc_entity_components[new_comp_id - 1];
@@ -687,7 +687,7 @@ internal ArcEntityComponent *AddArcEntityComponent(Entity *entity)
                     break;
                 }
             }
-            R_DEV_ASSERT(found, "Couldn't find a free index?");
+            Assert(found);
         }
     }
     else
@@ -700,7 +700,7 @@ internal ArcEntityComponent *AddArcEntityComponent(Entity *entity)
 
 internal void RemoveArcEntityComponent(Entity *entity)
 {
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_arc_entity] != 0, "Entity does not have a ArcEntityComponent");
+    Assert(entity->component_ids[COMPONENT_arc_entity] != 0);
     ArcEntityComponent *comp = &core->run_data->entity_components.arc_entity_components[entity->component_ids[COMPONENT_arc_entity] - 1];
 
     if (comp->component_id < core->run_data->entity_components.free_arc_entity_component_id)
@@ -714,16 +714,16 @@ internal void RemoveArcEntityComponent(Entity *entity)
 internal ArcEntityComponent *GetArcEntityComponentFromEntityID(i32 id)
 {
     Entity *entity = GetEntityWithID(id);
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_arc_entity], "Entity doesn't have a ArcEntityComponent");
+    Assert(entity->component_ids[COMPONENT_arc_entity]);
     ArcEntityComponent *comp = &core->run_data->entity_components.arc_entity_components[entity->component_ids[COMPONENT_arc_entity] - 1];
-    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_arc_entity], "IDs are mismatched.");
+    Assert(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_arc_entity]);
     return comp;
 }
 
 internal ItemComponent *AddItemComponent(Entity *entity)
 {
-    R_DEV_ASSERT(core->run_data->entity_components.free_item_component_id > 0, "Max ItemComponent reached.");
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_item] == 0, "Entity already has a ItemComponent");
+    Assert(core->run_data->entity_components.free_item_component_id > 0);
+    Assert(entity->component_ids[COMPONENT_item] == 0);
     i32 new_comp_id = core->run_data->entity_components.free_item_component_id;
 
     ItemComponent *comp = &core->run_data->entity_components.item_components[new_comp_id - 1];
@@ -752,7 +752,7 @@ internal ItemComponent *AddItemComponent(Entity *entity)
                     break;
                 }
             }
-            R_DEV_ASSERT(found, "Couldn't find a free index?");
+            Assert(found);
         }
     }
     else
@@ -765,7 +765,7 @@ internal ItemComponent *AddItemComponent(Entity *entity)
 
 internal void RemoveItemComponent(Entity *entity)
 {
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_item] != 0, "Entity does not have a ItemComponent");
+    Assert(entity->component_ids[COMPONENT_item] != 0);
     ItemComponent *comp = &core->run_data->entity_components.item_components[entity->component_ids[COMPONENT_item] - 1];
 
     if (comp->component_id < core->run_data->entity_components.free_item_component_id)
@@ -779,16 +779,16 @@ internal void RemoveItemComponent(Entity *entity)
 internal ItemComponent *GetItemComponentFromEntityID(i32 id)
 {
     Entity *entity = GetEntityWithID(id);
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_item], "Entity doesn't have a ItemComponent");
+    Assert(entity->component_ids[COMPONENT_item]);
     ItemComponent *comp = &core->run_data->entity_components.item_components[entity->component_ids[COMPONENT_item] - 1];
-    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_item], "IDs are mismatched.");
+    Assert(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_item]);
     return comp;
 }
 
 internal TriggerComponent *AddTriggerComponent(Entity *entity)
 {
-    R_DEV_ASSERT(core->run_data->entity_components.free_trigger_component_id > 0, "Max TriggerComponent reached.");
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_trigger] == 0, "Entity already has a TriggerComponent");
+    Assert(core->run_data->entity_components.free_trigger_component_id > 0);
+    Assert(entity->component_ids[COMPONENT_trigger] == 0);
     i32 new_comp_id = core->run_data->entity_components.free_trigger_component_id;
 
     TriggerComponent *comp = &core->run_data->entity_components.trigger_components[new_comp_id - 1];
@@ -817,7 +817,7 @@ internal TriggerComponent *AddTriggerComponent(Entity *entity)
                     break;
                 }
             }
-            R_DEV_ASSERT(found, "Couldn't find a free index?");
+            Assert(found);
         }
     }
     else
@@ -830,7 +830,7 @@ internal TriggerComponent *AddTriggerComponent(Entity *entity)
 
 internal void RemoveTriggerComponent(Entity *entity)
 {
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_trigger] != 0, "Entity does not have a TriggerComponent");
+    Assert(entity->component_ids[COMPONENT_trigger] != 0);
     TriggerComponent *comp = &core->run_data->entity_components.trigger_components[entity->component_ids[COMPONENT_trigger] - 1];
 
     if (comp->component_id < core->run_data->entity_components.free_trigger_component_id)
@@ -844,16 +844,16 @@ internal void RemoveTriggerComponent(Entity *entity)
 internal TriggerComponent *GetTriggerComponentFromEntityID(i32 id)
 {
     Entity *entity = GetEntityWithID(id);
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_trigger], "Entity doesn't have a TriggerComponent");
+    Assert(entity->component_ids[COMPONENT_trigger]);
     TriggerComponent *comp = &core->run_data->entity_components.trigger_components[entity->component_ids[COMPONENT_trigger] - 1];
-    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_trigger], "IDs are mismatched.");
+    Assert(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_trigger]);
     return comp;
 }
 
 internal StorageComponent *AddStorageComponent(Entity *entity)
 {
-    R_DEV_ASSERT(core->run_data->entity_components.free_storage_component_id > 0, "Max StorageComponent reached.");
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_storage] == 0, "Entity already has a StorageComponent");
+    Assert(core->run_data->entity_components.free_storage_component_id > 0);
+    Assert(entity->component_ids[COMPONENT_storage] == 0);
     i32 new_comp_id = core->run_data->entity_components.free_storage_component_id;
 
     StorageComponent *comp = &core->run_data->entity_components.storage_components[new_comp_id - 1];
@@ -882,7 +882,7 @@ internal StorageComponent *AddStorageComponent(Entity *entity)
                     break;
                 }
             }
-            R_DEV_ASSERT(found, "Couldn't find a free index?");
+            Assert(found);
         }
     }
     else
@@ -895,7 +895,7 @@ internal StorageComponent *AddStorageComponent(Entity *entity)
 
 internal void RemoveStorageComponent(Entity *entity)
 {
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_storage] != 0, "Entity does not have a StorageComponent");
+    Assert(entity->component_ids[COMPONENT_storage] != 0);
     StorageComponent *comp = &core->run_data->entity_components.storage_components[entity->component_ids[COMPONENT_storage] - 1];
 
     if (comp->component_id < core->run_data->entity_components.free_storage_component_id)
@@ -909,16 +909,16 @@ internal void RemoveStorageComponent(Entity *entity)
 internal StorageComponent *GetStorageComponentFromEntityID(i32 id)
 {
     Entity *entity = GetEntityWithID(id);
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_storage], "Entity doesn't have a StorageComponent");
+    Assert(entity->component_ids[COMPONENT_storage]);
     StorageComponent *comp = &core->run_data->entity_components.storage_components[entity->component_ids[COMPONENT_storage] - 1];
-    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_storage], "IDs are mismatched.");
+    Assert(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_storage]);
     return comp;
 }
 
 internal ParallaxComponent *AddParallaxComponent(Entity *entity)
 {
-    R_DEV_ASSERT(core->run_data->entity_components.free_parallax_component_id > 0, "Max ParallaxComponent reached.");
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_parallax] == 0, "Entity already has a ParallaxComponent");
+    Assert(core->run_data->entity_components.free_parallax_component_id > 0);
+    Assert(entity->component_ids[COMPONENT_parallax] == 0);
     i32 new_comp_id = core->run_data->entity_components.free_parallax_component_id;
 
     ParallaxComponent *comp = &core->run_data->entity_components.parallax_components[new_comp_id - 1];
@@ -947,7 +947,7 @@ internal ParallaxComponent *AddParallaxComponent(Entity *entity)
                     break;
                 }
             }
-            R_DEV_ASSERT(found, "Couldn't find a free index?");
+            Assert(found);
         }
     }
     else
@@ -960,7 +960,7 @@ internal ParallaxComponent *AddParallaxComponent(Entity *entity)
 
 internal void RemoveParallaxComponent(Entity *entity)
 {
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_parallax] != 0, "Entity does not have a ParallaxComponent");
+    Assert(entity->component_ids[COMPONENT_parallax] != 0);
     ParallaxComponent *comp = &core->run_data->entity_components.parallax_components[entity->component_ids[COMPONENT_parallax] - 1];
 
     if (comp->component_id < core->run_data->entity_components.free_parallax_component_id)
@@ -974,16 +974,16 @@ internal void RemoveParallaxComponent(Entity *entity)
 internal ParallaxComponent *GetParallaxComponentFromEntityID(i32 id)
 {
     Entity *entity = GetEntityWithID(id);
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_parallax], "Entity doesn't have a ParallaxComponent");
+    Assert(entity->component_ids[COMPONENT_parallax]);
     ParallaxComponent *comp = &core->run_data->entity_components.parallax_components[entity->component_ids[COMPONENT_parallax] - 1];
-    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_parallax], "IDs are mismatched.");
+    Assert(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_parallax]);
     return comp;
 }
 
 internal ParticleEmitterComponent *AddParticleEmitterComponent(Entity *entity)
 {
-    R_DEV_ASSERT(core->run_data->entity_components.free_particle_emitter_component_id > 0, "Max ParticleEmitterComponent reached.");
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_particle_emitter] == 0, "Entity already has a ParticleEmitterComponent");
+    Assert(core->run_data->entity_components.free_particle_emitter_component_id > 0);
+    Assert(entity->component_ids[COMPONENT_particle_emitter] == 0);
     i32 new_comp_id = core->run_data->entity_components.free_particle_emitter_component_id;
 
     ParticleEmitterComponent *comp = &core->run_data->entity_components.particle_emitter_components[new_comp_id - 1];
@@ -1012,7 +1012,7 @@ internal ParticleEmitterComponent *AddParticleEmitterComponent(Entity *entity)
                     break;
                 }
             }
-            R_DEV_ASSERT(found, "Couldn't find a free index?");
+            Assert(found);
         }
     }
     else
@@ -1025,7 +1025,7 @@ internal ParticleEmitterComponent *AddParticleEmitterComponent(Entity *entity)
 
 internal void RemoveParticleEmitterComponent(Entity *entity)
 {
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_particle_emitter] != 0, "Entity does not have a ParticleEmitterComponent");
+    Assert(entity->component_ids[COMPONENT_particle_emitter] != 0);
     ParticleEmitterComponent *comp = &core->run_data->entity_components.particle_emitter_components[entity->component_ids[COMPONENT_particle_emitter] - 1];
 
     if (comp->component_id < core->run_data->entity_components.free_particle_emitter_component_id)
@@ -1039,9 +1039,9 @@ internal void RemoveParticleEmitterComponent(Entity *entity)
 internal ParticleEmitterComponent *GetParticleEmitterComponentFromEntityID(i32 id)
 {
     Entity *entity = GetEntityWithID(id);
-    R_DEV_ASSERT(entity->component_ids[COMPONENT_particle_emitter], "Entity doesn't have a ParticleEmitterComponent");
+    Assert(entity->component_ids[COMPONENT_particle_emitter]);
     ParticleEmitterComponent *comp = &core->run_data->entity_components.particle_emitter_components[entity->component_ids[COMPONENT_particle_emitter] - 1];
-    R_DEV_ASSERT(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_particle_emitter], "IDs are mismatched.");
+    Assert(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_particle_emitter]);
     return comp;
 }
 
@@ -1054,7 +1054,7 @@ internal void RemoveComponent(Entity *entity, ComponentType type)
         if (entity->component_ids[COMPONENT_position])
             RemovePositionComponent(entity);
         else
-            R_BREAK("Entity doesn't have a PositionComponent to remove.");
+            Assert(0);
         break;
     }
     case COMPONENT_sprite:
@@ -1062,7 +1062,7 @@ internal void RemoveComponent(Entity *entity, ComponentType type)
         if (entity->component_ids[COMPONENT_sprite])
             RemoveSpriteComponent(entity);
         else
-            R_BREAK("Entity doesn't have a SpriteComponent to remove.");
+            Assert(0);
         break;
     }
     case COMPONENT_animation:
@@ -1070,7 +1070,7 @@ internal void RemoveComponent(Entity *entity, ComponentType type)
         if (entity->component_ids[COMPONENT_animation])
             RemoveAnimationComponent(entity);
         else
-            R_BREAK("Entity doesn't have a AnimationComponent to remove.");
+            Assert(0);
         break;
     }
     case COMPONENT_physics_body:
@@ -1078,7 +1078,7 @@ internal void RemoveComponent(Entity *entity, ComponentType type)
         if (entity->component_ids[COMPONENT_physics_body])
             RemovePhysicsBodyComponent(entity);
         else
-            R_BREAK("Entity doesn't have a PhysicsBodyComponent to remove.");
+            Assert(0);
         break;
     }
     case COMPONENT_movement:
@@ -1086,7 +1086,7 @@ internal void RemoveComponent(Entity *entity, ComponentType type)
         if (entity->component_ids[COMPONENT_movement])
             RemoveMovementComponent(entity);
         else
-            R_BREAK("Entity doesn't have a MovementComponent to remove.");
+            Assert(0);
         break;
     }
     case COMPONENT_arc_entity:
@@ -1094,7 +1094,7 @@ internal void RemoveComponent(Entity *entity, ComponentType type)
         if (entity->component_ids[COMPONENT_arc_entity])
             RemoveArcEntityComponent(entity);
         else
-            R_BREAK("Entity doesn't have a ArcEntityComponent to remove.");
+            Assert(0);
         break;
     }
     case COMPONENT_item:
@@ -1102,7 +1102,7 @@ internal void RemoveComponent(Entity *entity, ComponentType type)
         if (entity->component_ids[COMPONENT_item])
             RemoveItemComponent(entity);
         else
-            R_BREAK("Entity doesn't have a ItemComponent to remove.");
+            Assert(0);
         break;
     }
     case COMPONENT_trigger:
@@ -1110,7 +1110,7 @@ internal void RemoveComponent(Entity *entity, ComponentType type)
         if (entity->component_ids[COMPONENT_trigger])
             RemoveTriggerComponent(entity);
         else
-            R_BREAK("Entity doesn't have a TriggerComponent to remove.");
+            Assert(0);
         break;
     }
     case COMPONENT_storage:
@@ -1118,7 +1118,7 @@ internal void RemoveComponent(Entity *entity, ComponentType type)
         if (entity->component_ids[COMPONENT_storage])
             RemoveStorageComponent(entity);
         else
-            R_BREAK("Entity doesn't have a StorageComponent to remove.");
+            Assert(0);
         break;
     }
     case COMPONENT_parallax:
@@ -1126,7 +1126,7 @@ internal void RemoveComponent(Entity *entity, ComponentType type)
         if (entity->component_ids[COMPONENT_parallax])
             RemoveParallaxComponent(entity);
         else
-            R_BREAK("Entity doesn't have a ParallaxComponent to remove.");
+            Assert(0);
         break;
     }
     case COMPONENT_particle_emitter:
@@ -1134,11 +1134,11 @@ internal void RemoveComponent(Entity *entity, ComponentType type)
         if (entity->component_ids[COMPONENT_particle_emitter])
             RemoveParticleEmitterComponent(entity);
         else
-            R_BREAK("Entity doesn't have a ParticleEmitterComponent to remove.");
+            Assert(0);
         break;
     }
     default:
-        R_BREAK("Invalid component type.");
+        Assert(0);
         break;
     }
 }
@@ -1363,7 +1363,7 @@ ReadComponentFromFile(FILE *file, Entity *entity, ComponentType type)
         } break;
     }
 }
-SerialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, ComponentType type)
+SerialiseEntityComponentsFromIDList(FILE *file, Entity *entity_list, ComponentSet *component_set, i32 *ids, i32 id_count, ComponentType type)
 {
     switch (type)
     {
@@ -1378,10 +1378,10 @@ SerialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Componen
 
             for (i32 i = 0; i < id_count; i++)
             {
-                if (core->run_data->entities[ids[i] - 1].component_ids[type])
+                if (entity_list[ids[i] - 1].component_ids[type])
                 {
                     comps[comp_count].entity_offset = i;
-                    comps[comp_count].comp_data = &core->run_data->entity_components.position_components[core->run_data->entities[ids[i] - 1].component_ids[type] - 1];
+                    comps[comp_count].comp_data = &component_set->position_components[entity_list[ids[i] - 1].component_ids[type] - 1];
                     comp_count++;
                 }
             }
@@ -1404,10 +1404,10 @@ SerialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Componen
 
             for (i32 i = 0; i < id_count; i++)
             {
-                if (core->run_data->entities[ids[i] - 1].component_ids[type])
+                if (entity_list[ids[i] - 1].component_ids[type])
                 {
                     comps[comp_count].entity_offset = i;
-                    comps[comp_count].comp_data = &core->run_data->entity_components.sprite_components[core->run_data->entities[ids[i] - 1].component_ids[type] - 1];
+                    comps[comp_count].comp_data = &component_set->sprite_components[entity_list[ids[i] - 1].component_ids[type] - 1];
                     comp_count++;
                 }
             }
@@ -1430,10 +1430,10 @@ SerialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Componen
 
             for (i32 i = 0; i < id_count; i++)
             {
-                if (core->run_data->entities[ids[i] - 1].component_ids[type])
+                if (entity_list[ids[i] - 1].component_ids[type])
                 {
                     comps[comp_count].entity_offset = i;
-                    comps[comp_count].comp_data = &core->run_data->entity_components.animation_components[core->run_data->entities[ids[i] - 1].component_ids[type] - 1];
+                    comps[comp_count].comp_data = &component_set->animation_components[entity_list[ids[i] - 1].component_ids[type] - 1];
                     comp_count++;
                 }
             }
@@ -1456,10 +1456,10 @@ SerialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Componen
 
             for (i32 i = 0; i < id_count; i++)
             {
-                if (core->run_data->entities[ids[i] - 1].component_ids[type])
+                if (entity_list[ids[i] - 1].component_ids[type])
                 {
                     comps[comp_count].entity_offset = i;
-                    comps[comp_count].comp_data = &core->run_data->entity_components.physics_body_components[core->run_data->entities[ids[i] - 1].component_ids[type] - 1];
+                    comps[comp_count].comp_data = &component_set->physics_body_components[entity_list[ids[i] - 1].component_ids[type] - 1];
                     comp_count++;
                 }
             }
@@ -1482,10 +1482,10 @@ SerialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Componen
 
             for (i32 i = 0; i < id_count; i++)
             {
-                if (core->run_data->entities[ids[i] - 1].component_ids[type])
+                if (entity_list[ids[i] - 1].component_ids[type])
                 {
                     comps[comp_count].entity_offset = i;
-                    comps[comp_count].comp_data = &core->run_data->entity_components.movement_components[core->run_data->entities[ids[i] - 1].component_ids[type] - 1];
+                    comps[comp_count].comp_data = &component_set->movement_components[entity_list[ids[i] - 1].component_ids[type] - 1];
                     comp_count++;
                 }
             }
@@ -1508,10 +1508,10 @@ SerialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Componen
 
             for (i32 i = 0; i < id_count; i++)
             {
-                if (core->run_data->entities[ids[i] - 1].component_ids[type])
+                if (entity_list[ids[i] - 1].component_ids[type])
                 {
                     comps[comp_count].entity_offset = i;
-                    comps[comp_count].comp_data = &core->run_data->entity_components.arc_entity_components[core->run_data->entities[ids[i] - 1].component_ids[type] - 1];
+                    comps[comp_count].comp_data = &component_set->arc_entity_components[entity_list[ids[i] - 1].component_ids[type] - 1];
                     comp_count++;
                 }
             }
@@ -1534,10 +1534,10 @@ SerialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Componen
 
             for (i32 i = 0; i < id_count; i++)
             {
-                if (core->run_data->entities[ids[i] - 1].component_ids[type])
+                if (entity_list[ids[i] - 1].component_ids[type])
                 {
                     comps[comp_count].entity_offset = i;
-                    comps[comp_count].comp_data = &core->run_data->entity_components.item_components[core->run_data->entities[ids[i] - 1].component_ids[type] - 1];
+                    comps[comp_count].comp_data = &component_set->item_components[entity_list[ids[i] - 1].component_ids[type] - 1];
                     comp_count++;
                 }
             }
@@ -1560,10 +1560,10 @@ SerialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Componen
 
             for (i32 i = 0; i < id_count; i++)
             {
-                if (core->run_data->entities[ids[i] - 1].component_ids[type])
+                if (entity_list[ids[i] - 1].component_ids[type])
                 {
                     comps[comp_count].entity_offset = i;
-                    comps[comp_count].comp_data = &core->run_data->entity_components.trigger_components[core->run_data->entities[ids[i] - 1].component_ids[type] - 1];
+                    comps[comp_count].comp_data = &component_set->trigger_components[entity_list[ids[i] - 1].component_ids[type] - 1];
                     comp_count++;
                 }
             }
@@ -1586,10 +1586,10 @@ SerialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Componen
 
             for (i32 i = 0; i < id_count; i++)
             {
-                if (core->run_data->entities[ids[i] - 1].component_ids[type])
+                if (entity_list[ids[i] - 1].component_ids[type])
                 {
                     comps[comp_count].entity_offset = i;
-                    comps[comp_count].comp_data = &core->run_data->entity_components.storage_components[core->run_data->entities[ids[i] - 1].component_ids[type] - 1];
+                    comps[comp_count].comp_data = &component_set->storage_components[entity_list[ids[i] - 1].component_ids[type] - 1];
                     comp_count++;
                 }
             }
@@ -1612,10 +1612,10 @@ SerialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Componen
 
             for (i32 i = 0; i < id_count; i++)
             {
-                if (core->run_data->entities[ids[i] - 1].component_ids[type])
+                if (entity_list[ids[i] - 1].component_ids[type])
                 {
                     comps[comp_count].entity_offset = i;
-                    comps[comp_count].comp_data = &core->run_data->entity_components.parallax_components[core->run_data->entities[ids[i] - 1].component_ids[type] - 1];
+                    comps[comp_count].comp_data = &component_set->parallax_components[entity_list[ids[i] - 1].component_ids[type] - 1];
                     comp_count++;
                 }
             }
@@ -1638,10 +1638,10 @@ SerialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Componen
 
             for (i32 i = 0; i < id_count; i++)
             {
-                if (core->run_data->entities[ids[i] - 1].component_ids[type])
+                if (entity_list[ids[i] - 1].component_ids[type])
                 {
                     comps[comp_count].entity_offset = i;
-                    comps[comp_count].comp_data = &core->run_data->entity_components.particle_emitter_components[core->run_data->entities[ids[i] - 1].component_ids[type] - 1];
+                    comps[comp_count].comp_data = &component_set->particle_emitter_components[entity_list[ids[i] - 1].component_ids[type] - 1];
                     comp_count++;
                 }
             }
@@ -1669,7 +1669,7 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
                 i32 entity_offset;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
-                R_DEV_ASSERT(entity->entity_id, "Entity does not exist.")
+                Assert(entity->entity_id)
                 PositionComponent component;
                 ReadPositionComponentFromFile(file, &component);
                 PositionComponent *new_comp = AddPositionComponent(entity);
@@ -1688,7 +1688,7 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
                 i32 entity_offset;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
-                R_DEV_ASSERT(entity->entity_id, "Entity does not exist.")
+                Assert(entity->entity_id)
                 SpriteComponent component;
                 ReadSpriteComponentFromFile(file, &component);
                 SpriteComponent *new_comp = AddSpriteComponent(entity);
@@ -1707,7 +1707,7 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
                 i32 entity_offset;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
-                R_DEV_ASSERT(entity->entity_id, "Entity does not exist.")
+                Assert(entity->entity_id)
                 AnimationComponent component;
                 ReadAnimationComponentFromFile(file, &component);
                 AnimationComponent *new_comp = AddAnimationComponent(entity);
@@ -1726,7 +1726,7 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
                 i32 entity_offset;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
-                R_DEV_ASSERT(entity->entity_id, "Entity does not exist.")
+                Assert(entity->entity_id)
                 PhysicsBodyComponent component;
                 ReadPhysicsBodyComponentFromFile(file, &component);
                 PhysicsBodyComponent *new_comp = AddPhysicsBodyComponent(entity);
@@ -1745,7 +1745,7 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
                 i32 entity_offset;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
-                R_DEV_ASSERT(entity->entity_id, "Entity does not exist.")
+                Assert(entity->entity_id)
                 MovementComponent component;
                 ReadMovementComponentFromFile(file, &component);
                 MovementComponent *new_comp = AddMovementComponent(entity);
@@ -1764,7 +1764,7 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
                 i32 entity_offset;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
-                R_DEV_ASSERT(entity->entity_id, "Entity does not exist.")
+                Assert(entity->entity_id)
                 ArcEntityComponent component;
                 ReadArcEntityComponentFromFile(file, &component);
                 ArcEntityComponent *new_comp = AddArcEntityComponent(entity);
@@ -1783,7 +1783,7 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
                 i32 entity_offset;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
-                R_DEV_ASSERT(entity->entity_id, "Entity does not exist.")
+                Assert(entity->entity_id)
                 ItemComponent component;
                 ReadItemComponentFromFile(file, &component);
                 ItemComponent *new_comp = AddItemComponent(entity);
@@ -1802,7 +1802,7 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
                 i32 entity_offset;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
-                R_DEV_ASSERT(entity->entity_id, "Entity does not exist.")
+                Assert(entity->entity_id)
                 TriggerComponent component;
                 ReadTriggerComponentFromFile(file, &component);
                 TriggerComponent *new_comp = AddTriggerComponent(entity);
@@ -1821,7 +1821,7 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
                 i32 entity_offset;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
-                R_DEV_ASSERT(entity->entity_id, "Entity does not exist.")
+                Assert(entity->entity_id)
                 StorageComponent component;
                 ReadStorageComponentFromFile(file, &component);
                 StorageComponent *new_comp = AddStorageComponent(entity);
@@ -1840,7 +1840,7 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
                 i32 entity_offset;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
-                R_DEV_ASSERT(entity->entity_id, "Entity does not exist.")
+                Assert(entity->entity_id)
                 ParallaxComponent component;
                 ReadParallaxComponentFromFile(file, &component);
                 ParallaxComponent *new_comp = AddParallaxComponent(entity);
@@ -1859,7 +1859,7 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
                 i32 entity_offset;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
-                R_DEV_ASSERT(entity->entity_id, "Entity does not exist.")
+                Assert(entity->entity_id)
                 ParticleEmitterComponent component;
                 ReadParticleEmitterComponentFromFile(file, &component);
                 ParticleEmitterComponent *new_comp = AddParticleEmitterComponent(entity);
@@ -1887,7 +1887,7 @@ static void FillPositionComponentPointersInFile(FILE *file, PositionComponent *d
         if (*ptr->pointer_address == &data->position)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -1911,7 +1911,7 @@ static void FillPositionComponentPointersFromFile(FILE *file, PositionComponent 
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->position;
@@ -1940,7 +1940,7 @@ static void FillSpriteComponentPointersInFile(FILE *file, SpriteComponent *data)
         if (*ptr->pointer_address == &data->sprite_data)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -1955,7 +1955,7 @@ static void FillSpriteComponentPointersInFile(FILE *file, SpriteComponent *data)
         if (*ptr->pointer_address == &data->is_flipped)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -1970,7 +1970,7 @@ static void FillSpriteComponentPointersInFile(FILE *file, SpriteComponent *data)
         if (*ptr->pointer_address == &data->is_background_sprite)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2000,7 +2000,7 @@ static void FillSpriteComponentPointersFromFile(FILE *file, SpriteComponent *dat
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->sprite_data;
@@ -2013,7 +2013,7 @@ static void FillSpriteComponentPointersFromFile(FILE *file, SpriteComponent *dat
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->is_flipped;
@@ -2026,7 +2026,7 @@ static void FillSpriteComponentPointersFromFile(FILE *file, SpriteComponent *dat
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->is_background_sprite;
@@ -2057,7 +2057,7 @@ static void FillAnimationComponentPointersInFile(FILE *file, AnimationComponent 
         if (*ptr->pointer_address == &data->flags)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2072,7 +2072,7 @@ static void FillAnimationComponentPointersInFile(FILE *file, AnimationComponent 
         if (*ptr->pointer_address == &data->current_frame)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2087,7 +2087,7 @@ static void FillAnimationComponentPointersInFile(FILE *file, AnimationComponent 
         if (*ptr->pointer_address == &data->interval_mult)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2102,7 +2102,7 @@ static void FillAnimationComponentPointersInFile(FILE *file, AnimationComponent 
         if (*ptr->pointer_address == &data->frame_start_time)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2135,7 +2135,7 @@ static void FillAnimationComponentPointersFromFile(FILE *file, AnimationComponen
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->flags;
@@ -2148,7 +2148,7 @@ static void FillAnimationComponentPointersFromFile(FILE *file, AnimationComponen
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->current_frame;
@@ -2161,7 +2161,7 @@ static void FillAnimationComponentPointersFromFile(FILE *file, AnimationComponen
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->interval_mult;
@@ -2174,7 +2174,7 @@ static void FillAnimationComponentPointersFromFile(FILE *file, AnimationComponen
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->frame_start_time;
@@ -2211,7 +2211,7 @@ static void FillPhysicsBodyComponentPointersInFile(FILE *file, PhysicsBodyCompon
         if (*ptr->pointer_address == &data->shape)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2226,7 +2226,7 @@ static void FillPhysicsBodyComponentPointersInFile(FILE *file, PhysicsBodyCompon
         if (*ptr->pointer_address == &data->shape_type)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2241,7 +2241,7 @@ static void FillPhysicsBodyComponentPointersInFile(FILE *file, PhysicsBodyCompon
         if (*ptr->pointer_address == &data->material)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2256,7 +2256,7 @@ static void FillPhysicsBodyComponentPointersInFile(FILE *file, PhysicsBodyCompon
         if (*ptr->pointer_address == &data->mass_data)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2271,7 +2271,7 @@ static void FillPhysicsBodyComponentPointersInFile(FILE *file, PhysicsBodyCompon
         if (*ptr->pointer_address == &data->velocity)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2286,7 +2286,7 @@ static void FillPhysicsBodyComponentPointersInFile(FILE *file, PhysicsBodyCompon
         if (*ptr->pointer_address == &data->force)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2301,7 +2301,7 @@ static void FillPhysicsBodyComponentPointersInFile(FILE *file, PhysicsBodyCompon
         if (*ptr->pointer_address == &data->gravity_multiplier)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2343,7 +2343,7 @@ static void FillPhysicsBodyComponentPointersFromFile(FILE *file, PhysicsBodyComp
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->shape;
@@ -2356,7 +2356,7 @@ static void FillPhysicsBodyComponentPointersFromFile(FILE *file, PhysicsBodyComp
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->shape_type;
@@ -2369,7 +2369,7 @@ static void FillPhysicsBodyComponentPointersFromFile(FILE *file, PhysicsBodyComp
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->material;
@@ -2382,7 +2382,7 @@ static void FillPhysicsBodyComponentPointersFromFile(FILE *file, PhysicsBodyComp
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->mass_data;
@@ -2395,7 +2395,7 @@ static void FillPhysicsBodyComponentPointersFromFile(FILE *file, PhysicsBodyComp
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->velocity;
@@ -2408,7 +2408,7 @@ static void FillPhysicsBodyComponentPointersFromFile(FILE *file, PhysicsBodyComp
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->force;
@@ -2421,7 +2421,7 @@ static void FillPhysicsBodyComponentPointersFromFile(FILE *file, PhysicsBodyComp
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->gravity_multiplier;
@@ -2450,7 +2450,7 @@ static void FillMovementComponentPointersInFile(FILE *file, MovementComponent *d
         if (*ptr->pointer_address == &data->axis_x)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2465,7 +2465,7 @@ static void FillMovementComponentPointersInFile(FILE *file, MovementComponent *d
         if (*ptr->pointer_address == &data->move_speed)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2480,7 +2480,7 @@ static void FillMovementComponentPointersInFile(FILE *file, MovementComponent *d
         if (*ptr->pointer_address == &data->move_speed_mult)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2510,7 +2510,7 @@ static void FillMovementComponentPointersFromFile(FILE *file, MovementComponent 
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->axis_x;
@@ -2523,7 +2523,7 @@ static void FillMovementComponentPointersFromFile(FILE *file, MovementComponent 
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->move_speed;
@@ -2536,7 +2536,7 @@ static void FillMovementComponentPointersFromFile(FILE *file, MovementComponent 
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->move_speed_mult;
@@ -2553,8 +2553,8 @@ static void WriteArcEntityComponentToFile(FILE *file, ArcEntityComponent *data)
     if (data->current_general_state)
     {
         i32 pos = ftell(file);
-        R_DEV_ASSERT(pos != -1, "Uh oh.");
-        R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, "Max pointers reached. Consider a better design?");
+        Assert(pos != -1);
+        Assert(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS);
         SerialisationPointer ptr = {&data->current_general_state, pos};
         serialisation_pointers[serialisation_pointer_count++] = ptr;
         i32 empty = INT_MAX;
@@ -2578,7 +2578,7 @@ static void FillArcEntityComponentPointersInFile(FILE *file, ArcEntityComponent 
         if (*ptr->pointer_address == &data->entity_type)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2596,7 +2596,7 @@ static void FillArcEntityComponentPointersInFile(FILE *file, ArcEntityComponent 
         if (*ptr->pointer_address == &data->current_animation_state)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2617,7 +2617,7 @@ static void ReadArcEntityComponentFromFile(FILE *file, ArcEntityComponent *data)
         ReadFromFile(file, &pointer_offset, sizeof(i32));
         if (pointer_offset)
         {
-            R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, "Max pointers reached. Consider a better design?");
+            Assert(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS);
             SerialisationPointer ptr = {&data->current_general_state, pointer_offset};
             serialisation_pointers[serialisation_pointer_count++] = ptr;
         }
@@ -2636,7 +2636,7 @@ static void FillArcEntityComponentPointersFromFile(FILE *file, ArcEntityComponen
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->entity_type;
@@ -2652,7 +2652,7 @@ static void FillArcEntityComponentPointersFromFile(FILE *file, ArcEntityComponen
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->current_animation_state;
@@ -2679,7 +2679,7 @@ static void FillItemComponentPointersInFile(FILE *file, ItemComponent *data)
         if (*ptr->pointer_address == &data->item_type)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2694,7 +2694,7 @@ static void FillItemComponentPointersInFile(FILE *file, ItemComponent *data)
         if (*ptr->pointer_address == &data->stack_size)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2721,7 +2721,7 @@ static void FillItemComponentPointersFromFile(FILE *file, ItemComponent *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->item_type;
@@ -2734,7 +2734,7 @@ static void FillItemComponentPointersFromFile(FILE *file, ItemComponent *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->stack_size;
@@ -2770,7 +2770,7 @@ static void FillTriggerComponentPointersInFile(FILE *file, TriggerComponent *dat
         if (*ptr->pointer_address == &data->enter_trigger_callback)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2785,7 +2785,7 @@ static void FillTriggerComponentPointersInFile(FILE *file, TriggerComponent *dat
         if (*ptr->pointer_address == &data->exit_trigger_callback)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2802,7 +2802,7 @@ static void FillTriggerComponentPointersInFile(FILE *file, TriggerComponent *dat
             if (*ptr->pointer_address == &(data->previous_overlaps[i]))
             {
                 i32 current_pos = ftell(file);
-                R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+                Assert(current_pos != -1);
                 fseek(file, ptr->offset, SEEK_SET);
                 WriteToFile(file, &current_pos, sizeof(i32));
                 fseek(file, current_pos, SEEK_SET);
@@ -2818,7 +2818,7 @@ static void FillTriggerComponentPointersInFile(FILE *file, TriggerComponent *dat
         if (*ptr->pointer_address == &data->previous_overlaps_count)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2833,7 +2833,7 @@ static void FillTriggerComponentPointersInFile(FILE *file, TriggerComponent *dat
         if (*ptr->pointer_address == &data->trigger_against)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2866,7 +2866,7 @@ static void FillTriggerComponentPointersFromFile(FILE *file, TriggerComponent *d
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->enter_trigger_callback;
@@ -2879,7 +2879,7 @@ static void FillTriggerComponentPointersFromFile(FILE *file, TriggerComponent *d
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->exit_trigger_callback;
@@ -2892,7 +2892,7 @@ static void FillTriggerComponentPointersFromFile(FILE *file, TriggerComponent *d
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->previous_overlaps_count;
@@ -2905,7 +2905,7 @@ static void FillTriggerComponentPointersFromFile(FILE *file, TriggerComponent *d
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->trigger_against;
@@ -2924,8 +2924,8 @@ static void WriteStorageComponentToFile(FILE *file, StorageComponent *data)
         if (data->items[i])
         {
             i32 pos = ftell(file);
-            R_DEV_ASSERT(pos != -1, "Uh oh.");
-            R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, "Max pointers reached. Consider a better design?");
+            Assert(pos != -1);
+            Assert(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS);
             SerialisationPointer ptr = {&(data->items[i]), pos};
             serialisation_pointers[serialisation_pointer_count++] = ptr;
             i32 empty = INT_MAX;
@@ -2950,7 +2950,7 @@ static void FillStorageComponentPointersInFile(FILE *file, StorageComponent *dat
         if (*ptr->pointer_address == &data->storage_size)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -2980,7 +2980,7 @@ static void FillStorageComponentPointersFromFile(FILE *file, StorageComponent *d
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->storage_size;
@@ -3007,7 +3007,7 @@ static void FillParallaxComponentPointersInFile(FILE *file, ParallaxComponent *d
         if (*ptr->pointer_address == &data->parallax_amount)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3022,7 +3022,7 @@ static void FillParallaxComponentPointersInFile(FILE *file, ParallaxComponent *d
         if (*ptr->pointer_address == &data->desired_position)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3049,7 +3049,7 @@ static void FillParallaxComponentPointersFromFile(FILE *file, ParallaxComponent 
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->parallax_amount;
@@ -3062,7 +3062,7 @@ static void FillParallaxComponentPointersFromFile(FILE *file, ParallaxComponent 
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->desired_position;
@@ -3104,7 +3104,7 @@ static void FillParticleEmitterComponentPointersInFile(FILE *file, ParticleEmitt
         if (*ptr->pointer_address == &data->life_time)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3119,7 +3119,7 @@ static void FillParticleEmitterComponentPointersInFile(FILE *file, ParticleEmitt
         if (*ptr->pointer_address == &data->start_time)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3134,7 +3134,7 @@ static void FillParticleEmitterComponentPointersInFile(FILE *file, ParticleEmitt
         if (*ptr->pointer_address == &data->flags)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3151,7 +3151,7 @@ static void FillParticleEmitterComponentPointersInFile(FILE *file, ParticleEmitt
             if (*ptr->pointer_address == &(data->particles[i]))
             {
                 i32 current_pos = ftell(file);
-                R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+                Assert(current_pos != -1);
                 fseek(file, ptr->offset, SEEK_SET);
                 WriteToFile(file, &current_pos, sizeof(i32));
                 fseek(file, current_pos, SEEK_SET);
@@ -3167,7 +3167,7 @@ static void FillParticleEmitterComponentPointersInFile(FILE *file, ParticleEmitt
         if (*ptr->pointer_address == &data->particle_count)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3182,7 +3182,7 @@ static void FillParticleEmitterComponentPointersInFile(FILE *file, ParticleEmitt
         if (*ptr->pointer_address == &data->free_particle_index)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3197,7 +3197,7 @@ static void FillParticleEmitterComponentPointersInFile(FILE *file, ParticleEmitt
         if (*ptr->pointer_address == &data->begin_callback)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3212,7 +3212,7 @@ static void FillParticleEmitterComponentPointersInFile(FILE *file, ParticleEmitt
         if (*ptr->pointer_address == &data->finish_callback)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3254,7 +3254,7 @@ static void FillParticleEmitterComponentPointersFromFile(FILE *file, ParticleEmi
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->life_time;
@@ -3267,7 +3267,7 @@ static void FillParticleEmitterComponentPointersFromFile(FILE *file, ParticleEmi
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->start_time;
@@ -3280,7 +3280,7 @@ static void FillParticleEmitterComponentPointersFromFile(FILE *file, ParticleEmi
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->flags;
@@ -3293,7 +3293,7 @@ static void FillParticleEmitterComponentPointersFromFile(FILE *file, ParticleEmi
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->particle_count;
@@ -3306,7 +3306,7 @@ static void FillParticleEmitterComponentPointersFromFile(FILE *file, ParticleEmi
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->free_particle_index;
@@ -3319,7 +3319,7 @@ static void FillParticleEmitterComponentPointersFromFile(FILE *file, ParticleEmi
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->begin_callback;
@@ -3332,7 +3332,7 @@ static void FillParticleEmitterComponentPointersFromFile(FILE *file, ParticleEmi
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->finish_callback;
@@ -3456,7 +3456,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
             if (*ptr->pointer_address == &(data->position_components[i]))
             {
                 i32 current_pos = ftell(file);
-                R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+                Assert(current_pos != -1);
                 fseek(file, ptr->offset, SEEK_SET);
                 WriteToFile(file, &current_pos, sizeof(i32));
                 fseek(file, current_pos, SEEK_SET);
@@ -3472,7 +3472,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->position_component_count)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3487,7 +3487,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->free_position_component_id)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3504,7 +3504,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
             if (*ptr->pointer_address == &(data->sprite_components[i]))
             {
                 i32 current_pos = ftell(file);
-                R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+                Assert(current_pos != -1);
                 fseek(file, ptr->offset, SEEK_SET);
                 WriteToFile(file, &current_pos, sizeof(i32));
                 fseek(file, current_pos, SEEK_SET);
@@ -3520,7 +3520,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->sprite_component_count)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3535,7 +3535,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->free_sprite_component_id)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3552,7 +3552,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
             if (*ptr->pointer_address == &(data->animation_components[i]))
             {
                 i32 current_pos = ftell(file);
-                R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+                Assert(current_pos != -1);
                 fseek(file, ptr->offset, SEEK_SET);
                 WriteToFile(file, &current_pos, sizeof(i32));
                 fseek(file, current_pos, SEEK_SET);
@@ -3568,7 +3568,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->animation_component_count)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3583,7 +3583,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->free_animation_component_id)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3600,7 +3600,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
             if (*ptr->pointer_address == &(data->physics_body_components[i]))
             {
                 i32 current_pos = ftell(file);
-                R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+                Assert(current_pos != -1);
                 fseek(file, ptr->offset, SEEK_SET);
                 WriteToFile(file, &current_pos, sizeof(i32));
                 fseek(file, current_pos, SEEK_SET);
@@ -3616,7 +3616,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->physics_body_component_count)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3631,7 +3631,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->free_physics_body_component_id)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3648,7 +3648,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
             if (*ptr->pointer_address == &(data->movement_components[i]))
             {
                 i32 current_pos = ftell(file);
-                R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+                Assert(current_pos != -1);
                 fseek(file, ptr->offset, SEEK_SET);
                 WriteToFile(file, &current_pos, sizeof(i32));
                 fseek(file, current_pos, SEEK_SET);
@@ -3664,7 +3664,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->movement_component_count)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3679,7 +3679,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->free_movement_component_id)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3696,7 +3696,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
             if (*ptr->pointer_address == &(data->arc_entity_components[i]))
             {
                 i32 current_pos = ftell(file);
-                R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+                Assert(current_pos != -1);
                 fseek(file, ptr->offset, SEEK_SET);
                 WriteToFile(file, &current_pos, sizeof(i32));
                 fseek(file, current_pos, SEEK_SET);
@@ -3712,7 +3712,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->arc_entity_component_count)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3727,7 +3727,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->free_arc_entity_component_id)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3744,7 +3744,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
             if (*ptr->pointer_address == &(data->item_components[i]))
             {
                 i32 current_pos = ftell(file);
-                R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+                Assert(current_pos != -1);
                 fseek(file, ptr->offset, SEEK_SET);
                 WriteToFile(file, &current_pos, sizeof(i32));
                 fseek(file, current_pos, SEEK_SET);
@@ -3760,7 +3760,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->item_component_count)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3775,7 +3775,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->free_item_component_id)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3792,7 +3792,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
             if (*ptr->pointer_address == &(data->trigger_components[i]))
             {
                 i32 current_pos = ftell(file);
-                R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+                Assert(current_pos != -1);
                 fseek(file, ptr->offset, SEEK_SET);
                 WriteToFile(file, &current_pos, sizeof(i32));
                 fseek(file, current_pos, SEEK_SET);
@@ -3808,7 +3808,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->trigger_component_count)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3823,7 +3823,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->free_trigger_component_id)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3840,7 +3840,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
             if (*ptr->pointer_address == &(data->storage_components[i]))
             {
                 i32 current_pos = ftell(file);
-                R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+                Assert(current_pos != -1);
                 fseek(file, ptr->offset, SEEK_SET);
                 WriteToFile(file, &current_pos, sizeof(i32));
                 fseek(file, current_pos, SEEK_SET);
@@ -3856,7 +3856,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->storage_component_count)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3871,7 +3871,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->free_storage_component_id)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3888,7 +3888,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
             if (*ptr->pointer_address == &(data->parallax_components[i]))
             {
                 i32 current_pos = ftell(file);
-                R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+                Assert(current_pos != -1);
                 fseek(file, ptr->offset, SEEK_SET);
                 WriteToFile(file, &current_pos, sizeof(i32));
                 fseek(file, current_pos, SEEK_SET);
@@ -3904,7 +3904,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->parallax_component_count)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3919,7 +3919,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->free_parallax_component_id)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3936,7 +3936,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
             if (*ptr->pointer_address == &(data->particle_emitter_components[i]))
             {
                 i32 current_pos = ftell(file);
-                R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+                Assert(current_pos != -1);
                 fseek(file, ptr->offset, SEEK_SET);
                 WriteToFile(file, &current_pos, sizeof(i32));
                 fseek(file, current_pos, SEEK_SET);
@@ -3952,7 +3952,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->particle_emitter_component_count)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -3967,7 +3967,7 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
         if (*ptr->pointer_address == &data->free_particle_emitter_component_id)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -4054,7 +4054,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->position_component_count;
@@ -4067,7 +4067,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->free_position_component_id;
@@ -4080,7 +4080,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->sprite_component_count;
@@ -4093,7 +4093,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->free_sprite_component_id;
@@ -4106,7 +4106,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->animation_component_count;
@@ -4119,7 +4119,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->free_animation_component_id;
@@ -4132,7 +4132,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->physics_body_component_count;
@@ -4145,7 +4145,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->free_physics_body_component_id;
@@ -4158,7 +4158,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->movement_component_count;
@@ -4171,7 +4171,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->free_movement_component_id;
@@ -4184,7 +4184,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->arc_entity_component_count;
@@ -4197,7 +4197,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->free_arc_entity_component_id;
@@ -4210,7 +4210,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->item_component_count;
@@ -4223,7 +4223,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->free_item_component_id;
@@ -4236,7 +4236,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->trigger_component_count;
@@ -4249,7 +4249,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->free_trigger_component_id;
@@ -4262,7 +4262,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->storage_component_count;
@@ -4275,7 +4275,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->free_storage_component_id;
@@ -4288,7 +4288,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->parallax_component_count;
@@ -4301,7 +4301,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->free_parallax_component_id;
@@ -4314,7 +4314,7 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->particle_emitter_component_count;
@@ -4327,228 +4327,13 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->free_particle_emitter_component_id;
         }
     }
     fseek(file, sizeof(data->free_particle_emitter_component_id), SEEK_CUR);
-
-}
-
-static void WriteCellToFile(FILE *file, Cell *data)
-{
-    WriteToFile(file, &data->dynamic_id, sizeof(data->dynamic_id));
-
-    WriteToFile(file, &data->x_position, sizeof(data->x_position));
-
-    WriteToFile(file, &data->y_position, sizeof(data->y_position));
-
-    if (data->parent_chunk)
-    {
-        i32 pos = ftell(file);
-        R_DEV_ASSERT(pos != -1, "Uh oh.");
-        R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, "Max pointers reached. Consider a better design?");
-        SerialisationPointer ptr = {&data->parent_chunk, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = INT_MAX;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
-    else
-    {
-        i32 null_ptr = 0;
-        WriteToFile(file, &null_ptr, sizeof(i32));
-    }
-    WriteToFile(file, &data->material_type, sizeof(data->material_type));
-
-    WriteToFile(file, &data->dynamic_properties, sizeof(data->dynamic_properties));
-
-}
-
-static void FillCellPointersInFile(FILE *file, Cell *data)
-{
-    // 'dynamic_id' in Cell
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->dynamic_id)
-        {
-            i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->dynamic_id), SEEK_CUR);
-
-    // 'x_position' in Cell
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->x_position)
-        {
-            i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->x_position), SEEK_CUR);
-
-    // 'y_position' in Cell
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->y_position)
-        {
-            i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->y_position), SEEK_CUR);
-
-    // 'parent_chunk' pointer in Cell
-    fseek(file, sizeof(i32), SEEK_CUR);
-
-    // 'material_type' in Cell
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->material_type)
-        {
-            i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->material_type), SEEK_CUR);
-
-    // 'dynamic_properties' in Cell
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->dynamic_properties)
-        {
-            i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->dynamic_properties), SEEK_CUR);
-
-}
-
-static void ReadCellFromFile(FILE *file, Cell *data)
-{
-    // 'dynamic_id' in Cell
-    ReadFromFile(file, &data->dynamic_id, sizeof(data->dynamic_id));
-
-    // 'x_position' in Cell
-    ReadFromFile(file, &data->x_position, sizeof(data->x_position));
-
-    // 'y_position' in Cell
-    ReadFromFile(file, &data->y_position, sizeof(data->y_position));
-
-    // 'parent_chunk' pointer in Cell
-    {
-        i32 pointer_offset;
-        ReadFromFile(file, &pointer_offset, sizeof(i32));
-        if (pointer_offset)
-        {
-            R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, "Max pointers reached. Consider a better design?");
-            SerialisationPointer ptr = {&data->parent_chunk, pointer_offset};
-            serialisation_pointers[serialisation_pointer_count++] = ptr;
-        }
-        else
-            data->parent_chunk = 0;
-    }
-    // 'material_type' in Cell
-    ReadFromFile(file, &data->material_type, sizeof(data->material_type));
-
-    // 'dynamic_properties' in Cell
-    ReadFromFile(file, &data->dynamic_properties, sizeof(data->dynamic_properties));
-
-}
-
-static void FillCellPointersFromFile(FILE *file, Cell *data)
-{
-    // 'dynamic_id' in Cell
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-        if (ptr->offset == current_pos)
-        {
-            *ptr->pointer_address = &data->dynamic_id;
-        }
-    }
-    fseek(file, sizeof(data->dynamic_id), SEEK_CUR);
-
-    // 'x_position' in Cell
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-        if (ptr->offset == current_pos)
-        {
-            *ptr->pointer_address = &data->x_position;
-        }
-    }
-    fseek(file, sizeof(data->x_position), SEEK_CUR);
-
-    // 'y_position' in Cell
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-        if (ptr->offset == current_pos)
-        {
-            *ptr->pointer_address = &data->y_position;
-        }
-    }
-    fseek(file, sizeof(data->y_position), SEEK_CUR);
-
-    // 'parent_chunk' pointer in Cell
-    fseek(file, sizeof(i32), SEEK_CUR);
-
-    // 'material_type' in Cell
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-        if (ptr->offset == current_pos)
-        {
-            *ptr->pointer_address = &data->material_type;
-        }
-    }
-    fseek(file, sizeof(data->material_type), SEEK_CUR);
-
-    // 'dynamic_properties' in Cell
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-        if (ptr->offset == current_pos)
-        {
-            *ptr->pointer_address = &data->dynamic_properties;
-        }
-    }
-    fseek(file, sizeof(data->dynamic_properties), SEEK_CUR);
 
 }
 
@@ -4581,7 +4366,7 @@ static void FillEntityPointersInFile(FILE *file, Entity *data)
         if (*ptr->pointer_address == &data->entity_id)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -4598,7 +4383,7 @@ static void FillEntityPointersInFile(FILE *file, Entity *data)
             if (*ptr->pointer_address == &(data->component_ids[i]))
             {
                 i32 current_pos = ftell(file);
-                R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+                Assert(current_pos != -1);
                 fseek(file, ptr->offset, SEEK_SET);
                 WriteToFile(file, &current_pos, sizeof(i32));
                 fseek(file, current_pos, SEEK_SET);
@@ -4616,7 +4401,7 @@ static void FillEntityPointersInFile(FILE *file, Entity *data)
             if (*ptr->pointer_address == &(data->name[i]))
             {
                 i32 current_pos = ftell(file);
-                R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+                Assert(current_pos != -1);
                 fseek(file, ptr->offset, SEEK_SET);
                 WriteToFile(file, &current_pos, sizeof(i32));
                 fseek(file, current_pos, SEEK_SET);
@@ -4632,7 +4417,7 @@ static void FillEntityPointersInFile(FILE *file, Entity *data)
         if (*ptr->pointer_address == &data->flags)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -4647,7 +4432,7 @@ static void FillEntityPointersInFile(FILE *file, Entity *data)
         if (*ptr->pointer_address == &data->generalised_type)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -4677,7 +4462,7 @@ static void FillEntityPointersFromFile(FILE *file, Entity *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->entity_id;
@@ -4690,7 +4475,7 @@ static void FillEntityPointersFromFile(FILE *file, Entity *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->flags;
@@ -4703,259 +4488,13 @@ static void FillEntityPointersFromFile(FILE *file, Entity *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->generalised_type;
         }
     }
     fseek(file, sizeof(data->generalised_type), SEEK_CUR);
-
-}
-
-static void WriteChunkToFile(FILE *file, Chunk *data)
-{
-    WriteToFile(file, &data->is_valid, sizeof(data->is_valid));
-
-    WriteToFile(file, &data->remain_loaded, sizeof(data->remain_loaded));
-
-    if (data->entity_ids)
-    {
-        i32 pos = ftell(file);
-        R_DEV_ASSERT(pos != -1, "Uh oh.");
-        R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, "Max pointers reached. Consider a better design?");
-        SerialisationPointer ptr = {&data->entity_ids, pos};
-        serialisation_pointers[serialisation_pointer_count++] = ptr;
-        i32 empty = INT_MAX;
-        WriteToFile(file, &empty, sizeof(i32));
-    }
-    else
-    {
-        i32 null_ptr = 0;
-        WriteToFile(file, &null_ptr, sizeof(i32));
-    }
-    WriteToFile(file, &data->entity_count, sizeof(data->entity_count));
-
-    WriteToFile(file, &data->x_index, sizeof(data->x_index));
-
-    WriteToFile(file, &data->y_index, sizeof(data->y_index));
-
-    for (i32 i = 0; i < CHUNK_SIZE; i++)
-    {
-        for (i32 j = 0; j < CHUNK_SIZE; j++)
-        {
-            WriteCellToFile(file, &(data->cells[i][j]));
-        }
-    }
-
-}
-
-static void FillChunkPointersInFile(FILE *file, Chunk *data)
-{
-    // 'is_valid' in Chunk
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->is_valid)
-        {
-            i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->is_valid), SEEK_CUR);
-
-    // 'remain_loaded' in Chunk
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->remain_loaded)
-        {
-            i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->remain_loaded), SEEK_CUR);
-
-    // 'entity_ids' pointer in Chunk
-    fseek(file, sizeof(i32), SEEK_CUR);
-
-    // 'entity_count' in Chunk
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->entity_count)
-        {
-            i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->entity_count), SEEK_CUR);
-
-    // 'x_index' in Chunk
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->x_index)
-        {
-            i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->x_index), SEEK_CUR);
-
-    // 'y_index' in Chunk
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->y_index)
-        {
-            i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->y_index), SEEK_CUR);
-
-// - 2D Arary CHUNK_SIZE CHUNK_SIZE
-    for (i32 i = 0; i < CHUNK_SIZE; i++)
-    {
-        for (i32 j = 0; j < CHUNK_SIZE; j++)
-        {
-            // 'cells' array in Chunk
-            for (i32 k = 0; k < serialisation_pointer_count; k++)
-            {
-                SerialisationPointer *ptr = &serialisation_pointers[k];
-                if (*ptr->pointer_address == &(data->cells[i][j]))
-                {
-                    i32 current_pos = ftell(file);
-                    R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-                    fseek(file, ptr->offset, SEEK_SET);
-                    WriteToFile(file, &current_pos, sizeof(i32));
-                    fseek(file, current_pos, SEEK_SET);
-                }
-            }
-            FillCellPointersInFile(file, &(data->cells[i][j]));
-        }
-    }
-
-}
-
-static void ReadChunkFromFile(FILE *file, Chunk *data)
-{
-    // 'is_valid' in Chunk
-    ReadFromFile(file, &data->is_valid, sizeof(data->is_valid));
-
-    // 'remain_loaded' in Chunk
-    ReadFromFile(file, &data->remain_loaded, sizeof(data->remain_loaded));
-
-    // 'entity_ids' pointer in Chunk
-    {
-        i32 pointer_offset;
-        ReadFromFile(file, &pointer_offset, sizeof(i32));
-        if (pointer_offset)
-        {
-            R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, "Max pointers reached. Consider a better design?");
-            SerialisationPointer ptr = {&data->entity_ids, pointer_offset};
-            serialisation_pointers[serialisation_pointer_count++] = ptr;
-        }
-        else
-            data->entity_ids = 0;
-    }
-    // 'entity_count' in Chunk
-    ReadFromFile(file, &data->entity_count, sizeof(data->entity_count));
-
-    // 'x_index' in Chunk
-    ReadFromFile(file, &data->x_index, sizeof(data->x_index));
-
-    // 'y_index' in Chunk
-    ReadFromFile(file, &data->y_index, sizeof(data->y_index));
-
-// - 2D Arary CHUNK_SIZE CHUNK_SIZE
-}
-
-static void FillChunkPointersFromFile(FILE *file, Chunk *data)
-{
-    // 'is_valid' in Chunk
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-        if (ptr->offset == current_pos)
-        {
-            *ptr->pointer_address = &data->is_valid;
-        }
-    }
-    fseek(file, sizeof(data->is_valid), SEEK_CUR);
-
-    // 'remain_loaded' in Chunk
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-        if (ptr->offset == current_pos)
-        {
-            *ptr->pointer_address = &data->remain_loaded;
-        }
-    }
-    fseek(file, sizeof(data->remain_loaded), SEEK_CUR);
-
-    // 'entity_ids' pointer in Chunk
-    fseek(file, sizeof(i32), SEEK_CUR);
-
-    // 'entity_count' in Chunk
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-        if (ptr->offset == current_pos)
-        {
-            *ptr->pointer_address = &data->entity_count;
-        }
-    }
-    fseek(file, sizeof(data->entity_count), SEEK_CUR);
-
-    // 'x_index' in Chunk
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-        if (ptr->offset == current_pos)
-        {
-            *ptr->pointer_address = &data->x_index;
-        }
-    }
-    fseek(file, sizeof(data->x_index), SEEK_CUR);
-
-    // 'y_index' in Chunk
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
-        if (ptr->offset == current_pos)
-        {
-            *ptr->pointer_address = &data->y_index;
-        }
-    }
-    fseek(file, sizeof(data->y_index), SEEK_CUR);
 
 }
 
@@ -4966,8 +4505,8 @@ static void WriteWorldSaveDataToFile(FILE *file, WorldSaveData *data)
     if (data->test_ptr)
     {
         i32 pos = ftell(file);
-        R_DEV_ASSERT(pos != -1, "Uh oh.");
-        R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, "Max pointers reached. Consider a better design?");
+        Assert(pos != -1);
+        Assert(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS);
         SerialisationPointer ptr = {&data->test_ptr, pos};
         serialisation_pointers[serialisation_pointer_count++] = ptr;
         i32 empty = INT_MAX;
@@ -4989,7 +4528,7 @@ static void FillWorldSaveDataPointersInFile(FILE *file, WorldSaveData *data)
         if (*ptr->pointer_address == &data->elapsed_world_time)
         {
             i32 current_pos = ftell(file);
-            R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+            Assert(current_pos != -1);
             fseek(file, ptr->offset, SEEK_SET);
             WriteToFile(file, &current_pos, sizeof(i32));
             fseek(file, current_pos, SEEK_SET);
@@ -5013,7 +4552,7 @@ static void ReadWorldSaveDataFromFile(FILE *file, WorldSaveData *data)
         ReadFromFile(file, &pointer_offset, sizeof(i32));
         if (pointer_offset)
         {
-            R_DEV_ASSERT(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS, "Max pointers reached. Consider a better design?");
+            Assert(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS);
             SerialisationPointer ptr = {&data->test_ptr, pointer_offset};
             serialisation_pointers[serialisation_pointer_count++] = ptr;
         }
@@ -5029,7 +4568,7 @@ static void FillWorldSaveDataPointersFromFile(FILE *file, WorldSaveData *data)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
         i32 current_pos = ftell(file);
-        R_DEV_ASSERT(current_pos != -1, "Uh oh.");
+        Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
             *ptr->pointer_address = &data->elapsed_world_time;

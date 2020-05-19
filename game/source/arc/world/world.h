@@ -33,10 +33,11 @@ internal void GetSurroundingChunks(Chunk **chunks, v2 position);
 
 // NOTE(randy): Creates a brand new chunk at the specified indices.
 internal Chunk *GenerateNewChunk(i32 x_index, i32 y_index);
-// NOTE(randy): Saves the specified chunk's data to disk
-internal void SaveChunkToDisk(char *path, Chunk *chunk);
+// NOTE(randy): Deletes the specified chunk and all of its entities
+internal void DeleteChunk(Chunk *chunk);
 // NOTE(randy): Loads a chunk in from disk at the specified index.
 // Returns 0 if the chunk file cannot be found.
 internal Chunk *LoadChunkFromDisk(char *path, i32 x_index, i32 y_index);
 // NOTE(randy): Unloads the specified chunk to disk.
 internal void UnloadChunk(Chunk *chunk);
+internal void UnloadStaleChunks();
