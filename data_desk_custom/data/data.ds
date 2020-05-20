@@ -602,6 +602,7 @@ RunData :: struct // Game data used for run-time operations
 	active_chunks : Chunk[MAX_WORLD_CHUNKS];
 	active_chunk_count : i32;
 
+	// TODO(randy): Extract these into their own dynamically allocated buffer
 	save_job_index : i32;
 	entities_snapshot : Entity[MAX_ENTITIES];
 	entity_count_snapshot : i32;
@@ -610,6 +611,18 @@ RunData :: struct // Game data used for run-time operations
 	positional_entity_id_count_snapshot : i32;
 	chunk_saves : ChunkSave[MAX_WORLD_CHUNKS];
 	chunk_save_count : i32;
+
+	load_job_index : i32;
+	not_first_time_temp : b8;
+	loaded_entities : EntitySave[MAX_ENTITIES];
+	loaded_entity_count : i32;
+	loaded_entity_components : ComponentSet;
+	loaded_positional_entity_ids : i32[MAX_POSITIONAL_ENTITIES];
+	loaded_positional_entity_id_count : i32;
+	chunk_load_queue : ChunkSave[MAX_WORLD_CHUNKS];
+	chunk_load_queue_count : i32;
+	chunk_generate_queue : *ChunkSave[MAX_WORLD_CHUNKS];
+	chunk_generate_queue_count : i32;
 
 	entities : Entity[MAX_ENTITIES];
 	entity_count : i32;

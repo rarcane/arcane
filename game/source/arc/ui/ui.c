@@ -769,12 +769,14 @@ internal void DrawEditorUI()
 						}
 					}
 					
-					if (core->run_data->selected_chunk)
-						if (TsUIButton("Unload Chunk"))
-					{
-						UnloadChunk(core->run_data->selected_chunk);
-						core->run_data->selected_chunk = 0;
-					}
+					/*
+										if (core->run_data->selected_chunk)
+											if (TsUIButton("Unload Chunk"))
+										{
+											UnloadChunk(core->run_data->selected_chunk);
+											core->run_data->selected_chunk = 0;
+										}
+					 */
 					
 					if (prev)
 					{

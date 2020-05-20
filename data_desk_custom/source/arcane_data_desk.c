@@ -947,7 +947,6 @@ internal void GenerateSerialisationCode()
 	}
 	
 	{
-		// NOTE(randy): remove count
 		fprintf(h_file, "DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, ComponentType type);\n\n");
 		fprintf(c_file, "DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, ComponentType type)\n");
 		fprintf(c_file, "{\n");
@@ -989,6 +988,78 @@ internal void GenerateSerialisationCode()
 			fprintf(c_file, "        } break;\n");
 		}
 		fprintf(c_file, "    }\n");
+		fprintf(c_file, "}\n\n");
+	}
+	
+	{
+		fprintf(h_file, "DeserialiseComponentsToLoadData(FILE *file, ComponentSet *component_set, EntitySave *entity_list, i32 *ids, i32 id_count, ComponentType type);\n\n");
+		fprintf(c_file, "DeserialiseComponentsToLoadData(FILE *file, ComponentSet *component_set, EntitySave *entity_list, i32 *ids, i32 id_count, ComponentType type)\n");
+		fprintf(c_file, "{\n");
+		fprintf(c_file, "    switch (type)\n");
+		fprintf(c_file, "    {\n");
+		for (i32 i = 0; i < component_nodes_count; i++)
+		{
+			DataDeskNode *comp_node = component_nodes[i];
+			
+			i32 string_length = 0;
+			for (; comp_node->name_lowercase_with_underscores[string_length]; ++string_length)
+			{
+			}
+			char trimmed_lowercase_name[50];
+			strcpy(trimmed_lowercase_name, comp_node->name_lowercase_with_underscores);
+			trimmed_lowercase_name[string_length - 10] = '\0';
+			
+			fprintf(c_file, "        case COMPONENT_%s:\n", trimmed_lowercase_name);
+			fprintf(c_file, "        {\n");
+			fprintf(c_file, "            i32 comp_count = 0;\n");
+			fprintf(c_file, "            ReadFromFile(file, &comp_count, sizeof(comp_count));\n");
+			fprintf(c_file, "            for (i32 i = 0; i < comp_count; i++)\n");
+			fprintf(c_file, "            {\n");
+			fprintf(c_file, "                i32 entity_offset;\n");
+			fprintf(c_file, "                ReadFromFile(file, &entity_offset, sizeof(i32));\n");
+			
+			fprintf(c_file, "                EntitySave *entity = &entity_list[ids[entity_offset] - 1];\n");
+			
+			fprintf(c_file, "                %s component;\n", comp_node->name);
+			fprintf(c_file, "                Read%sFromFile(file, &component);\n", comp_node->name);
+			// NOTE(randy): Pass the entity's id for the copied load list
+			fprintf(c_file, "                component.parent_entity_id = ids[entity_offset];\n");
+			fprintf(c_file, "                component_set->%ss[component_set->%s_count++] = component;\n", comp_node->name_lowercase_with_underscores, comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "            }\n");
+			fprintf(c_file, "        } break;\n");
+		}
+		fprintf(c_file, "    }\n");
+		fprintf(c_file, "}\n\n");
+	}
+	
+	{
+		fprintf(h_file, "DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count);\n\n");
+		fprintf(c_file, "DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)\n");
+		fprintf(c_file, "{\n");
+		for (i32 i = 0; i < component_nodes_count; i++)
+		{
+			DataDeskNode *comp_node = component_nodes[i];
+			
+			i32 string_length = 0;
+			for (; comp_node->name_lowercase_with_underscores[string_length]; ++string_length)
+			{
+			}
+			char trimmed_lowercase_name[50];
+			strcpy(trimmed_lowercase_name, comp_node->name_lowercase_with_underscores);
+			trimmed_lowercase_name[string_length - 10] = '\0';
+			
+			fprintf(c_file, "    for (i32 i = 0; i < core->run_data->loaded_entity_components.%s_count; i++)\n", comp_node->name_lowercase_with_underscores);
+			fprintf(c_file, "    {\n");
+			fprintf(c_file, "        %s *saved_comp = &core->run_data->loaded_entity_components.%ss[i];\n", comp_node->name, comp_node->name_lowercase_with_underscores);
+			// NOTE(randy): The entity ID that is stored in the comp is just a temporary offset in the ID map
+			fprintf(c_file, "        Entity *entity = &core->run_data->entities[entity_id_map[saved_comp->parent_entity_id - 1] - 1];\n");
+			fprintf(c_file, "        %s *new_comp = Add%s(entity);\n", comp_node->name, comp_node->name);
+			fprintf(c_file, "        i32 new_comp_id = new_comp->component_id;\n");
+			fprintf(c_file, "        *new_comp = *saved_comp;\n");
+			fprintf(c_file, "        new_comp->component_id = new_comp_id;\n");
+			fprintf(c_file, "        new_comp->parent_entity_id = entity->entity_id;\n");
+			fprintf(c_file, "    }\n");
+		}
 		fprintf(c_file, "}\n\n");
 	}
 	

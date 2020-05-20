@@ -669,6 +669,17 @@ i32 positional_entity_ids_snapshot[MAX_POSITIONAL_ENTITIES];
 i32 positional_entity_id_count_snapshot;
 ChunkSave chunk_saves[MAX_WORLD_CHUNKS];
 i32 chunk_save_count;
+i32 load_job_index;
+b8 not_first_time_temp;
+EntitySave loaded_entities[MAX_ENTITIES];
+i32 loaded_entity_count;
+ComponentSet loaded_entity_components;
+i32 loaded_positional_entity_ids[MAX_POSITIONAL_ENTITIES];
+i32 loaded_positional_entity_id_count;
+ChunkSave chunk_load_queue[MAX_WORLD_CHUNKS];
+i32 chunk_load_queue_count;
+ChunkSave *chunk_generate_queue[MAX_WORLD_CHUNKS];
+i32 chunk_generate_queue_count;
 Entity entities[MAX_ENTITIES];
 i32 entity_count;
 i32 free_entity_id;
@@ -712,6 +723,10 @@ ReadComponentFromFile(FILE *file, Entity *entity, ComponentType type);
 SerialiseEntityComponentsFromIDList(FILE *file, Entity *entity_list, ComponentSet *component_set, i32 *ids, i32 id_count, ComponentType type);
 
 DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, ComponentType type);
+
+DeserialiseComponentsToLoadData(FILE *file, ComponentSet *component_set, EntitySave *entity_list, i32 *ids, i32 id_count, ComponentType type);
+
+DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count);
 
 static void WritePositionComponentToFile(FILE *file, PositionComponent *data);
 

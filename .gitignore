@@ -320,7 +320,7 @@ ASALocalRun/
 *.diagsession
 
 game/build/
-data_desk/build/
 data_desk_custom/build/
+game/source/generated/
 
 *.sln
