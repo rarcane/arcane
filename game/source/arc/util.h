@@ -31,6 +31,12 @@ typedef struct EntitySave
 	GeneralisedEntityType type;
 } EntitySave;
 
+typedef struct ComponentSaveHelper
+{
+	i32 entity_offset;
+	void *comp_data;
+} ComponentSaveHelper;
+
 typedef struct SkeletonChunk
 {
 	i32 x_index;

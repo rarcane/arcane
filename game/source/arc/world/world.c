@@ -6,6 +6,7 @@ internal void WorldUpdate()
 		{
 			core->run_data->chunk_save_count = 0;
 			core->run_data->save_job_index = -1;
+			
 			Log("Queued chunk save complete");
 		}
 	}
@@ -60,11 +61,11 @@ internal void WorldUpdate()
 				{
 					i32 ground_segments_per_chunk = 16;
 					f32 segment_width = (f32)CHUNK_SIZE / (f32)ground_segments_per_chunk;
-					for (i32 i = 0; i < ground_segments_per_chunk; i++)
+					for (i32 j = 0; j < ground_segments_per_chunk; j++)
 					{
 						Entity *entity = NewEntity("floor", GENERALISED_ENTITY_TYPE_ground);
 						PositionComponent *pos_comp = AddPositionComponent(entity);
-						f32 x_pos = (f32)chunk->x_index * (f32)CHUNK_SIZE + segment_width * i;
+						f32 x_pos = (f32)chunk->x_index * (f32)CHUNK_SIZE + segment_width * j;
 						f32 y_pos = GetTerrainHeight(x_pos);
 						pos_comp->position = v2(x_pos, y_pos);
 						
@@ -85,7 +86,7 @@ internal void WorldUpdate()
 			
 			// NOTE(randy): Reset load data
 			core->run_data->loaded_entity_count = 0;
-			MemorySet(&core->run_data->loaded_entity_components, 0, sizeof(ComponentSet));
+			MemorySet(&core->run_data->loaded_entity_components, 0, sizeof(core->run_data->loaded_entity_components));
 			core->run_data->loaded_positional_entity_id_count = 0;
 			core->run_data->chunk_load_queue_count = 0;
 			core->run_data->chunk_generate_queue_count = 0;
@@ -481,7 +482,7 @@ internal int SaveQueuedChunks(void *job_data)
 		
 		char chunk_file_path[300];
 		sprintf(chunk_file_path, "%s%i.%i.chunk", core->run_data->world_chunks_path, chunk_save->skele_chunk.x_index, chunk_save->skele_chunk.y_index);
-		FILE *file = fopen(chunk_file_path, "w");
+		FILE *file = fopen(chunk_file_path, "wb");
 		Assert(file);
 		
 		// NOTE(randy): Write cells to file.
@@ -490,19 +491,22 @@ internal int SaveQueuedChunks(void *job_data)
 		// NOTE(randy): Write entities into the chunk file. Layout is as follows.
 		// entity count, all entities, component1 count, all component1s, component2 count, all component2s...
 		WriteToFile(file, &chunk_save->entity_count, sizeof(chunk_save->entity_count));
-		for (i32 i = 0; i < chunk_save->entity_count; i++)
+		for (i32 j = 0; j < chunk_save->entity_count; j++)
 		{
-			Entity *entity = &core->run_data->entities_snapshot[chunk_save->entity_ids[i] - 1];
+			Entity *entity = &core->run_data->entities_snapshot[chunk_save->entity_ids[j] - 1];
 			
 			// NOTE(randy): Fill out an EntitySave structure for serialisation
 			EntitySave entity_save = {.flags = entity->flags, .type = entity->generalised_type};
 			MemoryCopy(entity_save.name, entity->name, sizeof(entity_save.name));
+			
+			if (chunk_save->skele_chunk.x_index == 3 && chunk_save->skele_chunk.y_index == -1)
+			{
+				entity_save.flags = (uint32)j + 1;
+			}
+			
 			WriteToFile(file, &entity_save, sizeof(EntitySave));
 		}
-		for (i32 i = 1; i < COMPONENT_MAX; i++)
-		{
-			SerialiseEntityComponentsFromIDList(file, core->run_data->entities_snapshot, &core->run_data->entity_components_snapshot, chunk_save->entity_ids, chunk_save->entity_count, i);
-		}
+		SerialiseComponentsFromDataSet(file, core->run_data->entities_snapshot, core->run_data->entity_count_snapshot, &core->run_data->entity_components_snapshot, chunk_save->entity_ids, chunk_save->entity_count);
 		
 		fclose(file);
 	}
@@ -528,9 +532,11 @@ internal int LoadQueuedChunks(void *job_data)
 		
 		char chunk_file_path[100];
 		sprintf(chunk_file_path, "%s%i.%i.chunk", core->run_data->world_chunks_path, chunk_save->skele_chunk.x_index, chunk_save->skele_chunk.y_index);
-		FILE *file = fopen(chunk_file_path, "r");
+		FILE *file = fopen(chunk_file_path, "rb");
 		if (file)
 		{
+			
+			
 			ReadFromFile(file, &chunk_save->cells, sizeof(chunk_save->cells));
 			
 			// NOTE(randy): Read in entities and their components
@@ -540,22 +546,19 @@ internal int LoadQueuedChunks(void *job_data)
 				chunk_save->entity_ids = &core->run_data->loaded_positional_entity_ids[core->run_data->loaded_positional_entity_id_count];
 				core->run_data->loaded_positional_entity_id_count += chunk_save->entity_count;
 				
-				for (i32 i = 0; i < chunk_save->entity_count; i++)
+				for (i32 j = 0; j < chunk_save->entity_count; j++)
 				{
 					EntitySave entity_save;
 					ReadFromFile(file, &entity_save, sizeof(EntitySave));
 					core->run_data->loaded_entities[core->run_data->loaded_entity_count++] = entity_save;
 					i32 loaded_entity_id = core->run_data->loaded_entity_count;
 					
-					chunk_save->entity_ids[i] = loaded_entity_id;
+					chunk_save->entity_ids[j] = loaded_entity_id;
 				}
 				
-				for (i32 i = 1; i < COMPONENT_MAX; i++)
-				{
-					DeserialiseComponentsToLoadData(file, &core->run_data->loaded_entity_components,
-													core->run_data->loaded_entities,
-													chunk_save->entity_ids, chunk_save->entity_count, i);
-				}
+				DeserialiseComponentsToLoadData(file, &core->run_data->loaded_entity_components,
+												core->run_data->loaded_entities,
+												chunk_save->entity_ids, chunk_save->entity_count);
 			}
 			
 			fclose(file);
@@ -806,25 +809,26 @@ internal void UpdateChunks()
 	
 	if (chunks_to_unload_count > 0 && core->run_data->save_job_index == -1 && core->run_data->load_job_index == -1)
 	{
-		BLOCK_TIMER("Chunks unloaded",
-					// NOTE(randy): Snapshot the current world data
-					MemoryCopy(&core->run_data->entities_snapshot, &core->run_data->entities, sizeof(core->run_data->entities));
-					MemoryCopy(&core->run_data->entity_count_snapshot, &core->run_data->entity_count, sizeof(core->run_data->entity_count));
-					MemoryCopy(&core->run_data->entity_components_snapshot, &core->run_data->entity_components, sizeof(core->run_data->entity_components));
-					MemoryCopy(&core->run_data->positional_entity_ids_snapshot, &core->run_data->positional_entity_ids,
-							   sizeof(core->run_data->positional_entity_ids));
-					MemoryCopy(&core->run_data->positional_entity_id_count_snapshot, &core->run_data->positional_entity_id_count, sizeof(core->run_data->positional_entity_id_count));
-					
-					for (i32 i = 0; i < chunks_to_unload_count; i++)
-					{
-						Chunk *chunk = chunks_to_unload[i];
-						Assert(QueueChunkForSave(chunk));
-						
-						DeleteChunk(chunk);
-					}
-					
-					core->run_data->save_job_index = platform->QueueJob(0, SaveQueuedChunks, 0);
-					);
+		//BLOCK_TIMER("Chunks unloaded",
+		// NOTE(randy): Snapshot the current world data
+		MemoryCopy(&core->run_data->entities_snapshot, &core->run_data->entities, sizeof(core->run_data->entities));
+		MemoryCopy(&core->run_data->entity_count_snapshot, &core->run_data->entity_count, sizeof(core->run_data->entity_count));
+		MemoryCopy(&core->run_data->entity_components_snapshot, &core->run_data->entity_components, sizeof(core->run_data->entity_components));
+		MemoryCopy(&core->run_data->positional_entity_ids_snapshot, &core->run_data->positional_entity_ids,
+				   sizeof(core->run_data->positional_entity_ids));
+		MemoryCopy(&core->run_data->positional_entity_id_count_snapshot, &core->run_data->positional_entity_id_count, sizeof(core->run_data->positional_entity_id_count));
+		
+		// NOTE(randy): Queue up all of the chunks that need to get unloaded.
+		for (i32 i = 0; i < chunks_to_unload_count; i++)
+		{
+			Chunk *chunk = chunks_to_unload[i];
+			Assert(QueueChunkForSave(chunk));
+			
+			DeleteChunk(chunk);
+		}
+		
+		core->run_data->save_job_index = platform->QueueJob(0, SaveQueuedChunks, 0);
+		//);
 	}
 	
 	if (!core->run_data->disable_chunk_loaded_based_off_view)

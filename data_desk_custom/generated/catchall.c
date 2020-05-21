@@ -1656,6 +1656,274 @@ SerialiseEntityComponentsFromIDList(FILE *file, Entity *entity_list, ComponentSe
     }
 }
 
+SerialiseComponentsFromDataSet(FILE *file, Entity *entity_list, i32 entity_count, ComponentSet *component_set, i32 *ids, i32 id_count)
+{
+    {
+        ComponentSaveHelper comps[MAX_ENTITIES];
+        i32 comp_count = 0;
+
+        for (i32 i = 0; i < id_count; i++)
+        {
+            Entity *entity = &entity_list[ids[i] - 1];
+            Assert(ids[i] - 1 < entity_count);
+            if (entity->component_ids[COMPONENT_position])
+            {
+                comps[comp_count].entity_offset = i;
+                comps[comp_count].comp_data = &component_set->position_components[entity->component_ids[COMPONENT_position] - 1];
+                comp_count++;
+            }
+        }
+
+        WriteToFile(file, &comp_count, sizeof(comp_count)); 
+        for (i32 i = 0; i < comp_count; i++)
+        {
+            WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
+            WritePositionComponentToFile(file, comps[i].comp_data);
+        }
+    }
+
+    {
+        ComponentSaveHelper comps[MAX_ENTITIES];
+        i32 comp_count = 0;
+
+        for (i32 i = 0; i < id_count; i++)
+        {
+            Entity *entity = &entity_list[ids[i] - 1];
+            Assert(ids[i] - 1 < entity_count);
+            if (entity->component_ids[COMPONENT_sprite])
+            {
+                comps[comp_count].entity_offset = i;
+                comps[comp_count].comp_data = &component_set->sprite_components[entity->component_ids[COMPONENT_sprite] - 1];
+                comp_count++;
+            }
+        }
+
+        WriteToFile(file, &comp_count, sizeof(comp_count)); 
+        for (i32 i = 0; i < comp_count; i++)
+        {
+            WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
+            WriteSpriteComponentToFile(file, comps[i].comp_data);
+        }
+    }
+
+    {
+        ComponentSaveHelper comps[MAX_ENTITIES];
+        i32 comp_count = 0;
+
+        for (i32 i = 0; i < id_count; i++)
+        {
+            Entity *entity = &entity_list[ids[i] - 1];
+            Assert(ids[i] - 1 < entity_count);
+            if (entity->component_ids[COMPONENT_animation])
+            {
+                comps[comp_count].entity_offset = i;
+                comps[comp_count].comp_data = &component_set->animation_components[entity->component_ids[COMPONENT_animation] - 1];
+                comp_count++;
+            }
+        }
+
+        WriteToFile(file, &comp_count, sizeof(comp_count)); 
+        for (i32 i = 0; i < comp_count; i++)
+        {
+            WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
+            WriteAnimationComponentToFile(file, comps[i].comp_data);
+        }
+    }
+
+    {
+        ComponentSaveHelper comps[MAX_ENTITIES];
+        i32 comp_count = 0;
+
+        for (i32 i = 0; i < id_count; i++)
+        {
+            Entity *entity = &entity_list[ids[i] - 1];
+            Assert(ids[i] - 1 < entity_count);
+            if (entity->component_ids[COMPONENT_physics_body])
+            {
+                comps[comp_count].entity_offset = i;
+                comps[comp_count].comp_data = &component_set->physics_body_components[entity->component_ids[COMPONENT_physics_body] - 1];
+                comp_count++;
+            }
+        }
+
+        WriteToFile(file, &comp_count, sizeof(comp_count)); 
+        for (i32 i = 0; i < comp_count; i++)
+        {
+            WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
+            WritePhysicsBodyComponentToFile(file, comps[i].comp_data);
+        }
+    }
+
+    {
+        ComponentSaveHelper comps[MAX_ENTITIES];
+        i32 comp_count = 0;
+
+        for (i32 i = 0; i < id_count; i++)
+        {
+            Entity *entity = &entity_list[ids[i] - 1];
+            Assert(ids[i] - 1 < entity_count);
+            if (entity->component_ids[COMPONENT_movement])
+            {
+                comps[comp_count].entity_offset = i;
+                comps[comp_count].comp_data = &component_set->movement_components[entity->component_ids[COMPONENT_movement] - 1];
+                comp_count++;
+            }
+        }
+
+        WriteToFile(file, &comp_count, sizeof(comp_count)); 
+        for (i32 i = 0; i < comp_count; i++)
+        {
+            WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
+            WriteMovementComponentToFile(file, comps[i].comp_data);
+        }
+    }
+
+    {
+        ComponentSaveHelper comps[MAX_ENTITIES];
+        i32 comp_count = 0;
+
+        for (i32 i = 0; i < id_count; i++)
+        {
+            Entity *entity = &entity_list[ids[i] - 1];
+            Assert(ids[i] - 1 < entity_count);
+            if (entity->component_ids[COMPONENT_arc_entity])
+            {
+                comps[comp_count].entity_offset = i;
+                comps[comp_count].comp_data = &component_set->arc_entity_components[entity->component_ids[COMPONENT_arc_entity] - 1];
+                comp_count++;
+            }
+        }
+
+        WriteToFile(file, &comp_count, sizeof(comp_count)); 
+        for (i32 i = 0; i < comp_count; i++)
+        {
+            WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
+            WriteArcEntityComponentToFile(file, comps[i].comp_data);
+        }
+    }
+
+    {
+        ComponentSaveHelper comps[MAX_ENTITIES];
+        i32 comp_count = 0;
+
+        for (i32 i = 0; i < id_count; i++)
+        {
+            Entity *entity = &entity_list[ids[i] - 1];
+            Assert(ids[i] - 1 < entity_count);
+            if (entity->component_ids[COMPONENT_item])
+            {
+                comps[comp_count].entity_offset = i;
+                comps[comp_count].comp_data = &component_set->item_components[entity->component_ids[COMPONENT_item] - 1];
+                comp_count++;
+            }
+        }
+
+        WriteToFile(file, &comp_count, sizeof(comp_count)); 
+        for (i32 i = 0; i < comp_count; i++)
+        {
+            WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
+            WriteItemComponentToFile(file, comps[i].comp_data);
+        }
+    }
+
+    {
+        ComponentSaveHelper comps[MAX_ENTITIES];
+        i32 comp_count = 0;
+
+        for (i32 i = 0; i < id_count; i++)
+        {
+            Entity *entity = &entity_list[ids[i] - 1];
+            Assert(ids[i] - 1 < entity_count);
+            if (entity->component_ids[COMPONENT_trigger])
+            {
+                comps[comp_count].entity_offset = i;
+                comps[comp_count].comp_data = &component_set->trigger_components[entity->component_ids[COMPONENT_trigger] - 1];
+                comp_count++;
+            }
+        }
+
+        WriteToFile(file, &comp_count, sizeof(comp_count)); 
+        for (i32 i = 0; i < comp_count; i++)
+        {
+            WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
+            WriteTriggerComponentToFile(file, comps[i].comp_data);
+        }
+    }
+
+    {
+        ComponentSaveHelper comps[MAX_ENTITIES];
+        i32 comp_count = 0;
+
+        for (i32 i = 0; i < id_count; i++)
+        {
+            Entity *entity = &entity_list[ids[i] - 1];
+            Assert(ids[i] - 1 < entity_count);
+            if (entity->component_ids[COMPONENT_storage])
+            {
+                comps[comp_count].entity_offset = i;
+                comps[comp_count].comp_data = &component_set->storage_components[entity->component_ids[COMPONENT_storage] - 1];
+                comp_count++;
+            }
+        }
+
+        WriteToFile(file, &comp_count, sizeof(comp_count)); 
+        for (i32 i = 0; i < comp_count; i++)
+        {
+            WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
+            WriteStorageComponentToFile(file, comps[i].comp_data);
+        }
+    }
+
+    {
+        ComponentSaveHelper comps[MAX_ENTITIES];
+        i32 comp_count = 0;
+
+        for (i32 i = 0; i < id_count; i++)
+        {
+            Entity *entity = &entity_list[ids[i] - 1];
+            Assert(ids[i] - 1 < entity_count);
+            if (entity->component_ids[COMPONENT_parallax])
+            {
+                comps[comp_count].entity_offset = i;
+                comps[comp_count].comp_data = &component_set->parallax_components[entity->component_ids[COMPONENT_parallax] - 1];
+                comp_count++;
+            }
+        }
+
+        WriteToFile(file, &comp_count, sizeof(comp_count)); 
+        for (i32 i = 0; i < comp_count; i++)
+        {
+            WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
+            WriteParallaxComponentToFile(file, comps[i].comp_data);
+        }
+    }
+
+    {
+        ComponentSaveHelper comps[MAX_ENTITIES];
+        i32 comp_count = 0;
+
+        for (i32 i = 0; i < id_count; i++)
+        {
+            Entity *entity = &entity_list[ids[i] - 1];
+            Assert(ids[i] - 1 < entity_count);
+            if (entity->component_ids[COMPONENT_particle_emitter])
+            {
+                comps[comp_count].entity_offset = i;
+                comps[comp_count].comp_data = &component_set->particle_emitter_components[entity->component_ids[COMPONENT_particle_emitter] - 1];
+                comp_count++;
+            }
+        }
+
+        WriteToFile(file, &comp_count, sizeof(comp_count)); 
+        for (i32 i = 0; i < comp_count; i++)
+        {
+            WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
+            WriteParticleEmitterComponentToFile(file, comps[i].comp_data);
+        }
+    }
+
+}
+
 DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, ComponentType type)
 {
     switch (type)
@@ -1666,11 +1934,11 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
             ReadFromFile(file, &comp_count, sizeof(comp_count));
             for (i32 i = 0; i < comp_count; i++)
             {
-                i32 entity_offset;
+                i32 entity_offset = 0;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
                 Assert(entity->entity_id)
-                PositionComponent component;
+                PositionComponent component = {0};
                 ReadPositionComponentFromFile(file, &component);
                 PositionComponent *new_comp = AddPositionComponent(entity);
                 i32 new_comp_id = new_comp->component_id;
@@ -1685,11 +1953,11 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
             ReadFromFile(file, &comp_count, sizeof(comp_count));
             for (i32 i = 0; i < comp_count; i++)
             {
-                i32 entity_offset;
+                i32 entity_offset = 0;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
                 Assert(entity->entity_id)
-                SpriteComponent component;
+                SpriteComponent component = {0};
                 ReadSpriteComponentFromFile(file, &component);
                 SpriteComponent *new_comp = AddSpriteComponent(entity);
                 i32 new_comp_id = new_comp->component_id;
@@ -1704,11 +1972,11 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
             ReadFromFile(file, &comp_count, sizeof(comp_count));
             for (i32 i = 0; i < comp_count; i++)
             {
-                i32 entity_offset;
+                i32 entity_offset = 0;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
                 Assert(entity->entity_id)
-                AnimationComponent component;
+                AnimationComponent component = {0};
                 ReadAnimationComponentFromFile(file, &component);
                 AnimationComponent *new_comp = AddAnimationComponent(entity);
                 i32 new_comp_id = new_comp->component_id;
@@ -1723,11 +1991,11 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
             ReadFromFile(file, &comp_count, sizeof(comp_count));
             for (i32 i = 0; i < comp_count; i++)
             {
-                i32 entity_offset;
+                i32 entity_offset = 0;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
                 Assert(entity->entity_id)
-                PhysicsBodyComponent component;
+                PhysicsBodyComponent component = {0};
                 ReadPhysicsBodyComponentFromFile(file, &component);
                 PhysicsBodyComponent *new_comp = AddPhysicsBodyComponent(entity);
                 i32 new_comp_id = new_comp->component_id;
@@ -1742,11 +2010,11 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
             ReadFromFile(file, &comp_count, sizeof(comp_count));
             for (i32 i = 0; i < comp_count; i++)
             {
-                i32 entity_offset;
+                i32 entity_offset = 0;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
                 Assert(entity->entity_id)
-                MovementComponent component;
+                MovementComponent component = {0};
                 ReadMovementComponentFromFile(file, &component);
                 MovementComponent *new_comp = AddMovementComponent(entity);
                 i32 new_comp_id = new_comp->component_id;
@@ -1761,11 +2029,11 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
             ReadFromFile(file, &comp_count, sizeof(comp_count));
             for (i32 i = 0; i < comp_count; i++)
             {
-                i32 entity_offset;
+                i32 entity_offset = 0;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
                 Assert(entity->entity_id)
-                ArcEntityComponent component;
+                ArcEntityComponent component = {0};
                 ReadArcEntityComponentFromFile(file, &component);
                 ArcEntityComponent *new_comp = AddArcEntityComponent(entity);
                 i32 new_comp_id = new_comp->component_id;
@@ -1780,11 +2048,11 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
             ReadFromFile(file, &comp_count, sizeof(comp_count));
             for (i32 i = 0; i < comp_count; i++)
             {
-                i32 entity_offset;
+                i32 entity_offset = 0;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
                 Assert(entity->entity_id)
-                ItemComponent component;
+                ItemComponent component = {0};
                 ReadItemComponentFromFile(file, &component);
                 ItemComponent *new_comp = AddItemComponent(entity);
                 i32 new_comp_id = new_comp->component_id;
@@ -1799,11 +2067,11 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
             ReadFromFile(file, &comp_count, sizeof(comp_count));
             for (i32 i = 0; i < comp_count; i++)
             {
-                i32 entity_offset;
+                i32 entity_offset = 0;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
                 Assert(entity->entity_id)
-                TriggerComponent component;
+                TriggerComponent component = {0};
                 ReadTriggerComponentFromFile(file, &component);
                 TriggerComponent *new_comp = AddTriggerComponent(entity);
                 i32 new_comp_id = new_comp->component_id;
@@ -1818,11 +2086,11 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
             ReadFromFile(file, &comp_count, sizeof(comp_count));
             for (i32 i = 0; i < comp_count; i++)
             {
-                i32 entity_offset;
+                i32 entity_offset = 0;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
                 Assert(entity->entity_id)
-                StorageComponent component;
+                StorageComponent component = {0};
                 ReadStorageComponentFromFile(file, &component);
                 StorageComponent *new_comp = AddStorageComponent(entity);
                 i32 new_comp_id = new_comp->component_id;
@@ -1837,11 +2105,11 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
             ReadFromFile(file, &comp_count, sizeof(comp_count));
             for (i32 i = 0; i < comp_count; i++)
             {
-                i32 entity_offset;
+                i32 entity_offset = 0;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
                 Assert(entity->entity_id)
-                ParallaxComponent component;
+                ParallaxComponent component = {0};
                 ReadParallaxComponentFromFile(file, &component);
                 ParallaxComponent *new_comp = AddParallaxComponent(entity);
                 i32 new_comp_id = new_comp->component_id;
@@ -1856,11 +2124,11 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
             ReadFromFile(file, &comp_count, sizeof(comp_count));
             for (i32 i = 0; i < comp_count; i++)
             {
-                i32 entity_offset;
+                i32 entity_offset = 0;
                 ReadFromFile(file, &entity_offset, sizeof(i32));
                 Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
                 Assert(entity->entity_id)
-                ParticleEmitterComponent component;
+                ParticleEmitterComponent component = {0};
                 ReadParticleEmitterComponentFromFile(file, &component);
                 ParticleEmitterComponent *new_comp = AddParticleEmitterComponent(entity);
                 i32 new_comp_id = new_comp->component_id;
@@ -1872,175 +2140,161 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
     }
 }
 
-DeserialiseComponentsToLoadData(FILE *file, ComponentSet *component_set, EntitySave *entity_list, i32 *ids, i32 id_count, ComponentType type)
+DeserialiseComponentsToLoadData(FILE *file, ComponentSet *component_set, EntitySave *entity_list, i32 *ids, i32 id_count)
 {
-    switch (type)
     {
-        case COMPONENT_position:
+        i32 component_count;
+        ReadFromFile(file, &component_count, sizeof(i32));
+        for (i32 i = 0; i < component_count; i++)
         {
-            i32 comp_count = 0;
-            ReadFromFile(file, &comp_count, sizeof(comp_count));
-            for (i32 i = 0; i < comp_count; i++)
-            {
-                i32 entity_offset;
-                ReadFromFile(file, &entity_offset, sizeof(i32));
-                EntitySave *entity = &entity_list[ids[entity_offset] - 1];
-                PositionComponent component;
-                ReadPositionComponentFromFile(file, &component);
-                component.parent_entity_id = ids[entity_offset];
-                component_set->position_components[component_set->position_component_count++] = component;
-            }
-        } break;
-        case COMPONENT_sprite:
+            i32 entity_offset;
+            ReadFromFile(file, &entity_offset, sizeof(i32));
+            EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
+            PositionComponent component_data;
+            ReadPositionComponentFromFile(file, &component_data);
+            component_data.parent_entity_id = ids[entity_offset];
+            component_set->position_components[component_set->position_component_count++] = component_data;
+        }
+    }
+    {
+        i32 component_count;
+        ReadFromFile(file, &component_count, sizeof(i32));
+        for (i32 i = 0; i < component_count; i++)
         {
-            i32 comp_count = 0;
-            ReadFromFile(file, &comp_count, sizeof(comp_count));
-            for (i32 i = 0; i < comp_count; i++)
-            {
-                i32 entity_offset;
-                ReadFromFile(file, &entity_offset, sizeof(i32));
-                EntitySave *entity = &entity_list[ids[entity_offset] - 1];
-                SpriteComponent component;
-                ReadSpriteComponentFromFile(file, &component);
-                component.parent_entity_id = ids[entity_offset];
-                component_set->sprite_components[component_set->sprite_component_count++] = component;
-            }
-        } break;
-        case COMPONENT_animation:
+            i32 entity_offset;
+            ReadFromFile(file, &entity_offset, sizeof(i32));
+            EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
+            SpriteComponent component_data;
+            ReadSpriteComponentFromFile(file, &component_data);
+            component_data.parent_entity_id = ids[entity_offset];
+            component_set->sprite_components[component_set->sprite_component_count++] = component_data;
+        }
+    }
+    {
+        i32 component_count;
+        ReadFromFile(file, &component_count, sizeof(i32));
+        for (i32 i = 0; i < component_count; i++)
         {
-            i32 comp_count = 0;
-            ReadFromFile(file, &comp_count, sizeof(comp_count));
-            for (i32 i = 0; i < comp_count; i++)
-            {
-                i32 entity_offset;
-                ReadFromFile(file, &entity_offset, sizeof(i32));
-                EntitySave *entity = &entity_list[ids[entity_offset] - 1];
-                AnimationComponent component;
-                ReadAnimationComponentFromFile(file, &component);
-                component.parent_entity_id = ids[entity_offset];
-                component_set->animation_components[component_set->animation_component_count++] = component;
-            }
-        } break;
-        case COMPONENT_physics_body:
+            i32 entity_offset;
+            ReadFromFile(file, &entity_offset, sizeof(i32));
+            EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
+            AnimationComponent component_data;
+            ReadAnimationComponentFromFile(file, &component_data);
+            component_data.parent_entity_id = ids[entity_offset];
+            component_set->animation_components[component_set->animation_component_count++] = component_data;
+        }
+    }
+    {
+        i32 component_count;
+        ReadFromFile(file, &component_count, sizeof(i32));
+        for (i32 i = 0; i < component_count; i++)
         {
-            i32 comp_count = 0;
-            ReadFromFile(file, &comp_count, sizeof(comp_count));
-            for (i32 i = 0; i < comp_count; i++)
-            {
-                i32 entity_offset;
-                ReadFromFile(file, &entity_offset, sizeof(i32));
-                EntitySave *entity = &entity_list[ids[entity_offset] - 1];
-                PhysicsBodyComponent component;
-                ReadPhysicsBodyComponentFromFile(file, &component);
-                component.parent_entity_id = ids[entity_offset];
-                component_set->physics_body_components[component_set->physics_body_component_count++] = component;
-            }
-        } break;
-        case COMPONENT_movement:
+            i32 entity_offset;
+            ReadFromFile(file, &entity_offset, sizeof(i32));
+            EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
+            PhysicsBodyComponent component_data;
+            ReadPhysicsBodyComponentFromFile(file, &component_data);
+            component_data.parent_entity_id = ids[entity_offset];
+            component_set->physics_body_components[component_set->physics_body_component_count++] = component_data;
+        }
+    }
+    {
+        i32 component_count;
+        ReadFromFile(file, &component_count, sizeof(i32));
+        for (i32 i = 0; i < component_count; i++)
         {
-            i32 comp_count = 0;
-            ReadFromFile(file, &comp_count, sizeof(comp_count));
-            for (i32 i = 0; i < comp_count; i++)
-            {
-                i32 entity_offset;
-                ReadFromFile(file, &entity_offset, sizeof(i32));
-                EntitySave *entity = &entity_list[ids[entity_offset] - 1];
-                MovementComponent component;
-                ReadMovementComponentFromFile(file, &component);
-                component.parent_entity_id = ids[entity_offset];
-                component_set->movement_components[component_set->movement_component_count++] = component;
-            }
-        } break;
-        case COMPONENT_arc_entity:
+            i32 entity_offset;
+            ReadFromFile(file, &entity_offset, sizeof(i32));
+            EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
+            MovementComponent component_data;
+            ReadMovementComponentFromFile(file, &component_data);
+            component_data.parent_entity_id = ids[entity_offset];
+            component_set->movement_components[component_set->movement_component_count++] = component_data;
+        }
+    }
+    {
+        i32 component_count;
+        ReadFromFile(file, &component_count, sizeof(i32));
+        for (i32 i = 0; i < component_count; i++)
         {
-            i32 comp_count = 0;
-            ReadFromFile(file, &comp_count, sizeof(comp_count));
-            for (i32 i = 0; i < comp_count; i++)
-            {
-                i32 entity_offset;
-                ReadFromFile(file, &entity_offset, sizeof(i32));
-                EntitySave *entity = &entity_list[ids[entity_offset] - 1];
-                ArcEntityComponent component;
-                ReadArcEntityComponentFromFile(file, &component);
-                component.parent_entity_id = ids[entity_offset];
-                component_set->arc_entity_components[component_set->arc_entity_component_count++] = component;
-            }
-        } break;
-        case COMPONENT_item:
+            i32 entity_offset;
+            ReadFromFile(file, &entity_offset, sizeof(i32));
+            EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
+            ArcEntityComponent component_data;
+            ReadArcEntityComponentFromFile(file, &component_data);
+            component_data.parent_entity_id = ids[entity_offset];
+            component_set->arc_entity_components[component_set->arc_entity_component_count++] = component_data;
+        }
+    }
+    {
+        i32 component_count;
+        ReadFromFile(file, &component_count, sizeof(i32));
+        for (i32 i = 0; i < component_count; i++)
         {
-            i32 comp_count = 0;
-            ReadFromFile(file, &comp_count, sizeof(comp_count));
-            for (i32 i = 0; i < comp_count; i++)
-            {
-                i32 entity_offset;
-                ReadFromFile(file, &entity_offset, sizeof(i32));
-                EntitySave *entity = &entity_list[ids[entity_offset] - 1];
-                ItemComponent component;
-                ReadItemComponentFromFile(file, &component);
-                component.parent_entity_id = ids[entity_offset];
-                component_set->item_components[component_set->item_component_count++] = component;
-            }
-        } break;
-        case COMPONENT_trigger:
+            i32 entity_offset;
+            ReadFromFile(file, &entity_offset, sizeof(i32));
+            EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
+            ItemComponent component_data;
+            ReadItemComponentFromFile(file, &component_data);
+            component_data.parent_entity_id = ids[entity_offset];
+            component_set->item_components[component_set->item_component_count++] = component_data;
+        }
+    }
+    {
+        i32 component_count;
+        ReadFromFile(file, &component_count, sizeof(i32));
+        for (i32 i = 0; i < component_count; i++)
         {
-            i32 comp_count = 0;
-            ReadFromFile(file, &comp_count, sizeof(comp_count));
-            for (i32 i = 0; i < comp_count; i++)
-            {
-                i32 entity_offset;
-                ReadFromFile(file, &entity_offset, sizeof(i32));
-                EntitySave *entity = &entity_list[ids[entity_offset] - 1];
-                TriggerComponent component;
-                ReadTriggerComponentFromFile(file, &component);
-                component.parent_entity_id = ids[entity_offset];
-                component_set->trigger_components[component_set->trigger_component_count++] = component;
-            }
-        } break;
-        case COMPONENT_storage:
+            i32 entity_offset;
+            ReadFromFile(file, &entity_offset, sizeof(i32));
+            EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
+            TriggerComponent component_data;
+            ReadTriggerComponentFromFile(file, &component_data);
+            component_data.parent_entity_id = ids[entity_offset];
+            component_set->trigger_components[component_set->trigger_component_count++] = component_data;
+        }
+    }
+    {
+        i32 component_count;
+        ReadFromFile(file, &component_count, sizeof(i32));
+        for (i32 i = 0; i < component_count; i++)
         {
-            i32 comp_count = 0;
-            ReadFromFile(file, &comp_count, sizeof(comp_count));
-            for (i32 i = 0; i < comp_count; i++)
-            {
-                i32 entity_offset;
-                ReadFromFile(file, &entity_offset, sizeof(i32));
-                EntitySave *entity = &entity_list[ids[entity_offset] - 1];
-                StorageComponent component;
-                ReadStorageComponentFromFile(file, &component);
-                component.parent_entity_id = ids[entity_offset];
-                component_set->storage_components[component_set->storage_component_count++] = component;
-            }
-        } break;
-        case COMPONENT_parallax:
+            i32 entity_offset;
+            ReadFromFile(file, &entity_offset, sizeof(i32));
+            EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
+            StorageComponent component_data;
+            ReadStorageComponentFromFile(file, &component_data);
+            component_data.parent_entity_id = ids[entity_offset];
+            component_set->storage_components[component_set->storage_component_count++] = component_data;
+        }
+    }
+    {
+        i32 component_count;
+        ReadFromFile(file, &component_count, sizeof(i32));
+        for (i32 i = 0; i < component_count; i++)
         {
-            i32 comp_count = 0;
-            ReadFromFile(file, &comp_count, sizeof(comp_count));
-            for (i32 i = 0; i < comp_count; i++)
-            {
-                i32 entity_offset;
-                ReadFromFile(file, &entity_offset, sizeof(i32));
-                EntitySave *entity = &entity_list[ids[entity_offset] - 1];
-                ParallaxComponent component;
-                ReadParallaxComponentFromFile(file, &component);
-                component.parent_entity_id = ids[entity_offset];
-                component_set->parallax_components[component_set->parallax_component_count++] = component;
-            }
-        } break;
-        case COMPONENT_particle_emitter:
+            i32 entity_offset;
+            ReadFromFile(file, &entity_offset, sizeof(i32));
+            EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
+            ParallaxComponent component_data;
+            ReadParallaxComponentFromFile(file, &component_data);
+            component_data.parent_entity_id = ids[entity_offset];
+            component_set->parallax_components[component_set->parallax_component_count++] = component_data;
+        }
+    }
+    {
+        i32 component_count;
+        ReadFromFile(file, &component_count, sizeof(i32));
+        for (i32 i = 0; i < component_count; i++)
         {
-            i32 comp_count = 0;
-            ReadFromFile(file, &comp_count, sizeof(comp_count));
-            for (i32 i = 0; i < comp_count; i++)
-            {
-                i32 entity_offset;
-                ReadFromFile(file, &entity_offset, sizeof(i32));
-                EntitySave *entity = &entity_list[ids[entity_offset] - 1];
-                ParticleEmitterComponent component;
-                ReadParticleEmitterComponentFromFile(file, &component);
-                component.parent_entity_id = ids[entity_offset];
-                component_set->particle_emitter_components[component_set->particle_emitter_component_count++] = component;
-            }
-        } break;
+            i32 entity_offset;
+            ReadFromFile(file, &entity_offset, sizeof(i32));
+            EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
+            ParticleEmitterComponent component_data;
+            ReadParticleEmitterComponentFromFile(file, &component_data);
+            component_data.parent_entity_id = ids[entity_offset];
+            component_set->particle_emitter_components[component_set->particle_emitter_component_count++] = component_data;
+        }
     }
 }
 
@@ -2050,6 +2304,7 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
     {
         PositionComponent *saved_comp = &core->run_data->loaded_entity_components.position_components[i];
         Entity *entity = &core->run_data->entities[entity_id_map[saved_comp->parent_entity_id - 1] - 1];
+        Assert(entity->entity_id);
         PositionComponent *new_comp = AddPositionComponent(entity);
         i32 new_comp_id = new_comp->component_id;
         *new_comp = *saved_comp;
@@ -2060,6 +2315,7 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
     {
         SpriteComponent *saved_comp = &core->run_data->loaded_entity_components.sprite_components[i];
         Entity *entity = &core->run_data->entities[entity_id_map[saved_comp->parent_entity_id - 1] - 1];
+        Assert(entity->entity_id);
         SpriteComponent *new_comp = AddSpriteComponent(entity);
         i32 new_comp_id = new_comp->component_id;
         *new_comp = *saved_comp;
@@ -2070,6 +2326,7 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
     {
         AnimationComponent *saved_comp = &core->run_data->loaded_entity_components.animation_components[i];
         Entity *entity = &core->run_data->entities[entity_id_map[saved_comp->parent_entity_id - 1] - 1];
+        Assert(entity->entity_id);
         AnimationComponent *new_comp = AddAnimationComponent(entity);
         i32 new_comp_id = new_comp->component_id;
         *new_comp = *saved_comp;
@@ -2080,6 +2337,7 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
     {
         PhysicsBodyComponent *saved_comp = &core->run_data->loaded_entity_components.physics_body_components[i];
         Entity *entity = &core->run_data->entities[entity_id_map[saved_comp->parent_entity_id - 1] - 1];
+        Assert(entity->entity_id);
         PhysicsBodyComponent *new_comp = AddPhysicsBodyComponent(entity);
         i32 new_comp_id = new_comp->component_id;
         *new_comp = *saved_comp;
@@ -2090,6 +2348,7 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
     {
         MovementComponent *saved_comp = &core->run_data->loaded_entity_components.movement_components[i];
         Entity *entity = &core->run_data->entities[entity_id_map[saved_comp->parent_entity_id - 1] - 1];
+        Assert(entity->entity_id);
         MovementComponent *new_comp = AddMovementComponent(entity);
         i32 new_comp_id = new_comp->component_id;
         *new_comp = *saved_comp;
@@ -2100,6 +2359,7 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
     {
         ArcEntityComponent *saved_comp = &core->run_data->loaded_entity_components.arc_entity_components[i];
         Entity *entity = &core->run_data->entities[entity_id_map[saved_comp->parent_entity_id - 1] - 1];
+        Assert(entity->entity_id);
         ArcEntityComponent *new_comp = AddArcEntityComponent(entity);
         i32 new_comp_id = new_comp->component_id;
         *new_comp = *saved_comp;
@@ -2110,6 +2370,7 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
     {
         ItemComponent *saved_comp = &core->run_data->loaded_entity_components.item_components[i];
         Entity *entity = &core->run_data->entities[entity_id_map[saved_comp->parent_entity_id - 1] - 1];
+        Assert(entity->entity_id);
         ItemComponent *new_comp = AddItemComponent(entity);
         i32 new_comp_id = new_comp->component_id;
         *new_comp = *saved_comp;
@@ -2120,6 +2381,7 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
     {
         TriggerComponent *saved_comp = &core->run_data->loaded_entity_components.trigger_components[i];
         Entity *entity = &core->run_data->entities[entity_id_map[saved_comp->parent_entity_id - 1] - 1];
+        Assert(entity->entity_id);
         TriggerComponent *new_comp = AddTriggerComponent(entity);
         i32 new_comp_id = new_comp->component_id;
         *new_comp = *saved_comp;
@@ -2130,6 +2392,7 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
     {
         StorageComponent *saved_comp = &core->run_data->loaded_entity_components.storage_components[i];
         Entity *entity = &core->run_data->entities[entity_id_map[saved_comp->parent_entity_id - 1] - 1];
+        Assert(entity->entity_id);
         StorageComponent *new_comp = AddStorageComponent(entity);
         i32 new_comp_id = new_comp->component_id;
         *new_comp = *saved_comp;
@@ -2140,6 +2403,7 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
     {
         ParallaxComponent *saved_comp = &core->run_data->loaded_entity_components.parallax_components[i];
         Entity *entity = &core->run_data->entities[entity_id_map[saved_comp->parent_entity_id - 1] - 1];
+        Assert(entity->entity_id);
         ParallaxComponent *new_comp = AddParallaxComponent(entity);
         i32 new_comp_id = new_comp->component_id;
         *new_comp = *saved_comp;
@@ -2150,6 +2414,7 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
     {
         ParticleEmitterComponent *saved_comp = &core->run_data->loaded_entity_components.particle_emitter_components[i];
         Entity *entity = &core->run_data->entities[entity_id_map[saved_comp->parent_entity_id - 1] - 1];
+        Assert(entity->entity_id);
         ParticleEmitterComponent *new_comp = AddParticleEmitterComponent(entity);
         i32 new_comp_id = new_comp->component_id;
         *new_comp = *saved_comp;

@@ -722,9 +722,11 @@ WriteComponentToFile(FILE *file, i32 comp_id, ComponentType type);
 ReadComponentFromFile(FILE *file, Entity *entity, ComponentType type);
 SerialiseEntityComponentsFromIDList(FILE *file, Entity *entity_list, ComponentSet *component_set, i32 *ids, i32 id_count, ComponentType type);
 
+SerialiseComponentsFromDataSet(FILE *file, Entity *entity_list, i32 entity_count, ComponentSet *component_set, i32 *ids, i32 id_count);
+
 DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, ComponentType type);
 
-DeserialiseComponentsToLoadData(FILE *file, ComponentSet *component_set, EntitySave *entity_list, i32 *ids, i32 id_count, ComponentType type);
+DeserialiseComponentsToLoadData(FILE *file, ComponentSet *component_set, EntitySave *entity_list, i32 *ids, i32 id_count);
 
 DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count);
 

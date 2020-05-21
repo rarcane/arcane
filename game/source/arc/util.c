@@ -374,10 +374,18 @@ internal void GetSkeletonChunksInRegion(SkeletonChunk *chunks, i32 *chunk_count,
 
 internal void WriteToFile(FILE *file, void *data, size_t size_bytes)
 {
-	fwrite(data, size_bytes, 1, file);
+	if (fwrite(data, size_bytes, 1, file) != 1)
+	{
+		Assert(ferror(file) == 0); // NOTE(randy): Ensure this error is caught.
+		Assert(0);
+	}
 }
 
 internal void ReadFromFile(FILE *file, void *data, size_t size_bytes)
 {
-	fread(data, size_bytes, 1, file);
+	if (fread(data, size_bytes, 1, file) != 1)
+	{
+		Assert(feof(file) == 0);
+		Assert(ferror(file) == 0);
+	}
 }
