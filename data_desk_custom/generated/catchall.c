@@ -2423,6 +2423,20 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
     }
 }
 
+internal void ResetComponentSet(ComponentSet *comp_set)
+{
+    comp_set->position_component_count = 0;
+    comp_set->sprite_component_count = 0;
+    comp_set->animation_component_count = 0;
+    comp_set->physics_body_component_count = 0;
+    comp_set->movement_component_count = 0;
+    comp_set->arc_entity_component_count = 0;
+    comp_set->item_component_count = 0;
+    comp_set->trigger_component_count = 0;
+    comp_set->storage_component_count = 0;
+    comp_set->parallax_component_count = 0;
+    comp_set->particle_emitter_component_count = 0;
+}
 static void WritePositionComponentToFile(FILE *file, PositionComponent *data)
 {
     WriteToFile(file, &data->position, sizeof(data->position));

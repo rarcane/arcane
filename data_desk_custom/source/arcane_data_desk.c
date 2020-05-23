@@ -1105,6 +1105,18 @@ internal void GenerateSerialisationCode()
 		fprintf(c_file, "}\n\n");
 	}
 	
+	{
+		fprintf(h_file, "internal void ResetComponentSet(ComponentSet *comp_set);\n");
+		fprintf(c_file, "internal void ResetComponentSet(ComponentSet *comp_set)\n");
+		fprintf(c_file, "{\n");
+		for (i32 i = 0; i < component_nodes_count; i++)
+		{
+			DataDeskNode *comp_node = component_nodes[i];
+			fprintf(c_file, "    comp_set->%s_count = 0;\n", comp_node->name_lowercase_with_underscores);
+		}
+		fprintf(c_file, "}\n");
+	}
+	
 	for (i32 i = 0; i < serialisable_struct_count; i++)
 	{
 		DataDeskNode *root = serialisable_structs[i];

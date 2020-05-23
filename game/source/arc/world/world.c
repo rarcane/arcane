@@ -6,8 +6,6 @@ internal void WorldUpdate()
 		{
 			core->run_data->chunk_save_count = 0;
 			core->run_data->save_job_index = -1;
-			
-			Log("Queued chunk save complete");
 		}
 	}
 	
@@ -15,6 +13,7 @@ internal void WorldUpdate()
 	{
 		if (platform->WaitForJob(core->run_data->load_job_index, 0))
 		{
+			//BLOCK_TIMER("End of load copy",
 			// NOTE(randy): Create new chunks from the load queue
 			for (i32 i = 0; i < core->run_data->chunk_load_queue_count; i++)
 			{
@@ -86,13 +85,13 @@ internal void WorldUpdate()
 			
 			// NOTE(randy): Reset load data
 			core->run_data->loaded_entity_count = 0;
-			MemorySet(&core->run_data->loaded_entity_components, 0, sizeof(core->run_data->loaded_entity_components));
+			ResetComponentSet(&core->run_data->loaded_entity_components);
 			core->run_data->loaded_positional_entity_id_count = 0;
 			core->run_data->chunk_load_queue_count = 0;
 			core->run_data->chunk_generate_queue_count = 0;
 			
 			core->run_data->load_job_index = -1;
-			Log("Queued load job complete");
+			//);
 		}
 	}
 	
@@ -522,6 +521,8 @@ internal int LoadQueuedChunks(void *job_data)
 		return 1;
 	//Assert(core->run_data->load_job_index != -1);
 	
+	f32 start_time = platform->GetTime();
+	
 	Assert(core->run_data->active_chunk_count + core->run_data->chunk_load_queue_count < MAX_WORLD_CHUNKS);
 	
 	for (i32 i = 0; i < core->run_data->chunk_load_queue_count; i++)
@@ -585,6 +586,8 @@ internal int LoadQueuedChunks(void *job_data)
 			}
 		}
 	}
+	
+	Log("Load job completed in %fms", (platform->GetTime() - start_time) * 1000.0f);
 	
 	return 1;
 }
@@ -809,78 +812,82 @@ internal void UpdateChunks()
 	
 	if (chunks_to_unload_count > 0 && core->run_data->save_job_index == -1 && core->run_data->load_job_index == -1)
 	{
-		//BLOCK_TIMER("Chunks unloaded",
-		// NOTE(randy): Snapshot the current world data
-		MemoryCopy(&core->run_data->entities_snapshot, &core->run_data->entities, sizeof(core->run_data->entities));
-		MemoryCopy(&core->run_data->entity_count_snapshot, &core->run_data->entity_count, sizeof(core->run_data->entity_count));
-		MemoryCopy(&core->run_data->entity_components_snapshot, &core->run_data->entity_components, sizeof(core->run_data->entity_components));
-		MemoryCopy(&core->run_data->positional_entity_ids_snapshot, &core->run_data->positional_entity_ids,
-				   sizeof(core->run_data->positional_entity_ids));
-		MemoryCopy(&core->run_data->positional_entity_id_count_snapshot, &core->run_data->positional_entity_id_count, sizeof(core->run_data->positional_entity_id_count));
-		
-		// NOTE(randy): Queue up all of the chunks that need to get unloaded.
-		for (i32 i = 0; i < chunks_to_unload_count; i++)
-		{
-			Chunk *chunk = chunks_to_unload[i];
-			Assert(QueueChunkForSave(chunk));
-			
-			DeleteChunk(chunk);
-		}
-		
-		core->run_data->save_job_index = platform->QueueJob(0, SaveQueuedChunks, 0);
-		//);
+		// TODO(randy): Optimise this. Most of it's coming from each chunks' cell copy in QueueChunkForSave. Might need to try streamline the cells themselves, get it a lot smaller.
+		BLOCK_TIMER("initial unload copy",
+					// NOTE(randy): Snapshot the current world data
+					MemoryCopy(&core->run_data->entities_snapshot, &core->run_data->entities, sizeof(core->run_data->entities));
+					MemoryCopy(&core->run_data->entity_count_snapshot, &core->run_data->entity_count, sizeof(core->run_data->entity_count));
+					MemoryCopy(&core->run_data->entity_components_snapshot, &core->run_data->entity_components, sizeof(core->run_data->entity_components));
+					MemoryCopy(&core->run_data->positional_entity_ids_snapshot, &core->run_data->positional_entity_ids,
+							   sizeof(core->run_data->positional_entity_ids));
+					MemoryCopy(&core->run_data->positional_entity_id_count_snapshot, &core->run_data->positional_entity_id_count, sizeof(core->run_data->positional_entity_id_count));
+					
+					// NOTE(randy): Queue up all of the chunks that need to get unloaded.
+					for (i32 i = 0; i < chunks_to_unload_count; i++)
+					{
+						Chunk *chunk = chunks_to_unload[i];
+						Assert(QueueChunkForSave(chunk));
+						
+						DeleteChunk(chunk);
+					}
+					
+					core->run_data->save_job_index = platform->QueueJob(0, SaveQueuedChunks, 0);
+					);
 	}
 	
 	if (!core->run_data->disable_chunk_loaded_based_off_view)
 	{
-		SkeletonChunk view_chunks[MAX_WORLD_CHUNKS];
-		i32 view_chunk_count = 0;
-		GetSkeletonChunksInRegion(view_chunks, &view_chunk_count, GetCameraRegionRect(), 1);
-		
-		// NOTE(randy): Load in any visible chunks
-		if(core->run_data->load_job_index == -1 && core->run_data->save_job_index == -1)
-		{
-			for (i32 i = 0; i < view_chunk_count; i++)
-			{
-				Chunk *chunk = GetChunkAtIndex(view_chunks[i].x_index, view_chunks[i].y_index);
-				if (!chunk)
-				{
-					ChunkSave new_chunk = {.skele_chunk = view_chunks[i]};
-					core->run_data->chunk_load_queue[core->run_data->chunk_load_queue_count++] = new_chunk;
-					
-					/*
-									chunk = LoadChunkFromDisk(core->run_data->world_chunks_path, chunks[i].x_index, chunks[i].y_index);
-									if (!chunk)
-									{
-										chunk = GenerateNewChunk(chunks[i].x_index, chunks[i].y_index);
-									}
-					 */
-				}
-			}
-			
-			if (core->run_data->chunk_load_queue_count > 0)
-			{
-				core->run_data->load_job_index = platform->QueueJob(0, LoadQueuedChunks, 0);
-				
-				if (!core->run_data->not_first_time_temp) // lmaoooo
-				{
-					while (!platform->WaitForJob(core->run_data->load_job_index, TS_WAIT_FOREVER));
-					{
-						core->run_data->not_first_time_temp = 1;
-					}
-				}
-			}
-		}
-		
-		// NOTE(randy): Keep the visible chunks loaded
-		for (i32 i = 0; i < view_chunk_count; i++)
-		{
-			Chunk *chunk = GetChunkAtIndex(view_chunks[i].x_index, view_chunks[i].y_index);
-			if (chunk && chunk->is_valid)
-			{
-				chunk->remain_loaded = 1;
-			}
-		}
+		BLOCK_TIMER_IF("initial load copy",
+					   timer_length > 1,
+					   SkeletonChunk view_chunks[MAX_WORLD_CHUNKS];
+					   i32 view_chunk_count = 0;
+					   GetSkeletonChunksInRegion(view_chunks, &view_chunk_count, GetCameraRegionRect(), 1);
+					   
+					   // NOTE(randy): Load in any visible chunks
+					   if(core->run_data->load_job_index == -1 && core->run_data->save_job_index == -1)
+					   {
+						   for (i32 i = 0; i < view_chunk_count; i++)
+						   {
+							   Chunk *chunk = GetChunkAtIndex(view_chunks[i].x_index, view_chunks[i].y_index);
+							   if (!chunk)
+							   {
+								   ChunkSave new_chunk = {.skele_chunk = view_chunks[i]};
+								   core->run_data->chunk_load_queue[core->run_data->chunk_load_queue_count++] = new_chunk;
+								   
+								   /*
+												   chunk = LoadChunkFromDisk(core->run_data->world_chunks_path, chunks[i].x_index, chunks[i].y_index);
+												   if (!chunk)
+												   {
+													   chunk = GenerateNewChunk(chunks[i].x_index, chunks[i].y_index);
+												   }
+									*/
+							   }
+						   }
+						   
+						   if (core->run_data->chunk_load_queue_count > 0)
+						   {
+							   core->run_data->load_job_index = platform->QueueJob(0, LoadQueuedChunks, 0);
+							   
+							   if (!core->run_data->not_first_time_temp) // lmaoooo
+							   {
+								   while (!platform->WaitForJob(core->run_data->load_job_index, TS_WAIT_FOREVER));
+								   {
+									   core->run_data->not_first_time_temp = 1;
+								   }
+							   }
+						   }
+					   }
+					   
+					   // NOTE(randy): Keep the visible chunks loaded
+					   for (i32 i = 0; i < view_chunk_count; i++)
+					   {
+						   Chunk *chunk = GetChunkAtIndex(view_chunks[i].x_index, view_chunks[i].y_index);
+						   if (chunk && chunk->is_valid)
+						   {
+							   chunk->remain_loaded = 1;
+						   }
+					   }
+					   );
 	}
 	else
 	{

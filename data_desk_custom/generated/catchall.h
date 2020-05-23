@@ -730,6 +730,7 @@ DeserialiseComponentsToLoadData(FILE *file, ComponentSet *component_set, EntityS
 
 DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count);
 
+internal void ResetComponentSet(ComponentSet *comp_set);
 static void WritePositionComponentToFile(FILE *file, PositionComponent *data);
 
 static void FillPositionComponentPointersInFile(FILE *file, PositionComponent *data);
