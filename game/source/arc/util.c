@@ -357,8 +357,8 @@ internal void GetSkeletonChunksInRegion(SkeletonChunk *chunks, i32 *chunk_count,
 {
 	*chunk_count = 0;
     
-	i32 width = WorldspaceToChunkIndex(rect.x + rect.width) - WorldspaceToChunkIndex(rect.x);
-	i32 height = WorldspaceToChunkIndex(rect.y + rect.height) - WorldspaceToChunkIndex(rect.y);
+	i32 width = WorldSpaceToChunkIndex(rect.x + rect.width) - WorldSpaceToChunkIndex(rect.x);
+	i32 height = WorldSpaceToChunkIndex(rect.y + rect.height) - WorldSpaceToChunkIndex(rect.y);
     
 	for (int y = -buffer; y <= height + buffer; y++)
 	{
@@ -366,7 +366,7 @@ internal void GetSkeletonChunksInRegion(SkeletonChunk *chunks, i32 *chunk_count,
 		{
 			Assert(*chunk_count + 1 < MAX_WORLD_CHUNKS);
             
-			SkeletonChunk chunk = {WorldspaceToChunkIndex(rect.x) + x, WorldspaceToChunkIndex(rect.y) + y};
+			SkeletonChunk chunk = {WorldSpaceToChunkIndex(rect.x) + x, WorldSpaceToChunkIndex(rect.y) + y};
 			chunks[(*chunk_count)++] = chunk;
 		}
 	}

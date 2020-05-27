@@ -35,6 +35,7 @@ EditorState :: enum
 	entity,
 	terrain,
 	collision,
+	chunk,
 }
 
 
@@ -71,7 +72,7 @@ PixelFlags :: flags
 	apply_gravity,
 }
 
-EditorFlags :: flags
+DebugFlags :: flags
 {
 	draw_world,
 	draw_collision,
@@ -597,6 +598,28 @@ WorldSaveData :: struct
 	test_ptr : *i32;
 }
 
+EntityEditorData :: struct
+{
+	selected_entity : *Entity;
+}
+TerrainEditorData :: struct
+{
+	selected_cell : *Cell;
+	selection_start : v2;
+	selection_end : v2;
+}
+CollisionEditorData :: struct
+{
+	selected_ground_seg : *Entity;
+	is_seg_grabbed : b8;
+	grabbed_seg_pos : v2;
+}
+ChunkEditorData :: struct
+{
+	is_chunk_selected : b8;
+	selected_chunk : SkeletonChunk;
+}
+
 RunData :: struct // Game data used for run-time operations
 {
 	active_chunks : Chunk[MAX_WORLD_CHUNKS];
@@ -655,18 +678,12 @@ RunData :: struct // Game data used for run-time operations
 	
 	/* ~ Editor ~ */
 	editor_state : EditorState;
-	editor_flags : EditorFlags;
-	// ~ Entity Editor
-	selected_entity : *Entity;
-	selected_chunk : *Chunk;
-	// ~ Terrain editor
-	selected_cell : *Cell;
-	selection_start : v2;
-	selection_end : v2;
-	// ~ Collision editor
-	selected_ground_seg : *Entity;
-	is_seg_grabbed : b8;
-	grabbed_seg_pos : v2;
+	saved_debug_flags : DebugFlags;
+	debug_flags : DebugFlags;
+	entity_editor : EntityEditorData;
+	terrain_editor : TerrainEditorData;
+	collision_editor : CollisionEditorData;
+	chunk_editor : ChunkEditorData;
 }
 
 // TODO: serialise client options

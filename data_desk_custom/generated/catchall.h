@@ -32,6 +32,7 @@ EDITOR_STATE_none,
 EDITOR_STATE_entity,
 EDITOR_STATE_terrain,
 EDITOR_STATE_collision,
+EDITOR_STATE_chunk,
 EDITOR_STATE_MAX,
 };
 static char *GetEditorStateName(EditorState type);
@@ -57,12 +58,12 @@ typedef uint32 ParticleEmitterFlags;
 #define PIXEL_FLAGS_apply_gravity (1<<0)
 typedef uint32 PixelFlags;
 
-#define EDITOR_FLAGS_draw_world (1<<0)
-#define EDITOR_FLAGS_draw_collision (1<<1)
-#define EDITOR_FLAGS_draw_chunk_grid (1<<2)
-#define EDITOR_FLAGS_debug_cell_view (1<<3)
-#define EDITOR_FLAGS_manual_step (1<<4)
-typedef uint32 EditorFlags;
+#define DEBUG_FLAGS_draw_world (1<<0)
+#define DEBUG_FLAGS_draw_collision (1<<1)
+#define DEBUG_FLAGS_draw_chunk_grid (1<<2)
+#define DEBUG_FLAGS_debug_cell_view (1<<3)
+#define DEBUG_FLAGS_manual_step (1<<4)
+typedef uint32 DebugFlags;
 
 #define ITEM_FLAGS_resource (1<<0)
 #define ITEM_FLAGS_sword (1<<1)
@@ -657,6 +658,31 @@ f32 elapsed_world_time;
 i32 *test_ptr;
 } WorldSaveData;
 
+typedef struct EntityEditorData
+{
+Entity *selected_entity;
+} EntityEditorData;
+
+typedef struct TerrainEditorData
+{
+Cell *selected_cell;
+v2 selection_start;
+v2 selection_end;
+} TerrainEditorData;
+
+typedef struct CollisionEditorData
+{
+Entity *selected_ground_seg;
+b8 is_seg_grabbed;
+v2 grabbed_seg_pos;
+} CollisionEditorData;
+
+typedef struct ChunkEditorData
+{
+b8 is_chunk_selected;
+SkeletonChunk selected_chunk;
+} ChunkEditorData;
+
 typedef struct RunData
 {
 Chunk active_chunks[MAX_WORLD_CHUNKS];
@@ -702,15 +728,12 @@ CellHelper queued_dynamic_cells[MAX_DYNAMIC_CELLS];
 i32 queued_dynamic_cell_count;
 Entity *character_entity;
 EditorState editor_state;
-EditorFlags editor_flags;
-Entity *selected_entity;
-Chunk *selected_chunk;
-Cell *selected_cell;
-v2 selection_start;
-v2 selection_end;
-Entity *selected_ground_seg;
-b8 is_seg_grabbed;
-v2 grabbed_seg_pos;
+DebugFlags saved_debug_flags;
+DebugFlags debug_flags;
+EntityEditorData entity_editor;
+TerrainEditorData terrain_editor;
+CollisionEditorData collision_editor;
+ChunkEditorData chunk_editor;
 } RunData;
 
 typedef struct ClientData

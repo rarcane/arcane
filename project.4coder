@@ -29,13 +29,13 @@ command_list = {
 },
 },
 {
-.name = "clean",
+.name = "cleanbuild",
 .out = "*compilation*",
 .footer_panel = true,
 .save_dirty_files = true,
 .cursor_at_end = false,
 .cmd = {
-{ "clean.bat", .os = "win" },
+{ "clean.bat && build.bat", .os = "win" },
 },
 },
 {
@@ -51,4 +51,4 @@ command_list = {
 };
 fkey_command[1] = "build";
 fkey_command[3] = "run";
-fkey_command[5] = "clean";
+fkey_command[5] = "cleanbuild";

@@ -322,7 +322,7 @@ internal void DrawGameUI()
 	{
 		case EDITOR_STATE_entity:
 		{
-			if (core->run_data->selected_entity)
+			if (core->run_data->entity_editor.selected_entity)
 			{
 				StaticSpriteData *x_arrow = &static_sprite_data[STATIC_SPRITE_x_axis_arrow_icon];
 				StaticSpriteData *y_arrow = &static_sprite_data[STATIC_SPRITE_y_axis_arrow_icon];
@@ -331,14 +331,14 @@ internal void DrawGameUI()
 				b8 entity_has_position = 0;
 				v2 position = {0};
 				
-				if (core->run_data->selected_entity->component_ids[COMPONENT_parallax])
+				if (core->run_data->entity_editor.selected_entity->component_ids[COMPONENT_parallax])
 				{
-					position = GetParallaxComponentFromEntityID(core->run_data->selected_entity->entity_id)->desired_position;
+					position = GetParallaxComponentFromEntityID(core->run_data->entity_editor.selected_entity->entity_id)->desired_position;
 					entity_has_position = 1;
 				}
-				else if (core->run_data->selected_entity->component_ids[COMPONENT_position])
+				else if (core->run_data->entity_editor.selected_entity->component_ids[COMPONENT_position])
 				{
-					position = GetPositionComponentFromEntityID(core->run_data->selected_entity->entity_id)->position;
+					position = GetPositionComponentFromEntityID(core->run_data->entity_editor.selected_entity->entity_id)->position;
 					entity_has_position = 1;
 				}
 				
@@ -476,14 +476,14 @@ internal void DrawGameUI()
 					v2 p1 = V2AddV2(seg_pos->position, seg_body->shape.line.p1);
 					v2 p2 = V2AddV2(seg_pos->position, seg_body->shape.line.p2);
 					
-					if (core->run_data->is_seg_grabbed)
+					if (core->run_data->collision_editor.is_seg_grabbed)
 					{
-						if (EqualV2(core->run_data->grabbed_seg_pos, p1, 1.0f))
+						if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p1, 1.0f))
 						{
 							p1 = GetMousePositionInWorldSpace();
 							seg_body->shape.line.p1 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
 						}
-						else if (EqualV2(core->run_data->grabbed_seg_pos, p2, 1.0f))
+						else if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p2, 1.0f))
 						{
 							p2 = GetMousePositionInWorldSpace();
 							seg_body->shape.line.p2 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
@@ -515,8 +515,8 @@ internal void DrawGameUI()
 							}
 							else
 							{
-								core->run_data->grabbed_seg_pos = p1;
-								core->run_data->is_seg_grabbed = 1;
+								core->run_data->collision_editor.grabbed_seg_pos = p1;
+								core->run_data->collision_editor.is_seg_grabbed = 1;
 								TsPlatformCaptureMouseButtons();
 							}
 						}
@@ -540,8 +540,8 @@ internal void DrawGameUI()
 								}
 							}
 							
-							if (core->run_data->selected_ground_seg == seg_entity)
-								core->run_data->selected_ground_seg = 0;
+							if (core->run_data->collision_editor.selected_ground_seg == seg_entity)
+								core->run_data->collision_editor.selected_ground_seg = 0;
 						}
 					}
 					
@@ -552,12 +552,12 @@ internal void DrawGameUI()
 			
 			if (core->left_mouse_released)
 			{
-				core->run_data->grabbed_seg_pos = v2(0.0f, 0.0f);
-				core->run_data->is_seg_grabbed = 0;
+				core->run_data->collision_editor.grabbed_seg_pos = v2(0.0f, 0.0f);
+				core->run_data->collision_editor.is_seg_grabbed = 0;
 			}
 			else if (platform->left_mouse_down)
 			{
-				core->run_data->grabbed_seg_pos = GetMousePositionInWorldSpace();
+				core->run_data->collision_editor.grabbed_seg_pos = GetMousePositionInWorldSpace();
 			}
 			
 			break;
@@ -631,51 +631,47 @@ internal void DrawEditorUI()
 			{
 				if (TsUIToggler("Entity", core->run_data->editor_state == EDITOR_STATE_entity))
 				{
-					if (core->run_data->editor_state != EDITOR_STATE_entity)
-					{
-						core->run_data->editor_state = EDITOR_STATE_entity;
-					}
+					SwitchEditorState(EDITOR_STATE_entity);
 				}
 				
 				if (TsUIToggler("Terrain", core->run_data->editor_state == EDITOR_STATE_terrain))
 				{
-					if (core->run_data->editor_state != EDITOR_STATE_terrain)
-					{
-						core->run_data->editor_state = EDITOR_STATE_terrain;
-					}
+					SwitchEditorState(EDITOR_STATE_terrain);
 				}
 				
 				if (TsUIToggler("Collision", core->run_data->editor_state == EDITOR_STATE_collision))
 				{
-					if (core->run_data->editor_state != EDITOR_STATE_collision)
-					{
-						core->run_data->editor_state = EDITOR_STATE_collision;
-					}
+					SwitchEditorState(EDITOR_STATE_collision);
+				}
+				
+				if (TsUIToggler("Chunk", core->run_data->editor_state == EDITOR_STATE_chunk))
+				{
+					SwitchEditorState(EDITOR_STATE_chunk);
 				}
 			}
 			TsUIDropdownEnd();
 			
 			if (TsUIDropdown("View..."))
 			{
-				if (TsUIToggler("Draw World", core->run_data->editor_flags & EDITOR_FLAGS_draw_world))
-					core->run_data->editor_flags |= EDITOR_FLAGS_draw_world;
+				if (TsUIToggler("Draw World", core->run_data->debug_flags & DEBUG_FLAGS_draw_world))
+					core->run_data->debug_flags |= DEBUG_FLAGS_draw_world;
 				else
-					core->run_data->editor_flags &= ~EDITOR_FLAGS_draw_world;
+					core->run_data->debug_flags &= ~DEBUG_FLAGS_draw_world;
 				
-				if (TsUIToggler("Draw Colliders", core->run_data->editor_flags & EDITOR_FLAGS_draw_collision))
-					core->run_data->editor_flags |= EDITOR_FLAGS_draw_collision;
+				if (TsUIToggler("Draw Colliders", core->run_data->debug_flags & DEBUG_FLAGS_draw_collision))
+					core->run_data->debug_flags |= DEBUG_FLAGS_draw_collision;
 				else
-					core->run_data->editor_flags &= ~EDITOR_FLAGS_draw_collision;
+					core->run_data->debug_flags &= ~DEBUG_FLAGS_draw_collision;
 				
-				if (TsUIToggler("Draw Chunk Grid", core->run_data->editor_flags & EDITOR_FLAGS_draw_chunk_grid))
-					core->run_data->editor_flags |= EDITOR_FLAGS_draw_chunk_grid;
+				if (TsUIToggler("Draw Chunk Grid", core->run_data->debug_flags & DEBUG_FLAGS_draw_chunk_grid))
+					core->run_data->debug_flags |= DEBUG_FLAGS_draw_chunk_grid;
 				else
-					core->run_data->editor_flags &= ~EDITOR_FLAGS_draw_chunk_grid;
+					core->run_data->debug_flags &= ~DEBUG_FLAGS_draw_chunk_grid;
 				
-				if (TsUIToggler("Debug Cell View", core->run_data->editor_flags & EDITOR_FLAGS_debug_cell_view))
-					core->run_data->editor_flags |= EDITOR_FLAGS_debug_cell_view;
+				if (TsUIToggler("Debug Cell View", core->run_data->debug_flags & DEBUG_FLAGS_debug_cell_view))
+					core->run_data->debug_flags |= DEBUG_FLAGS_debug_cell_view;
 				else
-					core->run_data->editor_flags &= ~EDITOR_FLAGS_debug_cell_view;
+					core->run_data->debug_flags &= ~DEBUG_FLAGS_debug_cell_view;
 			}
 			TsUIDropdownEnd();
 			
@@ -716,84 +712,9 @@ internal void DrawEditorUI()
 		case EDITOR_STATE_none:
 		break;
 		
+		// NOTE(randy): $Entity Editor
 		case EDITOR_STATE_entity:
 		{
-			local_persist b8 prev = 0;
-			local_persist SkeletonChunk prev_chunk;
-			
-			{
-				v2 window_size = {300.0f, 400.0f};
-				TsUIWindowBegin("Chunks", v4(core->render_w - window_size.x - 10.0f, 10.0f, window_size.x, window_size.y), 0, 0);
-				{
-					TsUIPushColumn(v2(10, 10), v2(150, 30));
-					TsUIPushWidth(270.0f);
-					
-					for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
-					{
-						Chunk *chunk = &core->run_data->active_chunks[i];
-						if (chunk->is_valid)
-						{
-							char title[100];
-							sprintf(title, "#%i Chunk%i.%i", i, chunk->x_index, chunk->y_index);
-							
-							if (TsUICollapsable(title))
-							{
-								{
-									char label[100];
-									sprintf(label, "Entity Count: %i", chunk->entity_count);
-									TsUILabel(label);
-								}
-								
-								if (TsUICollapsable("Entity IDs"))
-								{
-									for (i32 j = 0; j < chunk->entity_count; j++)
-									{
-										char label[100];
-										sprintf(label, "[%i] #%i", j, chunk->entity_ids[j]);
-										TsUILabel(label);
-									}
-									
-									TsUICollapsableEnd();
-								}
-								
-								if (TsUIToggler("Selected", core->run_data->selected_chunk == chunk))
-								{
-									core->run_data->selected_chunk = chunk;
-									prev_chunk.x_index = chunk->x_index;
-									prev_chunk.y_index = chunk->y_index;
-									prev = 1;
-								}
-								
-								TsUICollapsableEnd();
-							}
-						}
-					}
-					
-					/*
-										if (core->run_data->selected_chunk)
-											if (TsUIButton("Unload Chunk"))
-										{
-											UnloadChunk(core->run_data->selected_chunk);
-											core->run_data->selected_chunk = 0;
-										}
-					 */
-					
-					if (prev)
-					{
-						char label[100];
-						sprintf(label, "Load Chunk %i.%i", prev_chunk.x_index, prev_chunk.y_index);
-						if (TsUIButton(label))
-						{
-							LoadChunkFromDisk(core->run_data->world_chunks_path, prev_chunk.x_index, prev_chunk.y_index);
-						}
-					}
-					
-					TsUIPopWidth();
-					TsUIPopColumn();
-				}
-				TsUIWindowEnd();
-			}
-			
 			{
 				v2 window_size = {300.0f, 400.0f};
 				TsUIWindowBegin("Entities", v4(0.0f, 10.0f, window_size.x, window_size.y), 0, 0);
@@ -823,6 +744,7 @@ internal void DrawEditorUI()
 			break;
 		}
 		
+		// NOTE(randy): $Terrain Editor
 		case EDITOR_STATE_terrain:
 		{
 			// NOTE(randy): Functionality list
@@ -837,35 +759,35 @@ internal void DrawEditorUI()
 			// TODO: refactor this when the render queue is added.
 			if (platform->right_mouse_pressed)
 			{
-				core->run_data->selection_start = GetMousePositionInWorldSpace();
-				core->run_data->selection_start.x = floorf(core->run_data->selection_start.x);
-				core->run_data->selection_start.y = floorf(core->run_data->selection_start.y);
-				core->run_data->selection_end = core->run_data->selection_start;
+				core->run_data->terrain_editor.selection_start = GetMousePositionInWorldSpace();
+				core->run_data->terrain_editor.selection_start.x = floorf(core->run_data->terrain_editor.selection_start.x);
+				core->run_data->terrain_editor.selection_start.y = floorf(core->run_data->terrain_editor.selection_start.y);
+				core->run_data->terrain_editor.selection_end = core->run_data->terrain_editor.selection_start;
 				
 				//if (core->run_data->selected_cell)
 				//QueueChunkForTextureUpdate(core->run_data->selected_cell->parent_chunk);
-				core->run_data->selected_cell = GetCellAtPosition((i32)core->run_data->selection_start.x, (i32)core->run_data->selection_start.y);
-				//QueueChunkForTextureUpdate(core->run_data->selected_cell->parent_chunk);
+				core->run_data->terrain_editor.selected_cell = GetCellAtPosition((i32)core->run_data->terrain_editor.selection_start.x, (i32)core->run_data->terrain_editor.selection_start.y);
+				//QueueChunkForTextureUpdate(core->run_data->terrain_editor.selected_cell->parent_chunk);
 			}
 			else if (core->right_mouse_released)
 			{
-				if (core->run_data->selection_start.x != core->run_data->selection_end.x && core->run_data->selection_start.y != core->run_data->selection_end.y)
+				if (core->run_data->terrain_editor.selection_start.x != core->run_data->terrain_editor.selection_end.x && core->run_data->terrain_editor.selection_start.y != core->run_data->terrain_editor.selection_end.y)
 				{
-					//QueueChunkForTextureUpdate(core->run_data->selected_cell->parent_chunk);
-					core->run_data->selected_cell = 0;
+					//QueueChunkForTextureUpdate(core->run_data->terrain_editor.selected_cell->parent_chunk);
+					core->run_data->terrain_editor.selected_cell = 0;
 				}
 			}
 			
 			if (platform->right_mouse_down)
 			{
-				core->run_data->selection_end = GetMousePositionInWorldSpace();
-				core->run_data->selection_end.x = floorf(core->run_data->selection_end.x);
-				core->run_data->selection_end.y = floorf(core->run_data->selection_end.y);
+				core->run_data->terrain_editor.selection_end = GetMousePositionInWorldSpace();
+				core->run_data->terrain_editor.selection_end.x = floorf(core->run_data->terrain_editor.selection_end.x);
+				core->run_data->terrain_editor.selection_end.y = floorf(core->run_data->terrain_editor.selection_end.y);
 				
-				//if (core->run_data->selected_cell)
-				//QueueChunkForTextureUpdate(core->run_data->selected_cell->parent_chunk);
-				core->run_data->selected_cell = GetCellAtPosition((i32)core->run_data->selection_end.x, (i32)core->run_data->selection_end.y);
-				//QueueChunkForTextureUpdate(core->run_data->selected_cell->parent_chunk);
+				//if (core->run_data->terrain_editor.selected_cell)
+				//QueueChunkForTextureUpdate(core->run_data->terrain_editor.selected_cell->parent_chunk);
+				core->run_data->terrain_editor.selected_cell = GetCellAtPosition((i32)core->run_data->terrain_editor.selection_end.x, (i32)core->run_data->terrain_editor.selection_end.y);
+				//QueueChunkForTextureUpdate(core->run_data->terrain_editor.selected_cell->parent_chunk);
 			}
 			
 			v2 window_size = {300.0f, 400.0f};
@@ -927,49 +849,49 @@ internal void DrawEditorUI()
 							}
 				 */
 				
-				if (core->run_data->selected_cell)
+				if (core->run_data->terrain_editor.selected_cell)
 				{
 					if (TsUICollapsable("Selected Cell"))
 					{
 						// TODO: Auto @Printable tagging in dd
 						
-						TsUILabel(GetCellMaterialTypeName(core->run_data->selected_cell->material_type));
+						TsUILabel(GetCellMaterialTypeName(core->run_data->terrain_editor.selected_cell->material_type));
 						
 						/*
 											{
 												char lbl[20];
-												sprintf(lbl, "Dynamic ID #%i", core->run_data->selected_cell->dynamic_id);
+												sprintf(lbl, "Dynamic ID #%i", core->run_data->terrain_editor.selected_cell->dynamic_id);
 												TsUILabel(lbl);
 											}
 						
 											{
 												char lbl[20];
-												sprintf(lbl, "Posx %i", core->run_data->selected_cell->x_position);
+												sprintf(lbl, "Posx %i", core->run_data->terrain_editor.selected_cell->x_position);
 												TsUILabel(lbl);
 											}
 						
 											{
 												char lbl[20];
-												sprintf(lbl, "Posy %i", core->run_data->selected_cell->y_position);
+												sprintf(lbl, "Posy %i", core->run_data->terrain_editor.selected_cell->y_position);
 												TsUILabel(lbl);
 											}
 						 */
 						
 						{
 							char lbl[20];
-							sprintf(lbl, "Air Pressure: %f", core->run_data->selected_cell->dynamic_properties.air.pressure);
+							sprintf(lbl, "Air Pressure: %f", core->run_data->terrain_editor.selected_cell->dynamic_properties.air.pressure);
 							TsUILabel(lbl);
 						}
 						
 						{
 							char lbl[20];
-							sprintf(lbl, "Liquid Mass: %f", core->run_data->selected_cell->dynamic_properties.liquid.mass);
+							sprintf(lbl, "Liquid Mass: %f", core->run_data->terrain_editor.selected_cell->dynamic_properties.liquid.mass);
 							TsUILabel(lbl);
 						}
 						
 						/* {
 							char lbl[20];
-							sprintf(lbl, "Liquid Mass adj: %f", core->run_data->selected_cell->dynamic_properties.liquid.mass_adjustment);
+							sprintf(lbl, "Liquid Mass adj: %f", core->run_data->terrain_editor.selected_cell->dynamic_properties.liquid.mass_adjustment);
 							TsUILabel(lbl);
 						} */
 						
@@ -979,19 +901,19 @@ internal void DrawEditorUI()
 					/*
 									if (TsUIButton("Clear Selection"))
 									{
-										QueueChunkForTextureUpdate(core->run_data->selected_cell->parent_chunk);
-										core->run_data->selected_cell = 0;
+										QueueChunkForTextureUpdate(core->run_data->terrain_editor.selected_cell->parent_chunk);
+										core->run_data->terrain_editor.selected_cell = 0;
 									}
 					 */
 				}
-				else if (core->run_data->selection_start.x != core->run_data->selection_end.x && core->run_data->selection_start.y != core->run_data->selection_end.y)
+				else if (core->run_data->terrain_editor.selection_start.x != core->run_data->terrain_editor.selection_end.x && core->run_data->terrain_editor.selection_start.y != core->run_data->terrain_editor.selection_end.y)
 				{
 					{
 						char start[50];
-						sprintf(start, "Selection Start: %f, %f", core->run_data->selection_start.x, core->run_data->selection_start.y);
+						sprintf(start, "Selection Start: %f, %f", core->run_data->terrain_editor.selection_start.x, core->run_data->terrain_editor.selection_start.y);
 						
 						char end[50];
-						sprintf(end, "Selection End: %f, %f", core->run_data->selection_end.x, core->run_data->selection_end.y);
+						sprintf(end, "Selection End: %f, %f", core->run_data->terrain_editor.selection_end.x, core->run_data->terrain_editor.selection_end.y);
 						
 						TsUILabel(start);
 						TsUILabel(end);
@@ -999,13 +921,13 @@ internal void DrawEditorUI()
 					
 					if (TsUIButton("Bake Selection"))
 					{
-						v2 selection_bounds = V2SubtractV2(core->run_data->selection_end, core->run_data->selection_start);
+						v2 selection_bounds = V2SubtractV2(core->run_data->terrain_editor.selection_end, core->run_data->terrain_editor.selection_start);
 						
 						for (int y = 1; y < fabsf(selection_bounds.height); y++)
 						{
 							for (int x = 1; x < fabsf(selection_bounds.width); x++)
 							{
-								Cell *cell = GetCellAtPosition((i32)core->run_data->selection_start.x + x * GetSign(selection_bounds.width), (i32)core->run_data->selection_start.y + y * GetSign(selection_bounds.height));
+								Cell *cell = GetCellAtPosition((i32)core->run_data->terrain_editor.selection_start.x + x * GetSign(selection_bounds.width), (i32)core->run_data->terrain_editor.selection_start.y + y * GetSign(selection_bounds.height));
 								/*
 															if (cell->dynamic_id)
 															{
@@ -1029,13 +951,13 @@ internal void DrawEditorUI()
 						
 						v2 absolute_start_pos;
 						if (selection_bounds.x < 0.0f)
-							absolute_start_pos.x = core->run_data->selection_end.x;
+							absolute_start_pos.x = core->run_data->terrain_editor.selection_end.x;
 						else
-							absolute_start_pos.x = core->run_data->selection_start.x;
+							absolute_start_pos.x = core->run_data->terrain_editor.selection_start.x;
 						if (selection_bounds.y < 0.0f)
-							absolute_start_pos.y = core->run_data->selection_end.y;
+							absolute_start_pos.y = core->run_data->terrain_editor.selection_end.y;
 						else
-							absolute_start_pos.y = core->run_data->selection_start.y;
+							absolute_start_pos.y = core->run_data->terrain_editor.selection_start.y;
 						
 						GetSkeletonChunksInRegion(chunks, &chunk_count, v4(absolute_start_pos.x, absolute_start_pos.y, fabsf(selection_bounds.width), fabsf(selection_bounds.height)), 0);
 						for (i32 i = 0; i < chunk_count; i++)
@@ -1047,14 +969,14 @@ internal void DrawEditorUI()
 								LogWarning("Selected region has an unloaded chunk, is this intended?");
 						}
 						
-						core->run_data->selection_start = v2(0, 0);
-						core->run_data->selection_end = v2(0, 0);
+						core->run_data->terrain_editor.selection_start = v2(0, 0);
+						core->run_data->terrain_editor.selection_end = v2(0, 0);
 					}
 					
 					if (TsUIButton("Clear Selection"))
 					{
-						core->run_data->selection_start = v2(0, 0);
-						core->run_data->selection_end = v2(0, 0);
+						core->run_data->terrain_editor.selection_start = v2(0, 0);
+						core->run_data->terrain_editor.selection_end = v2(0, 0);
 					}
 				}
 				else
@@ -1063,7 +985,7 @@ internal void DrawEditorUI()
 				}
 				
 				if (core->world_delta_t == 0.0f && TsUIButton("Step Simulation"))
-					core->run_data->editor_flags |= EDITOR_FLAGS_manual_step;
+					core->run_data->debug_flags |= DEBUG_FLAGS_manual_step;
 				
 				TsUIPopWidth();
 				TsUIPopColumn();
@@ -1187,6 +1109,7 @@ internal void DrawEditorUI()
 			break;
 		}
 		
+		// NOTE(randy): $Collision Editor
 		case EDITOR_STATE_collision:
 		{
 			v2 window_size = {300.0f, 400.0f};
@@ -1203,20 +1126,20 @@ internal void DrawEditorUI()
 					{
 						char label[50];
 						sprintf(label, "Segment #%i", ground_seg->entity_id);
-						if (core->run_data->selected_ground_seg)
+						if (core->run_data->collision_editor.selected_ground_seg)
 						{
-							if (TsUIToggler(label, ground_seg->entity_id == core->run_data->selected_ground_seg->entity_id))
-								core->run_data->selected_ground_seg = ground_seg;
-							else if (core->run_data->selected_ground_seg->entity_id == ground_seg->entity_id)
-								core->run_data->selected_ground_seg = 0;
+							if (TsUIToggler(label, ground_seg->entity_id == core->run_data->collision_editor.selected_ground_seg->entity_id))
+								core->run_data->collision_editor.selected_ground_seg = ground_seg;
+							else if (core->run_data->collision_editor.selected_ground_seg->entity_id == ground_seg->entity_id)
+								core->run_data->collision_editor.selected_ground_seg = 0;
 						}
 						else
 						{
 							if (TsUIToggler(label, 0))
-								core->run_data->selected_ground_seg = ground_seg;
+								core->run_data->collision_editor.selected_ground_seg = ground_seg;
 						}
 						
-						if (core->run_data->selected_ground_seg && core->run_data->selected_ground_seg->entity_id == ground_seg->entity_id)
+						if (core->run_data->collision_editor.selected_ground_seg && core->run_data->collision_editor.selected_ground_seg->entity_id == ground_seg->entity_id)
 						{
 							{
 								char label[50];
@@ -1229,7 +1152,7 @@ internal void DrawEditorUI()
 								TsUILabel(label);
 							}
 							
-							// PrintEntityDataUI(core->run_data->selected_ground_seg->parent_generic_entity);
+							// PrintEntityDataUI(core->run_data->collision_editor.selected_ground_seg->parent_generic_entity);
 						}
 					}
 				}
@@ -1238,9 +1161,85 @@ internal void DrawEditorUI()
 				TsUIPopWidth();
 			}
 			TsUIWindowEnd();
+		} break;
+		
+		// NOTE(randy): $Chunk editor
+		case EDITOR_STATE_chunk :
+		{
+			v2 world_info_window_size = { 300.0f, 300.0f };
+			v2 world_info_window_pos = {core->render_w - world_info_window_size.x - 10.0f, 10.0f};
+			TsUIWindowBegin("World Info", v4(world_info_window_pos.x, world_info_window_pos.y, world_info_window_size.x, world_info_window_size.y), 0, 0);
+			{
+				TsUIPushColumn(v2(10, 10), v2(150, 30));
+				TsUIPushWidth(270.0f);
+				
+				{
+					char label[20];
+					sprintf(label, "Active Chunks: %i", core->run_data->active_chunk_count);
+					TsUILabel(label);
+				}
+				
+				// NOTE(randy): Make a new chunk selection
+				if (platform->left_mouse_pressed)
+				{
+					v2 click_pos = GetMousePositionInWorldSpace();
+					core->run_data->chunk_editor.is_chunk_selected = 1;
+					core->run_data->chunk_editor.selected_chunk.x_index = WorldSpaceToChunkIndex(click_pos.x);
+					core->run_data->chunk_editor.selected_chunk.y_index = WorldSpaceToChunkIndex(click_pos.y);
+				}
+				
+				TsUIPopColumn();
+				TsUIPopWidth();
+			}
+			TsUIWindowEnd();
 			
-			break;
-		}
+			v2 selected_chunk_window_size = { 300.0f, 400.0f };
+			v2 selected_chunk_window_pos = {world_info_window_pos.x, world_info_window_pos.y + world_info_window_size.y + 10.0f};
+			TsUIWindowBegin("Selected Chunk", v4(selected_chunk_window_pos.x, selected_chunk_window_pos.y, selected_chunk_window_size.x, selected_chunk_window_size.y), 0, 0);
+			{
+				TsUIPushColumn(v2(10, 10), v2(150, 30));
+				TsUIPushWidth(270.0f);
+				
+				if (core->run_data->chunk_editor.is_chunk_selected)
+				{
+					Chunk *chunk = GetChunkAtIndex(core->run_data->chunk_editor.selected_chunk.x_index, core->run_data->chunk_editor.selected_chunk.y_index);
+					if (chunk)
+					{
+						{
+							char label[20];
+							sprintf(label, "%i, %i", chunk->x_index, chunk->y_index);
+							TsUITitle(label);
+						}
+						TsUIDivider();
+						{
+							char label[20];
+							sprintf(label, "entity_count: %i", chunk->entity_count);
+							TsUILabel(label);
+						}
+					}
+					else
+					{
+						// NOTE(randy): The selected chunk isn't loaded in.
+						{
+							char label[20];
+							sprintf(label, "%i, %i (unloaded)", core->run_data->chunk_editor.selected_chunk.x_index, core->run_data->chunk_editor.selected_chunk.y_index);
+							TsUITitle(label);
+						}
+						TsUIDivider();
+						
+						// TODO(randy): Option to force load the chunk in?
+					}
+				}
+				else
+				{
+					TsUILabel("No chunk selected.");
+				}
+				
+				TsUIPopColumn();
+				TsUIPopWidth();
+			}
+			TsUIWindowEnd();
+		} break;
 		
 		default:
 		Assert(0);
@@ -1270,7 +1269,7 @@ internal void DrawEditorUI()
 			{
 				TsUIPushColumn(v2(10, 10), v2(100, 30));
 				
-				if (!core->run_data->selected_entity)
+				if (!core->run_data->entity_editor.selected_entity)
 				{
 					TsUIPushAutoWidth();
 					TsUILabel("No Entity selected.");
@@ -1281,22 +1280,22 @@ internal void DrawEditorUI()
 					TsUIPushWidth(entity_info_window_rect.width - 50);
 					{
 						char *label = MakeCStringOnMemoryArena(core->frame_arena, "%s #%i",
-															   core->run_data->selected_entity->name, core->run_data->selected_entity->entity_id);
+															   core->run_data->entity_editor.selected_entity->name, core->run_data->entity_editor.selected_entity->entity_id);
 						TsUITitle(label);
 						
-						//PrintEntityDataUI(core->run_data->selected_entity);
+						//PrintEntityDataUI(core->run_data->entity_editor.selected_entity);
 					}
 					TsUIPopWidth();
 					
 					TsUIDivider();
 					
 					TsUIPushAutoWidth();
-					if (!(core->run_data->selected_entity->flags & ENTITY_FLAGS_no_delete))
+					if (!(core->run_data->entity_editor.selected_entity->flags & ENTITY_FLAGS_no_delete))
 					{
 						if (TsUIButton("Delete Entity"))
 						{
-							DeleteEntity(core->run_data->selected_entity);
-							core->run_data->selected_entity = 0;
+							DeleteEntity(core->run_data->entity_editor.selected_entity);
+							core->run_data->entity_editor.selected_entity = 0;
 						}
 					}
 					TsUIPopWidth();
@@ -1356,15 +1355,15 @@ internal void DrawEditorUI()
 						{
 							TsUISameLine();
 							TsUIPushWidth(entity_list_window_rect.width - 80);
-							if (TsUIToggler(entity->name, (core->run_data->selected_entity ? core->run_data->selected_entity->entity_id == i : 0)))
+							if (TsUIToggler(entity->name, (core->run_data->entity_editor.selected_entity ? core->run_data->entity_editor.selected_entity->entity_id == i : 0)))
 							{
-								core->run_data->selected_entity = entity;
+								core->run_data->entity_editor.selected_entity = entity;
 							}
 							else
 							{
-								if (core->run_data->selected_entity && core->run_data->selected_entity->entity_id == i)
+								if (core->run_data->entity_editor.selected_entity && core->run_data->entity_editor.selected_entity->entity_id == i)
 								{
-									core->run_data->selected_entity = 0;
+									core->run_data->entity_editor.selected_entity = 0;
 								}
 							}
 							TsUIPopWidth();
@@ -1392,16 +1391,16 @@ internal void DrawEditorUI()
 								Entity *entity = &core->run_data->entities[j];
 								if (entity->entity_id > 0 && entity->generalised_type == i)
 								{
-									if (TsUIToggler(entity->name, (core->run_data->selected_entity ? core->run_data->selected_entity->entity_id == j : 0)))
+									if (TsUIToggler(entity->name, (core->run_data->entity_editor.selected_entity ? core->run_data->entity_editor.selected_entity->entity_id == j : 0)))
 									{
-										core->run_data->selected_entity = entity;
+										core->run_data->entity_editor.selected_entity = entity;
 									}
 									else
 									{
-										if (core->run_data->selected_entity &&
-											core->run_data->selected_entity->entity_id == j)
+										if (core->run_data->entity_editor.selected_entity &&
+											core->run_data->entity_editor.selected_entity->entity_id == j)
 										{
-											core->run_data->selected_entity = 0;
+											core->run_data->entity_editor.selected_entity = 0;
 										}
 									}
 								}
@@ -1466,5 +1465,48 @@ internal void DrawEditorUI()
 			}
 			TsUIWindowEnd();
 		}
+	}
+}
+
+internal void SwitchEditorState(EditorState editor_state)
+{
+	if (core->run_data->editor_state != editor_state)
+	{
+		// NOTE(randy): Cache the no-state debug flags
+		if (core->run_data->editor_state == EDITOR_STATE_none)
+		{
+			core->run_data->saved_debug_flags = core->run_data->debug_flags;
+		}
+		
+		core->run_data->debug_flags = core->run_data->saved_debug_flags;
+		
+		// NOTE(randy): Set state specific debug flags
+		switch (editor_state)
+		{
+			case EDITOR_STATE_entity :
+			{
+			} break;
+			
+			case EDITOR_STATE_terrain :
+			{
+				core->run_data->debug_flags |= DEBUG_FLAGS_debug_cell_view;
+			} break;
+			
+			case EDITOR_STATE_collision :
+			{
+				core->run_data->debug_flags |= DEBUG_FLAGS_draw_collision;
+			} break;
+			
+			case EDITOR_STATE_chunk :
+			{
+				core->run_data->debug_flags |= DEBUG_FLAGS_draw_collision;
+				core->run_data->debug_flags |= DEBUG_FLAGS_draw_chunk_grid; // TODO(randy): Need to separate this flag out from the collision draw
+			} break;
+		}
+		
+		
+		core->run_data->disable_chunk_loaded_based_off_view = editor_state != EDITOR_STATE_none;
+		
+		core->run_data->editor_state = editor_state;
 	}
 }

@@ -14,17 +14,17 @@
 #include "arcane.h"
 #include "core.h"
 // NOTE(randy): Game Header Code
-#include "arc/sprite/sprite.h"
-#include "arc/world/particle.h"
+#include "arc/sprite.h"
+#include "arc/particle.h"
 #include "generated/catchall.h"
-#include "arc/ecs/ecs.h"
-#include "arc/item/item.h"
-#include "arc/world/cell.h"
-#include "arc/world/world.h"
-#include "arc/world/collision.h"
-#include "arc/entity/player/player.h"
-#include "arc/entity/player/camera.h"
-#include "arc/ui/ui.h"
+#include "arc/ecs.h"
+#include "arc/item.h"
+#include "arc/cell.h"
+#include "arc/world.h"
+#include "arc/collision.h"
+#include "arc/player.h"
+#include "arc/camera.h"
+#include "arc/ui.h"
 
 // NOTE(rjf): Core Implementation Code
 #include "telescope/telescope.c"
@@ -33,18 +33,18 @@
 // NOTE(randy): Game Implementation Code
 #include "arc/util.c"
 #include "tsarcane/terminalcommands.c"
-#include "arc/sprite/sprite.c"
-#include "arc/entity/arc_entity.c"
-#include "arc/world/particle.c"
+#include "arc/sprite.c"
+#include "arc/arc_entity.c"
+#include "arc/particle.c"
 #include "generated/catchall.c"
-#include "arc/ecs/ecs.c"
-#include "arc/item/item.c"
-#include "arc/world/cell.c"
-#include "arc/world/world.c"
-#include "arc/world/collision.c"
-#include "arc/entity/player/player.c"
-#include "arc/entity/player/camera.c"
-#include "arc/ui/ui.c"
+#include "arc/ecs.c"
+#include "arc/item.c"
+#include "arc/cell.c"
+#include "arc/world.c"
+#include "arc/collision.c"
+#include "arc/player.c"
+#include "arc/camera.c"
+#include "arc/ui.c"
 
 internal void
 GameInit(void)
@@ -128,7 +128,7 @@ GameInit(void)
             
 #ifdef DEVELOPER_ENVIRONMENT
 			if (!LoadWorld("testing"))
-				CreateTestLevel();
+				CreateWorld("testing");
 #else
 			core->is_ingame = 0;
 #endif
@@ -168,38 +168,47 @@ GameUpdate(void)
 		// NOTE(randy): Enter editor mode
 		if (platform->key_pressed[KEY_f1])
 		{
+			
 			if (core->run_data->editor_state == EDITOR_STATE_entity)
 			{
-				core->run_data->editor_state = EDITOR_STATE_none;
+				SwitchEditorState(EDITOR_STATE_none);
 			}
 			else
 			{
-				core->run_data->editor_state = EDITOR_STATE_entity;
-				core->run_data->disable_chunk_loaded_based_off_view = 1;
+				SwitchEditorState(EDITOR_STATE_entity);
 			}
 		}
 		else if (platform->key_pressed[KEY_f2])
 		{
 			if (core->run_data->editor_state == EDITOR_STATE_terrain)
 			{
-				core->run_data->editor_state = EDITOR_STATE_none;
+				SwitchEditorState(EDITOR_STATE_none);
 			}
 			else
 			{
-				core->run_data->editor_state = EDITOR_STATE_terrain;
-				core->run_data->disable_chunk_loaded_based_off_view = 1;
+				SwitchEditorState(EDITOR_STATE_terrain);
 			}
 		}
 		else if (platform->key_pressed[KEY_f3])
 		{
 			if (core->run_data->editor_state == EDITOR_STATE_collision)
 			{
-				core->run_data->editor_state = EDITOR_STATE_none;
+				SwitchEditorState(EDITOR_STATE_none);
 			}
 			else
 			{
-				core->run_data->editor_state = EDITOR_STATE_collision;
-				core->run_data->disable_chunk_loaded_based_off_view = 1;
+				SwitchEditorState(EDITOR_STATE_collision);
+			}
+		}
+		else if (platform->key_pressed[KEY_f4])
+		{
+			if (core->run_data->editor_state == EDITOR_STATE_chunk)
+			{
+				SwitchEditorState(EDITOR_STATE_none);
+			}
+			else
+			{
+				SwitchEditorState(EDITOR_STATE_chunk);
 			}
 		}
 #endif
@@ -356,7 +365,7 @@ GameUpdate(void)
 			if (TsUIMenuButton("Play"))
 			{
 				if (!LoadWorld("testing"))
-					CreateTestLevel();
+					CreateWorld("testing");
 			}
 			if (TsUIMenuButton("Quit"))
 			{
@@ -370,13 +379,12 @@ GameUpdate(void)
 
 internal void InitialiseRunData()
 {
-	core->run_data->editor_flags |= EDITOR_FLAGS_draw_world;
-#ifdef DEVELOPER_ENVIRONMENT
-	core->run_data->editor_flags |= EDITOR_FLAGS_draw_collision;
-	core->run_data->editor_flags |= EDITOR_FLAGS_draw_chunk_grid;
-	core->run_data->editor_flags |= EDITOR_FLAGS_debug_cell_view;
-#endif
+	core->run_data->debug_flags |= DEBUG_FLAGS_draw_world;
 	core->run_data->free_dynamic_cell_id = 1;
+	core->run_data->save_job_index = -1;
+	core->run_data->load_job_index = -1;
+	core->run_data->free_entity_id = 1;
+	InitialiseComponents();
 }
 
 internal void FreeRunData()

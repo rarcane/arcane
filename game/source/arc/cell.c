@@ -303,7 +303,7 @@ internal void RenderCells()
 						
 						if (pressure > 0.0f)
 						{
-							if (core->run_data->editor_flags & EDITOR_FLAGS_debug_cell_view)
+							if (core->run_data->debug_flags & DEBUG_FLAGS_debug_cell_view)
 								colour = v4(pressure / 50.0f, 0.0f, 0.0f, 1.0f);
 							else
 								colour = V4MultiplyF32(v4u(1.0f), pressure / 10.0f);
@@ -347,7 +347,7 @@ internal void RenderCells()
 					}
 					case CELL_MATERIAL_TYPE_water:
 					{
-						if (core->run_data->editor_flags & EDITOR_FLAGS_debug_cell_view)
+						if (core->run_data->debug_flags & DEBUG_FLAGS_debug_cell_view)
 						{
 							v3 water_colour = {218.0f / 360.0f, 0.58f, 0.91f};
 							f32 mass = cell->dynamic_properties.liquid.mass;
@@ -423,10 +423,10 @@ internal void RenderCells()
 #ifdef DEVELOPER_TOOLS
 	if (core->run_data->editor_state == EDITOR_STATE_terrain)
 	{
-		v2 cell_selection = V2SubtractV2(core->run_data->selection_end, core->run_data->selection_start);
+		v2 cell_selection = V2SubtractV2(core->run_data->terrain_editor.selection_end, core->run_data->terrain_editor.selection_start);
 		if (cell_selection.x != 0.0f && cell_selection.y != 0.0f)
 		{
-			v2 pos = v2view(core->run_data->selection_start);
+			v2 pos = v2view(core->run_data->terrain_editor.selection_start);
 			v2 size = v2zoom(cell_selection);
 			Ts2dPushFilledRect(v4(0.5f, 0.0f, 0.0f, 0.5f), v4(pos.x, pos.y, size.x, size.y));
 		}
@@ -452,7 +452,7 @@ internal i32 CellPositionToIndex(i32 pos)
 
 internal Cell *GetCellAtPosition(i32 x, i32 y)
 {
-	Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex((f32)x), WorldspaceToChunkIndex((f32)y));
+	Chunk *chunk = GetChunkAtIndex(WorldSpaceToChunkIndex((f32)x), WorldSpaceToChunkIndex((f32)y));
 	if (!chunk)
 		return 0;
 	

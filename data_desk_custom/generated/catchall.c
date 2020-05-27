@@ -54,6 +54,9 @@ break;
 case EDITOR_STATE_collision:
 return "Collision";
 break;
+case EDITOR_STATE_chunk:
+return "Chunk";
+break;
 default:
 return "INVALID";
 break;

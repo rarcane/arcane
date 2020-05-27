@@ -1,11 +1,8 @@
-internal void InitialiseWorldData();
-
 internal void UpdateWorld();
 internal void DrawWorld();
 internal void UpdateParallax();
 
-// NOTE(randy): Creates a new world with the specified name.
-// Returns 0 if the world already exists.
+// NOTE(randy): Generates a new world, returns 0 if the world already exists.
 internal b8 CreateWorld(char *world_name);
 // NOTE(randy): Saves the currently loaded world's basic level data.
 internal void SaveLevelData();
@@ -22,6 +19,8 @@ int SaveQueuedChunks(void *job_data);
 int LoadQueuedChunks(void *job_data);
 // NOTE(randy): Queues the specified chunk for a save by taking a snapshot of data
 internal b8 QueueChunkForSave(Chunk *chunk);
+// NOTE(randy): Puts all positional entities into their appropriate chunks.
+internal void FillChunkEntities();
 // NOTE(randy): Loads in chunks that should be visible. Unloads chunks that are no longer active.
 internal void UpdateChunks();
 
@@ -29,7 +28,7 @@ internal void UpdateChunks();
 // If there isn't a chunk loaded at that index, it returns null.
 internal Chunk *GetChunkAtIndex(i32 x, i32 y);
 // NOTE(randy): Converts the specified position (x OR y worldspace coord) into a chunk index
-inline internal i32 WorldspaceToChunkIndex(f32 world_space_coord)
+inline internal i32 WorldSpaceToChunkIndex(f32 world_space_coord)
 {
 	f32 div = world_space_coord / (f32)CHUNK_SIZE;
 	i32 index = (i32)floorf(div);

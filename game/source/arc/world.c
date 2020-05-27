@@ -50,38 +50,41 @@ internal void WorldUpdate()
 				DeserialiseComponentsFromMap(entity_id_map, core->run_data->loaded_entity_count);
 			}
 			
-			// NOTE(randy): Generate all the new chunks' entities
-			for (i32 i = 0; i < core->run_data->chunk_generate_queue_count; i++)
-			{
-				ChunkSave *chunk_save = core->run_data->chunk_generate_queue[i];
-				Chunk *chunk = GetChunkAtIndex(chunk_save->skele_chunk.x_index, chunk_save->skele_chunk.y_index);
-				
-				if (chunk->y_index == 0)
-				{
-					i32 ground_segments_per_chunk = 16;
-					f32 segment_width = (f32)CHUNK_SIZE / (f32)ground_segments_per_chunk;
-					for (i32 j = 0; j < ground_segments_per_chunk; j++)
-					{
-						Entity *entity = NewEntity("floor", GENERALISED_ENTITY_TYPE_ground);
-						PositionComponent *pos_comp = AddPositionComponent(entity);
-						f32 x_pos = (f32)chunk->x_index * (f32)CHUNK_SIZE + segment_width * j;
-						f32 y_pos = GetTerrainHeight(x_pos);
-						pos_comp->position = v2(x_pos, y_pos);
-						
-						Line line = {0};
-						line.p2.x = segment_width;
-						line.p2.y = GetTerrainHeight(x_pos + segment_width) - y_pos;
-						
-						PhysicsBodyComponent *body_comp = AddPhysicsBodyComponent(entity);
-						body_comp->shape.line = line;
-						body_comp->shape_type = C2_SHAPE_TYPE_line;
-						body_comp->material.static_friction = 0.2f;
-						body_comp->material.dynamic_friction = 0.2f;
-						body_comp->mass_data.mass = 0.0f;
-						body_comp->mass_data.inv_mass = 0.0f;
-					}
-				}
-			}
+			// NOTE(randy): Chunk generation is on hold until we actually being creating the world map.
+			/*
+						// NOTE(randy): Generate all the new chunks' entities
+						for (i32 i = 0; i < core->run_data->chunk_generate_queue_count; i++)
+						{
+							ChunkSave *chunk_save = core->run_data->chunk_generate_queue[i];
+							Chunk *chunk = GetChunkAtIndex(chunk_save->skele_chunk.x_index, chunk_save->skele_chunk.y_index);
+							
+							if (chunk->y_index == 0)
+							{
+								i32 ground_segments_per_chunk = 16;
+								f32 segment_width = (f32)CHUNK_SIZE / (f32)ground_segments_per_chunk;
+								for (i32 j = 0; j < ground_segments_per_chunk; j++)
+								{
+									Entity *entity = NewEntity("floor", GENERALISED_ENTITY_TYPE_ground);
+									PositionComponent *pos_comp = AddPositionComponent(entity);
+									f32 x_pos = (f32)chunk->x_index * (f32)CHUNK_SIZE + segment_width * j;
+									f32 y_pos = GetTerrainHeight(x_pos);
+									pos_comp->position = v2(x_pos, y_pos);
+									
+									Line line = {0};
+									line.p2.x = segment_width;
+									line.p2.y = GetTerrainHeight(x_pos + segment_width) - y_pos;
+									
+									PhysicsBodyComponent *body_comp = AddPhysicsBodyComponent(entity);
+									body_comp->shape.line = line;
+									body_comp->shape_type = C2_SHAPE_TYPE_line;
+									body_comp->material.static_friction = 0.2f;
+									body_comp->material.dynamic_friction = 0.2f;
+									body_comp->mass_data.mass = 0.0f;
+									body_comp->mass_data.inv_mass = 0.0f;
+								}
+							}
+						}
+			 */
 			
 			// NOTE(randy): Reset load data
 			core->run_data->loaded_entity_count = 0;
@@ -106,7 +109,7 @@ internal void WorldUpdate()
 	START_PERF_TIMER("Update");
     
 	// NOTE(randy): Perform if the game is not paused.
-	if ((core->world_delta_t == 0.0f ? (core->run_data->editor_flags & EDITOR_FLAGS_manual_step) : 1))
+	if ((core->world_delta_t == 0.0f ? (core->run_data->debug_flags & DEBUG_FLAGS_manual_step) : 1))
 	{
 		UpdateCells();
 		
@@ -119,7 +122,7 @@ internal void WorldUpdate()
         
 		PostMoveUpdatePlayer();
         
-		core->run_data->editor_flags &= ~EDITOR_FLAGS_manual_step;
+		core->run_data->debug_flags &= ~DEBUG_FLAGS_manual_step;
 	}
     
 	UpdateParallax();
@@ -145,7 +148,7 @@ internal void WorldUpdate()
 internal void DrawWorld()
 {
 #ifdef DEVELOPER_TOOLS
-	if (!(core->run_data->editor_flags & EDITOR_FLAGS_draw_world))
+	if (!(core->run_data->debug_flags & DEBUG_FLAGS_draw_world))
 		return;
 #endif
     
@@ -241,26 +244,197 @@ internal void UpdateParallax()
 	}
 }
 
-internal void InitialiseWorldData()
+internal void GenerateTestPlatform()
 {
-	core->run_data->save_job_index = -1;
-	core->run_data->load_job_index = -1;
-	core->run_data->free_entity_id = 1;
-	InitialiseComponents();
+	i32 width = 1000;
+	i32 depth = 100;
+	f32 height_variation = 20;
+	f32 edge_percent = 0.2f;
+	
+	i32 ground_interval = 16;
+	PositionComponent *previous_pos = 0;
+	PhysicsBodyComponent *previous_body = 0;
+	
+	i32 height_map[100];
+	
+	for (i32 i = 0; i < width; i++)
+	{
+		i32 x_pos = i - width / 2;
+		
+		f32 height_noise;
+		{
+			i32 octaves = 8;
+			f32 frequency = 1.0f;
+			f32 amplitude = 5.0f;
+			f32 max_noise_value = 0.0f;
+			f32 noise_amount = 0.0f;
+			for (int k = 0; k < octaves; k++)
+			{
+				noise_amount += GetPerlinNoise((f32)i / (f32)PERLIN_NOISE_LENGTH * frequency, 0.0f) * amplitude;
+				max_noise_value += amplitude;
+				frequency *= 2.0f;
+				amplitude *= 0.5f;
+			}
+			
+			height_noise = noise_amount / max_noise_value;
+		}
+		
+		i32 height = depth + (i32)(height_noise * height_variation);
+		
+		if (i % 10)
+		{
+			height_map[i / 10] = height;
+		}
+		
+		f32 depth_noise;
+		{
+			i32 octaves = 8;
+			f32 frequency = 1.0f;
+			f32 amplitude = 50.0f;
+			f32 max_noise_value = 0.0f;
+			f32 noise_amount = 0.0f;
+			for (int k = 0; k < octaves; k++)
+			{
+				noise_amount += GetPerlinNoise((f32)i / (f32)PERLIN_NOISE_LENGTH * frequency, 0.0f) * amplitude;
+				max_noise_value += amplitude;
+				frequency *= 2.0f;
+				amplitude *= 0.5f;
+			}
+			
+			depth_noise = noise_amount / max_noise_value;
+		}
+		
+		i32 depth_with_noise = (i32)(depth + depth_noise * 100.0f);
+		
+		f32 edge_length = (f32)width * edge_percent;
+		i32 depth_with_edges;
+		f32 alpha;
+		if (i < edge_length)
+		{
+			alpha = (f32)i / edge_length;
+		}
+		else if (i > width - edge_length)
+		{
+			alpha = ((f32)width - (f32)i) / edge_length;
+		}
+		
+		depth_with_edges = (i32)LerpF32(alpha, 2.0f, (f32)depth);
+		depth_with_edges += (i32)(depth_noise * LerpF32(alpha, 20.0f, 100.0f));
+		
+		for (i32 y = 0; y < depth - height + depth_with_edges; y++)
+		{
+			i32 y_pos = height + y;
+			
+			Chunk *chunk = GetChunkAtIndex(WorldSpaceToChunkIndex((f32)x_pos), WorldSpaceToChunkIndex((f32)y_pos));
+			if (!chunk)
+			{
+				chunk = &core->run_data->active_chunks[core->run_data->active_chunk_count++];
+				
+				chunk->is_valid = 1;
+				chunk->remain_loaded = 1;
+				chunk->x_index = WorldSpaceToChunkIndex((f32)x_pos);
+				chunk->y_index = WorldSpaceToChunkIndex((f32)y_pos);
+				chunk->entity_count = 0;
+				chunk->entity_ids = 0;
+			}
+			
+			Cell *cell = GetCellAtPosition(x_pos, y_pos);
+			cell->material_type = CELL_MATERIAL_TYPE_dirt;
+			
+			QueueChunkForTextureUpdate(chunk);
+		}
+		
+		// NOTE(randy): $Generate ground
+		if (i % ground_interval == 0)
+		{
+			Entity *entity = NewEntity("floor", GENERALISED_ENTITY_TYPE_ground);
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2((f32)x_pos, (f32)height);
+			
+			Line line = {0};
+			if (previous_body)
+			{
+				previous_body->shape.line.p2.x = (f32)ground_interval;
+				previous_body->shape.line.p2.y = (f32)height - previous_pos->position.y;
+			}
+			
+			
+			PhysicsBodyComponent *body_comp = AddPhysicsBodyComponent(entity);
+			body_comp->shape.line = line;
+			body_comp->shape_type = C2_SHAPE_TYPE_line;
+			body_comp->material.static_friction = 0.2f;
+			body_comp->material.dynamic_friction = 0.2f;
+			body_comp->mass_data.mass = 0.0f;
+			body_comp->mass_data.inv_mass = 0.0f;
+			
+			previous_body = body_comp;
+			previous_pos = pos_comp;
+		}
+	}
+	
+	// NOTE(randy): $Generate background stuff
+	{
+		for (i32 i = 10; i < 100; i += 10)
+		{
+			if (RandomI32(0, 3))
+			{
+				i32 height = height_map[i];
+				i32 x_pos = i * 10 - width / 2 + 10;
+				
+				Entity *entity = NewEntity("Tree", GENERALISED_ENTITY_TYPE_resource);
+				
+				PositionComponent *pos_comp = AddPositionComponent(entity);
+				pos_comp->position = v2((f32)x_pos, (f32)height + 1);
+				
+				SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+				sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_pine_tree_v1;
+			}
+		}
+		
+		/*
+				{
+					Entity *entity = NewEntity("Hills", GENERALISED_ENTITY_TYPE_scenic);
+					
+					PositionComponent *pos_comp = AddPositionComponent(entity);
+					pos_comp->pos_comp = v2(0, 0);
+				}
+		 */
+	}
 }
 
-internal void CreateTestLevel()
+internal b8 CreateWorld(char *world_name)
 {
-	Assert(!core->run_data->world_name[0]); // NOTE(randy): A level is already loaded in.
-    
-	InitialiseRunData();
-	InitialiseWorldData();
-	core->is_ingame = 1;
-    
-	core->run_data->world.test_ptr = &core->run_data->free_entity_id;
-    
+	Assert(world_name[0] && strlen(world_name) < sizeof(core->run_data->world_name));
+	
+	// NOTE(randy): Create world directories & initialise world data
 	{
-		// scuffed lmao
+		char path[300] = "";
+		sprintf(path, "%sworlds\\", core->res_path);
+		
+		if (!platform->DoesDirectoryExist(path))
+			platform->MakeDirectory(path);
+		
+		strcat(path, world_name);
+		strcat(path, "\\");
+		if (platform->DoesDirectoryExist(path))
+			return 0;
+		platform->MakeDirectory(path);
+		
+		char chunks_path[300] = "";
+		sprintf(chunks_path, "%schunks\\", path);
+		platform->MakeDirectory(chunks_path);
+		
+		strcpy(core->run_data->world_name, world_name);
+		strcpy(core->run_data->world_path, path);
+		strcpy(core->run_data->world_chunks_path, chunks_path);
+		InitialiseRunData();
+	}
+	
+	GenerateTestPlatform();
+	
+	// NOTE(randy): Initialise the player
+	{
+		// TODO(randy): clean up
 		Entity *character = NewEntity("Player", GENERALISED_ENTITY_TYPE_character);
 		core->run_data->character_entity = character;
 		AddPositionComponent(character);
@@ -269,85 +443,44 @@ internal void CreateTestLevel()
 		AddMovementComponent(character);
 		AddPhysicsBodyComponent(character);
 		AddAnimationComponent(character);
-        
+		
 		character->flags |= ENTITY_FLAGS_no_delete;
 		GetPositionComponentFromEntityID(character->entity_id)->position = v2(0.0f, -100.0f);
-        
+		
 		c2Capsule capsule = {
 			.a = c2V(0.0f, -10.0f),
 			.b = c2V(0.0f, -50.0f),
 			.r = 10.0f,
 		};
-        
+		
 		PhysicsBodyComponent *phys_body_comp = GetPhysicsBodyComponentFromEntityID(character->entity_id);
 		phys_body_comp->shape.capsule = capsule;
 		phys_body_comp->shape_type = C2_SHAPE_TYPE_capsule;
-        
+		
 		phys_body_comp->mass_data.mass = 60.0f;
 		phys_body_comp->mass_data.inv_mass = 1.0f / phys_body_comp->mass_data.mass;
 		phys_body_comp->material.restitution = 0.4f;
 		phys_body_comp->material.static_friction = 0.5f;
 		phys_body_comp->material.dynamic_friction = 0.5f;
 		phys_body_comp->gravity_multiplier = 1.0f;
-        
+		
 		GetMovementComponentFromEntityID(character->entity_id)->move_speed = 100.0f;
 		GetArcEntityComponentFromEntityID(character->entity_id)->entity_type = ARC_ENTITY_TYPE_player;
 		GetArcEntityComponentFromEntityID(character->entity_id)->current_animation_state = ARC_ENTITY_ANIMATION_STATE_player_idle;
 		SpriteComponent *sprite_comp = GetSpriteComponentFromEntityID(character->entity_id);
 		sprite_comp->sprite_data.dynamic_sprite = DYNAMIC_SPRITE_player_idle;
 	}
-    
-	/* {
-		core->sword = NewEntity("Sword", GENERALISED_ENTITY_TYPE_item);
-		core->sword->flags |= ENTITY_FLAGS_no_delete;
-		ItemComponent *sword_item = AddItemComponent(core->sword);
-		sword_item->item_type = ITEM_TYPE_flint_sword;
-		sword_item->stack_size = 1;
-
-		core->backpack = NewEntity("Backpack", GENERALISED_ENTITY_TYPE_storage);
-		core->backpack->flags |= ENTITY_FLAGS_no_delete;
-		StorageComponent *backpack_storage = AddStorageComponent(core->backpack);
-		backpack_storage->storage_size = 9;
-
-		core->hotbar = NewEntity("Hotbar", GENERALISED_ENTITY_TYPE_storage); // Hotbar should technically be attached to the player entity
-		core->hotbar->flags |= ENTITY_FLAGS_no_delete;
-		StorageComponent *hotbar_storage = AddStorageComponent(core->hotbar);
-		hotbar_storage->storage_size = 2;
-
-		AddItemToStorage(sword_item, backpack_storage, 2);
-	} */
-    
-	CreateWorld("testing");
-}
-
-internal b8 CreateWorld(char *world_name)
-{
-	Assert(world_name[0] && strlen(world_name) < sizeof(core->run_data->world_name));
-    
-	char path[300] = "";
-	sprintf(path, "%sworlds\\", core->res_path);
-    
-	// Make the worlds directory if it doesn't already exist.
-	if (!platform->DoesDirectoryExist(path))
-		platform->MakeDirectory(path);
-    
-	// Attempt to create the world folder
-	strcat(path, world_name);
-	strcat(path, "\\");
-	if (platform->DoesDirectoryExist(path))
-		return 0;
-	platform->MakeDirectory(path);
-    
-	// Create chunks folder
-	char chunks_path[300] = "";
-	sprintf(chunks_path, "%schunks\\", path);
-	platform->MakeDirectory(chunks_path);
-    
-	strcpy(core->run_data->world_name, world_name);
-	strcpy(core->run_data->world_path, path);
-	strcpy(core->run_data->world_chunks_path, chunks_path);
-    
+	
+	FillChunkEntities();
+	
+	// NOTE(randy): Initial save.
 	SaveLevelData();
+	SaveWorld();
+	Assert(core->run_data->save_job_index != -1);
+	while(!platform->WaitForJob(core->run_data->save_job_index, TS_WAIT_FOREVER));
+	
+	core->is_ingame = 1;
+	
 	Log("Created new world '%s' successfully.", world_name);
 	return 1;
 }
@@ -355,22 +488,21 @@ internal b8 CreateWorld(char *world_name)
 internal b8 LoadWorld(char *world_name)
 {
 	Assert(world_name[0] && strlen(world_name) < sizeof(core->run_data->world_name));
-    
+	
 	char path[300] = "";
 	sprintf(path, "%sworlds\\%s\\", core->res_path, world_name);
-    
+	
 	if (!platform->DoesDirectoryExist(path))
 		return 0;
-    
+	
 	{
 		FreeRunData();
 		MemorySet(core->run_data, 0, sizeof(RunData));
 		strcpy(core->run_data->world_name, world_name);
 		strcpy(core->run_data->world_path, path);
-        
+		
 		// TODO: refactor this
 		InitialiseRunData();
-		InitialiseWorldData();
 		// NOTE(randy): Might want to seperate out some run data that is permanent
 		// and will not change between saves
 	}
@@ -381,15 +513,15 @@ internal b8 LoadWorld(char *world_name)
 		sprintf(file_path, "%slevel_data.save", path);
 		FILE *save = fopen(file_path, "r");
 		Assert(save);
-        
+		
 		// NOTE(randy): Read the player entity in
 		{
 			EntitySave entity_save;
 			ReadFromFile(save, &entity_save, sizeof(EntitySave));
-            
+			
 			Entity *entity = NewEntity(entity_save.name, entity_save.type);
 			entity->flags = entity_save.flags;
-            
+			
 			i32 component_ids[COMPONENT_MAX];
 			ReadFromFile(save, &component_ids, sizeof(component_ids));
 			for (i32 i = 1; i < COMPONENT_MAX; i++)
@@ -403,17 +535,17 @@ internal b8 LoadWorld(char *world_name)
         
 		// NOTE(randy): Read in basic world data
 		ReadWorldSaveDataFromFile(save, &core->run_data->world);
-        
+		
 		// NOTE(randy): Read in floating entities
 		ReadFromFile(save, &core->run_data->floating_entity_id_count, sizeof(i32));
 		for (i32 i = 0; i < core->run_data->floating_entity_id_count; i++)
 		{
 			EntitySave entity_save;
 			ReadFromFile(save, &entity_save, sizeof(EntitySave));
-            
+			
 			Entity *entity = NewEntity(entity_save.name, entity_save.type);
 			entity->flags = entity_save.flags;
-            
+			
 			core->run_data->floating_entity_ids[i] = entity->entity_id;
 		}
         
@@ -431,24 +563,24 @@ internal b8 LoadWorld(char *world_name)
 		sprintf(file_path, "%schunks\\", path);
 		Assert(platform->DoesDirectoryExist(file_path));
 		strcpy(core->run_data->world_chunks_path, file_path);
-        
+		
 		TransformInGameCamera();
-        
+		
 		SkeletonChunk chunks[MAX_WORLD_CHUNKS];
 		i32 chunk_count;
 		GetSkeletonChunksInRegion(chunks, &chunk_count, GetCameraRegionRect(), 1);
-        
+		
 		for (i32 i = 0; i < chunk_count; i++)
 		{
 			Chunk *chunk = LoadChunkFromDisk(file_path, chunks[i].x_index, chunks[i].y_index);
-            
+			
 			if (!chunk)
 				LogError("A surrounding chunk in the player's region doesn't exist, is this intended?");
 		}
 	}
     
 	core->is_ingame = 1;
-    
+	
 	Log("Successfully loaded world \'%s\'", world_name);
 	return 1;
 }
@@ -456,11 +588,11 @@ internal b8 LoadWorld(char *world_name)
 internal void UnloadWorld()
 {
 	Assert(core->is_ingame && core->run_data->world_name[0]);
-    
+	
 	SaveWorld();
 	Assert(core->run_data->save_job_index != -1);
 	platform->WaitForJob(core->run_data->save_job_index, TS_WAIT_FOREVER);
-    
+	
 	FreeRunData();
 	MemorySet(core->run_data, 0, sizeof(RunData));
 	core->is_ingame = 0;
@@ -536,8 +668,6 @@ internal int LoadQueuedChunks(void *job_data)
 		FILE *file = fopen(chunk_file_path, "rb");
 		if (file)
 		{
-			
-			
 			ReadFromFile(file, &chunk_save->cells, sizeof(chunk_save->cells));
 			
 			// NOTE(randy): Read in entities and their components
@@ -566,24 +696,26 @@ internal int LoadQueuedChunks(void *job_data)
 		}
 		else
 		{
-			// NOTE(randy): Chunk doesn't exist yet. Generate it.
-			//chunk = GenerateNewChunk(chunks[i].x_index, chunks[i].y_index);
-			core->run_data->chunk_generate_queue[core->run_data->chunk_generate_queue_count++] = chunk_save;
-			
-			for (int y = 0; y < CHUNK_SIZE; y++)
-			{
-				for (int x = 0; x < CHUNK_SIZE; x++)
+			/*
+				// NOTE(randy): Chunk doesn't exist yet. Generate it.
+				//chunk = GenerateNewChunk(chunks[i].x_index, chunks[i].y_index);
+				core->run_data->chunk_generate_queue[core->run_data->chunk_generate_queue_count++] = chunk_save;
+				
+				for (int y = 0; y < CHUNK_SIZE; y++)
 				{
-					Cell *cell = &chunk_save->cells[y][x];
-					i32 x_pos = chunk_save->skele_chunk.x_index * CHUNK_SIZE + x;
-					i32 y_pos = chunk_save->skele_chunk.y_index * CHUNK_SIZE + y;
-					
-					if (y_pos > GetTerrainHeight((f32)x_pos) && y_pos < 500.0f)
+					for (int x = 0; x < CHUNK_SIZE; x++)
 					{
-						cell->material_type = CELL_MATERIAL_TYPE_dirt;
+						Cell *cell = &chunk_save->cells[y][x];
+						i32 x_pos = chunk_save->skele_chunk.x_index * CHUNK_SIZE + x;
+						i32 y_pos = chunk_save->skele_chunk.y_index * CHUNK_SIZE + y;
+						
+						if (y_pos > GetTerrainHeight((f32)x_pos) && y_pos < 500.0f)
+						{
+							cell->material_type = CELL_MATERIAL_TYPE_dirt;
+						}
 					}
 				}
-			}
+	 */
 		}
 	}
 	
@@ -628,19 +760,19 @@ internal b8 QueueChunkForSave(Chunk *chunk)
 internal void SaveLevelData()
 {
 	Assert(core->run_data->world_path[0]);
-    
+	
 	char file_path[200] = "";
 	sprintf(file_path, "%slevel_data.save", core->run_data->world_path);
 	FILE *file = fopen(file_path, "w");
 	Assert(file);
-    
+	
 	// NOTE(randy): Save the player entity
 	{
 		EntitySave entity_save = {.flags = core->run_data->character_entity->flags, .type = core->run_data->character_entity->generalised_type};
 		MemoryCopy(entity_save.name, core->run_data->character_entity->name, sizeof(entity_save.name));
-        
+		
 		WriteToFile(file, &entity_save, sizeof(EntitySave));
-        
+		
 		WriteToFile(file, &core->run_data->character_entity->component_ids, sizeof(core->run_data->character_entity->component_ids));
 		for (i32 i = 1; i < COMPONENT_MAX; i++)
 		{
@@ -653,17 +785,17 @@ internal void SaveLevelData()
     
 	// NOTE(randy): Save world data struct
 	WriteWorldSaveDataToFile(file, &core->run_data->world);
-    
+	
 	// NOTE(randy): Save all of the entities that don't belong to chunks.
 	{
 		WriteToFile(file, &core->run_data->floating_entity_id_count, sizeof(i32));
 		for (i32 i = 0; i < core->run_data->floating_entity_id_count; i++)
 		{
 			Entity *entity = &core->run_data->entities[core->run_data->floating_entity_ids[i] - 1];
-            
+			
 			EntitySave entity_save = {.flags = entity->flags, .type = entity->generalised_type};
 			MemoryCopy(entity_save.name, entity->name, sizeof(entity_save.name));
-            
+			
 			WriteToFile(file, &entity_save, sizeof(EntitySave));
 		}
         
@@ -679,7 +811,7 @@ internal void SaveLevelData()
 
 internal void SaveWorld()
 {
-	if (core->run_data->chunk_save_count > 0)
+	if (core->run_data->chunk_save_count > 0 || core->run_data->save_job_index != -1)
 	{
 		LogWarning("A save is already in progress.");
 		return;
@@ -707,15 +839,14 @@ internal void SaveWorld()
 		}
 	}
 	
-	
 	core->run_data->save_job_index = platform->QueueJob(0, SaveQueuedChunks, 0);
 	
 	// TODO(randy): Try doing a malloc and free for the snapshop data to see if it's more performant and we won't need to store scratch in RunData
 }
 
-internal void UpdateChunks()
+internal void FillChunkEntities()
 {
-	// Reset counts
+	// NOTE(randy): Reset counts
 	core->run_data->floating_entity_id_count = 0;
 	core->run_data->positional_entity_id_count = 0;
 	MemorySet(core->run_data->positional_entity_ids, 0, sizeof(core->run_data->positional_entity_ids));
@@ -726,70 +857,73 @@ internal void UpdateChunks()
 		chunk->entity_count = 0;
 		chunk->entity_ids = 0;
 	}
-    
-	// NOTE(randy):  Decide where each entity belongs
+	
+	// NOTE(randy): Find all positional entities currently within the world.
+	Entity *positional_entities[MAX_POSITIONAL_ENTITIES];
+	i32 positional_entity_count = 0;
+	for (i32 i = 0; i < core->run_data->entity_count; i++)
 	{
-		Entity *positional_entities[MAX_POSITIONAL_ENTITIES];
-		i32 positional_entity_count = 0;
-        
-		for (i32 i = 0; i < core->run_data->entity_count; i++)
+		Entity *entity = &core->run_data->entities[i];
+		if (entity->entity_id)
 		{
-			Entity *entity = &core->run_data->entities[i];
-			if (entity->entity_id)
+			if (entity == core->run_data->character_entity)
+				continue;
+			
+			v2 position = {0.0f, 0.0f};
+			if (entity->component_ids[COMPONENT_position])
 			{
-				if (entity == core->run_data->character_entity)
-					continue;
-                
-				v2 position = {0.0f, 0.0f};
-				if (entity->component_ids[COMPONENT_position])
+				position = GetPositionComponentFromEntityID(entity->entity_id)->position;
+				if (entity->component_ids[COMPONENT_parallax])
 				{
-					position = GetPositionComponentFromEntityID(entity->entity_id)->position;
-					if (entity->component_ids[COMPONENT_parallax])
-					{
-						position = GetParallaxComponentFromEntityID(entity->entity_id)->desired_position;
-					}
-					Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex(position.x), WorldspaceToChunkIndex(position.y));
-                    
-					chunk->entity_count++;
-					positional_entities[positional_entity_count++] = entity;
+					position = GetParallaxComponentFromEntityID(entity->entity_id)->desired_position;
 				}
-				else
-				{
-					core->run_data->floating_entity_ids[core->run_data->floating_entity_id_count++] = entity->entity_id;
-				}
+				Chunk *chunk = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x), WorldSpaceToChunkIndex(position.y));
+				Assert(chunk);
+				
+				chunk->entity_count++;
+				positional_entities[positional_entity_count++] = entity;
 			}
-		}
-        
-		// NOTE(randy): Set each chunk's local array
-		i32 id_count = 0;
-		for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
-		{
-			Chunk *chunk = &core->run_data->active_chunks[i];
-			if (chunk->is_valid && chunk->entity_count)
+			else
 			{
-				chunk->entity_ids = &core->run_data->positional_entity_ids[id_count];
-				id_count += chunk->entity_count;
-				core->run_data->positional_entity_id_count += chunk->entity_count;
-				chunk->entity_count = 0;
+				core->run_data->floating_entity_ids[core->run_data->floating_entity_id_count++] = entity->entity_id;
 			}
-		}
-        
-		// NOTE(randy): Put all positional entities into their desired chunk arrays
-		for (i32 i = 0; i < positional_entity_count; i++)
-		{
-			Entity *entity = positional_entities[i];
-            
-			v2 position = GetPositionComponentFromEntityID(entity->entity_id)->position;
-			if (entity->component_ids[COMPONENT_parallax])
-			{
-				position = GetParallaxComponentFromEntityID(entity->entity_id)->desired_position;
-			}
-			Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex(position.x), WorldspaceToChunkIndex(position.y));
-            
-			chunk->entity_ids[chunk->entity_count++] = entity->entity_id;
 		}
 	}
-    
+	
+	// NOTE(randy): Allocate each chunk's local array
+	i32 id_count = 0;
+	for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
+	{
+		Chunk *chunk = &core->run_data->active_chunks[i];
+		if (chunk->is_valid && chunk->entity_count)
+		{
+			chunk->entity_ids = &core->run_data->positional_entity_ids[id_count];
+			id_count += chunk->entity_count;
+			core->run_data->positional_entity_id_count += chunk->entity_count;
+			chunk->entity_count = 0;
+		}
+	}
+	
+	// NOTE(randy): Put all positional entities into their desired chunk arrays.
+	for (i32 i = 0; i < positional_entity_count; i++)
+	{
+		Entity *entity = positional_entities[i];
+		
+		v2 position = GetPositionComponentFromEntityID(entity->entity_id)->position;
+		if (entity->component_ids[COMPONENT_parallax])
+		{
+			position = GetParallaxComponentFromEntityID(entity->entity_id)->desired_position;
+		}
+		Chunk *chunk = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x), WorldSpaceToChunkIndex(position.y));
+		
+		chunk->entity_ids[chunk->entity_count++] = entity->entity_id;
+	}
+}
+
+internal void UpdateChunks()
+{
+	FillChunkEntities();
+	
 	// NOTE(randy): Unload any chunks that haven't been marked as 'remain_loaded' by now
 	Chunk *chunks_to_unload[MAX_WORLD_CHUNKS];
 	i32 chunks_to_unload_count = 0;
@@ -813,81 +947,81 @@ internal void UpdateChunks()
 	if (chunks_to_unload_count > 0 && core->run_data->save_job_index == -1 && core->run_data->load_job_index == -1)
 	{
 		// TODO(randy): Optimise this. Most of it's coming from each chunks' cell copy in QueueChunkForSave. Might need to try streamline the cells themselves, get it a lot smaller.
-		BLOCK_TIMER("initial unload copy",
-					// NOTE(randy): Snapshot the current world data
-					MemoryCopy(&core->run_data->entities_snapshot, &core->run_data->entities, sizeof(core->run_data->entities));
-					MemoryCopy(&core->run_data->entity_count_snapshot, &core->run_data->entity_count, sizeof(core->run_data->entity_count));
-					MemoryCopy(&core->run_data->entity_components_snapshot, &core->run_data->entity_components, sizeof(core->run_data->entity_components));
-					MemoryCopy(&core->run_data->positional_entity_ids_snapshot, &core->run_data->positional_entity_ids,
-							   sizeof(core->run_data->positional_entity_ids));
-					MemoryCopy(&core->run_data->positional_entity_id_count_snapshot, &core->run_data->positional_entity_id_count, sizeof(core->run_data->positional_entity_id_count));
-					
-					// NOTE(randy): Queue up all of the chunks that need to get unloaded.
-					for (i32 i = 0; i < chunks_to_unload_count; i++)
-					{
-						Chunk *chunk = chunks_to_unload[i];
-						Assert(QueueChunkForSave(chunk));
-						
-						DeleteChunk(chunk);
-					}
-					
-					core->run_data->save_job_index = platform->QueueJob(0, SaveQueuedChunks, 0);
-					);
+		//BLOCK_TIMER("initial unload copy",
+		// NOTE(randy): Snapshot the current world data
+		MemoryCopy(&core->run_data->entities_snapshot, &core->run_data->entities, sizeof(core->run_data->entities));
+		MemoryCopy(&core->run_data->entity_count_snapshot, &core->run_data->entity_count, sizeof(core->run_data->entity_count));
+		MemoryCopy(&core->run_data->entity_components_snapshot, &core->run_data->entity_components, sizeof(core->run_data->entity_components));
+		MemoryCopy(&core->run_data->positional_entity_ids_snapshot, &core->run_data->positional_entity_ids,
+				   sizeof(core->run_data->positional_entity_ids));
+		MemoryCopy(&core->run_data->positional_entity_id_count_snapshot, &core->run_data->positional_entity_id_count, sizeof(core->run_data->positional_entity_id_count));
+		
+		// NOTE(randy): Queue up all of the chunks that need to get unloaded.
+		for (i32 i = 0; i < chunks_to_unload_count; i++)
+		{
+			Chunk *chunk = chunks_to_unload[i];
+			Assert(QueueChunkForSave(chunk));
+			
+			DeleteChunk(chunk);
+		}
+		
+		core->run_data->save_job_index = platform->QueueJob(0, SaveQueuedChunks, 0);
+		//);
 	}
 	
 	if (!core->run_data->disable_chunk_loaded_based_off_view)
 	{
-		BLOCK_TIMER_IF("initial load copy",
-					   timer_length > 1,
-					   SkeletonChunk view_chunks[MAX_WORLD_CHUNKS];
-					   i32 view_chunk_count = 0;
-					   GetSkeletonChunksInRegion(view_chunks, &view_chunk_count, GetCameraRegionRect(), 1);
-					   
-					   // NOTE(randy): Load in any visible chunks
-					   if(core->run_data->load_job_index == -1 && core->run_data->save_job_index == -1)
-					   {
-						   for (i32 i = 0; i < view_chunk_count; i++)
-						   {
-							   Chunk *chunk = GetChunkAtIndex(view_chunks[i].x_index, view_chunks[i].y_index);
-							   if (!chunk)
-							   {
-								   ChunkSave new_chunk = {.skele_chunk = view_chunks[i]};
-								   core->run_data->chunk_load_queue[core->run_data->chunk_load_queue_count++] = new_chunk;
-								   
-								   /*
-												   chunk = LoadChunkFromDisk(core->run_data->world_chunks_path, chunks[i].x_index, chunks[i].y_index);
-												   if (!chunk)
-												   {
-													   chunk = GenerateNewChunk(chunks[i].x_index, chunks[i].y_index);
-												   }
-									*/
-							   }
-						   }
-						   
-						   if (core->run_data->chunk_load_queue_count > 0)
-						   {
-							   core->run_data->load_job_index = platform->QueueJob(0, LoadQueuedChunks, 0);
-							   
-							   if (!core->run_data->not_first_time_temp) // lmaoooo
-							   {
-								   while (!platform->WaitForJob(core->run_data->load_job_index, TS_WAIT_FOREVER));
-								   {
-									   core->run_data->not_first_time_temp = 1;
-								   }
-							   }
-						   }
-					   }
-					   
-					   // NOTE(randy): Keep the visible chunks loaded
-					   for (i32 i = 0; i < view_chunk_count; i++)
-					   {
-						   Chunk *chunk = GetChunkAtIndex(view_chunks[i].x_index, view_chunks[i].y_index);
-						   if (chunk && chunk->is_valid)
-						   {
-							   chunk->remain_loaded = 1;
-						   }
-					   }
-					   );
+		//BLOCK_TIMER_IF("initial load copy",
+		//timer_length > 1,
+		SkeletonChunk view_chunks[MAX_WORLD_CHUNKS];
+		i32 view_chunk_count = 0;
+		GetSkeletonChunksInRegion(view_chunks, &view_chunk_count, GetCameraRegionRect(), 1);
+		
+		// NOTE(randy): Load in any visible chunks
+		if(core->run_data->load_job_index == -1 && core->run_data->save_job_index == -1)
+		{
+			for (i32 i = 0; i < view_chunk_count; i++)
+			{
+				Chunk *chunk = GetChunkAtIndex(view_chunks[i].x_index, view_chunks[i].y_index);
+				if (!chunk)
+				{
+					ChunkSave new_chunk = {.skele_chunk = view_chunks[i]};
+					core->run_data->chunk_load_queue[core->run_data->chunk_load_queue_count++] = new_chunk;
+					
+					/*
+					chunk = LoadChunkFromDisk(core->run_data->world_chunks_path, chunks[i].x_index, chunks[i].y_index);
+					if (!chunk)
+					{
+						chunk = GenerateNewChunk(chunks[i].x_index, chunks[i].y_index);
+					}
+	 */
+				}
+			}
+			
+			if (core->run_data->chunk_load_queue_count > 0)
+			{
+				core->run_data->load_job_index = platform->QueueJob(0, LoadQueuedChunks, 0);
+				
+				if (!core->run_data->not_first_time_temp) // lmaoooo
+				{
+					while (!platform->WaitForJob(core->run_data->load_job_index, TS_WAIT_FOREVER));
+					{
+						core->run_data->not_first_time_temp = 1;
+					}
+				}
+			}
+		}
+		
+		// NOTE(randy): Keep the visible chunks loaded
+		for (i32 i = 0; i < view_chunk_count; i++)
+		{
+			Chunk *chunk = GetChunkAtIndex(view_chunks[i].x_index, view_chunks[i].y_index);
+			if (chunk && chunk->is_valid)
+			{
+				chunk->remain_loaded = 1;
+			}
+		}
+		//);
 	}
 	else
 	{
@@ -911,7 +1045,7 @@ internal Chunk *GetChunkAtIndex(i32 x, i32 y)
 		if (chunk->is_valid)
 			if (x == chunk->x_index &&
 				y == chunk->y_index)
-            return chunk;
+			return chunk;
 	}
     
 	// Chunk isn't loaded.
@@ -926,7 +1060,7 @@ internal f32 GetTerrainHeight(f32 x_pos)
 	i32 octaves = 8;
 	f32 frequency = 0.1f;
 	f32 amplitude = 1.0f;
-    
+	
 	f32 max_noise_value = 0.0f;
 	f32 noise_amount = 0.0f;
 	for (int k = 0; k < octaves; k++)
@@ -938,88 +1072,52 @@ internal f32 GetTerrainHeight(f32 x_pos)
 	}
     
 	f32 noise = noise_amount / max_noise_value;
-    
+	
 	return world_height * noise;
-    
-	/* 	f32 last_height = 0.0f;
-	for (int x = 0; x < CHUNK_SIZE * 4; x++)
-	{
-		i32 octaves = 4;
-		f32 frequency = 0.5f;
-		f32 amplitude = 1.0f;
-		f32 max_value = 0.0f;
-
-		f32 noise_amount = 0.0f;
-		for (int k = 0; k < octaves; k++)
-		{
-			noise_amount += GetPerlinNoise(((f32)x / (f32)CHUNK_SIZE) * frequency, 0.0f) * amplitude;
-			max_value += amplitude;
-			frequency *= 2.0f;
-			amplitude *= 0.5f;
-		}
-
-		f32 noise = noise_amount / max_value;
-
-		i32 terrain_height = (i32)floorf(200.0f + 50.0f * noise);
-		for (int y = -1; y > -terrain_height - 1; y--)
-		{
-			i32 x_pos = x - CHUNK_SIZE * 2;
-			i32 y_pos = y + 200;
-
-			Chunk *chunk = GetChunkAtIndex(WorldspaceToChunkIndex((f32)x_pos), WorldspaceToChunkIndex((f32)y_pos));
-			if (!chunk)
-				chunk = GenerateNewChunk(WorldspaceToChunkIndex((f32)x_pos), WorldspaceToChunkIndex((f32)y_pos));
-
-			Cell *cell = GetCellAtPosition(x_pos, y_pos);
-			cell->material_type = CELL_MATERIAL_TYPE_dirt;
-
-			QueueChunkForTextureUpdate(chunk);
-		}
-
-		f32 width = ((f32)CHUNK_SIZE * 4.0f) / 32.0f;
-	} */
 }
 
 internal void GetSurroundingChunks(Chunk **chunks, v2 position)
 {
 	Assert(0); // What's this func for again?
     
-	chunks[0] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x - CHUNK_SIZE),
-								WorldspaceToChunkIndex(position.y - CHUNK_SIZE));
-	chunks[1] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x),
-								WorldspaceToChunkIndex(position.y - CHUNK_SIZE));
-	chunks[2] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x + CHUNK_SIZE),
-								WorldspaceToChunkIndex(position.y - CHUNK_SIZE));
-	chunks[3] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x - CHUNK_SIZE),
-								WorldspaceToChunkIndex(position.y));
-	chunks[4] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x),
-								WorldspaceToChunkIndex(position.y));
-	chunks[5] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x + CHUNK_SIZE),
-								WorldspaceToChunkIndex(position.y));
-	chunks[6] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x - CHUNK_SIZE),
-								WorldspaceToChunkIndex(position.y + CHUNK_SIZE));
-	chunks[7] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x),
-								WorldspaceToChunkIndex(position.y + CHUNK_SIZE));
-	chunks[8] = GetChunkAtIndex(WorldspaceToChunkIndex(position.x + CHUNK_SIZE),
-								WorldspaceToChunkIndex(position.y + CHUNK_SIZE));
+	chunks[0] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x - CHUNK_SIZE),
+								WorldSpaceToChunkIndex(position.y - CHUNK_SIZE));
+	chunks[1] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x),
+								WorldSpaceToChunkIndex(position.y - CHUNK_SIZE));
+	chunks[2] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x + CHUNK_SIZE),
+								WorldSpaceToChunkIndex(position.y - CHUNK_SIZE));
+	chunks[3] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x - CHUNK_SIZE),
+								WorldSpaceToChunkIndex(position.y));
+	chunks[4] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x),
+								WorldSpaceToChunkIndex(position.y));
+	chunks[5] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x + CHUNK_SIZE),
+								WorldSpaceToChunkIndex(position.y));
+	chunks[6] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x - CHUNK_SIZE),
+								WorldSpaceToChunkIndex(position.y + CHUNK_SIZE));
+	chunks[7] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x),
+								WorldSpaceToChunkIndex(position.y + CHUNK_SIZE));
+	chunks[8] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x + CHUNK_SIZE),
+								WorldSpaceToChunkIndex(position.y + CHUNK_SIZE));
 }
 
 internal void DeleteChunk(Chunk *chunk)
 {
 	for (i32 i = 0; i < chunk->entity_count; i++)
 	{
-		DeleteEntity(&core->run_data->entities[chunk->entity_ids[i] - 1]);
+		Entity *entity = &core->run_data->entities[chunk->entity_ids[i] - 1];
+		DeleteEntity(entity);
 	}
     
 	Ts2dTextureCleanUp(&chunk->texture);
 	MemorySet(chunk, 0, sizeof(Chunk));
 }
 
+// TODO(randy): Remove
 internal Chunk *LoadChunkFromDisk(char *path, i32 x_index, i32 y_index)
 {
 	Assert(core->run_data->active_chunk_count + 1 < MAX_WORLD_CHUNKS);
 	Assert(!GetChunkAtIndex(x_index, y_index));
-    
+	
 	char chunk_file_path[100];
 	sprintf(chunk_file_path, "%s%i.%i.chunk", path, x_index, y_index);
 	FILE *file = fopen(chunk_file_path, "r");
@@ -1030,7 +1128,7 @@ internal Chunk *LoadChunkFromDisk(char *path, i32 x_index, i32 y_index)
 		chunk->remain_loaded = 1;
 		chunk->x_index = x_index;
 		chunk->y_index = y_index;
-        
+		
 		// Read in cells
 		{
 			ReadFromFile(file, &chunk->cells, sizeof(Cell) * CHUNK_SIZE * CHUNK_SIZE);
@@ -1041,16 +1139,16 @@ internal Chunk *LoadChunkFromDisk(char *path, i32 x_index, i32 y_index)
 		// Read in entities
 		{
 			ReadFromFile(file, &chunk->entity_count, sizeof(i32));
-            
+			
 			// Allocate a segment in the id array for it.
 			chunk->entity_ids = &core->run_data->positional_entity_ids[core->run_data->positional_entity_id_count];
 			core->run_data->positional_entity_id_count += chunk->entity_count;
-            
+			
 			for (i32 i = 0; i < chunk->entity_count; i++)
 			{
 				EntitySave entity_save;
 				ReadFromFile(file, &entity_save, sizeof(EntitySave));
-                
+				
 				Entity *entity = NewEntity(entity_save.name, entity_save.type);
 				entity->flags = entity_save.flags;
 				

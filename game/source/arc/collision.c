@@ -1,7 +1,7 @@
 #ifdef DEVELOPER_TOOLS
 internal void RenderColliders()
 {
-	if (!(core->run_data->editor_flags & EDITOR_FLAGS_draw_collision))
+	if (!(core->run_data->debug_flags & DEBUG_FLAGS_draw_collision))
 		return;
 	
 	for (int i = 0; i < core->run_data->entity_components.physics_body_component_count; i++)
@@ -13,22 +13,22 @@ internal void RenderColliders()
 			Assert(pos_comp);
 			
 			v3 col = {1.0f, 1.0f, 1.0f};
-			if (core->run_data->selected_ground_seg)
-				if (body_comp->parent_entity_id == core->run_data->selected_ground_seg->entity_id)
+			if (core->run_data->collision_editor.selected_ground_seg)
+				if (body_comp->parent_entity_id == core->run_data->collision_editor.selected_ground_seg->entity_id)
 				col = v3(1.0f, 0.0f, 0.0f);
 			
 			PushDebugShape(body_comp->shape, body_comp->shape_type, pos_comp->position, col);
 		}
 	}
 	
-	if (core->run_data->editor_flags & EDITOR_FLAGS_draw_chunk_grid)
+	if (core->run_data->debug_flags & DEBUG_FLAGS_draw_chunk_grid)
 		for (int i = 0; i < core->run_data->active_chunk_count; i++)
 	{
 		Chunk *chunk = &core->run_data->active_chunks[i];
 		if (chunk->is_valid)
 		{
 			v3 colour = v3(1.0f, 1.0f, 1.0f);
-			if (chunk == core->run_data->selected_chunk)
+			if (core->run_data->chunk_editor.is_chunk_selected && chunk->x_index == core->run_data->chunk_editor.selected_chunk.x_index && chunk->y_index == core->run_data->chunk_editor.selected_chunk.y_index)
 				colour = v3(1.0f, 0.0f, 0.0f);
 			
 			PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index),
