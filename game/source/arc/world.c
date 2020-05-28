@@ -246,16 +246,16 @@ internal void UpdateParallax()
 
 internal void GenerateTestPlatform()
 {
-	i32 width = 1000;
-	i32 depth = 100;
+	i32 width = 2000;
+	i32 depth = 150;
 	f32 height_variation = 20;
-	f32 edge_percent = 0.2f;
+	f32 edge_percent = 0.4f;
 	
 	i32 ground_interval = 16;
 	PositionComponent *previous_pos = 0;
 	PhysicsBodyComponent *previous_body = 0;
 	
-	i32 height_map[100];
+	i32 height_map[200];
 	
 	for (i32 i = 0; i < width; i++)
 	{
@@ -279,7 +279,7 @@ internal void GenerateTestPlatform()
 			height_noise = noise_amount / max_noise_value;
 		}
 		
-		i32 height = depth + (i32)(height_noise * height_variation);
+		i32 height = (i32)(height_noise * height_variation);
 		
 		if (i % 10)
 		{
@@ -289,7 +289,7 @@ internal void GenerateTestPlatform()
 		f32 depth_noise;
 		{
 			i32 octaves = 8;
-			f32 frequency = 1.0f;
+			f32 frequency = 0.5f;
 			f32 amplitude = 50.0f;
 			f32 max_noise_value = 0.0f;
 			f32 noise_amount = 0.0f;
@@ -304,8 +304,6 @@ internal void GenerateTestPlatform()
 			depth_noise = noise_amount / max_noise_value;
 		}
 		
-		i32 depth_with_noise = (i32)(depth + depth_noise * 100.0f);
-		
 		f32 edge_length = (f32)width * edge_percent;
 		i32 depth_with_edges;
 		f32 alpha;
@@ -318,10 +316,10 @@ internal void GenerateTestPlatform()
 			alpha = ((f32)width - (f32)i) / edge_length;
 		}
 		
-		depth_with_edges = (i32)LerpF32(alpha, 2.0f, (f32)depth);
-		depth_with_edges += (i32)(depth_noise * LerpF32(alpha, 20.0f, 100.0f));
+		depth_with_edges = (i32)LerpF32(alpha, 2.0f, (f32)depth - height);
+		depth_with_edges += (i32)(depth_noise * LerpF32(alpha, 10.0f, 200.0f));
 		
-		for (i32 y = 0; y < depth - height + depth_with_edges; y++)
+		for (i32 y = 0; y < depth_with_edges; y++)
 		{
 			i32 y_pos = height + y;
 			
@@ -374,7 +372,7 @@ internal void GenerateTestPlatform()
 	
 	// NOTE(randy): $Generate background stuff
 	{
-		for (i32 i = 10; i < 100; i += 10)
+		for (i32 i = 10; i < 200; i += 10)
 		{
 			if (RandomI32(0, 3))
 			{
@@ -388,17 +386,468 @@ internal void GenerateTestPlatform()
 				
 				SpriteComponent *sprite_comp = AddSpriteComponent(entity);
 				sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_pine_tree_v1;
+				sprite_comp->sprite_data.render_layer = 0.5f;
 			}
 		}
 		
-		/*
-				{
-					Entity *entity = NewEntity("Hills", GENERALISED_ENTITY_TYPE_scenic);
-					
-					PositionComponent *pos_comp = AddPositionComponent(entity);
-					pos_comp->pos_comp = v2(0, 0);
-				}
-		 */
+		// NOTE(randy): $Hill layer 1
+		{
+			Entity *entity = NewEntity("Hills", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(-458.0f, 0.0f);
+			parallax_comp->parallax_amount = HILLS_1_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v2;
+			sprite_comp->sprite_data.render_layer = 1.0f;
+		}
+		{
+			Entity *entity = NewEntity("Hills", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(-272.0f, 0.0f);
+			parallax_comp->parallax_amount = HILLS_1_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v1;
+			sprite_comp->sprite_data.render_layer = 1.0f;
+		}
+		{
+			Entity *entity = NewEntity("Hills", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(-93.0f, 0.0f);
+			parallax_comp->parallax_amount = HILLS_1_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v2;
+			sprite_comp->sprite_data.render_layer = 1.0f;
+		}
+		{
+			Entity *entity = NewEntity("Hills", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(93.0f, 0.0f);
+			parallax_comp->parallax_amount = HILLS_1_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v1;
+			sprite_comp->sprite_data.render_layer = 1.0f;
+		}
+		{
+			Entity *entity = NewEntity("Hills", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(272.0f, 0.0f);
+			parallax_comp->parallax_amount = HILLS_1_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v2;
+			sprite_comp->sprite_data.render_layer = 1.0f;
+		}
+		{
+			Entity *entity = NewEntity("Hills", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(458.0f, 0.0f);
+			parallax_comp->parallax_amount = HILLS_1_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v1;
+			sprite_comp->sprite_data.render_layer = 1.0f;
+		}
+		
+		// NOTE(randy): $bg trees 1
+		for (i32 x = width / -2 + 500; x < width / 2 - 500; x += RandomI32(80, 150))
+		{
+			Entity *entity = NewEntity("Bg1 tree", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2((f32)x, 0.0f);
+			parallax_comp->parallax_amount = BG_TREE_1_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg1_pine_tree_v1 + RandomI32(0, 1);
+			sprite_comp->sprite_data.render_layer = 2.0f;
+			sprite_comp->is_flipped = RandomI32(0, 1);
+		}
+		
+		// NOTE(randy): $bg shrubs 1
+		for (i32 x = width / -2 + 500; x < width / 2 - 500; x += RandomI32(40, 120))
+		{
+			Entity *entity = NewEntity("vegetation", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2((f32)x, 0.0f);
+			parallax_comp->parallax_amount = BG_SHRUB_1_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg1_shrub_v1 + RandomI32(0, 2);
+			sprite_comp->sprite_data.render_layer = 1.5f;
+			sprite_comp->is_flipped = RandomI32(0, 1);
+		}
+		
+		// NOTE(randy): $bg saplings 1
+		for (i32 x = width / -2 + 500; x < width / 2 - 500; x += RandomI32(30, 90))
+		{
+			Entity *entity = NewEntity("vegetation", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2((f32)x, 0.0f);
+			parallax_comp->parallax_amount = BG_SAPLING_1_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg1_sapling_v1 + RandomI32(0, 2);
+			sprite_comp->sprite_data.render_layer = 1.75f;
+			sprite_comp->is_flipped = RandomI32(0, 1);
+		}
+		
+		// NOTE(randy): $Hill layer 2
+		{
+			Entity *entity = NewEntity("Hills 2", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(-500, 0.0f);
+			parallax_comp->parallax_amount = HILLS_2_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
+			sprite_comp->sprite_data.render_layer = 3.0f;
+		}
+		{
+			Entity *entity = NewEntity("Hills 2", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(-300.0f, 0.0f);
+			parallax_comp->parallax_amount = HILLS_2_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
+			sprite_comp->sprite_data.render_layer = 3.0f;
+		}
+		{
+			Entity *entity = NewEntity("Hills 2", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(-100, 0.0f);
+			parallax_comp->parallax_amount = HILLS_2_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
+			sprite_comp->sprite_data.render_layer = 3.0f;
+		}
+		{
+			Entity *entity = NewEntity("Hills 2", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(100, 0.0f);
+			parallax_comp->parallax_amount = HILLS_2_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
+			sprite_comp->sprite_data.render_layer = 3.0f;
+		}
+		{
+			Entity *entity = NewEntity("Hills 2", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(300, 0);
+			parallax_comp->parallax_amount = HILLS_2_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
+			sprite_comp->sprite_data.render_layer = 3.0f;
+		}
+		{
+			Entity *entity = NewEntity("Hills 2", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(500, 0.0f);
+			parallax_comp->parallax_amount = HILLS_2_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
+			sprite_comp->sprite_data.render_layer = 3.0f;
+		}
+		
+		// NOTE(randy): $bg trees 2
+		for (i32 x = width / -2 + 450; x < width / 2 - 450; x += RandomI32(80, 150))
+		{
+			Entity *entity = NewEntity("Bg2 tree", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2((f32)x, 0.0f);
+			parallax_comp->parallax_amount = BG_TREE_2_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg2_pine_tree_v1 + RandomI32(0, 1);
+			sprite_comp->sprite_data.render_layer = 4.0f;
+			sprite_comp->is_flipped = RandomI32(0, 1);
+		}
+		
+		// NOTE(randy): $bg shrubs 2
+		for (i32 x = width / -2 + 450; x < width / 2 - 450; x += RandomI32(40, 120))
+		{
+			Entity *entity = NewEntity("vegetation", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2((f32)x, 0.0f);
+			parallax_comp->parallax_amount = BG_SHRUB_2_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg2_shrub_v1 + RandomI32(0, 2);
+			sprite_comp->sprite_data.render_layer = 3.5f;
+			sprite_comp->is_flipped = RandomI32(0, 1);
+		}
+		
+		// NOTE(randy): $Hill layer 3
+		{
+			Entity *entity = NewEntity("Hills 3", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(-500.0f, 0.0f);
+			parallax_comp->parallax_amount = HILLS_3_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
+			sprite_comp->sprite_data.render_layer = 5.0f;
+		}
+		{
+			Entity *entity = NewEntity("Hills 3", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(-300.0f, 0.0f);
+			parallax_comp->parallax_amount = HILLS_3_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
+			sprite_comp->sprite_data.render_layer = 5.0f;
+		}
+		{
+			Entity *entity = NewEntity("Hills 3", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(-100, 0.0f);
+			parallax_comp->parallax_amount = HILLS_3_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
+			sprite_comp->sprite_data.render_layer = 5.0f;
+		}
+		{
+			Entity *entity = NewEntity("Hills 3", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(100, 0.0f);
+			parallax_comp->parallax_amount = HILLS_3_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
+			sprite_comp->sprite_data.render_layer = 5.0f;
+		}
+		{
+			Entity *entity = NewEntity("Hills 3", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(300, 0);
+			parallax_comp->parallax_amount = HILLS_3_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
+			sprite_comp->sprite_data.render_layer = 5.0f;
+		}
+		{
+			Entity *entity = NewEntity("Hills 3", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(-500.0f, 0.0f);
+			parallax_comp->parallax_amount = HILLS_3_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
+			sprite_comp->sprite_data.render_layer = 5.0f;
+		}
+		
+		// NOTE(randy): $bg trees 3
+		for (i32 x = width / -2 + 500; x < width / 2 - 650; x += RandomI32(30, 50))
+		{
+			Entity *entity = NewEntity("Bg2 tree", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2((f32)x, 0.0f);
+			parallax_comp->parallax_amount = BG_TREE_3_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg3_pine_tree_v1 + RandomI32(0, 7);
+			sprite_comp->sprite_data.render_layer = 6.0f;
+			sprite_comp->is_flipped = RandomI32(0, 1);
+		}
+		
+		// NOTE(randy): $bg shrubs 3
+		for (i32 x = width / -2 + 500; x < width / 2 - 650; x += RandomI32(40, 120))
+		{
+			Entity *entity = NewEntity("vegetation", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2((f32)x, 0.0f);
+			parallax_comp->parallax_amount = BG_SHRUB_3_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_bg3_shrub_v1 + RandomI32(0, 3);
+			sprite_comp->sprite_data.render_layer = 5.5f;
+			sprite_comp->is_flipped = RandomI32(0, 1);
+		}
+		
+		// NOTE(randy): $mid mountains
+		for (i32 x = -1; x < 2; x++)
+		{
+			Entity *entity = NewEntity("mid mountain", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2((f32)x * 500, 0.0f);
+			parallax_comp->parallax_amount = MID_MOUNTAINS_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_mid_mountains;
+			sprite_comp->sprite_data.render_layer = 7.0f;
+		}
+		
+		// NOTE(randy): $far mountains
+		{
+			Entity *entity = NewEntity("far mountain", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(-300, 0.0f);
+			parallax_comp->parallax_amount = FAR_MOUNTAINS_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_far_mountains;
+			sprite_comp->sprite_data.render_layer = 8.0f;
+		}
+		{
+			Entity *entity = NewEntity("far mountain", GENERALISED_ENTITY_TYPE_scenic);
+			entity->flags |= ENTITY_FLAGS_force_floating;
+			
+			PositionComponent *pos_comp = AddPositionComponent(entity);
+			pos_comp->position = v2(0, 0);
+			
+			ParallaxComponent *parallax_comp = AddParallaxComponent(entity);
+			parallax_comp->desired_position = v2(300, 0.0f);
+			parallax_comp->parallax_amount = FAR_MOUNTAINS_PARALLAX;
+			
+			SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+			sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_far_mountains;
+			sprite_comp->sprite_data.render_layer = 8.0f;
+		}
 	}
 }
 
@@ -511,7 +960,7 @@ internal b8 LoadWorld(char *world_name)
 	{
 		char file_path[200] = "";
 		sprintf(file_path, "%slevel_data.save", path);
-		FILE *save = fopen(file_path, "r");
+		FILE *save = fopen(file_path, "rb");
 		Assert(save);
 		
 		// NOTE(randy): Read the player entity in
@@ -763,7 +1212,7 @@ internal void SaveLevelData()
 	
 	char file_path[200] = "";
 	sprintf(file_path, "%slevel_data.save", core->run_data->world_path);
-	FILE *file = fopen(file_path, "w");
+	FILE *file = fopen(file_path, "wb");
 	Assert(file);
 	
 	// NOTE(randy): Save the player entity
@@ -870,7 +1319,7 @@ internal void FillChunkEntities()
 				continue;
 			
 			v2 position = {0.0f, 0.0f};
-			if (entity->component_ids[COMPONENT_position])
+			if (entity->component_ids[COMPONENT_position] && ((entity->flags & ENTITY_FLAGS_force_floating) != ENTITY_FLAGS_force_floating))
 			{
 				position = GetPositionComponentFromEntityID(entity->entity_id)->position;
 				if (entity->component_ids[COMPONENT_parallax])
@@ -885,6 +1334,7 @@ internal void FillChunkEntities()
 			}
 			else
 			{
+				Assert(core->run_data->floating_entity_id_count + 1 < MAX_FLOATING_ENTITIES);
 				core->run_data->floating_entity_ids[core->run_data->floating_entity_id_count++] = entity->entity_id;
 			}
 		}
@@ -915,6 +1365,7 @@ internal void FillChunkEntities()
 			position = GetParallaxComponentFromEntityID(entity->entity_id)->desired_position;
 		}
 		Chunk *chunk = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x), WorldSpaceToChunkIndex(position.y));
+		Assert(chunk);
 		
 		chunk->entity_ids[chunk->entity_count++] = entity->entity_id;
 	}
@@ -1120,7 +1571,7 @@ internal Chunk *LoadChunkFromDisk(char *path, i32 x_index, i32 y_index)
 	
 	char chunk_file_path[100];
 	sprintf(chunk_file_path, "%s%i.%i.chunk", path, x_index, y_index);
-	FILE *file = fopen(chunk_file_path, "r");
+	FILE *file = fopen(chunk_file_path, "rb");
 	if (file)
 	{
 		Chunk *chunk = &core->run_data->active_chunks[core->run_data->active_chunk_count++];

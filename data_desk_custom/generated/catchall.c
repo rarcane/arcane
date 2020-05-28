@@ -130,6 +130,9 @@ break;
 case STATIC_SPRITE_hills_1_v1:
 return "Hills 1v1";
 break;
+case STATIC_SPRITE_hills_1_v2:
+return "Hills 1v2";
+break;
 case STATIC_SPRITE_bg1_shrub_v1:
 return "Bg1 Shrub V1";
 break;

@@ -1,7 +1,7 @@
 /* --- CONSTANTS --- */
 
 MAX_POSITIONAL_ENTITIES :: 1024
-MAX_FLOATING_ENTITIES :: 128
+MAX_FLOATING_ENTITIES :: 1024
 MAX_ENTITIES :: MAX_POSITIONAL_ENTITIES + MAX_FLOATING_ENTITIES
 
 MAX_OVERLAPPING_COLLIDERS :: 50
@@ -44,6 +44,7 @@ EditorState :: enum
 EntityFlags :: flags
 {
 	no_delete,
+	force_floating,
 }
 
 ColliderFlags :: flags
@@ -157,7 +158,7 @@ StaticSprite :: enum
 	@Data("'scenic/background/bg1_hills'", "{0.0f, 0.0f, 200.0f, 35.0f}", "{0.0f, 20.0f}")
 		hills_1_v1,
 	@Data("'scenic/background/bg1_hills'", "{0.0f, 35.0f, 200.0f, 35.0f}", "{0.0f, 20.0f}")
-		
+		hills_1_v2,
 	
 	@Data("'scenic/background/vegetation'", "{0.0f, 0.0f, 50.0f, 25.0f}", "{0.0f, 0.0f}")
 		bg1_shrub_v1,
@@ -183,44 +184,44 @@ StaticSprite :: enum
 	@Data("'scenic/background/bg2_hills'", "{0.0f, 40.0f, 200.0f, 40.0f}", "{0.0f, 21.0f}")
 		bg2_hills_v2,
 	
-	@Data("'scenic/background/vegetation'", "{0.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, 0.0f}")
+	@Data("'scenic/background/vegetation'", "{0.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, -13.0f}")
 		bg2_shrub_v1,
-	@Data("'scenic/background/vegetation'", "{25.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, 0.0f}")
+	@Data("'scenic/background/vegetation'", "{25.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, -13.0f}")
 		bg2_shrub_v2,
-	@Data("'scenic/background/vegetation'", "{50.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, 0.0f}")
+	@Data("'scenic/background/vegetation'", "{50.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, -13.0f}")
 		bg2_shrub_v3,
 	
-	@Data("'scenic/background/bg2_pine_tree'", "{0.0f, 0.0f, 40.0f, 110.0f}", "{0.0f, 0.0f}")
+	@Data("'scenic/background/bg2_pine_tree'", "{0.0f, 0.0f, 40.0f, 110.0f}", "{0.0f, -5.0f}")
 		bg2_pine_tree_v1,
-	@Data("'scenic/background/bg2_pine_tree'", "{40.0f, 0.0f, 40.0f, 110.0f}", "{0.0f, 0.0f}")
+	@Data("'scenic/background/bg2_pine_tree'", "{40.0f, 0.0f, 40.0f, 110.0f}", "{0.0f, -5.0f}")
 		bg2_pine_tree_v2,
 	
 	@Data("'scenic/background/bg3_hills'", "{0.0f, 0.0f, 200.0f, 40.0f}", "{0.0f, 17.0f}")
 		bg3_hills_v1,
-	@Data("'scenic/background/vegetation'", "{0.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, 0.0f}")
+	@Data("'scenic/background/vegetation'", "{0.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, -20.0f}")
 		bg3_shrub_v1,
-	@Data("'scenic/background/vegetation'", "{15.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, 0.0f}")
+	@Data("'scenic/background/vegetation'", "{15.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, -20.0f}")
 		bg3_shrub_v2,
-	@Data("'scenic/background/vegetation'", "{30.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, 0.0f}")
+	@Data("'scenic/background/vegetation'", "{30.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, -20.0f}")
 		bg3_shrub_v3,
-	@Data("'scenic/background/vegetation'", "{45.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, 0.0f}")
+	@Data("'scenic/background/vegetation'", "{45.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, -20.0f}")
 		bg3_shrub_v4,
 	
-	@Data("'scenic/background/bg3_pine_tree'", "{0.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, 0.0f}")
+	@Data("'scenic/background/bg3_pine_tree'", "{0.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}")
 		bg3_pine_tree_v1,
-	@Data("'scenic/background/bg3_pine_tree'", "{20.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, 0.0f}")
+	@Data("'scenic/background/bg3_pine_tree'", "{20.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}")
 		bg3_pine_tree_v2,
-	@Data("'scenic/background/bg3_pine_tree'", "{40.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, 0.0f}")
+	@Data("'scenic/background/bg3_pine_tree'", "{40.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}")
 		bg3_pine_tree_v3,
-	@Data("'scenic/background/bg3_pine_tree'", "{60.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, 0.0f}")
+	@Data("'scenic/background/bg3_pine_tree'", "{60.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}")
 		bg3_pine_tree_v4,
-	@Data("'scenic/background/bg3_pine_tree'", "{80.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, 0.0f}")
+	@Data("'scenic/background/bg3_pine_tree'", "{80.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}")
 		bg3_pine_tree_v5,
-	@Data("'scenic/background/bg3_pine_tree'", "{100.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, 0.0f}")
+	@Data("'scenic/background/bg3_pine_tree'", "{100.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}")
 		bg3_pine_tree_v6,
-	@Data("'scenic/background/bg3_pine_tree'", "{120.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, 0.0f}")
+	@Data("'scenic/background/bg3_pine_tree'", "{120.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}")
 		bg3_pine_tree_v7,
-	@Data("'scenic/background/bg3_pine_tree'", "{140.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, 0.0f}")
+	@Data("'scenic/background/bg3_pine_tree'", "{140.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}")
 		bg3_pine_tree_v8,
 	
 	// Icons
