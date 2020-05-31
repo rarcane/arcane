@@ -22,4 +22,9 @@ typedef struct CollisionPair
 internal void UpdatePhysics();
 internal void RenderColliders();
 internal void GenerateCollisionPairs(CollisionPair pairs[], i32 *count);
-internal void GenerateCollisionManifold(PhysicsBodyComponent *a_body_comp, v2 a_body_world_pos, PhysicsBodyComponent *b_body_comp, v2 b_body_world_pos, c2Manifold *manifold);
+// NOTE(randy): Get a collision manifold between two different shapes. Each shape must already be in their relative space
+internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_type,
+										c2Shape b_shape, c2ShapeType b_shape_type,
+										c2Manifold *manifold);
+// NOTE(randy): Applies the provided v2 to the shape
+internal void AddPositionOffsetToShape(c2Shape *shape, c2ShapeType shape_type, v2 position);

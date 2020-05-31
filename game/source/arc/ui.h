@@ -5,10 +5,9 @@ internal void SwitchEditorState(EditorState editor_state);
 
 typedef struct InventoryIconCanvasData
 {
-	StorageComponent *storage_comp;
-	ItemComponent *item_comp;
-	i32 slot;
+	Item *item;
 	b8 is_hovered;
+	i32 slot;
 } InventoryIconCanvasData;
 
 typedef struct GrabbedIconCanvasData

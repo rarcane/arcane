@@ -89,8 +89,6 @@ STATIC_SPRITE_ground_arctic,
 STATIC_SPRITE_ground_desert,
 STATIC_SPRITE_ground_plains,
 STATIC_SPRITE_player,
-STATIC_SPRITE_flint_sword_icon,
-STATIC_SPRITE_flint_sword_ground,
 STATIC_SPRITE_far_mountains,
 STATIC_SPRITE_mid_mountains,
 STATIC_SPRITE_cloud_v1,
@@ -137,6 +135,11 @@ STATIC_SPRITE_bg3_pine_tree_v8,
 STATIC_SPRITE_y_axis_arrow_icon,
 STATIC_SPRITE_x_axis_arrow_icon,
 STATIC_SPRITE_circle_icon,
+STATIC_SPRITE_crafting_stump,
+STATIC_SPRITE_flint_sword_icon,
+STATIC_SPRITE_flint_sword_ground,
+STATIC_SPRITE_flint,
+STATIC_SPRITE_twig,
 STATIC_SPRITE_MAX,
 };
 global StaticSpriteData static_sprite_data[STATIC_SPRITE_MAX] = {
@@ -145,8 +148,6 @@ global StaticSpriteData static_sprite_data[STATIC_SPRITE_MAX] = {
     { "scenic/biome_ground", {100.0f, 0.0f, 100.0f, 150.0f}, {0.0f, 147.0f}, },
     { "scenic/biome_ground", {200.0f, 0.0f, 100.0f, 150.0f}, {0.0f, 147.0f}, },
     { "entity/player/temp_player", {0.0f, 0.0f, 14.0f, 35.0f}, {0.0f, 0.0f}, },
-    { "item/flint_sword", {0.0f, 0.0f, 16.0f, 16.0f}, {6.0f, 2.0f}, },
-    { "item/flint_sword_ground", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, },
     { "scenic/mountains", {0.0f, 0.0f, 600.0f, 160.0f}, {0.0f, 5.0f}, },
     { "scenic/mountains", {0.0f, 160.0f, 600.0f, 90.0f}, {0.0f, 10.0f}, },
     { "scenic/clouds", {0.0f, 0.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, },
@@ -193,6 +194,11 @@ global StaticSpriteData static_sprite_data[STATIC_SPRITE_MAX] = {
     { "icon/axis_icons", {0.0f, 0.0f, 7.0f, 40.0f}, {0.0f, 0.0f}, },
     { "icon/axis_icons", {0.0f, 33.0f, 40.0f, 7.0f}, {0.0f, 0.0f}, },
     { "icon/axis_icons", {33.0f, 0.0f, 7.0f, 7.0f}, {0.0f, 0.0f}, },
+    { "structures/crafting_stump", {0.0f, 0.0f, 32.0f, 32.0f}, {0.0f, 0.0f}, },
+    { "item/flint_sword", {0.0f, 0.0f, 16.0f, 16.0f}, {6.0f, 2.0f}, },
+    { "item/flint_sword_ground", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, },
+    { "item/flint", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
+    { "item/twig", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
 };
 
 static char *GetStaticSpriteName(StaticSprite type);
@@ -286,11 +292,17 @@ ItemFlags flags;
 typedef enum ItemType ItemType;
 enum ItemType
 {
+ITEM_TYPE_none,
 ITEM_TYPE_flint_sword,
+ITEM_TYPE_flint,
+ITEM_TYPE_twig,
 ITEM_TYPE_MAX,
 };
 global ItemTypeData item_type_data[ITEM_TYPE_MAX] = {
+    { "none", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, 0, 0, },
     { "Flint Sword", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_FLAGS_sword, },
+    { "Flint", STATIC_SPRITE_flint, STATIC_SPRITE_flint, 8, 0, },
+    { "Twig", STATIC_SPRITE_twig, STATIC_SPRITE_twig, 8, 0, },
 };
 
 static char *GetItemTypeName(ItemType type);
@@ -396,12 +408,17 @@ char *current_general_state;
 ArcEntityAnimationState current_animation_state;
 } ArcEntityComponent;
 
+typedef struct Item
+{
+ItemType type;
+i32 stack_size;
+} Item;
+
 typedef struct ItemComponent
 {
 i32 parent_entity_id;
 i32 component_id;
-ItemType item_type;
-i32 stack_size;
+Item item;
 } ItemComponent;
 
 typedef struct TriggerComponent
@@ -414,14 +431,6 @@ OverlappedColliderInfo previous_overlaps[MAX_OVERLAPPING_COLLIDERS];
 i32 previous_overlaps_count;
 b8 trigger_against;
 } TriggerComponent;
-
-typedef struct StorageComponent
-{
-i32 parent_entity_id;
-i32 component_id;
-i32 storage_size;
-ItemComponent *items[MAX_STORAGE_SIZE];
-} StorageComponent;
 
 typedef struct ParallaxComponent
 {
@@ -445,6 +454,22 @@ EmitterBeginCallback begin_callback;
 EmitterFinishCallback finish_callback;
 } ParticleEmitterComponent;
 
+#define MAX_HOTBAR_SLOTS (9)
+#define MAX_INVENTORY_SLOTS (9)
+typedef struct PlayerDataComponent
+{
+i32 parent_entity_id;
+i32 component_id;
+Item inventory[MAX_INVENTORY_SLOTS];
+i32 inventory_size;
+Item hotbar[MAX_HOTBAR_SLOTS];
+i32 hotbar_size;
+i32 active_hotbar_slot;
+Item grabbed_item;
+v2 grabbed_item_offset;
+Item *grabbed_item_origin_slot;
+} PlayerDataComponent;
+
 typedef struct Chunk Chunk;
 
 typedef enum ComponentType
@@ -458,9 +483,9 @@ COMPONENT_movement,
 COMPONENT_arc_entity,
 COMPONENT_item,
 COMPONENT_trigger,
-COMPONENT_storage,
 COMPONENT_parallax,
 COMPONENT_particle_emitter,
+COMPONENT_player_data,
 COMPONENT_MAX,
 } ComponentType;
 
@@ -490,15 +515,15 @@ i32 free_item_component_id;
 TriggerComponent trigger_components[MAX_ENTITIES];
 i32 trigger_component_count;
 i32 free_trigger_component_id;
-StorageComponent storage_components[MAX_ENTITIES];
-i32 storage_component_count;
-i32 free_storage_component_id;
 ParallaxComponent parallax_components[MAX_ENTITIES];
 i32 parallax_component_count;
 i32 free_parallax_component_id;
 ParticleEmitterComponent particle_emitter_components[MAX_ENTITIES];
 i32 particle_emitter_component_count;
 i32 free_particle_emitter_component_id;
+PlayerDataComponent player_data_components[MAX_ENTITIES];
+i32 player_data_component_count;
+i32 free_player_data_component_id;
 } ComponentSet;
 
 // NOTE(randy): Gets a PositionComponent from a specified entity, it must have one.
@@ -517,12 +542,12 @@ internal ArcEntityComponent *GetArcEntityComponentFromEntityID(i32 id);
 internal ItemComponent *GetItemComponentFromEntityID(i32 id);
 // NOTE(randy): Gets a TriggerComponent from a specified entity, it must have one.
 internal TriggerComponent *GetTriggerComponentFromEntityID(i32 id);
-// NOTE(randy): Gets a StorageComponent from a specified entity, it must have one.
-internal StorageComponent *GetStorageComponentFromEntityID(i32 id);
 // NOTE(randy): Gets a ParallaxComponent from a specified entity, it must have one.
 internal ParallaxComponent *GetParallaxComponentFromEntityID(i32 id);
 // NOTE(randy): Gets a ParticleEmitterComponent from a specified entity, it must have one.
 internal ParticleEmitterComponent *GetParticleEmitterComponentFromEntityID(i32 id);
+// NOTE(randy): Gets a PlayerDataComponent from a specified entity, it must have one.
+internal PlayerDataComponent *GetPlayerDataComponentFromEntityID(i32 id);
 internal void RemoveComponent(Entity *entity, ComponentType type);
 #define MINIMUM_AIR_PRESSURE (1.0f)
 #define LIQUID_RESOLUTION (0.2f)
@@ -821,14 +846,6 @@ static void ReadTriggerComponentFromFile(FILE *file, TriggerComponent *data);
 
 static void FillTriggerComponentPointersFromFile(FILE *file, TriggerComponent *data);
 
-static void WriteStorageComponentToFile(FILE *file, StorageComponent *data);
-
-static void FillStorageComponentPointersInFile(FILE *file, StorageComponent *data);
-
-static void ReadStorageComponentFromFile(FILE *file, StorageComponent *data);
-
-static void FillStorageComponentPointersFromFile(FILE *file, StorageComponent *data);
-
 static void WriteParallaxComponentToFile(FILE *file, ParallaxComponent *data);
 
 static void FillParallaxComponentPointersInFile(FILE *file, ParallaxComponent *data);
@@ -844,6 +861,14 @@ static void FillParticleEmitterComponentPointersInFile(FILE *file, ParticleEmitt
 static void ReadParticleEmitterComponentFromFile(FILE *file, ParticleEmitterComponent *data);
 
 static void FillParticleEmitterComponentPointersFromFile(FILE *file, ParticleEmitterComponent *data);
+
+static void WritePlayerDataComponentToFile(FILE *file, PlayerDataComponent *data);
+
+static void FillPlayerDataComponentPointersInFile(FILE *file, PlayerDataComponent *data);
+
+static void ReadPlayerDataComponentFromFile(FILE *file, PlayerDataComponent *data);
+
+static void FillPlayerDataComponentPointersFromFile(FILE *file, PlayerDataComponent *data);
 
 static void WriteComponentSetToFile(FILE *file, ComponentSet *data);
 

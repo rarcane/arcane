@@ -83,7 +83,17 @@ internal void UpdatePhysics()
 		PositionComponent *b_pos_comp = GetPositionComponentFromEntityID(b_body_comp->parent_entity_id);
 		
 		c2Manifold manifold = {0};
-		GenerateCollisionManifold(a_body_comp, a_pos_comp->position, b_body_comp, b_pos_comp->position, &manifold);
+		
+		c2Shape a_shape = a_body_comp->shape;
+		AddPositionOffsetToShape(&a_shape, a_body_comp->shape_type, a_pos_comp->position);
+		
+		c2Shape b_shape = b_body_comp->shape;
+		AddPositionOffsetToShape(&b_shape, b_body_comp->shape_type, b_pos_comp->position);
+		
+		GenerateCollisionManifold(a_shape, a_body_comp->shape_type,
+								  b_shape, b_body_comp->shape_type,
+								  &manifold);
+		//GenerateCollisionManifold(a_body_comp, a_pos_comp->position, b_body_comp, b_pos_comp->position, &manifold);
 		
 		if (manifold.count > 0 && fabsf(manifold.depths[0]) != 0.0f)
 		{
@@ -173,49 +183,53 @@ internal void GenerateCollisionPairs(CollisionPair pairs[], i32 *count)
 	}
 }
 
-internal void GenerateCollisionManifold(PhysicsBodyComponent *a_body_comp, v2 a_body_world_pos, PhysicsBodyComponent *b_body_comp, v2 b_body_world_pos, c2Manifold *manifold)
+internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_type,
+										c2Shape b_shape, c2ShapeType b_shape_type,
+										c2Manifold *manifold)
 {
-	switch (a_body_comp->shape_type)
+	switch (a_shape_type)
 	{
 		case C2_SHAPE_TYPE_aabb:
 		{
-			switch (b_body_comp->shape_type)
+			switch (b_shape_type)
 			{
 				case C2_SHAPE_TYPE_aabb:
 				{
-					c2AABB a_aabb = v2AddAABB(a_body_world_pos, a_body_comp->shape.aabb);
-					c2AABB b_aabb = v2AddAABB(b_body_world_pos, b_body_comp->shape.aabb);
-					c2AABBtoAABBManifold(a_aabb, b_aabb, manifold);
+					//c2AABB a_aabb = v2AddAABB(a_body_world_pos, a_body_comp->shape.aabb);
+					//c2AABB b_aabb = v2AddAABB(b_body_world_pos, b_body_comp->shape.aabb);
+					c2AABBtoAABBManifold(a_shape.aabb, b_shape.aabb, manifold);
 				}
 				break;
 				
 				case C2_SHAPE_TYPE_capsule:
 				{
-					c2AABB a_aabb = v2AddAABB(a_body_world_pos, a_body_comp->shape.aabb);
+					//c2AABB a_aabb = v2AddAABB(a_body_world_pos, a_body_comp->shape.aabb);
 					
-					c2Capsule b_capsule = b_body_comp->shape.capsule;
-					CapsuleToWorldSpace(&b_capsule, b_body_world_pos);
+					//c2Capsule b_capsule = b_body_comp->shape.capsule;
+					//CapsuleToWorldSpace(&b_capsule, b_body_world_pos);
 					
-					c2AABBtoCapsuleManifold(a_aabb, b_capsule, manifold);
+					c2AABBtoCapsuleManifold(a_shape.aabb, b_shape.capsule, manifold);
 				}
 				break;
 				
 				case C2_SHAPE_TYPE_poly:
 				{
-					c2AABB a_aabb = v2AddAABB(a_body_world_pos, a_body_comp->shape.aabb);
+					/*
+										c2AABB a_aabb = v2AddAABB(a_body_world_pos, a_body_comp->shape.aabb);
+										
+										c2Poly b_poly = b_body_comp->shape.poly;
+										c2x world_pos = c2xIdentity();
+										world_pos.p.x = b_body_world_pos.x;
+										world_pos.p.y = b_body_world_pos.y;
+					 */
 					
-					c2Poly b_poly = b_body_comp->shape.poly;
-					c2x world_pos = c2xIdentity();
-					world_pos.p.x = b_body_world_pos.x;
-					world_pos.p.y = b_body_world_pos.y;
-					
-					c2AABBtoPolyManifold(a_aabb, &b_poly, &world_pos, manifold);
+					c2AABBtoPolyManifold(a_shape.aabb, &b_shape.poly, 0, manifold);
 				}
 				break;
 				
 				case C2_SHAPE_TYPE_line:
 				{
-					Assert(0);
+					//Assert(0);
 				} break;
 				
 				default:
@@ -227,16 +241,18 @@ internal void GenerateCollisionManifold(PhysicsBodyComponent *a_body_comp, v2 a_
 		
 		case C2_SHAPE_TYPE_capsule:
 		{
-			switch (b_body_comp->shape_type)
+			switch (b_shape_type)
 			{
 				case C2_SHAPE_TYPE_aabb:
 				{
-					c2Capsule a_capsule = a_body_comp->shape.capsule;
-					CapsuleToWorldSpace(&a_capsule, a_body_world_pos);
+					/*
+										c2Capsule a_capsule = a_body_comp->shape.capsule;
+										CapsuleToWorldSpace(&a_capsule, a_body_world_pos);
+										
+										c2AABB b_aabb = v2AddAABB(b_body_world_pos, b_body_comp->shape.aabb);
+					 */
 					
-					c2AABB b_aabb = v2AddAABB(b_body_world_pos, b_body_comp->shape.aabb);
-					
-					c2AABBtoCapsuleManifold(b_aabb, a_capsule, manifold);
+					c2AABBtoCapsuleManifold(b_shape.aabb, a_shape.capsule, manifold);
 					manifold->n.x *= -1.0f;
 					manifold->n.y *= -1.0f;
 				}
@@ -244,15 +260,17 @@ internal void GenerateCollisionManifold(PhysicsBodyComponent *a_body_comp, v2 a_
 				
 				case C2_SHAPE_TYPE_poly:
 				{
-					c2Capsule a_capsule = a_body_comp->shape.capsule;
-					CapsuleToWorldSpace(&a_capsule, a_body_world_pos);
+					/*
+										c2Capsule a_capsule = a_body_comp->shape.capsule;
+										CapsuleToWorldSpace(&a_capsule, a_body_world_pos);
+										
+										c2Poly b_poly = b_body_comp->shape.poly;
+										c2x world_pos = c2xIdentity();
+										world_pos.p.x = b_body_world_pos.x;
+										world_pos.p.y = b_body_world_pos.y;
+					 */
 					
-					c2Poly b_poly = b_body_comp->shape.poly;
-					c2x world_pos = c2xIdentity();
-					world_pos.p.x = b_body_world_pos.x;
-					world_pos.p.y = b_body_world_pos.y;
-					
-					c2CapsuletoPolyManifold(a_capsule, &b_poly, &world_pos, manifold);
+					c2CapsuletoPolyManifold(a_shape.capsule, &b_shape.poly, 0, manifold);
 				}
 				break;
 				
@@ -280,32 +298,41 @@ internal void GenerateCollisionManifold(PhysicsBodyComponent *a_body_comp, v2 a_
 							manifold->depths[0] = a_capsule.r - dist;
 						} */
 					
-					c2Capsule a_capsule = a_body_comp->shape.capsule;
-					CapsuleToWorldSpace(&a_capsule, a_body_world_pos);
+					/*
+										c2Capsule a_capsule = a_body_comp->shape.capsule;
+										CapsuleToWorldSpace(&a_capsule, a_body_world_pos);
+					 */
 					
-					Line b_line = b_body_comp->shape.line;
+					/*
+										Line b_line = b_body_comp->shape.line;
+										
+										v2 p1 = V2AddV2(b_shape.line.p1, b_body_world_pos);
+										v2 p2 = V2AddV2(b_shape.line.p2, b_body_world_pos);
+					 */
 					
-					v2 p1 = V2AddV2(b_line.p1, b_body_world_pos);
-					v2 p2 = V2AddV2(b_line.p2, b_body_world_pos);
-					v2 line_vector = V2SubtractV2(p2, p1);
-					v2 capsule_point_a = v2(a_capsule.a.x, a_capsule.a.y);
+					v2 line_vector = V2SubtractV2(b_shape.line.p2, b_shape.line.p1);
+					v2 capsule_point_a = v2(a_shape.capsule.a.x, a_shape.capsule.a.y);
 					
-					v2 point_a_vector_from_line = V2SubtractV2(capsule_point_a, p1);
+					v2 point_a_vector_from_line = V2SubtractV2(capsule_point_a,
+															   b_shape.line.p1);
 					f32 dot = point_a_vector_from_line.x * line_vector.x + point_a_vector_from_line.y * line_vector.y;
-					v2 proj = V2MultiplyF32(line_vector, dot / (line_vector.x * line_vector.x + line_vector.y * line_vector.y)); // proj a->b = (a dot b / mag^2) * b
+					// NOTE(randy): proj a->b = (a dot b / mag^2) * b
+					v2 proj = V2MultiplyF32(line_vector, dot / (line_vector.x * line_vector.x + line_vector.y * line_vector.y));
 					
-					v2 collision_normal = V2SubtractV2(capsule_point_a, V2AddV2(p1, proj));
+					v2 collision_normal = V2SubtractV2(capsule_point_a, V2AddV2(b_shape.line.p1, proj));
 					f32 collision_distance = PythagSolve(collision_normal.x, collision_normal.y);
 					v2 normalised_collision_normal = v2(collision_normal.x / collision_distance, collision_normal.y / collision_distance);
 					v2Realise(&normalised_collision_normal);
 					
 					//PushDebugLine(p1, V2AddV2(p1, collision_normal), v3(1.0f, 0.0f, 0.0f));
 					
-					if (collision_distance < a_capsule.r && capsule_point_a.x >= p1.x && capsule_point_a.x <= p2.x)
+					if (collision_distance < a_shape.capsule.r &&
+						capsule_point_a.x >= b_shape.line.p1.x &&
+						capsule_point_a.x <= b_shape.line.p2.x)
 					{
 						manifold->n = c2V(-normalised_collision_normal.x, -normalised_collision_normal.y);
 						manifold->count = 1;
-						manifold->depths[0] = a_capsule.r - collision_distance;
+						manifold->depths[0] = a_shape.capsule.r - collision_distance;
 					}
 				}
 				break;
@@ -319,18 +346,20 @@ internal void GenerateCollisionManifold(PhysicsBodyComponent *a_body_comp, v2 a_
 		
 		case C2_SHAPE_TYPE_poly:
 		{
-			switch (b_body_comp->shape_type)
+			switch (b_shape_type)
 			{
 				case C2_SHAPE_TYPE_aabb:
 				{
-					c2Poly a_poly = a_body_comp->shape.poly;
-					c2x world_pos = c2xIdentity();
-					world_pos.p.x = a_body_world_pos.x;
-					world_pos.p.y = a_body_world_pos.y;
+					/*
+										c2Poly a_poly = a_body_comp->shape.poly;
+										c2x world_pos = c2xIdentity();
+										world_pos.p.x = a_body_world_pos.x;
+										world_pos.p.y = a_body_world_pos.y;
+										
+										c2AABB b_aabb = v2AddAABB(b_body_world_pos, b_body_comp->shape.aabb);
+					 */
 					
-					c2AABB b_aabb = v2AddAABB(b_body_world_pos, b_body_comp->shape.aabb);
-					
-					c2AABBtoPolyManifold(b_aabb, &a_poly, &world_pos, manifold);
+					c2AABBtoPolyManifold(b_shape.aabb, &a_shape.poly, 0, manifold);
 					manifold->n.x *= -1.0f;
 					manifold->n.y *= -1.0f;
 				}
@@ -338,15 +367,17 @@ internal void GenerateCollisionManifold(PhysicsBodyComponent *a_body_comp, v2 a_
 				
 				case C2_SHAPE_TYPE_capsule:
 				{
-					c2Poly a_poly = a_body_comp->shape.poly;
-					c2x world_pos = c2xIdentity();
-					world_pos.p.x = a_body_world_pos.x;
-					world_pos.p.y = a_body_world_pos.y;
+					/*
+										c2Poly a_poly = a_body_comp->shape.poly;
+										c2x world_pos = c2xIdentity();
+										world_pos.p.x = a_body_world_pos.x;
+										world_pos.p.y = a_body_world_pos.y;
+										
+										c2Capsule b_capsule = b_body_comp->shape.capsule;
+										CapsuleToWorldSpace(&b_capsule, b_body_world_pos);
+					 */
 					
-					c2Capsule b_capsule = b_body_comp->shape.capsule;
-					CapsuleToWorldSpace(&b_capsule, b_body_world_pos);
-					
-					c2CapsuletoPolyManifold(b_capsule, &a_poly, &world_pos, manifold);
+					c2CapsuletoPolyManifold(b_shape.capsule, &a_shape.poly, 0, manifold);
 					manifold->n.x *= -1.0f;
 					manifold->n.y *= -1.0f;
 				}
@@ -354,17 +385,19 @@ internal void GenerateCollisionManifold(PhysicsBodyComponent *a_body_comp, v2 a_
 				
 				case C2_SHAPE_TYPE_poly:
 				{
-					c2Poly a_poly = a_body_comp->shape.poly;
-					c2x world_pos_a = c2xIdentity();
-					world_pos_a.p.x = a_body_world_pos.x;
-					world_pos_a.p.y = a_body_world_pos.y;
+					/*
+										c2Poly a_poly = a_body_comp->shape.poly;
+										c2x world_pos_a = c2xIdentity();
+										world_pos_a.p.x = a_body_world_pos.x;
+										world_pos_a.p.y = a_body_world_pos.y;
+										
+										c2Poly b_poly = b_body_comp->shape.poly;
+										c2x world_pos_b = c2xIdentity();
+										world_pos_b.p.x = b_body_world_pos.x;
+										world_pos_b.p.y = b_body_world_pos.y;
+					 */
 					
-					c2Poly b_poly = b_body_comp->shape.poly;
-					c2x world_pos_b = c2xIdentity();
-					world_pos_b.p.x = b_body_world_pos.x;
-					world_pos_b.p.y = b_body_world_pos.y;
-					
-					c2PolytoPolyManifold(&a_poly, &world_pos_a, &b_poly, &world_pos_b, manifold);
+					c2PolytoPolyManifold(&a_shape.poly, 0, &b_shape.poly, 0, manifold);
 				}
 				break;
 				
@@ -383,34 +416,39 @@ internal void GenerateCollisionManifold(PhysicsBodyComponent *a_body_comp, v2 a_
 		
 		case C2_SHAPE_TYPE_line:
 		{
-			switch (b_body_comp->shape_type)
+			switch (b_shape_type)
 			{
 				case C2_SHAPE_TYPE_capsule:
 				{
-					Line a_line = a_body_comp->shape.line;
+					/*
+										Line a_line = a_body_comp->shape.line;
+										
+										c2Capsule b_capsule = b_body_comp->shape.capsule;
+										CapsuleToWorldSpace(&b_capsule, b_body_world_pos);
+										
+										v2 p1 = V2AddV2(a_line.p1, a_body_world_pos);
+										v2 p2 = V2AddV2(a_line.p2, a_body_world_pos);
+					 */
+					v2 line_vector = V2SubtractV2(a_shape.line.p2, a_shape.line.p1);
+					v2 capsule_point_a = v2(b_shape.capsule.a.x, b_shape.capsule.a.y);
 					
-					c2Capsule b_capsule = b_body_comp->shape.capsule;
-					CapsuleToWorldSpace(&b_capsule, b_body_world_pos);
-					
-					v2 p1 = V2AddV2(a_line.p1, a_body_world_pos);
-					v2 p2 = V2AddV2(a_line.p2, a_body_world_pos);
-					v2 line_vector = V2SubtractV2(p2, p1);
-					v2 capsule_point_a = v2(b_capsule.a.x, b_capsule.a.y);
-					
-					v2 point_a_vector_from_line = V2SubtractV2(capsule_point_a, p1);
+					v2 point_a_vector_from_line = V2SubtractV2(capsule_point_a,
+															   a_shape.line.p1);
 					f32 dot = point_a_vector_from_line.x * line_vector.x + point_a_vector_from_line.y * line_vector.y;
 					v2 proj = V2MultiplyF32(line_vector, dot / (line_vector.x * line_vector.x + line_vector.y * line_vector.y));
 					
-					v2 collision_normal = V2SubtractV2(capsule_point_a, V2AddV2(p1, proj));
+					v2 collision_normal = V2SubtractV2(capsule_point_a, V2AddV2(a_shape.line.p1, proj));
 					f32 collision_distance = PythagSolve(collision_normal.x, collision_normal.y);
 					v2 normalised_collision_normal = v2(collision_normal.x / collision_distance, collision_normal.y / collision_distance);
 					v2Realise(&normalised_collision_normal);
 					
-					if (collision_distance < b_capsule.r && capsule_point_a.x >= p1.x && capsule_point_a.x <= p2.x)
+					if (collision_distance < b_shape.capsule.r &&
+						capsule_point_a.x >= a_shape.line.p1.x &&
+						capsule_point_a.x <= a_shape.line.p2.x)
 					{
 						manifold->n = c2V(normalised_collision_normal.x, normalised_collision_normal.y);
 						manifold->count = 1;
-						manifold->depths[0] = b_capsule.r - collision_distance;
+						manifold->depths[0] = b_shape.capsule.r - collision_distance;
 					}
 				}
 				break;
@@ -433,7 +471,41 @@ internal void GenerateCollisionManifold(PhysicsBodyComponent *a_body_comp, v2 a_
 	}
 }
 
-b32 IsMouseOverlappingShape(v2 mouse_pos, c2Shape shape, c2ShapeType shape_type)
+internal i32 GetOverlappingBodiesWithShape(PhysicsBodyComponent **overlapping_bodies,
+										   c2Shape shape,
+										   c2ShapeType shape_type)
+{
+	i32 overlap_count = 0;
+	
+	for (i32 i = 0; i < core->run_data->entity_count; i++)
+	{
+		Entity *entity = &core->run_data->entities[i - 1];
+		if (entity->component_ids[COMPONENT_physics_body])
+		{
+			PhysicsBodyComponent *phys_body = GetPhysicsBodyComponentFromEntityID(entity->entity_id);
+			PositionComponent *pos_comp = GetPositionComponentFromEntityID(entity->entity_id);
+			Assert(phys_body && pos_comp);
+			
+			c2Shape against_shape = phys_body->shape;
+			AddPositionOffsetToShape(&against_shape, phys_body->shape_type, pos_comp->position);
+			
+			c2Manifold manifold = {0};
+			GenerateCollisionManifold(shape, shape_type,
+									  against_shape, phys_body->shape_type,
+									  &manifold);
+			
+			if (manifold.count > 0 && fabsf(manifold.depths[0]) != 0.0f)
+			{
+				Assert(overlap_count + 1 < MAX_OVERLAPPING_COLLIDERS);
+				overlapping_bodies[overlap_count++] = phys_body;
+			}
+		}
+	}
+	
+	return overlap_count;
+}
+
+internal b32 IsMouseOverlappingShape(v2 mouse_pos, c2Shape shape, c2ShapeType shape_type)
 {
 	switch (shape_type)
 	{
@@ -466,3 +538,42 @@ b32 IsMouseOverlappingShape(v2 mouse_pos, c2Shape shape, c2ShapeType shape_type)
   }
   return c;
 } */
+
+internal void AddPositionOffsetToShape(c2Shape *shape, c2ShapeType shape_type, v2 position)
+{
+	switch (shape_type)
+	{
+		case C2_SHAPE_TYPE_aabb :
+		{
+			shape->aabb.min.x += position.x;
+			shape->aabb.min.y += position.y;
+			shape->aabb.max.x += position.x;
+			shape->aabb.max.y += position.y;
+		} break;
+		
+		case C2_SHAPE_TYPE_capsule :
+		{
+			shape->capsule.a.x += position.x;
+			shape->capsule.a.y += position.y;
+			shape->capsule.b.x += position.x;
+			shape->capsule.b.y += position.y;
+		} break;
+		
+		case C2_SHAPE_TYPE_poly :
+		{
+			// TODO(randy): Test this out to ensure it's working.
+			for (int i = 0; i < shape->poly.count; i++)
+			{
+				shape->poly.verts[i].x += position.x;
+				shape->poly.verts[i].y += position.y;
+			}
+			c2MakePoly(&shape->poly);
+		} break;
+		
+		case C2_SHAPE_TYPE_line :
+		{
+			shape->line.p1 = V2AddV2(shape->line.p1, position);
+			shape->line.p2 = V2AddV2(shape->line.p2, position);
+		} break;
+	}
+}

@@ -82,12 +82,6 @@ break;
 case STATIC_SPRITE_player:
 return "Player";
 break;
-case STATIC_SPRITE_flint_sword_icon:
-return "Flint Sword Icon";
-break;
-case STATIC_SPRITE_flint_sword_ground:
-return "Flint Sword Ground";
-break;
 case STATIC_SPRITE_far_mountains:
 return "Far Mountains";
 break;
@@ -226,6 +220,21 @@ break;
 case STATIC_SPRITE_circle_icon:
 return "Circle Icon";
 break;
+case STATIC_SPRITE_crafting_stump:
+return "Crafting Stump";
+break;
+case STATIC_SPRITE_flint_sword_icon:
+return "Flint Sword Icon";
+break;
+case STATIC_SPRITE_flint_sword_ground:
+return "Flint Sword Ground";
+break;
+case STATIC_SPRITE_flint:
+return "Flint";
+break;
+case STATIC_SPRITE_twig:
+return "Twig";
+break;
 default:
 return "INVALID";
 break;
@@ -302,8 +311,17 @@ static char *GetItemTypeName(ItemType type)
 {
 switch(type)
 {
+case ITEM_TYPE_none:
+return "None";
+break;
 case ITEM_TYPE_flint_sword:
 return "Flint Sword";
+break;
+case ITEM_TYPE_flint:
+return "Flint";
+break;
+case ITEM_TYPE_twig:
+return "Twig";
 break;
 default:
 return "INVALID";
@@ -856,71 +874,6 @@ internal TriggerComponent *GetTriggerComponentFromEntityID(i32 id)
     return comp;
 }
 
-internal StorageComponent *AddStorageComponent(Entity *entity)
-{
-    Assert(core->run_data->entity_components.free_storage_component_id > 0);
-    Assert(entity->component_ids[COMPONENT_storage] == 0);
-    i32 new_comp_id = core->run_data->entity_components.free_storage_component_id;
-
-    StorageComponent *comp = &core->run_data->entity_components.storage_components[new_comp_id - 1];
-    *comp = GetDefaultStorageComponent();
-    comp->parent_entity_id = entity->entity_id;
-    comp->component_id = new_comp_id;
-    entity->component_ids[COMPONENT_storage] = new_comp_id;
-
-    if (core->run_data->entity_components.storage_component_count == core->run_data->entity_components.free_storage_component_id - 1)
-    {
-        core->run_data->entity_components.storage_component_count++;
-        core->run_data->entity_components.free_storage_component_id++;
-    }
-
-    if (core->run_data->entity_components.storage_component_count < MAX_ENTITIES)
-    {
-        if (core->run_data->entity_components.storage_component_count != core->run_data->entity_components.free_storage_component_id - 1)
-        {
-            b8 found = 0;
-            for (i32 i = 0; i < core->run_data->entity_components.storage_component_count + 1; i++)
-            {
-                if (!core->run_data->entity_components.storage_components[i].component_id)
-                {
-                    core->run_data->entity_components.free_storage_component_id = i + 1;
-                    found = 1;
-                    break;
-                }
-            }
-            Assert(found);
-        }
-    }
-    else
-    {
-        core->run_data->entity_components.free_storage_component_id = 0;
-    }
-
-    return comp;
-}
-
-internal void RemoveStorageComponent(Entity *entity)
-{
-    Assert(entity->component_ids[COMPONENT_storage] != 0);
-    StorageComponent *comp = &core->run_data->entity_components.storage_components[entity->component_ids[COMPONENT_storage] - 1];
-
-    if (comp->component_id < core->run_data->entity_components.free_storage_component_id)
-        core->run_data->entity_components.free_storage_component_id = comp->component_id;
-
-    StorageComponent empty_comp = {0};
-    *comp = empty_comp;
-    entity->component_ids[COMPONENT_storage] = 0;
-}
-
-internal StorageComponent *GetStorageComponentFromEntityID(i32 id)
-{
-    Entity *entity = GetEntityWithID(id);
-    Assert(entity->component_ids[COMPONENT_storage]);
-    StorageComponent *comp = &core->run_data->entity_components.storage_components[entity->component_ids[COMPONENT_storage] - 1];
-    Assert(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_storage]);
-    return comp;
-}
-
 internal ParallaxComponent *AddParallaxComponent(Entity *entity)
 {
     Assert(core->run_data->entity_components.free_parallax_component_id > 0);
@@ -1051,6 +1004,71 @@ internal ParticleEmitterComponent *GetParticleEmitterComponentFromEntityID(i32 i
     return comp;
 }
 
+internal PlayerDataComponent *AddPlayerDataComponent(Entity *entity)
+{
+    Assert(core->run_data->entity_components.free_player_data_component_id > 0);
+    Assert(entity->component_ids[COMPONENT_player_data] == 0);
+    i32 new_comp_id = core->run_data->entity_components.free_player_data_component_id;
+
+    PlayerDataComponent *comp = &core->run_data->entity_components.player_data_components[new_comp_id - 1];
+    *comp = GetDefaultPlayerDataComponent();
+    comp->parent_entity_id = entity->entity_id;
+    comp->component_id = new_comp_id;
+    entity->component_ids[COMPONENT_player_data] = new_comp_id;
+
+    if (core->run_data->entity_components.player_data_component_count == core->run_data->entity_components.free_player_data_component_id - 1)
+    {
+        core->run_data->entity_components.player_data_component_count++;
+        core->run_data->entity_components.free_player_data_component_id++;
+    }
+
+    if (core->run_data->entity_components.player_data_component_count < MAX_ENTITIES)
+    {
+        if (core->run_data->entity_components.player_data_component_count != core->run_data->entity_components.free_player_data_component_id - 1)
+        {
+            b8 found = 0;
+            for (i32 i = 0; i < core->run_data->entity_components.player_data_component_count + 1; i++)
+            {
+                if (!core->run_data->entity_components.player_data_components[i].component_id)
+                {
+                    core->run_data->entity_components.free_player_data_component_id = i + 1;
+                    found = 1;
+                    break;
+                }
+            }
+            Assert(found);
+        }
+    }
+    else
+    {
+        core->run_data->entity_components.free_player_data_component_id = 0;
+    }
+
+    return comp;
+}
+
+internal void RemovePlayerDataComponent(Entity *entity)
+{
+    Assert(entity->component_ids[COMPONENT_player_data] != 0);
+    PlayerDataComponent *comp = &core->run_data->entity_components.player_data_components[entity->component_ids[COMPONENT_player_data] - 1];
+
+    if (comp->component_id < core->run_data->entity_components.free_player_data_component_id)
+        core->run_data->entity_components.free_player_data_component_id = comp->component_id;
+
+    PlayerDataComponent empty_comp = {0};
+    *comp = empty_comp;
+    entity->component_ids[COMPONENT_player_data] = 0;
+}
+
+internal PlayerDataComponent *GetPlayerDataComponentFromEntityID(i32 id)
+{
+    Entity *entity = GetEntityWithID(id);
+    Assert(entity->component_ids[COMPONENT_player_data]);
+    PlayerDataComponent *comp = &core->run_data->entity_components.player_data_components[entity->component_ids[COMPONENT_player_data] - 1];
+    Assert(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_player_data]);
+    return comp;
+}
+
 internal void RemoveComponent(Entity *entity, ComponentType type)
 {
     switch (type)
@@ -1119,14 +1137,6 @@ internal void RemoveComponent(Entity *entity, ComponentType type)
             Assert(0);
         break;
     }
-    case COMPONENT_storage:
-    {
-        if (entity->component_ids[COMPONENT_storage])
-            RemoveStorageComponent(entity);
-        else
-            Assert(0);
-        break;
-    }
     case COMPONENT_parallax:
     {
         if (entity->component_ids[COMPONENT_parallax])
@@ -1139,6 +1149,14 @@ internal void RemoveComponent(Entity *entity, ComponentType type)
     {
         if (entity->component_ids[COMPONENT_particle_emitter])
             RemoveParticleEmitterComponent(entity);
+        else
+            Assert(0);
+        break;
+    }
+    case COMPONENT_player_data:
+    {
+        if (entity->component_ids[COMPONENT_player_data])
+            RemovePlayerDataComponent(entity);
         else
             Assert(0);
         break;
@@ -1158,9 +1176,9 @@ internal void InitialiseComponents()
     core->run_data->entity_components.free_arc_entity_component_id = 1;
     core->run_data->entity_components.free_item_component_id = 1;
     core->run_data->entity_components.free_trigger_component_id = 1;
-    core->run_data->entity_components.free_storage_component_id = 1;
     core->run_data->entity_components.free_parallax_component_id = 1;
     core->run_data->entity_components.free_particle_emitter_component_id = 1;
+    core->run_data->entity_components.free_player_data_component_id = 1;
 }
 static char *GetCellPropertiesTypeName(CellPropertiesType type)
 {
@@ -1239,10 +1257,6 @@ WriteComponentToFile(FILE *file, i32 comp_id, ComponentType type)
         {
             WriteTriggerComponentToFile(file, &core->run_data->entity_components.trigger_components[comp_id - 1]);
         } break;
-        case COMPONENT_storage:
-        {
-            WriteStorageComponentToFile(file, &core->run_data->entity_components.storage_components[comp_id - 1]);
-        } break;
         case COMPONENT_parallax:
         {
             WriteParallaxComponentToFile(file, &core->run_data->entity_components.parallax_components[comp_id - 1]);
@@ -1250,6 +1264,10 @@ WriteComponentToFile(FILE *file, i32 comp_id, ComponentType type)
         case COMPONENT_particle_emitter:
         {
             WriteParticleEmitterComponentToFile(file, &core->run_data->entity_components.particle_emitter_components[comp_id - 1]);
+        } break;
+        case COMPONENT_player_data:
+        {
+            WritePlayerDataComponentToFile(file, &core->run_data->entity_components.player_data_components[comp_id - 1]);
         } break;
     }
 }
@@ -1337,16 +1355,6 @@ ReadComponentFromFile(FILE *file, Entity *entity, ComponentType type)
             new_comp->component_id = new_comp_id;
             new_comp->parent_entity_id = entity->entity_id;
         } break;
-        case COMPONENT_storage:
-        {
-            StorageComponent component;
-            ReadStorageComponentFromFile(file, &component);
-            StorageComponent *new_comp = AddStorageComponent(entity);
-            i32 new_comp_id = new_comp->component_id;
-            *new_comp = component;
-            new_comp->component_id = new_comp_id;
-            new_comp->parent_entity_id = entity->entity_id;
-        } break;
         case COMPONENT_parallax:
         {
             ParallaxComponent component;
@@ -1362,6 +1370,16 @@ ReadComponentFromFile(FILE *file, Entity *entity, ComponentType type)
             ParticleEmitterComponent component;
             ReadParticleEmitterComponentFromFile(file, &component);
             ParticleEmitterComponent *new_comp = AddParticleEmitterComponent(entity);
+            i32 new_comp_id = new_comp->component_id;
+            *new_comp = component;
+            new_comp->component_id = new_comp_id;
+            new_comp->parent_entity_id = entity->entity_id;
+        } break;
+        case COMPONENT_player_data:
+        {
+            PlayerDataComponent component;
+            ReadPlayerDataComponentFromFile(file, &component);
+            PlayerDataComponent *new_comp = AddPlayerDataComponent(entity);
             i32 new_comp_id = new_comp->component_id;
             *new_comp = component;
             new_comp->component_id = new_comp_id;
@@ -1581,32 +1599,6 @@ SerialiseEntityComponentsFromIDList(FILE *file, Entity *entity_list, ComponentSe
                 WriteTriggerComponentToFile(file, comps[i].comp_data);
             }
         } break;
-        case COMPONENT_storage:
-        {
-            typedef struct ComponentSave {
-                i32 entity_offset;
-                StorageComponent *comp_data;
-            } ComponentSave;
-            ComponentSave comps[MAX_ENTITIES];
-            i32 comp_count = 0;
-
-            for (i32 i = 0; i < id_count; i++)
-            {
-                if (entity_list[ids[i] - 1].component_ids[type])
-                {
-                    comps[comp_count].entity_offset = i;
-                    comps[comp_count].comp_data = &component_set->storage_components[entity_list[ids[i] - 1].component_ids[type] - 1];
-                    comp_count++;
-                }
-            }
-
-            WriteToFile(file, &comp_count, sizeof(comp_count));
-            for (i32 i = 0; i < comp_count; i++)
-            {
-                WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
-                WriteStorageComponentToFile(file, comps[i].comp_data);
-            }
-        } break;
         case COMPONENT_parallax:
         {
             typedef struct ComponentSave {
@@ -1657,6 +1649,32 @@ SerialiseEntityComponentsFromIDList(FILE *file, Entity *entity_list, ComponentSe
             {
                 WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
                 WriteParticleEmitterComponentToFile(file, comps[i].comp_data);
+            }
+        } break;
+        case COMPONENT_player_data:
+        {
+            typedef struct ComponentSave {
+                i32 entity_offset;
+                PlayerDataComponent *comp_data;
+            } ComponentSave;
+            ComponentSave comps[MAX_ENTITIES];
+            i32 comp_count = 0;
+
+            for (i32 i = 0; i < id_count; i++)
+            {
+                if (entity_list[ids[i] - 1].component_ids[type])
+                {
+                    comps[comp_count].entity_offset = i;
+                    comps[comp_count].comp_data = &component_set->player_data_components[entity_list[ids[i] - 1].component_ids[type] - 1];
+                    comp_count++;
+                }
+            }
+
+            WriteToFile(file, &comp_count, sizeof(comp_count));
+            for (i32 i = 0; i < comp_count; i++)
+            {
+                WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
+                WritePlayerDataComponentToFile(file, comps[i].comp_data);
             }
         } break;
     }
@@ -1864,30 +1882,6 @@ SerialiseComponentsFromDataSet(FILE *file, Entity *entity_list, i32 entity_count
         {
             Entity *entity = &entity_list[ids[i] - 1];
             Assert(ids[i] - 1 < entity_count);
-            if (entity->component_ids[COMPONENT_storage])
-            {
-                comps[comp_count].entity_offset = i;
-                comps[comp_count].comp_data = &component_set->storage_components[entity->component_ids[COMPONENT_storage] - 1];
-                comp_count++;
-            }
-        }
-
-        WriteToFile(file, &comp_count, sizeof(comp_count)); 
-        for (i32 i = 0; i < comp_count; i++)
-        {
-            WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
-            WriteStorageComponentToFile(file, comps[i].comp_data);
-        }
-    }
-
-    {
-        ComponentSaveHelper comps[MAX_ENTITIES];
-        i32 comp_count = 0;
-
-        for (i32 i = 0; i < id_count; i++)
-        {
-            Entity *entity = &entity_list[ids[i] - 1];
-            Assert(ids[i] - 1 < entity_count);
             if (entity->component_ids[COMPONENT_parallax])
             {
                 comps[comp_count].entity_offset = i;
@@ -1925,6 +1919,30 @@ SerialiseComponentsFromDataSet(FILE *file, Entity *entity_list, i32 entity_count
         {
             WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
             WriteParticleEmitterComponentToFile(file, comps[i].comp_data);
+        }
+    }
+
+    {
+        ComponentSaveHelper comps[MAX_ENTITIES];
+        i32 comp_count = 0;
+
+        for (i32 i = 0; i < id_count; i++)
+        {
+            Entity *entity = &entity_list[ids[i] - 1];
+            Assert(ids[i] - 1 < entity_count);
+            if (entity->component_ids[COMPONENT_player_data])
+            {
+                comps[comp_count].entity_offset = i;
+                comps[comp_count].comp_data = &component_set->player_data_components[entity->component_ids[COMPONENT_player_data] - 1];
+                comp_count++;
+            }
+        }
+
+        WriteToFile(file, &comp_count, sizeof(comp_count)); 
+        for (i32 i = 0; i < comp_count; i++)
+        {
+            WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
+            WritePlayerDataComponentToFile(file, comps[i].comp_data);
         }
     }
 
@@ -2086,25 +2104,6 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
                 new_comp->parent_entity_id = entity->entity_id;
             }
         } break;
-        case COMPONENT_storage:
-        {
-            i32 comp_count = 0;
-            ReadFromFile(file, &comp_count, sizeof(comp_count));
-            for (i32 i = 0; i < comp_count; i++)
-            {
-                i32 entity_offset = 0;
-                ReadFromFile(file, &entity_offset, sizeof(i32));
-                Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
-                Assert(entity->entity_id)
-                StorageComponent component = {0};
-                ReadStorageComponentFromFile(file, &component);
-                StorageComponent *new_comp = AddStorageComponent(entity);
-                i32 new_comp_id = new_comp->component_id;
-                *new_comp = component;
-                new_comp->component_id = new_comp_id;
-                new_comp->parent_entity_id = entity->entity_id;
-            }
-        } break;
         case COMPONENT_parallax:
         {
             i32 comp_count = 0;
@@ -2137,6 +2136,25 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
                 ParticleEmitterComponent component = {0};
                 ReadParticleEmitterComponentFromFile(file, &component);
                 ParticleEmitterComponent *new_comp = AddParticleEmitterComponent(entity);
+                i32 new_comp_id = new_comp->component_id;
+                *new_comp = component;
+                new_comp->component_id = new_comp_id;
+                new_comp->parent_entity_id = entity->entity_id;
+            }
+        } break;
+        case COMPONENT_player_data:
+        {
+            i32 comp_count = 0;
+            ReadFromFile(file, &comp_count, sizeof(comp_count));
+            for (i32 i = 0; i < comp_count; i++)
+            {
+                i32 entity_offset = 0;
+                ReadFromFile(file, &entity_offset, sizeof(i32));
+                Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
+                Assert(entity->entity_id)
+                PlayerDataComponent component = {0};
+                ReadPlayerDataComponentFromFile(file, &component);
+                PlayerDataComponent *new_comp = AddPlayerDataComponent(entity);
                 i32 new_comp_id = new_comp->component_id;
                 *new_comp = component;
                 new_comp->component_id = new_comp_id;
@@ -2268,20 +2286,6 @@ DeserialiseComponentsToLoadData(FILE *file, ComponentSet *component_set, EntityS
             i32 entity_offset;
             ReadFromFile(file, &entity_offset, sizeof(i32));
             EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
-            StorageComponent component_data;
-            ReadStorageComponentFromFile(file, &component_data);
-            component_data.parent_entity_id = ids[entity_offset];
-            component_set->storage_components[component_set->storage_component_count++] = component_data;
-        }
-    }
-    {
-        i32 component_count;
-        ReadFromFile(file, &component_count, sizeof(i32));
-        for (i32 i = 0; i < component_count; i++)
-        {
-            i32 entity_offset;
-            ReadFromFile(file, &entity_offset, sizeof(i32));
-            EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
             ParallaxComponent component_data;
             ReadParallaxComponentFromFile(file, &component_data);
             component_data.parent_entity_id = ids[entity_offset];
@@ -2300,6 +2304,20 @@ DeserialiseComponentsToLoadData(FILE *file, ComponentSet *component_set, EntityS
             ReadParticleEmitterComponentFromFile(file, &component_data);
             component_data.parent_entity_id = ids[entity_offset];
             component_set->particle_emitter_components[component_set->particle_emitter_component_count++] = component_data;
+        }
+    }
+    {
+        i32 component_count;
+        ReadFromFile(file, &component_count, sizeof(i32));
+        for (i32 i = 0; i < component_count; i++)
+        {
+            i32 entity_offset;
+            ReadFromFile(file, &entity_offset, sizeof(i32));
+            EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
+            PlayerDataComponent component_data;
+            ReadPlayerDataComponentFromFile(file, &component_data);
+            component_data.parent_entity_id = ids[entity_offset];
+            component_set->player_data_components[component_set->player_data_component_count++] = component_data;
         }
     }
 }
@@ -2394,17 +2412,6 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
         new_comp->component_id = new_comp_id;
         new_comp->parent_entity_id = entity->entity_id;
     }
-    for (i32 i = 0; i < core->run_data->loaded_entity_components.storage_component_count; i++)
-    {
-        StorageComponent *saved_comp = &core->run_data->loaded_entity_components.storage_components[i];
-        Entity *entity = &core->run_data->entities[entity_id_map[saved_comp->parent_entity_id - 1] - 1];
-        Assert(entity->entity_id);
-        StorageComponent *new_comp = AddStorageComponent(entity);
-        i32 new_comp_id = new_comp->component_id;
-        *new_comp = *saved_comp;
-        new_comp->component_id = new_comp_id;
-        new_comp->parent_entity_id = entity->entity_id;
-    }
     for (i32 i = 0; i < core->run_data->loaded_entity_components.parallax_component_count; i++)
     {
         ParallaxComponent *saved_comp = &core->run_data->loaded_entity_components.parallax_components[i];
@@ -2427,6 +2434,17 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
         new_comp->component_id = new_comp_id;
         new_comp->parent_entity_id = entity->entity_id;
     }
+    for (i32 i = 0; i < core->run_data->loaded_entity_components.player_data_component_count; i++)
+    {
+        PlayerDataComponent *saved_comp = &core->run_data->loaded_entity_components.player_data_components[i];
+        Entity *entity = &core->run_data->entities[entity_id_map[saved_comp->parent_entity_id - 1] - 1];
+        Assert(entity->entity_id);
+        PlayerDataComponent *new_comp = AddPlayerDataComponent(entity);
+        i32 new_comp_id = new_comp->component_id;
+        *new_comp = *saved_comp;
+        new_comp->component_id = new_comp_id;
+        new_comp->parent_entity_id = entity->entity_id;
+    }
 }
 
 internal void ResetComponentSet(ComponentSet *comp_set)
@@ -2439,9 +2457,9 @@ internal void ResetComponentSet(ComponentSet *comp_set)
     comp_set->arc_entity_component_count = 0;
     comp_set->item_component_count = 0;
     comp_set->trigger_component_count = 0;
-    comp_set->storage_component_count = 0;
     comp_set->parallax_component_count = 0;
     comp_set->particle_emitter_component_count = 0;
+    comp_set->player_data_component_count = 0;
 }
 static void WritePositionComponentToFile(FILE *file, PositionComponent *data)
 {
@@ -3235,19 +3253,17 @@ static void FillArcEntityComponentPointersFromFile(FILE *file, ArcEntityComponen
 
 static void WriteItemComponentToFile(FILE *file, ItemComponent *data)
 {
-    WriteToFile(file, &data->item_type, sizeof(data->item_type));
-
-    WriteToFile(file, &data->stack_size, sizeof(data->stack_size));
+    WriteToFile(file, &data->item, sizeof(data->item));
 
 }
 
 static void FillItemComponentPointersInFile(FILE *file, ItemComponent *data)
 {
-    // 'item_type' in ItemComponent
+    // 'item' in ItemComponent
     for (i32 i = 0; i < serialisation_pointer_count; i++)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->item_type)
+        if (*ptr->pointer_address == &data->item)
         {
             i32 current_pos = ftell(file);
             Assert(current_pos != -1);
@@ -3256,38 +3272,20 @@ static void FillItemComponentPointersInFile(FILE *file, ItemComponent *data)
             fseek(file, current_pos, SEEK_SET);
         }
     }
-    fseek(file, sizeof(data->item_type), SEEK_CUR);
-
-    // 'stack_size' in ItemComponent
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->stack_size)
-        {
-            i32 current_pos = ftell(file);
-            Assert(current_pos != -1);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->stack_size), SEEK_CUR);
+    fseek(file, sizeof(data->item), SEEK_CUR);
 
 }
 
 static void ReadItemComponentFromFile(FILE *file, ItemComponent *data)
 {
-    // 'item_type' in ItemComponent
-    ReadFromFile(file, &data->item_type, sizeof(data->item_type));
-
-    // 'stack_size' in ItemComponent
-    ReadFromFile(file, &data->stack_size, sizeof(data->stack_size));
+    // 'item' in ItemComponent
+    ReadFromFile(file, &data->item, sizeof(data->item));
 
 }
 
 static void FillItemComponentPointersFromFile(FILE *file, ItemComponent *data)
 {
-    // 'item_type' in ItemComponent
+    // 'item' in ItemComponent
     for (i32 i = 0; i < serialisation_pointer_count; i++)
     {
         SerialisationPointer *ptr = &serialisation_pointers[i];
@@ -3295,23 +3293,10 @@ static void FillItemComponentPointersFromFile(FILE *file, ItemComponent *data)
         Assert(current_pos != -1);
         if (ptr->offset == current_pos)
         {
-            *ptr->pointer_address = &data->item_type;
+            *ptr->pointer_address = &data->item;
         }
     }
-    fseek(file, sizeof(data->item_type), SEEK_CUR);
-
-    // 'stack_size' in ItemComponent
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        i32 current_pos = ftell(file);
-        Assert(current_pos != -1);
-        if (ptr->offset == current_pos)
-        {
-            *ptr->pointer_address = &data->stack_size;
-        }
-    }
-    fseek(file, sizeof(data->stack_size), SEEK_CUR);
+    fseek(file, sizeof(data->item), SEEK_CUR);
 
 }
 
@@ -3483,81 +3468,6 @@ static void FillTriggerComponentPointersFromFile(FILE *file, TriggerComponent *d
         }
     }
     fseek(file, sizeof(data->trigger_against), SEEK_CUR);
-
-}
-
-static void WriteStorageComponentToFile(FILE *file, StorageComponent *data)
-{
-    WriteToFile(file, &data->storage_size, sizeof(data->storage_size));
-
-    for (i32 i = 0; i < MAX_STORAGE_SIZE; i++)
-    {
-        if (data->items[i])
-        {
-            i32 pos = ftell(file);
-            Assert(pos != -1);
-            Assert(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS);
-            SerialisationPointer ptr = {&(data->items[i]), pos};
-            serialisation_pointers[serialisation_pointer_count++] = ptr;
-            i32 empty = INT_MAX;
-            WriteToFile(file, &empty, sizeof(i32));
-        }
-        else
-        {
-            i32 null_ptr = 0;
-            WriteToFile(file, &null_ptr, sizeof(i32));
-        }
-
-    }
-
-}
-
-static void FillStorageComponentPointersInFile(FILE *file, StorageComponent *data)
-{
-    // 'storage_size' in StorageComponent
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->storage_size)
-        {
-            i32 current_pos = ftell(file);
-            Assert(current_pos != -1);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->storage_size), SEEK_CUR);
-
-    for (i32 i = 0; i < MAX_STORAGE_SIZE; i++)
-    {
-    // 'items' pointer array in StorageComponent
-    fseek(file, sizeof(i32), SEEK_CUR);
-    }
-
-}
-
-static void ReadStorageComponentFromFile(FILE *file, StorageComponent *data)
-{
-    // 'storage_size' in StorageComponent
-    ReadFromFile(file, &data->storage_size, sizeof(data->storage_size));
-
-}
-
-static void FillStorageComponentPointersFromFile(FILE *file, StorageComponent *data)
-{
-    // 'storage_size' in StorageComponent
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        i32 current_pos = ftell(file);
-        Assert(current_pos != -1);
-        if (ptr->offset == current_pos)
-        {
-            *ptr->pointer_address = &data->storage_size;
-        }
-    }
-    fseek(file, sizeof(data->storage_size), SEEK_CUR);
 
 }
 
@@ -3913,6 +3823,267 @@ static void FillParticleEmitterComponentPointersFromFile(FILE *file, ParticleEmi
 
 }
 
+static void WritePlayerDataComponentToFile(FILE *file, PlayerDataComponent *data)
+{
+    for (i32 i = 0; i < MAX_INVENTORY_SLOTS; i++)
+    {
+        WriteToFile(file, &data->inventory[i], sizeof(Item));
+    }
+
+    WriteToFile(file, &data->inventory_size, sizeof(data->inventory_size));
+
+    for (i32 i = 0; i < MAX_HOTBAR_SLOTS; i++)
+    {
+        WriteToFile(file, &data->hotbar[i], sizeof(Item));
+    }
+
+    WriteToFile(file, &data->hotbar_size, sizeof(data->hotbar_size));
+
+    WriteToFile(file, &data->active_hotbar_slot, sizeof(data->active_hotbar_slot));
+
+    WriteToFile(file, &data->grabbed_item, sizeof(data->grabbed_item));
+
+    WriteToFile(file, &data->grabbed_item_offset, sizeof(data->grabbed_item_offset));
+
+    if (data->grabbed_item_origin_slot)
+    {
+        i32 pos = ftell(file);
+        Assert(pos != -1);
+        Assert(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS);
+        SerialisationPointer ptr = {&data->grabbed_item_origin_slot, pos};
+        serialisation_pointers[serialisation_pointer_count++] = ptr;
+        i32 empty = INT_MAX;
+        WriteToFile(file, &empty, sizeof(i32));
+    }
+    else
+    {
+        i32 null_ptr = 0;
+        WriteToFile(file, &null_ptr, sizeof(i32));
+    }
+}
+
+static void FillPlayerDataComponentPointersInFile(FILE *file, PlayerDataComponent *data)
+{
+    for (i32 i = 0; i < MAX_INVENTORY_SLOTS; i++)
+    {
+        // 'inventory' array in PlayerDataComponent
+        for (i32 j = 0; j < serialisation_pointer_count; j++)
+        {
+            SerialisationPointer *ptr = &serialisation_pointers[j];
+            if (*ptr->pointer_address == &(data->inventory[i]))
+            {
+                i32 current_pos = ftell(file);
+                Assert(current_pos != -1);
+                fseek(file, ptr->offset, SEEK_SET);
+                WriteToFile(file, &current_pos, sizeof(i32));
+                fseek(file, current_pos, SEEK_SET);
+            }
+        }
+        fseek(file, sizeof(Item), SEEK_CUR);
+    }
+
+    // 'inventory_size' in PlayerDataComponent
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->inventory_size)
+        {
+            i32 current_pos = ftell(file);
+            Assert(current_pos != -1);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->inventory_size), SEEK_CUR);
+
+    for (i32 i = 0; i < MAX_HOTBAR_SLOTS; i++)
+    {
+        // 'hotbar' array in PlayerDataComponent
+        for (i32 j = 0; j < serialisation_pointer_count; j++)
+        {
+            SerialisationPointer *ptr = &serialisation_pointers[j];
+            if (*ptr->pointer_address == &(data->hotbar[i]))
+            {
+                i32 current_pos = ftell(file);
+                Assert(current_pos != -1);
+                fseek(file, ptr->offset, SEEK_SET);
+                WriteToFile(file, &current_pos, sizeof(i32));
+                fseek(file, current_pos, SEEK_SET);
+            }
+        }
+        fseek(file, sizeof(Item), SEEK_CUR);
+    }
+
+    // 'hotbar_size' in PlayerDataComponent
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->hotbar_size)
+        {
+            i32 current_pos = ftell(file);
+            Assert(current_pos != -1);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->hotbar_size), SEEK_CUR);
+
+    // 'active_hotbar_slot' in PlayerDataComponent
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->active_hotbar_slot)
+        {
+            i32 current_pos = ftell(file);
+            Assert(current_pos != -1);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->active_hotbar_slot), SEEK_CUR);
+
+    // 'grabbed_item' in PlayerDataComponent
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->grabbed_item)
+        {
+            i32 current_pos = ftell(file);
+            Assert(current_pos != -1);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->grabbed_item), SEEK_CUR);
+
+    // 'grabbed_item_offset' in PlayerDataComponent
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->grabbed_item_offset)
+        {
+            i32 current_pos = ftell(file);
+            Assert(current_pos != -1);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->grabbed_item_offset), SEEK_CUR);
+
+    // 'grabbed_item_origin_slot' pointer in PlayerDataComponent
+    fseek(file, sizeof(i32), SEEK_CUR);
+
+}
+
+static void ReadPlayerDataComponentFromFile(FILE *file, PlayerDataComponent *data)
+{
+    // 'inventory_size' in PlayerDataComponent
+    ReadFromFile(file, &data->inventory_size, sizeof(data->inventory_size));
+
+    // 'hotbar_size' in PlayerDataComponent
+    ReadFromFile(file, &data->hotbar_size, sizeof(data->hotbar_size));
+
+    // 'active_hotbar_slot' in PlayerDataComponent
+    ReadFromFile(file, &data->active_hotbar_slot, sizeof(data->active_hotbar_slot));
+
+    // 'grabbed_item' in PlayerDataComponent
+    ReadFromFile(file, &data->grabbed_item, sizeof(data->grabbed_item));
+
+    // 'grabbed_item_offset' in PlayerDataComponent
+    ReadFromFile(file, &data->grabbed_item_offset, sizeof(data->grabbed_item_offset));
+
+    // 'grabbed_item_origin_slot' pointer in PlayerDataComponent
+    {
+        i32 pointer_offset;
+        ReadFromFile(file, &pointer_offset, sizeof(i32));
+        if (pointer_offset)
+        {
+            Assert(serialisation_pointer_count + 1 < MAX_SERIALISATION_POINTERS);
+            SerialisationPointer ptr = {&data->grabbed_item_origin_slot, pointer_offset};
+            serialisation_pointers[serialisation_pointer_count++] = ptr;
+        }
+        else
+            data->grabbed_item_origin_slot = 0;
+    }
+}
+
+static void FillPlayerDataComponentPointersFromFile(FILE *file, PlayerDataComponent *data)
+{
+    // 'inventory_size' in PlayerDataComponent
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        i32 current_pos = ftell(file);
+        Assert(current_pos != -1);
+        if (ptr->offset == current_pos)
+        {
+            *ptr->pointer_address = &data->inventory_size;
+        }
+    }
+    fseek(file, sizeof(data->inventory_size), SEEK_CUR);
+
+    // 'hotbar_size' in PlayerDataComponent
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        i32 current_pos = ftell(file);
+        Assert(current_pos != -1);
+        if (ptr->offset == current_pos)
+        {
+            *ptr->pointer_address = &data->hotbar_size;
+        }
+    }
+    fseek(file, sizeof(data->hotbar_size), SEEK_CUR);
+
+    // 'active_hotbar_slot' in PlayerDataComponent
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        i32 current_pos = ftell(file);
+        Assert(current_pos != -1);
+        if (ptr->offset == current_pos)
+        {
+            *ptr->pointer_address = &data->active_hotbar_slot;
+        }
+    }
+    fseek(file, sizeof(data->active_hotbar_slot), SEEK_CUR);
+
+    // 'grabbed_item' in PlayerDataComponent
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        i32 current_pos = ftell(file);
+        Assert(current_pos != -1);
+        if (ptr->offset == current_pos)
+        {
+            *ptr->pointer_address = &data->grabbed_item;
+        }
+    }
+    fseek(file, sizeof(data->grabbed_item), SEEK_CUR);
+
+    // 'grabbed_item_offset' in PlayerDataComponent
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        i32 current_pos = ftell(file);
+        Assert(current_pos != -1);
+        if (ptr->offset == current_pos)
+        {
+            *ptr->pointer_address = &data->grabbed_item_offset;
+        }
+    }
+    fseek(file, sizeof(data->grabbed_item_offset), SEEK_CUR);
+
+    // 'grabbed_item_origin_slot' pointer in PlayerDataComponent
+    fseek(file, sizeof(i32), SEEK_CUR);
+
+}
+
 static void WriteComponentSetToFile(FILE *file, ComponentSet *data)
 {
     for (i32 i = 0; i < MAX_ENTITIES; i++)
@@ -3989,15 +4160,6 @@ static void WriteComponentSetToFile(FILE *file, ComponentSet *data)
 
     for (i32 i = 0; i < MAX_ENTITIES; i++)
     {
-        WriteStorageComponentToFile(file, &(data->storage_components[i]));
-    }
-
-    WriteToFile(file, &data->storage_component_count, sizeof(data->storage_component_count));
-
-    WriteToFile(file, &data->free_storage_component_id, sizeof(data->free_storage_component_id));
-
-    for (i32 i = 0; i < MAX_ENTITIES; i++)
-    {
         WriteParallaxComponentToFile(file, &(data->parallax_components[i]));
     }
 
@@ -4013,6 +4175,15 @@ static void WriteComponentSetToFile(FILE *file, ComponentSet *data)
     WriteToFile(file, &data->particle_emitter_component_count, sizeof(data->particle_emitter_component_count));
 
     WriteToFile(file, &data->free_particle_emitter_component_id, sizeof(data->free_particle_emitter_component_id));
+
+    for (i32 i = 0; i < MAX_ENTITIES; i++)
+    {
+        WritePlayerDataComponentToFile(file, &(data->player_data_components[i]));
+    }
+
+    WriteToFile(file, &data->player_data_component_count, sizeof(data->player_data_component_count));
+
+    WriteToFile(file, &data->free_player_data_component_id, sizeof(data->free_player_data_component_id));
 
 }
 
@@ -4404,54 +4575,6 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
 
     for (i32 i = 0; i < MAX_ENTITIES; i++)
     {
-        // 'storage_components' array in ComponentSet
-        for (i32 j = 0; j < serialisation_pointer_count; j++)
-        {
-            SerialisationPointer *ptr = &serialisation_pointers[j];
-            if (*ptr->pointer_address == &(data->storage_components[i]))
-            {
-                i32 current_pos = ftell(file);
-                Assert(current_pos != -1);
-                fseek(file, ptr->offset, SEEK_SET);
-                WriteToFile(file, &current_pos, sizeof(i32));
-                fseek(file, current_pos, SEEK_SET);
-            }
-        }
-        FillStorageComponentPointersInFile(file, &(data->storage_components[i]));
-    }
-
-    // 'storage_component_count' in ComponentSet
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->storage_component_count)
-        {
-            i32 current_pos = ftell(file);
-            Assert(current_pos != -1);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->storage_component_count), SEEK_CUR);
-
-    // 'free_storage_component_id' in ComponentSet
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        if (*ptr->pointer_address == &data->free_storage_component_id)
-        {
-            i32 current_pos = ftell(file);
-            Assert(current_pos != -1);
-            fseek(file, ptr->offset, SEEK_SET);
-            WriteToFile(file, &current_pos, sizeof(i32));
-            fseek(file, current_pos, SEEK_SET);
-        }
-    }
-    fseek(file, sizeof(data->free_storage_component_id), SEEK_CUR);
-
-    for (i32 i = 0; i < MAX_ENTITIES; i++)
-    {
         // 'parallax_components' array in ComponentSet
         for (i32 j = 0; j < serialisation_pointer_count; j++)
         {
@@ -4546,6 +4669,54 @@ static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data)
     }
     fseek(file, sizeof(data->free_particle_emitter_component_id), SEEK_CUR);
 
+    for (i32 i = 0; i < MAX_ENTITIES; i++)
+    {
+        // 'player_data_components' array in ComponentSet
+        for (i32 j = 0; j < serialisation_pointer_count; j++)
+        {
+            SerialisationPointer *ptr = &serialisation_pointers[j];
+            if (*ptr->pointer_address == &(data->player_data_components[i]))
+            {
+                i32 current_pos = ftell(file);
+                Assert(current_pos != -1);
+                fseek(file, ptr->offset, SEEK_SET);
+                WriteToFile(file, &current_pos, sizeof(i32));
+                fseek(file, current_pos, SEEK_SET);
+            }
+        }
+        FillPlayerDataComponentPointersInFile(file, &(data->player_data_components[i]));
+    }
+
+    // 'player_data_component_count' in ComponentSet
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->player_data_component_count)
+        {
+            i32 current_pos = ftell(file);
+            Assert(current_pos != -1);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->player_data_component_count), SEEK_CUR);
+
+    // 'free_player_data_component_id' in ComponentSet
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        if (*ptr->pointer_address == &data->free_player_data_component_id)
+        {
+            i32 current_pos = ftell(file);
+            Assert(current_pos != -1);
+            fseek(file, ptr->offset, SEEK_SET);
+            WriteToFile(file, &current_pos, sizeof(i32));
+            fseek(file, current_pos, SEEK_SET);
+        }
+    }
+    fseek(file, sizeof(data->free_player_data_component_id), SEEK_CUR);
+
 }
 
 static void ReadComponentSetFromFile(FILE *file, ComponentSet *data)
@@ -4598,12 +4769,6 @@ static void ReadComponentSetFromFile(FILE *file, ComponentSet *data)
     // 'free_trigger_component_id' in ComponentSet
     ReadFromFile(file, &data->free_trigger_component_id, sizeof(data->free_trigger_component_id));
 
-    // 'storage_component_count' in ComponentSet
-    ReadFromFile(file, &data->storage_component_count, sizeof(data->storage_component_count));
-
-    // 'free_storage_component_id' in ComponentSet
-    ReadFromFile(file, &data->free_storage_component_id, sizeof(data->free_storage_component_id));
-
     // 'parallax_component_count' in ComponentSet
     ReadFromFile(file, &data->parallax_component_count, sizeof(data->parallax_component_count));
 
@@ -4615,6 +4780,12 @@ static void ReadComponentSetFromFile(FILE *file, ComponentSet *data)
 
     // 'free_particle_emitter_component_id' in ComponentSet
     ReadFromFile(file, &data->free_particle_emitter_component_id, sizeof(data->free_particle_emitter_component_id));
+
+    // 'player_data_component_count' in ComponentSet
+    ReadFromFile(file, &data->player_data_component_count, sizeof(data->player_data_component_count));
+
+    // 'free_player_data_component_id' in ComponentSet
+    ReadFromFile(file, &data->free_player_data_component_id, sizeof(data->free_player_data_component_id));
 
 }
 
@@ -4828,32 +4999,6 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
     }
     fseek(file, sizeof(data->free_trigger_component_id), SEEK_CUR);
 
-    // 'storage_component_count' in ComponentSet
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        i32 current_pos = ftell(file);
-        Assert(current_pos != -1);
-        if (ptr->offset == current_pos)
-        {
-            *ptr->pointer_address = &data->storage_component_count;
-        }
-    }
-    fseek(file, sizeof(data->storage_component_count), SEEK_CUR);
-
-    // 'free_storage_component_id' in ComponentSet
-    for (i32 i = 0; i < serialisation_pointer_count; i++)
-    {
-        SerialisationPointer *ptr = &serialisation_pointers[i];
-        i32 current_pos = ftell(file);
-        Assert(current_pos != -1);
-        if (ptr->offset == current_pos)
-        {
-            *ptr->pointer_address = &data->free_storage_component_id;
-        }
-    }
-    fseek(file, sizeof(data->free_storage_component_id), SEEK_CUR);
-
     // 'parallax_component_count' in ComponentSet
     for (i32 i = 0; i < serialisation_pointer_count; i++)
     {
@@ -4905,6 +5050,32 @@ static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data)
         }
     }
     fseek(file, sizeof(data->free_particle_emitter_component_id), SEEK_CUR);
+
+    // 'player_data_component_count' in ComponentSet
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        i32 current_pos = ftell(file);
+        Assert(current_pos != -1);
+        if (ptr->offset == current_pos)
+        {
+            *ptr->pointer_address = &data->player_data_component_count;
+        }
+    }
+    fseek(file, sizeof(data->player_data_component_count), SEEK_CUR);
+
+    // 'free_player_data_component_id' in ComponentSet
+    for (i32 i = 0; i < serialisation_pointer_count; i++)
+    {
+        SerialisationPointer *ptr = &serialisation_pointers[i];
+        i32 current_pos = ftell(file);
+        Assert(current_pos != -1);
+        if (ptr->offset == current_pos)
+        {
+            *ptr->pointer_address = &data->free_player_data_component_id;
+        }
+    }
+    fseek(file, sizeof(data->free_player_data_component_id), SEEK_CUR);
 
 }
 

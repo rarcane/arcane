@@ -61,11 +61,13 @@ internal TriggerComponent GetDefaultTriggerComponent()
 	return comp;
 }
 
+/*
 internal StorageComponent GetDefaultStorageComponent()
 {
 	StorageComponent comp = {0};
 	return comp;
 }
+ */
 
 internal ParallaxComponent GetDefaultParallaxComponent()
 {
@@ -77,5 +79,11 @@ internal ParticleEmitterComponent GetDefaultParticleEmitterComponent()
 {
 	ParticleEmitterComponent comp = {0};
 	comp.start_time = core->run_data->world.elapsed_world_time;
+	return comp;
+}
+
+internal PlayerDataComponent GetDefaultPlayerDataComponent()
+{
+	PlayerDataComponent comp = {0};
 	return comp;
 }

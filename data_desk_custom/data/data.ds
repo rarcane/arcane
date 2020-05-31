@@ -117,11 +117,6 @@ StaticSprite :: enum
 	@Data("'entity/player/temp_player'", "{0.0f, 0.0f, 14.0f, 35.0f}", "{0.0f, 0.0f}")
 		player,
 	
-	@Data("'item/flint_sword'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{6.0f, 2.0f}")
-		flint_sword_icon,
-	@Data("'item/flint_sword_ground'", "{0.0f, 0.0f, 24.0f, 24.0f}", "{0.0f, 0.0f}")
-		flint_sword_ground,
-	
 	// Background
 	@Data("'scenic/mountains'", "{0.0f, 0.0f, 600.0f, 160.0f}", "{0.0f, 5.0f}")
 		far_mountains,
@@ -231,6 +226,20 @@ StaticSprite :: enum
 		x_axis_arrow_icon,
 	@Data("'icon/axis_icons'", "{33.0f, 0.0f, 7.0f, 7.0f}", "{0.0f, 0.0f}")
 		circle_icon,
+
+	// NOTE(randy): Structures
+	@Data("'structures/crafting_stump'", "{0.0f, 0.0f, 32.0f, 32.0f}", "{0.0f, 0.0f}")
+		crafting_stump,
+
+	// NOTE(randy): Items
+	@Data("'item/flint_sword'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{6.0f, 2.0f}")
+		flint_sword_icon,
+	@Data("'item/flint_sword_ground'", "{0.0f, 0.0f, 24.0f, 24.0f}", "{0.0f, 0.0f}")
+		flint_sword_ground,
+	@Data("'item/flint'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{0.0f, 0.0f}")
+		flint,
+	@Data("'item/twig'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{0.0f, 0.0f}")
+		twig,
 }
 
 @XMacro
@@ -311,8 +320,14 @@ ItemTypeData :: struct
 @XMacro
 ItemType :: enum
 {
+	@Data("'none'", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, 0, 0)
+		none,
 	@Data("'Flint Sword'", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_FLAGS_sword)
 		flint_sword,
+	@Data("'Flint'", STATIC_SPRITE_flint, STATIC_SPRITE_flint, 8, 0)
+		flint,
+	@Data("'Twig'", STATIC_SPRITE_twig, STATIC_SPRITE_twig, 8, 0)
+		twig,
 }
 
 /* --- COMPONENTS --- */
@@ -410,11 +425,15 @@ ArcEntityComponent :: struct
 	current_animation_state : ArcEntityAnimationState;
 }
 
+Item :: struct
+{
+	type : ItemType;
+	stack_size : i32;
+}
 @Component @SerialisableStruct
 ItemComponent :: struct
 {
-	item_type : ItemType;
-	stack_size : i32;
+	item : Item;
 }
 
 @Component @SerialisableStruct
@@ -427,12 +446,14 @@ TriggerComponent :: struct
 	trigger_against : b8;
 }
 
+/*
 @Component @SerialisableStruct
 StorageComponent :: struct
 {
 	storage_size : i32;
 	items : *ItemComponent[MAX_STORAGE_SIZE];
 }
+*/
 
 @Component @SerialisableStruct
 ParallaxComponent :: struct
@@ -452,6 +473,21 @@ ParticleEmitterComponent :: struct
 	free_particle_index : i32;
 	begin_callback : EmitterBeginCallback;
 	finish_callback : EmitterFinishCallback;
+}
+
+MAX_HOTBAR_SLOTS :: 9;
+MAX_INVENTORY_SLOTS :: 9;
+@Component @SerialisableStruct
+PlayerDataComponent :: struct
+{
+	inventory : Item[MAX_INVENTORY_SLOTS];
+	inventory_size : i32;
+	hotbar : Item[MAX_HOTBAR_SLOTS];
+	hotbar_size : i32;
+	active_hotbar_slot : i32;
+	grabbed_item : Item;
+	grabbed_item_offset : v2;
+	grabbed_item_origin_slot : *Item;
 }
 
 @ForwardDeclare(Chunk)

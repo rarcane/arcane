@@ -90,6 +90,36 @@ internal void PreMoveUpdatePlayer()
 
 internal void PostMoveUpdatePlayer()
 {
+	/*
+		if (platform->key_pressed[KEY_e])
+		{
+			PhysicsBodyComponent *overlapping_bodies[MAX_OVERLAPPING_COLLIDERS];
+			
+			PositionComponent *player_pos_comp = GetPositionComponentFromEntityID(core->run_data->character_entity->entity_id);
+			
+			c2Shape shape = {
+				.aabb = {
+					.min = c2V(-20, -20),
+					.max = c2V(20, 20)
+				}
+			};
+			AddPositionOffsetToShape(&shape, C2_SHAPE_TYPE_aabb, player_pos_comp->position);
+			PushDebugShape(shape, C2_SHAPE_TYPE_aabb, v2(0.0f, 0.0f), v3(1.0f, 1.0f, 1.0f));
+			
+			i32 overlap_count = GetOverlappingBodiesWithShape(overlapping_bodies,
+															  shape,
+															  C2_SHAPE_TYPE_aabb);
+			for (i32 i = 0; i < overlap_count; i++)
+			{
+				PhysicsBodyComponent *overlapped_body = overlapping_bodies[i];
+				if (overlapped_body->parent_entity_id != player_pos_comp->parent_entity_id)
+				{
+					LogWarning("%s caught", GetEntityWithID(overlapped_body->parent_entity_id)->name);
+				}
+			}
+		}
+	 */
+	
 	// NOTE(randy): Check for an interaction with the world.
 	/* if (platform->key_pressed[KEY_e])
 	{

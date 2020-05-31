@@ -108,7 +108,6 @@ internal void WorldUpdate()
     
 	START_PERF_TIMER("Update");
     
-	// NOTE(randy): Perform if the game is not paused.
 	if ((core->world_delta_t == 0.0f ? (core->run_data->debug_flags & DEBUG_FLAGS_manual_step) : 1))
 	{
 		UpdateCells();
@@ -368,6 +367,17 @@ internal void GenerateTestPlatform()
 			previous_body = body_comp;
 			previous_pos = pos_comp;
 		}
+	}
+	
+	// NOTE(randy): $Spawn structures
+	{
+		Entity *entity = NewEntity("crafting stump", GENERALISED_ENTITY_TYPE_undefined);
+		
+		PositionComponent *pos_comp = AddPositionComponent(entity);
+		pos_comp->position = v2(-100, 0);
+		
+		SpriteComponent *sprite_comp = AddSpriteComponent(entity);
+		sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_crafting_stump;
 	}
 	
 	// NOTE(randy): $Generate background stuff
@@ -918,6 +928,16 @@ internal b8 CreateWorld(char *world_name)
 		GetArcEntityComponentFromEntityID(character->entity_id)->current_animation_state = ARC_ENTITY_ANIMATION_STATE_player_idle;
 		SpriteComponent *sprite_comp = GetSpriteComponentFromEntityID(character->entity_id);
 		sprite_comp->sprite_data.dynamic_sprite = DYNAMIC_SPRITE_player_idle;
+		
+		PlayerDataComponent *player_comp = AddPlayerDataComponent(character);
+		Item flint_sword = { .type = ITEM_TYPE_flint_sword, .stack_size = 1 };
+		Item flint = { .type = ITEM_TYPE_flint, .stack_size = 7 };
+		Item twig = { .type = ITEM_TYPE_twig, .stack_size = 14 };
+		player_comp->inventory[0] = flint_sword;
+		player_comp->inventory[1] = flint;
+		player_comp->inventory[2] = twig;
+		player_comp->inventory_size = 9;
+		player_comp->hotbar_size = 2;
 	}
 	
 	FillChunkEntities();
