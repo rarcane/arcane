@@ -8,6 +8,7 @@ typedef struct InventoryIconCanvasData
 	Item *item;
 	b8 is_hovered;
 	i32 slot;
+	// b8 is_hotbar_slot;
 } InventoryIconCanvasData;
 
 typedef struct GrabbedIconCanvasData

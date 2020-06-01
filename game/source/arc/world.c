@@ -1346,8 +1346,13 @@ internal void FillChunkEntities()
 				{
 					position = GetParallaxComponentFromEntityID(entity->entity_id)->desired_position;
 				}
-				Chunk *chunk = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x), WorldSpaceToChunkIndex(position.y));
-				Assert(chunk);
+				Chunk *chunk = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x),
+											   WorldSpaceToChunkIndex(position.y));
+				if (!chunk)
+				{
+					LogError("Item found outside of chunk.");
+					continue;
+				}
 				
 				chunk->entity_count++;
 				positional_entities[positional_entity_count++] = entity;
@@ -1384,7 +1389,8 @@ internal void FillChunkEntities()
 		{
 			position = GetParallaxComponentFromEntityID(entity->entity_id)->desired_position;
 		}
-		Chunk *chunk = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x), WorldSpaceToChunkIndex(position.y));
+		Chunk *chunk = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x),
+									   WorldSpaceToChunkIndex(position.y));
 		Assert(chunk);
 		
 		chunk->entity_ids[chunk->entity_count++] = entity->entity_id;

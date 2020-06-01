@@ -14,18 +14,18 @@ internal Entity *NewGroundItemEntity(v2 position, Item item_data)
 	sprite_comp->sprite_data.static_sprite = item_type->ground_sprite;
 	
 	PhysicsBodyComponent *phys_comp = AddPhysicsBodyComponent(entity);
-	c2AABB aabb = {
-		.min = c2V(-10.0f, 10.0f),
-		.max = c2V(10.0f, 10.0f),
+	c2Circle circle = {
+		.p = c2V(0.0f, 0.0f),
+		.r = 10.0f,
 	};
-	phys_comp->shape.aabb = aabb;
-	phys_comp->shape_type = C2_SHAPE_TYPE_aabb;
+	phys_comp->shape.circle = circle;
+	phys_comp->shape_type = C2_SHAPE_TYPE_circle;
 	phys_comp->mass_data.mass = 30.0f;
 	phys_comp->mass_data.inv_mass = 1.0f / 30.0f;
 	phys_comp->material.restitution = 1.0f;
 	phys_comp->material.static_friction = 0.5f;
 	phys_comp->material.dynamic_friction = 0.5f;
-	phys_comp->gravity_multiplier = 1.0f;
+	phys_comp->gravity_multiplier = 0.2f;
 	
 	return entity;
 }
@@ -33,7 +33,7 @@ internal Entity *NewGroundItemEntity(v2 position, Item item_data)
 internal Entity *NewGroundItemEntityAtPlayer(Item item_data)
 {
 	PositionComponent *pos_comp = GetPositionComponentFromEntityID(core->run_data->character_entity->entity_id);
-	return NewGroundItemEntity(pos_comp->position, item_data);
+	return NewGroundItemEntity(V2AddV2(pos_comp->position, v2(50.0f, -20.0f)), item_data);
 }
 
 

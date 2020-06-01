@@ -198,8 +198,7 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 					//c2AABB a_aabb = v2AddAABB(a_body_world_pos, a_body_comp->shape.aabb);
 					//c2AABB b_aabb = v2AddAABB(b_body_world_pos, b_body_comp->shape.aabb);
 					c2AABBtoAABBManifold(a_shape.aabb, b_shape.aabb, manifold);
-				}
-				break;
+				} break;
 				
 				case C2_SHAPE_TYPE_capsule:
 				{
@@ -209,8 +208,7 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 					//CapsuleToWorldSpace(&b_capsule, b_body_world_pos);
 					
 					c2AABBtoCapsuleManifold(a_shape.aabb, b_shape.capsule, manifold);
-				}
-				break;
+				} break;
 				
 				case C2_SHAPE_TYPE_poly:
 				{
@@ -224,8 +222,7 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 					 */
 					
 					c2AABBtoPolyManifold(a_shape.aabb, &b_shape.poly, 0, manifold);
-				}
-				break;
+				} break;
 				
 				case C2_SHAPE_TYPE_line:
 				{
@@ -276,40 +273,6 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 				
 				case C2_SHAPE_TYPE_line:
 				{
-					/* f32 m = b_line.d.y / b_line.d.x;
-					f32 c = -m * p1.x + p1.y;
-					f32 perp_segment = -m * capsule_point_a.x + capsule_point_a.y - c;
-					f32 dist_from_segment = fabsf(perp_segment) / SquareRoot(-m * -m + 1); */
-					
-					/* f32 side = (p2.x - p1.x) * (capsule_point_a.y - p1.y) - (p2.y - p1.y) * (capsule_point_a.x - p1.x);
-					if (side > 0.0f)
-					{
-						manifold->n = c2V(-b_line.d.y, b_line.d.x);
-						manifold->count = 1;
-						manifold->depths[0] = dist_from_segment;
-					} */
-					
-					/* v2 dist_vector = V2SubtractV2(capsule_point_a, p1);
-						f32 dist = PythagSolve(dist_vector.x, dist_vector.y);
-						if (dist < a_capsule.r)
-						{
-							manifold->n = c2V(-dist_vector.x / dist, -dist_vector.y / dist);
-							manifold->count = 1;
-							manifold->depths[0] = a_capsule.r - dist;
-						} */
-					
-					/*
-										c2Capsule a_capsule = a_body_comp->shape.capsule;
-										CapsuleToWorldSpace(&a_capsule, a_body_world_pos);
-					 */
-					
-					/*
-										Line b_line = b_body_comp->shape.line;
-										
-										v2 p1 = V2AddV2(b_shape.line.p1, b_body_world_pos);
-										v2 p2 = V2AddV2(b_shape.line.p2, b_body_world_pos);
-					 */
-					
 					v2 line_vector = V2SubtractV2(b_shape.line.p2, b_shape.line.p1);
 					v2 capsule_point_a = v2(a_shape.capsule.a.x, a_shape.capsule.a.y);
 					
@@ -334,8 +297,30 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 						manifold->count = 1;
 						manifold->depths[0] = a_shape.capsule.r - collision_distance;
 					}
-				}
-				break;
+				} break;
+				
+				case C2_SHAPE_TYPE_circle :
+				{
+					/*
+										// NOTE(randy): $Capsule -> Circle
+										// Temp, just treating it like another circle for now
+										v2 collision_normal = v2(a_shape.capsule.a.x - b_shape.circle.p.x,
+																 a_shape.capsule.a.y - b_shape.circle.p.y);
+										f32 mag = PythagSolve(collision_normal.x, collision_normal.y);
+										
+										v2 normalised_normal = v2(collision_normal.x / mag,
+																  collision_normal.y / mag);
+										v2Realise(&normalised_normal);
+										
+										if (mag < a_shape.capsule.r + b_shape.circle.r)
+										{
+											manifold->n = c2V(normalised_normal.x,
+															  normalised_normal.y);
+											manifold->count = 1;
+											manifold->depths[0] = a_shape.capsule.r + b_shape.circle.r - mag;
+										}
+					 */
+				} break;
 				
 				default:
 				Assert(0);
@@ -420,15 +405,7 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 			{
 				case C2_SHAPE_TYPE_capsule:
 				{
-					/*
-										Line a_line = a_body_comp->shape.line;
-										
-										c2Capsule b_capsule = b_body_comp->shape.capsule;
-										CapsuleToWorldSpace(&b_capsule, b_body_world_pos);
-										
-										v2 p1 = V2AddV2(a_line.p1, a_body_world_pos);
-										v2 p2 = V2AddV2(a_line.p2, a_body_world_pos);
-					 */
+					// NOTE(randy): Line -> Capsule
 					v2 line_vector = V2SubtractV2(a_shape.line.p2, a_shape.line.p1);
 					v2 capsule_point_a = v2(b_shape.capsule.a.x, b_shape.capsule.a.y);
 					
@@ -453,10 +430,44 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 				}
 				break;
 				
+				case C2_SHAPE_TYPE_circle :
+				{
+					// NOTE(randy): $Line -> Circle
+					v2 line_vector = V2SubtractV2(a_shape.line.p2, a_shape.line.p1);
+					
+					v2 vector_from_circle = V2SubtractV2(v2(b_shape.circle.p.x,
+															b_shape.circle.p.y),
+														 a_shape.line.p1);
+					f32 dot = vector_from_circle.x * line_vector.x + vector_from_circle.y * line_vector.y;
+					v2 proj = V2MultiplyF32(line_vector, dot / (line_vector.x * line_vector.x + line_vector.y * line_vector.y));
+					
+					v2 collision_normal = V2SubtractV2(v2(b_shape.circle.p.x,
+														  b_shape.circle.p.y),
+													   V2AddV2(a_shape.line.p1, proj));
+					f32 collision_distance = PythagSolve(collision_normal.x, collision_normal.y);
+					v2 normalised_collision_normal = v2(collision_normal.x / collision_distance, collision_normal.y / collision_distance);
+					v2Realise(&normalised_collision_normal);
+					
+					if (collision_distance < b_shape.circle.r &&
+						b_shape.circle.p.x >= a_shape.line.p1.x &&
+						b_shape.circle.p.x <= a_shape.line.p2.x)
+					{
+						manifold->n = c2V(normalised_collision_normal.x, normalised_collision_normal.y);
+						manifold->count = 1;
+						manifold->depths[0] = b_shape.circle.r - collision_distance;
+					}
+				} break;
+				
+				case C2_SHAPE_TYPE_aabb:
+				{
+					// NOTE(randy): $Line -> AABB
+					// TODO(randy): SAT implementation
+				} break;
+				
 				case C2_SHAPE_TYPE_line:
 				{
-				}
-				break;
+					// NOTE(randy): $Line -> Line
+				} break;
 				
 				default:
 				Assert(0);
@@ -464,6 +475,92 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 			}
 		}
 		break;
+		
+		case C2_SHAPE_TYPE_circle :
+		{
+			switch (b_shape_type)
+			{
+				case C2_SHAPE_TYPE_line :
+				{
+					// TODO(randy): Not working.
+					// NOTE(randy): $Circle -> Line
+					v2 line_vector = V2SubtractV2(b_shape.line.p2, b_shape.line.p1);
+					
+					v2 point_a_vector_from_line = V2SubtractV2(v2(a_shape.circle.p.x,
+																  a_shape.circle.p.y),
+															   b_shape.line.p1);
+					f32 dot = point_a_vector_from_line.x * line_vector.x + point_a_vector_from_line.y * line_vector.y;
+					// NOTE(randy): proj a->b = (a dot b / mag^2) * b
+					v2 proj = V2MultiplyF32(line_vector, dot / (line_vector.x * line_vector.x + line_vector.y * line_vector.y));
+					
+					v2 collision_normal = V2SubtractV2(v2(a_shape.circle.p.x,
+														  a_shape.circle.p.y),
+													   V2AddV2(b_shape.line.p1, proj));
+					f32 collision_distance = PythagSolve(collision_normal.x, collision_normal.y);
+					v2 normalised_collision_normal = v2(collision_normal.x / collision_distance,
+														collision_normal.y / collision_distance);
+					v2Realise(&normalised_collision_normal);
+					
+					//PushDebugLine(p1, V2AddV2(p1, collision_normal), v3(1.0f, 0.0f, 0.0f));
+					
+					if (collision_distance < a_shape.circle.r &&
+						a_shape.circle.p.x >= b_shape.line.p1.x &&
+						a_shape.circle.p.x <= b_shape.line.p2.x)
+					{
+						manifold->n = c2V(-normalised_collision_normal.x, -normalised_collision_normal.y);
+						manifold->count = 1;
+						manifold->depths[0] = a_shape.circle.r - collision_distance;
+					}
+				} break;
+				
+				case C2_SHAPE_TYPE_capsule :
+				{
+					/*
+										// NOTE(randy): $Circle -> Capsule
+										// Temp, just treating it like another circle for now
+										v2 collision_normal = v2(a_shape.circle.p.x - b_shape.capsule.a.x,
+																 a_shape.circle.p.y - b_shape.capsule.a.y);
+										f32 mag = PythagSolve(collision_normal.x, collision_normal.y);
+										
+										v2 normalised_normal = v2(collision_normal.x / mag,
+																  collision_normal.y / mag);
+										v2Realise(&normalised_normal);
+										
+										if (mag < a_shape.circle.r + b_shape.capsule.r)
+										{
+											manifold->n = c2V(normalised_normal.x,
+															  normalised_normal.y);
+											manifold->count = 1;
+											manifold->depths[0] = a_shape.circle.r + b_shape.capsule.r - mag;
+										}
+					 */
+				} break;
+				
+				case C2_SHAPE_TYPE_circle :
+				{
+					// NOTE(randy): $Circle -> Circle
+					v2 collision_normal = v2(a_shape.circle.p.x - b_shape.circle.p.x,
+											 a_shape.circle.p.y - b_shape.circle.p.y);
+					f32 mag = PythagSolve(collision_normal.x, collision_normal.y);
+					
+					v2 normalised_normal = v2(collision_normal.x / mag,
+											  collision_normal.y / mag);
+					v2Realise(&normalised_normal);
+					
+					if (mag < a_shape.circle.r + b_shape.circle.r)
+					{
+						manifold->n = c2V(normalised_normal.x,
+										  normalised_normal.y);
+						manifold->count = 1;
+						manifold->depths[0] = a_shape.circle.r + b_shape.circle.r - mag;
+					}
+				} break;
+				
+				default:
+				Assert(0);
+				break;
+			}
+		} break;
 		
 		default:
 		Assert(0);
@@ -532,9 +629,9 @@ internal b32 IsMouseOverlappingShape(v2 mouse_pos, c2Shape shape, c2ShapeType sh
 {
   int i, j, c = 0;
   for (i = 0, j = nvert-1; i < nvert; j = i++) {
-    if ( ((verty[i]>testy) != (verty[j]>testy)) &&
+	if ( ((verty[i]>testy) != (verty[j]>testy)) &&
 	 (testx < (vertx[j]-vertx[i]) * (testy-verty[i]) / (verty[j]-verty[i]) + vertx[i]) )
-       c = !c;
+	   c = !c;
   }
   return c;
 } */

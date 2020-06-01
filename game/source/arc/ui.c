@@ -18,140 +18,199 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 				MemorySet(icon_data->item, 0, sizeof(Item));
 			}
 		}
-		else if (!core->is_mid_right_click && platform->left_mouse_pressed)
+		else if (platform->left_mouse_pressed)
 		{
-			Assert(player_data->grabbed_item.type == ITEM_TYPE_none); // NOTE(randy): Shouldn't be an existing grabbed item if it's a new press.
-			
 			platform->left_mouse_pressed = 0;
-			
-			if (icon_data->item->type)
-			{
-				player_data->grabbed_item = *(icon_data->item);
-				player_data->grabbed_item_origin_slot = icon_data->item;
-				MemorySet(icon_data->item, 0, sizeof(Item));
-				
-				player_data->grabbed_item_offset = mouse;
-			}
-		}
-		else if (!core->is_mid_right_click && core->left_mouse_released)
-		{
-			core->left_mouse_released = 0;
 			
 			if (player_data->grabbed_item.type)
 			{
 				if (icon_data->item->type)
 				{
-					/*
-										StorageComponent *hotbar_storage_comp = GetStorageComponentFromEntityID(core->hotbar->entity_id);
-										
-										if (core->grabbed_inv_item_origin_storage_comp == hotbar_storage_comp) // If this incoming swap is from the hotbar.
-										{
-											if (item_type_data[icon_data->item_comp->item_type].flags & ITEM_FLAGS_HOTBARABLE) // Swap is allowed.
-											{
-												AddItemToStorage(icon_data->item_comp, core->grabbed_inv_item_origin_storage_comp, core->grabbed_inv_item_origin_slot);
-												icon_data->storage_comp->items[icon_data->slot] = 0;
-												AddItemToStorage(core->grabbed_inv_item_comp, icon_data->storage_comp, icon_data->slot);
-												core->grabbed_inv_item_comp = 0;
-											}
-											else // Fail swap. Leave item in hotbar.
-											{
-												AddItemToStorage(core->grabbed_inv_item_comp, hotbar_storage_comp, core->grabbed_inv_item_origin_slot);
-												core->grabbed_inv_item_comp = 0;
-											}
-										}
-										else
-										{
-											if (core->grabbed_inv_item_comp->item_type == icon_data->item_comp->item_type)
-											{
-												if (core->grabbed_inv_item_comp->stack_size + icon_data->item_comp->stack_size <=
-													item_type_data[icon_data->item_comp->item_type].max_stack_size)
-												{
-													// Combine stack
-													icon_data->item_comp->stack_size += core->grabbed_inv_item_comp->stack_size;
-													
-													// Delete held item
-													Entity *grabbed_item = GetEntityWithID(core->grabbed_inv_item_comp->parent_entity_id);
-													DeleteEntity(grabbed_item);
-													core->grabbed_inv_item_comp = 0;
-												}
-												else // Combine with leftovers.
-												{
-													// Calculate leftover item stack size.
-													core->grabbed_inv_item_comp->stack_size = core->grabbed_inv_item_comp->stack_size +
-														icon_data->item_comp->stack_size -
-														item_type_data[icon_data->item_comp->item_type].max_stack_size;
-													// Move leftover item back where it came from.
-													AddItemToStorage(core->grabbed_inv_item_comp, core->grabbed_inv_item_origin_storage_comp, core->grabbed_inv_item_origin_slot);
-													core->grabbed_inv_item_comp = 0;
-													// Max the stack size of the released item.
-													icon_data->item_comp->stack_size = item_type_data[icon_data->item_comp->item_type].max_stack_size;
-												}
-											}
-											else // Swap
-											{
-												AddItemToStorage(icon_data->item_comp, core->grabbed_inv_item_origin_storage_comp, core->grabbed_inv_item_origin_slot);
-												icon_data->storage_comp->items[icon_data->slot] = 0;
-												AddItemToStorage(core->grabbed_inv_item_comp, icon_data->storage_comp, icon_data->slot);
-												core->grabbed_inv_item_comp = 0;
-											}
-										}
-					 */
+					if (player_data->grabbed_item.type == icon_data->item->type)
+					{
+						// NOTE(randy): Try combine the stacks
+						if (player_data->grabbed_item.stack_size + icon_data->item->stack_size <=
+							item_type_data[icon_data->item->type].max_stack_size)
+						{
+							// NOTE(randy): Combine stack
+							icon_data->item->stack_size += player_data->grabbed_item.stack_size;
+							
+							// NOTE(randy): Delete held item
+							MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
+							player_data->grabbed_item_origin_slot = 0;
+						}
+						else
+						{
+							// NOTE(randy): Combine stack to max, but leave remainder.
+							player_data->grabbed_item.stack_size =
+								player_data->grabbed_item.stack_size +
+								icon_data->item->stack_size -
+								item_type_data[icon_data->item->type].max_stack_size;
+							icon_data->item->stack_size = item_type_data[icon_data->item->type].max_stack_size;
+						}
+					}
+					else
+					{
+						// NOTE(randy): Swap items
+						Item temp = *icon_data->item;
+						*icon_data->item = player_data->grabbed_item;
+						player_data->grabbed_item = temp;
+					}
 				}
 				else
 				{
-					/*
-										AddItemToStorage(core->grabbed_inv_item_comp, icon_data->storage_comp, icon_data->slot);
-										core->grabbed_inv_item_comp = 0;
-					 */
+					// NOTE(randy): Put grabbed item in slot
+					*icon_data->item = player_data->grabbed_item;
+					MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
+				}
+			}
+			else
+			{
+				if (icon_data->item->type)
+				{
+					// NOTE(randy): Pick up item.
+					player_data->grabbed_item = *icon_data->item;
+					player_data->grabbed_item_offset = mouse;
+					MemorySet(icon_data->item, 0, sizeof(Item));
 				}
 			}
 		}
-		else if (!core->is_mid_left_click && platform->right_mouse_pressed)
+		else if (platform->right_mouse_pressed)
 		{
-			Assert(player_data->grabbed_item.type == ITEM_TYPE_none); // NOTE(randy): Shouldn't be an existing grabbed item if it's a new press.
-			
 			platform->right_mouse_pressed = 0;
 			
-			/*
-						if (icon_data->item_comp && icon_data->item_comp->stack_size > 1)
-						{
-							Entity *new_item = NewEntity("Item", GENERALISED_ENTITY_TYPE_item);
-							ItemComponent *new_item_comp = AddItemComponent(new_item);
-							new_item_comp->item_type = icon_data->item_comp->item_type;
-							new_item_comp->stack_size = icon_data->item_comp->stack_size / 2;
-							
-							core->grabbed_inv_item_comp = GetItemComponentFromEntityID(new_item->entity_id);
-							core->grabbed_inv_item_origin_slot = -1;
-							core->grabbed_inv_item_origin_storage_comp = 0;
-							core->grabbed_inventory_item_offset = mouse;
-							
-							if (IsOdd(icon_data->item_comp->stack_size))
-								icon_data->item_comp->stack_size = icon_data->item_comp->stack_size / 2 + 1;
-							else
-								icon_data->item_comp->stack_size = icon_data->item_comp->stack_size / 2;
-						}
-			 */
+			if (icon_data->item->type && !player_data->grabbed_item.type)
+			{
+				player_data->grabbed_item = *icon_data->item;
+				player_data->grabbed_item.stack_size /= 2;
+				player_data->grabbed_item_offset = mouse;
+				
+				if (IsOdd(icon_data->item->stack_size))
+				{
+					icon_data->item->stack_size /= 2;
+					icon_data->item->stack_size += 1;
+				}
+				else
+				{
+					icon_data->item->stack_size /= 2;
+				}
+			}
 		}
-		else if (!core->is_mid_left_click && core->right_mouse_released)
-		{
-			core->right_mouse_released = 0;
-			
-			/*
-						if (core->grabbed_inv_item_comp)
+		
+		/*
+				else if (!core->is_mid_right_click && platform->left_mouse_pressed)
+				{
+					Assert(player_data->grabbed_item.type == ITEM_TYPE_none); // NOTE(randy): Shouldn't be an existing grabbed item if it's a new press.
+					
+					platform->left_mouse_pressed = 0;
+					
+					if (icon_data->item->type)
+					{
+						player_data->grabbed_item = *(icon_data->item);
+						player_data->grabbed_item_origin_slot = icon_data->item;
+						MemorySet(icon_data->item, 0, sizeof(Item));
+						
+						player_data->grabbed_item_offset = mouse;
+					}
+				}
+				else if (!core->is_mid_right_click && core->left_mouse_released)
+				{
+					core->left_mouse_released = 0;
+					
+					if (player_data->grabbed_item.type)
+					{
+						if (icon_data->item->type)
 						{
-							if (icon_data->item_comp)
+							if (player_data->grabbed_item.type == icon_data->item->type)
 							{
-								ConvertToGroundItem(core->grabbed_inv_item_comp);
-								core->grabbed_inv_item_comp = 0;
+								if (player_data->grabbed_item.stack_size + icon_data->item->stack_size <=
+									item_type_data[icon_data->item->type].max_stack_size)
+								{
+									// NOTE(randy): Combine stack
+									icon_data->item->stack_size += player_data->grabbed_item.stack_size;
+									
+									// NOTE(randy): Delete held item
+									MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
+									player_data->grabbed_item_origin_slot = 0;
+								}
+								else
+								{
+									// NOTE(randy): Combine stack to max, but leave remainder.
+									player_data->grabbed_item.stack_size =
+										player_data->grabbed_item.stack_size +
+										icon_data->item->stack_size -
+										item_type_data[icon_data->item->type].max_stack_size;
+									
+									*player_data->grabbed_item_origin_slot = player_data->grabbed_item;
+									MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
+									player_data->grabbed_item_origin_slot = 0;
+									
+									// NOTE(randy): Max the stack size of the released item.
+									icon_data->item->stack_size = item_type_data[icon_data->item->type].max_stack_size;
+								}
 							}
 							else
 							{
-								AddItemToStorage(core->grabbed_inv_item_comp, icon_data->storage_comp, icon_data->slot);
-								core->grabbed_inv_item_comp = 0;
+								// NOTE(randy): Swap the two items.
+								*player_data->grabbed_item_origin_slot = *icon_data->item;
+								*icon_data->item = player_data->grabbed_item;
+								
+								MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
+								player_data->grabbed_item_origin_slot = 0;
 							}
 						}
-			 */
-		}
+						else
+						{
+							// NOTE(randy): Empty slot, just add the item
+							*icon_data->item = player_data->grabbed_item;
+							MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
+							player_data->grabbed_item_origin_slot = 0;
+						}
+					}
+				}
+				else if (!core->is_mid_left_click && platform->right_mouse_pressed)
+				{
+					Assert(player_data->grabbed_item.type == ITEM_TYPE_none); // NOTE(randy): Shouldn't be an existing grabbed item if it's a new press.
+					
+					platform->right_mouse_pressed = 0;
+					
+					if (icon_data->item->type && icon_data->item->stack_size > 1)
+					{
+						player_data->grabbed_item = *icon_data->item;
+						player_data->grabbed_item->stack_size /= 2;
+						player_data->grabbed_item_offset = mouse;
+						player_data->grabbed_item_origin_slot = icon_data->item;
+						
+						if (IsOdd(icon_data->item->stack_size))
+						{
+							icon_data->item->stack_size /= 2;
+							icon_data->item->stack_size += 1;
+						}
+						else
+						{
+							icon_data->item->stack_size /= 2;
+						}
+					}
+				}
+				else if (!core->is_mid_left_click && core->right_mouse_released)
+				{
+					core->right_mouse_released = 0;
+					
+								if (core->grabbed_inv_item_comp)
+								{
+									if (icon_data->item_comp)
+									{
+										ConvertToGroundItem(core->grabbed_inv_item_comp);
+										core->grabbed_inv_item_comp = 0;
+									}
+									else
+									{
+										AddItemToStorage(core->grabbed_inv_item_comp, icon_data->storage_comp, icon_data->slot);
+										core->grabbed_inv_item_comp = 0;
+									}
+								}
+				}
+		 */
 	}
 }
 
@@ -205,72 +264,134 @@ internal void hotbar_icon_canvas_update_callback(char *name, v4 rect, v2 mouse, 
 	{
 		if (platform->key_pressed[KEY_q])
 		{
-			/*
-						if (icon_data->item_comp)
-						{
-							if (core->held_item)
-							{
-								ItemComponent *held_item_comp = GetItemComponentFromEntityID(core->held_item->entity_id);
-								if (held_item_comp == icon_data->item_comp)
-									RemoveHeldItem();
-							}
-							
-							ConvertToGroundItem(icon_data->item_comp);
-							icon_data->storage_comp->items[icon_data->slot] = 0;
-						}
-			 */
+			if (icon_data->item)
+			{
+				NewGroundItemEntityAtPlayer(*icon_data->item);
+				MemorySet(icon_data->item, 0, sizeof(Item));
+			}
 		}
 		else if (platform->left_mouse_pressed)
 		{
-			Assert(player_data->grabbed_item.type == ITEM_TYPE_none);
-			
 			platform->left_mouse_pressed = 0;
 			
-			/*
-						if (icon_data->item_comp)
+			if (player_data->grabbed_item.type)
+			{
+				if (icon_data->item->type)
+				{
+					if (player_data->grabbed_item.type == icon_data->item->type)
+					{
+						// NOTE(randy): Try combine the stacks
+						if (player_data->grabbed_item.stack_size + icon_data->item->stack_size <=
+							item_type_data[icon_data->item->type].max_stack_size)
 						{
-							core->grabbed_inv_item_comp = icon_data->item_comp;
-							core->grabbed_inv_item_origin_slot = icon_data->slot;
-							core->grabbed_inv_item_origin_storage_comp = icon_data->storage_comp;
-							icon_data->storage_comp->items[icon_data->slot] = 0;
+							// NOTE(randy): Combine stack
+							icon_data->item->stack_size += player_data->grabbed_item.stack_size;
 							
-							core->grabbed_inventory_item_offset = mouse;
-							
-							if (icon_data->slot + 1 == core->active_hotbar_slot)
+							// NOTE(randy): Delete held item
+							MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
+							player_data->grabbed_item_origin_slot = 0;
+						}
+						else
+						{
+							// NOTE(randy): Combine stack to max, but leave remainder.
+							player_data->grabbed_item.stack_size =
+								player_data->grabbed_item.stack_size +
+								icon_data->item->stack_size -
+								item_type_data[icon_data->item->type].max_stack_size;
+							icon_data->item->stack_size = item_type_data[icon_data->item->type].max_stack_size;
+						}
+					}
+					else
+					{
+						// NOTE(randy): Swap items
+						Item temp = *icon_data->item;
+						*icon_data->item = player_data->grabbed_item;
+						player_data->grabbed_item = temp;
+					}
+				}
+				else
+				{
+					// NOTE(randy): Put grabbed item in slot
+					*icon_data->item = player_data->grabbed_item;
+					MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
+				}
+			}
+			else
+			{
+				if (icon_data->item->type)
+				{
+					// NOTE(randy): Pick up item.
+					player_data->grabbed_item = *icon_data->item;
+					player_data->grabbed_item_offset = mouse;
+					MemorySet(icon_data->item, 0, sizeof(Item));
+				}
+			}
+		}
+		
+		/*
+				if (platform->key_pressed[KEY_q])
+				{
+					if (icon_data->item_comp)
+					{
+						if (core->held_item)
+						{
+							ItemComponent *held_item_comp = GetItemComponentFromEntityID(core->held_item->entity_id);
+							if (held_item_comp == icon_data->item_comp)
 								RemoveHeldItem();
 						}
-			 */
-		}
-		else if (core->left_mouse_released)
-		{
-			core->left_mouse_released = 0;
-			
-			/*
-						if (core->grabbed_inv_item_comp)
+						
+						ConvertToGroundItem(icon_data->item_comp);
+						icon_data->storage_comp->items[icon_data->slot] = 0;
+					}
+				}
+				else if (platform->left_mouse_pressed)
+				{
+					Assert(player_data->grabbed_item.type == ITEM_TYPE_none);
+					
+					platform->left_mouse_pressed = 0;
+					
+					if (icon_data->item_comp)
+					{
+						core->grabbed_inv_item_comp = icon_data->item_comp;
+						core->grabbed_inv_item_origin_slot = icon_data->slot;
+						core->grabbed_inv_item_origin_storage_comp = icon_data->storage_comp;
+						icon_data->storage_comp->items[icon_data->slot] = 0;
+						
+						core->grabbed_inventory_item_offset = mouse;
+						
+						if (icon_data->slot + 1 == core->active_hotbar_slot)
+							RemoveHeldItem();
+					}
+				}
+				else if (core->left_mouse_released)
+				{
+					core->left_mouse_released = 0;
+					
+					if (core->grabbed_inv_item_comp)
+					{
+						if (item_type_data[core->grabbed_inv_item_comp->item_type].flags & ITEM_FLAGS_HOTBARABLE)
 						{
-							if (item_type_data[core->grabbed_inv_item_comp->item_type].flags & ITEM_FLAGS_HOTBARABLE)
+							if (icon_data->storage_comp->items[icon_data->slot])
 							{
-								if (icon_data->storage_comp->items[icon_data->slot])
-								{
-									AddItemToStorage(icon_data->item_comp, core->grabbed_inv_item_origin_storage_comp, core->grabbed_inv_item_origin_slot);
-									icon_data->storage_comp->items[icon_data->slot] = 0;
-									AddItemToStorage(core->grabbed_inv_item_comp, icon_data->storage_comp, icon_data->slot);
-									core->grabbed_inv_item_comp = 0;
-								}
-								else
-								{
-									AddItemToStorage(core->grabbed_inv_item_comp, icon_data->storage_comp, icon_data->slot);
-									core->grabbed_inv_item_comp = 0;
-								}
+								AddItemToStorage(icon_data->item_comp, core->grabbed_inv_item_origin_storage_comp, core->grabbed_inv_item_origin_slot);
+								icon_data->storage_comp->items[icon_data->slot] = 0;
+								AddItemToStorage(core->grabbed_inv_item_comp, icon_data->storage_comp, icon_data->slot);
+								core->grabbed_inv_item_comp = 0;
 							}
 							else
 							{
-								AddItemToStorage(core->grabbed_inv_item_comp, core->grabbed_inv_item_origin_storage_comp, core->grabbed_inv_item_origin_slot);
+								AddItemToStorage(core->grabbed_inv_item_comp, icon_data->storage_comp, icon_data->slot);
 								core->grabbed_inv_item_comp = 0;
 							}
 						}
-			 */
-		}
+						else
+						{
+							AddItemToStorage(core->grabbed_inv_item_comp, core->grabbed_inv_item_origin_storage_comp, core->grabbed_inv_item_origin_slot);
+							core->grabbed_inv_item_comp = 0;
+						}
+					}
+				}
+		 */
 	}
 }
 
@@ -287,7 +408,7 @@ internal void hotbar_icon_canvas_render_callback(char *name, v4 rect, v2 mouse, 
 		StaticSpriteData *sprite = &static_sprite_data[item_type_data[icon_data->item->type].icon_sprite];
 		Ts2dPushTexture(sprite->texture_atlas, sprite->source, v4(rect.x + padding / 2, rect.y + padding / 2, rect.z - padding, rect.w - padding));
 		
-		Assert(icon_data->item->stack_size == 1); // NOTE(randy): Don't yet support hotbar items with stacks. Is this intentional?
+		// Assert(icon_data->item->stack_size == 1); // NOTE(randy): Don't yet support hotbar items with stacks. Is this intentional?
 	}
 	
 	char txt[100];
@@ -395,7 +516,7 @@ internal void DrawGameUI()
 				TsUIPopX();
 			}
 			
-			// NOTE(tjr): Render hotbar.
+			// NOTE(randy): Render hotbar.
 			{
 				if (player_sprite_comp->is_flipped)
 					TsUIPushX(core->render_w / 2 + 50.0f);
@@ -421,25 +542,21 @@ internal void DrawGameUI()
 		}
 		TsUIEndInputGroup();
 		
-		// NOTE(tjr): If there's a held item but none of the slots have picked up on it's release. Throw it onto the ground.
+		// NOTE(randy): If there's a held item but none of the slots have picked up on a press then throw it onto the ground.
 		if (player_data->grabbed_item.type != ITEM_TYPE_none &&
-			!core->is_mid_right_click &&
-			core->left_mouse_released)
+			platform->left_mouse_pressed)
 		{
-			core->left_mouse_released = 0;
-			// ConvertToGroundItem(core->grabbed_inv_item_comp);
+			NewGroundItemEntityAtPlayer(player_data->grabbed_item);
 			MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
 		}
 		else if (player_data->grabbed_item.type != ITEM_TYPE_none &&
-				 !core->is_mid_left_click &&
-				 core->right_mouse_released)
+				 platform->right_mouse_pressed)
 		{
-			core->right_mouse_released = 0;
-			//ConvertToGroundItem(core->grabbed_inv_item_comp);
+			NewGroundItemEntityAtPlayer(player_data->grabbed_item);
 			MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
 		}
 		
-		// NOTE(tjr): Render grabbed item.
+		// NOTE(randy): Render grabbed item.
 		if (player_data->grabbed_item.type)
 		{
 			TsUIPushPosition(V2SubtractV2(v2(platform->mouse_x,
