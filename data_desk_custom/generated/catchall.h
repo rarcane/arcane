@@ -377,6 +377,11 @@ f32 mass;
 f32 inv_mass;
 } MassData;
 
+#define PHYSICS_BODY_TYPE_FLAGS_ground (1<<0)
+#define PHYSICS_BODY_TYPE_FLAGS_item (1<<1)
+#define PHYSICS_BODY_TYPE_FLAGS_character (1<<2)
+typedef uint32 PhysicsBodyTypeFlags;
+
 typedef struct PhysicsBodyComponent
 {
 i32 parent_entity_id;
@@ -388,6 +393,8 @@ MassData mass_data;
 v2 velocity;
 v2 force;
 f32 gravity_multiplier;
+PhysicsBodyTypeFlags type;
+PhysicsBodyTypeFlags collide_against;
 } PhysicsBodyComponent;
 
 typedef struct MovementComponent
@@ -784,113 +791,57 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count);
 internal void ResetComponentSet(ComponentSet *comp_set);
 static void WritePositionComponentToFile(FILE *file, PositionComponent *data);
 
-static void FillPositionComponentPointersInFile(FILE *file, PositionComponent *data);
-
 static void ReadPositionComponentFromFile(FILE *file, PositionComponent *data);
-
-static void FillPositionComponentPointersFromFile(FILE *file, PositionComponent *data);
 
 static void WriteSpriteComponentToFile(FILE *file, SpriteComponent *data);
 
-static void FillSpriteComponentPointersInFile(FILE *file, SpriteComponent *data);
-
 static void ReadSpriteComponentFromFile(FILE *file, SpriteComponent *data);
-
-static void FillSpriteComponentPointersFromFile(FILE *file, SpriteComponent *data);
 
 static void WriteAnimationComponentToFile(FILE *file, AnimationComponent *data);
 
-static void FillAnimationComponentPointersInFile(FILE *file, AnimationComponent *data);
-
 static void ReadAnimationComponentFromFile(FILE *file, AnimationComponent *data);
-
-static void FillAnimationComponentPointersFromFile(FILE *file, AnimationComponent *data);
 
 static void WritePhysicsBodyComponentToFile(FILE *file, PhysicsBodyComponent *data);
 
-static void FillPhysicsBodyComponentPointersInFile(FILE *file, PhysicsBodyComponent *data);
-
 static void ReadPhysicsBodyComponentFromFile(FILE *file, PhysicsBodyComponent *data);
-
-static void FillPhysicsBodyComponentPointersFromFile(FILE *file, PhysicsBodyComponent *data);
 
 static void WriteMovementComponentToFile(FILE *file, MovementComponent *data);
 
-static void FillMovementComponentPointersInFile(FILE *file, MovementComponent *data);
-
 static void ReadMovementComponentFromFile(FILE *file, MovementComponent *data);
-
-static void FillMovementComponentPointersFromFile(FILE *file, MovementComponent *data);
 
 static void WriteArcEntityComponentToFile(FILE *file, ArcEntityComponent *data);
 
-static void FillArcEntityComponentPointersInFile(FILE *file, ArcEntityComponent *data);
-
 static void ReadArcEntityComponentFromFile(FILE *file, ArcEntityComponent *data);
-
-static void FillArcEntityComponentPointersFromFile(FILE *file, ArcEntityComponent *data);
 
 static void WriteItemComponentToFile(FILE *file, ItemComponent *data);
 
-static void FillItemComponentPointersInFile(FILE *file, ItemComponent *data);
-
 static void ReadItemComponentFromFile(FILE *file, ItemComponent *data);
-
-static void FillItemComponentPointersFromFile(FILE *file, ItemComponent *data);
 
 static void WriteTriggerComponentToFile(FILE *file, TriggerComponent *data);
 
-static void FillTriggerComponentPointersInFile(FILE *file, TriggerComponent *data);
-
 static void ReadTriggerComponentFromFile(FILE *file, TriggerComponent *data);
-
-static void FillTriggerComponentPointersFromFile(FILE *file, TriggerComponent *data);
 
 static void WriteParallaxComponentToFile(FILE *file, ParallaxComponent *data);
 
-static void FillParallaxComponentPointersInFile(FILE *file, ParallaxComponent *data);
-
 static void ReadParallaxComponentFromFile(FILE *file, ParallaxComponent *data);
-
-static void FillParallaxComponentPointersFromFile(FILE *file, ParallaxComponent *data);
 
 static void WriteParticleEmitterComponentToFile(FILE *file, ParticleEmitterComponent *data);
 
-static void FillParticleEmitterComponentPointersInFile(FILE *file, ParticleEmitterComponent *data);
-
 static void ReadParticleEmitterComponentFromFile(FILE *file, ParticleEmitterComponent *data);
-
-static void FillParticleEmitterComponentPointersFromFile(FILE *file, ParticleEmitterComponent *data);
 
 static void WritePlayerDataComponentToFile(FILE *file, PlayerDataComponent *data);
 
-static void FillPlayerDataComponentPointersInFile(FILE *file, PlayerDataComponent *data);
-
 static void ReadPlayerDataComponentFromFile(FILE *file, PlayerDataComponent *data);
-
-static void FillPlayerDataComponentPointersFromFile(FILE *file, PlayerDataComponent *data);
 
 static void WriteComponentSetToFile(FILE *file, ComponentSet *data);
 
-static void FillComponentSetPointersInFile(FILE *file, ComponentSet *data);
-
 static void ReadComponentSetFromFile(FILE *file, ComponentSet *data);
-
-static void FillComponentSetPointersFromFile(FILE *file, ComponentSet *data);
 
 static void WriteEntityToFile(FILE *file, Entity *data);
 
-static void FillEntityPointersInFile(FILE *file, Entity *data);
-
 static void ReadEntityFromFile(FILE *file, Entity *data);
-
-static void FillEntityPointersFromFile(FILE *file, Entity *data);
 
 static void WriteWorldSaveDataToFile(FILE *file, WorldSaveData *data);
 
-static void FillWorldSaveDataPointersInFile(FILE *file, WorldSaveData *data);
-
 static void ReadWorldSaveDataFromFile(FILE *file, WorldSaveData *data);
-
-static void FillWorldSaveDataPointersFromFile(FILE *file, WorldSaveData *data);
 

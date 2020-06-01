@@ -363,6 +363,8 @@ internal void GenerateTestPlatform()
 			body_comp->material.dynamic_friction = 0.2f;
 			body_comp->mass_data.mass = 0.0f;
 			body_comp->mass_data.inv_mass = 0.0f;
+			body_comp->type |= PHYSICS_BODY_TYPE_FLAGS_ground;
+			body_comp->collide_against |= PHYSICS_BODY_TYPE_FLAGS_character | PHYSICS_BODY_TYPE_FLAGS_item;
 			
 			previous_body = body_comp;
 			previous_pos = pos_comp;
@@ -922,6 +924,8 @@ internal b8 CreateWorld(char *world_name)
 		phys_body_comp->material.static_friction = 0.5f;
 		phys_body_comp->material.dynamic_friction = 0.5f;
 		phys_body_comp->gravity_multiplier = 1.0f;
+		phys_body_comp->collide_against |= PHYSICS_BODY_TYPE_FLAGS_ground;
+		phys_body_comp->type |= PHYSICS_BODY_TYPE_FLAGS_character;
 		
 		GetMovementComponentFromEntityID(character->entity_id)->move_speed = 100.0f;
 		GetArcEntityComponentFromEntityID(character->entity_id)->entity_type = ARC_ENTITY_TYPE_player;
@@ -943,7 +947,6 @@ internal b8 CreateWorld(char *world_name)
 	FillChunkEntities();
 	
 	// NOTE(randy): Initial save.
-	SaveLevelData();
 	SaveWorld();
 	Assert(core->run_data->save_job_index != -1);
 	while(!platform->WaitForJob(core->run_data->save_job_index, TS_WAIT_FOREVER));
@@ -1001,7 +1004,7 @@ internal b8 LoadWorld(char *world_name)
             
 			core->run_data->character_entity = entity;
 		}
-        
+		
 		// NOTE(randy): Read in basic world data
 		ReadWorldSaveDataFromFile(save, &core->run_data->world);
 		
@@ -1251,7 +1254,7 @@ internal void SaveLevelData()
 			}
 		}
 	}
-    
+	
 	// NOTE(randy): Save world data struct
 	WriteWorldSaveDataToFile(file, &core->run_data->world);
 	

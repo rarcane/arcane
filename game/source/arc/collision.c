@@ -166,17 +166,16 @@ internal void GenerateCollisionPairs(CollisionPair pairs[], i32 *count)
 			for (int j = 0; j < core->run_data->entity_components.physics_body_component_count; j++)
 			{
 				PhysicsBodyComponent *body_comp_b = &core->run_data->entity_components.physics_body_components[j];
-				if (body_comp_b->component_id)
+				
+				if (body_comp_b->component_id &&
+					body_comp_a != body_comp_b &&
+					!(body_comp_a->mass_data.mass == 0.0f &&
+					  body_comp_b->mass_data.mass == 0.0f) &&
+					(body_comp_a->collide_against & body_comp_b->type))
 				{
-					if (body_comp_a != body_comp_b)
-					{
-						if (!(body_comp_a->mass_data.mass == 0.0f && body_comp_b->mass_data.mass == 0.0f))
-						{
-							CollisionPair new_pair = {body_comp_a, body_comp_b};
-							Assert(*count + 1 < MAX_COLLISION_PAIRS)
-								pairs[(*count)++] = new_pair;
-						}
-					}
+					CollisionPair new_pair = {body_comp_a, body_comp_b};
+					Assert(*count + 1 < MAX_COLLISION_PAIRS)
+						pairs[(*count)++] = new_pair;
 				}
 			}
 		}
@@ -242,13 +241,6 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 			{
 				case C2_SHAPE_TYPE_aabb:
 				{
-					/*
-										c2Capsule a_capsule = a_body_comp->shape.capsule;
-										CapsuleToWorldSpace(&a_capsule, a_body_world_pos);
-										
-										c2AABB b_aabb = v2AddAABB(b_body_world_pos, b_body_comp->shape.aabb);
-					 */
-					
 					c2AABBtoCapsuleManifold(b_shape.aabb, a_shape.capsule, manifold);
 					manifold->n.x *= -1.0f;
 					manifold->n.y *= -1.0f;
@@ -257,16 +249,6 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 				
 				case C2_SHAPE_TYPE_poly:
 				{
-					/*
-										c2Capsule a_capsule = a_body_comp->shape.capsule;
-										CapsuleToWorldSpace(&a_capsule, a_body_world_pos);
-										
-										c2Poly b_poly = b_body_comp->shape.poly;
-										c2x world_pos = c2xIdentity();
-										world_pos.p.x = b_body_world_pos.x;
-										world_pos.p.y = b_body_world_pos.y;
-					 */
-					
 					c2CapsuletoPolyManifold(a_shape.capsule, &b_shape.poly, 0, manifold);
 				}
 				break;
@@ -301,25 +283,10 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 				
 				case C2_SHAPE_TYPE_circle :
 				{
-					/*
-										// NOTE(randy): $Capsule -> Circle
-										// Temp, just treating it like another circle for now
-										v2 collision_normal = v2(a_shape.capsule.a.x - b_shape.circle.p.x,
-																 a_shape.capsule.a.y - b_shape.circle.p.y);
-										f32 mag = PythagSolve(collision_normal.x, collision_normal.y);
-										
-										v2 normalised_normal = v2(collision_normal.x / mag,
-																  collision_normal.y / mag);
-										v2Realise(&normalised_normal);
-										
-										if (mag < a_shape.capsule.r + b_shape.circle.r)
-										{
-											manifold->n = c2V(normalised_normal.x,
-															  normalised_normal.y);
-											manifold->count = 1;
-											manifold->depths[0] = a_shape.capsule.r + b_shape.circle.r - mag;
-										}
-					 */
+					// NOTE(randy): $Capsule -> Circle
+					c2CircletoCapsuleManifold(b_shape.circle, a_shape.capsule, manifold);
+					manifold->n.x *= -1.0f;
+					manifold->n.y *= -1.0f;
 				} break;
 				
 				default:
@@ -335,15 +302,6 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 			{
 				case C2_SHAPE_TYPE_aabb:
 				{
-					/*
-										c2Poly a_poly = a_body_comp->shape.poly;
-										c2x world_pos = c2xIdentity();
-										world_pos.p.x = a_body_world_pos.x;
-										world_pos.p.y = a_body_world_pos.y;
-										
-										c2AABB b_aabb = v2AddAABB(b_body_world_pos, b_body_comp->shape.aabb);
-					 */
-					
 					c2AABBtoPolyManifold(b_shape.aabb, &a_shape.poly, 0, manifold);
 					manifold->n.x *= -1.0f;
 					manifold->n.y *= -1.0f;
@@ -352,16 +310,6 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 				
 				case C2_SHAPE_TYPE_capsule:
 				{
-					/*
-										c2Poly a_poly = a_body_comp->shape.poly;
-										c2x world_pos = c2xIdentity();
-										world_pos.p.x = a_body_world_pos.x;
-										world_pos.p.y = a_body_world_pos.y;
-										
-										c2Capsule b_capsule = b_body_comp->shape.capsule;
-										CapsuleToWorldSpace(&b_capsule, b_body_world_pos);
-					 */
-					
 					c2CapsuletoPolyManifold(b_shape.capsule, &a_shape.poly, 0, manifold);
 					manifold->n.x *= -1.0f;
 					manifold->n.y *= -1.0f;
@@ -370,18 +318,6 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 				
 				case C2_SHAPE_TYPE_poly:
 				{
-					/*
-										c2Poly a_poly = a_body_comp->shape.poly;
-										c2x world_pos_a = c2xIdentity();
-										world_pos_a.p.x = a_body_world_pos.x;
-										world_pos_a.p.y = a_body_world_pos.y;
-										
-										c2Poly b_poly = b_body_comp->shape.poly;
-										c2x world_pos_b = c2xIdentity();
-										world_pos_b.p.x = b_body_world_pos.x;
-										world_pos_b.p.y = b_body_world_pos.y;
-					 */
-					
 					c2PolytoPolyManifold(&a_shape.poly, 0, &b_shape.poly, 0, manifold);
 				}
 				break;
@@ -452,7 +388,8 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 						b_shape.circle.p.x >= a_shape.line.p1.x &&
 						b_shape.circle.p.x <= a_shape.line.p2.x)
 					{
-						manifold->n = c2V(normalised_collision_normal.x, normalised_collision_normal.y);
+						manifold->n = c2V(normalised_collision_normal.x,
+										  normalised_collision_normal.y);
 						manifold->count = 1;
 						manifold->depths[0] = b_shape.circle.r - collision_distance;
 					}
@@ -482,7 +419,6 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 			{
 				case C2_SHAPE_TYPE_line :
 				{
-					// TODO(randy): Not working.
 					// NOTE(randy): $Circle -> Line
 					v2 line_vector = V2SubtractV2(b_shape.line.p2, b_shape.line.p1);
 					
@@ -507,7 +443,8 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 						a_shape.circle.p.x >= b_shape.line.p1.x &&
 						a_shape.circle.p.x <= b_shape.line.p2.x)
 					{
-						manifold->n = c2V(-normalised_collision_normal.x, -normalised_collision_normal.y);
+						manifold->n = c2V(-normalised_collision_normal.x,
+										  -normalised_collision_normal.y);
 						manifold->count = 1;
 						manifold->depths[0] = a_shape.circle.r - collision_distance;
 					}
@@ -515,45 +452,14 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 				
 				case C2_SHAPE_TYPE_capsule :
 				{
-					/*
-										// NOTE(randy): $Circle -> Capsule
-										// Temp, just treating it like another circle for now
-										v2 collision_normal = v2(a_shape.circle.p.x - b_shape.capsule.a.x,
-																 a_shape.circle.p.y - b_shape.capsule.a.y);
-										f32 mag = PythagSolve(collision_normal.x, collision_normal.y);
-										
-										v2 normalised_normal = v2(collision_normal.x / mag,
-																  collision_normal.y / mag);
-										v2Realise(&normalised_normal);
-										
-										if (mag < a_shape.circle.r + b_shape.capsule.r)
-										{
-											manifold->n = c2V(normalised_normal.x,
-															  normalised_normal.y);
-											manifold->count = 1;
-											manifold->depths[0] = a_shape.circle.r + b_shape.capsule.r - mag;
-										}
-					 */
+					// NOTE(randy): $Circle -> Capsule
+					c2CircletoCapsuleManifold(a_shape.circle, b_shape.capsule, manifold);
 				} break;
 				
 				case C2_SHAPE_TYPE_circle :
 				{
 					// NOTE(randy): $Circle -> Circle
-					v2 collision_normal = v2(a_shape.circle.p.x - b_shape.circle.p.x,
-											 a_shape.circle.p.y - b_shape.circle.p.y);
-					f32 mag = PythagSolve(collision_normal.x, collision_normal.y);
-					
-					v2 normalised_normal = v2(collision_normal.x / mag,
-											  collision_normal.y / mag);
-					v2Realise(&normalised_normal);
-					
-					if (mag < a_shape.circle.r + b_shape.circle.r)
-					{
-						manifold->n = c2V(normalised_normal.x,
-										  normalised_normal.y);
-						manifold->count = 1;
-						manifold->depths[0] = a_shape.circle.r + b_shape.circle.r - mag;
-					}
+					c2CircletoCircleManifold(a_shape.circle, b_shape.circle, manifold);
 				} break;
 				
 				default:
@@ -672,5 +578,15 @@ internal void AddPositionOffsetToShape(c2Shape *shape, c2ShapeType shape_type, v
 			shape->line.p1 = V2AddV2(shape->line.p1, position);
 			shape->line.p2 = V2AddV2(shape->line.p2, position);
 		} break;
+		
+		case C2_SHAPE_TYPE_circle :
+		{
+			shape->circle.p.x += position.x;
+			shape->circle.p.y += position.y;
+		} break;
+		
+		default :
+		Assert(0);
+		break;
 	}
 }

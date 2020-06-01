@@ -397,6 +397,13 @@ MassData :: struct
 	inv_mass : f32;
 }
 
+PhysicsBodyTypeFlags :: flags
+{
+	ground,
+	item,
+	character,
+}
+
 @Component @SerialisableStruct
 PhysicsBodyComponent :: struct
 {
@@ -407,6 +414,8 @@ PhysicsBodyComponent :: struct
 	velocity : v2;
 	force : v2;
 	gravity_multiplier : f32;
+	type : PhysicsBodyTypeFlags;
+	collide_against : PhysicsBodyTypeFlags;
 }
 
 @Component @SerialisableStruct
