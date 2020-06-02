@@ -142,7 +142,7 @@ STATIC_SPRITE_flint,
 STATIC_SPRITE_twig,
 STATIC_SPRITE_MAX,
 };
-global StaticSpriteData static_sprite_data[STATIC_SPRITE_MAX] = {
+global StaticSpriteData global_static_sprite_data[STATIC_SPRITE_MAX] = {
     { "invalid_texture", {0.0f, 0.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, },
     { "scenic/biome_ground", {0.0f, 0.0f, 100.0f, 150.0f}, {0.0f, 147.0f}, },
     { "scenic/biome_ground", {100.0f, 0.0f, 100.0f, 150.0f}, {0.0f, 147.0f}, },
@@ -227,7 +227,7 @@ DYNAMIC_SPRITE_birch_tree3,
 DYNAMIC_SPRITE_birch_tree4,
 DYNAMIC_SPRITE_MAX,
 };
-global DynamicSpriteData dynamic_sprite_data[DYNAMIC_SPRITE_MAX] = {
+global DynamicSpriteData global_dynamic_sprite_data[DYNAMIC_SPRITE_MAX] = {
     { "invalid_texture", {0.0f, 0.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 0, 0.0f, },
     { "entity/player/player_animations", {0.0f, 192.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 4, 0.15f, },
     { "entity/player/player_animations", {0.0f, 256.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 8, 0.1f, },
@@ -254,7 +254,7 @@ ARC_ENTITY_ANIMATION_STATE_player_walking,
 ARC_ENTITY_ANIMATION_STATE_player_sprinting,
 ARC_ENTITY_ANIMATION_STATE_MAX,
 };
-global ArcEntityAnimationStateData arc_entity_animation_state_data[ARC_ENTITY_ANIMATION_STATE_MAX] = {
+global ArcEntityAnimationStateData global_arc_entity_animation_state_data[ARC_ENTITY_ANIMATION_STATE_MAX] = {
     { DYNAMIC_SPRITE_player_idle, },
     { DYNAMIC_SPRITE_player_walking, },
     { DYNAMIC_SPRITE_player_sprinting, },
@@ -274,7 +274,7 @@ enum ArcEntityType
 ARC_ENTITY_TYPE_player,
 ARC_ENTITY_TYPE_MAX,
 };
-global ArcEntityTypeData arc_entity_type_data[ARC_ENTITY_TYPE_MAX] = {
+global ArcEntityTypeData global_arc_entity_type_data[ARC_ENTITY_TYPE_MAX] = {
     { {"Idle", "Walking", "Sprinting"}, {ARC_ENTITY_ANIMATION_STATE_player_idle, ARC_ENTITY_ANIMATION_STATE_player_walking, ARC_ENTITY_ANIMATION_STATE_player_sprinting}, },
 };
 
@@ -298,7 +298,7 @@ ITEM_TYPE_flint,
 ITEM_TYPE_twig,
 ITEM_TYPE_MAX,
 };
-global ItemTypeData item_type_data[ITEM_TYPE_MAX] = {
+global ItemTypeData global_item_type_data[ITEM_TYPE_MAX] = {
     { "none", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, 0, 0, },
     { "Flint Sword", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_FLAGS_sword, },
     { "Flint", STATIC_SPRITE_flint, STATIC_SPRITE_flint, 8, 0, },
@@ -428,6 +428,25 @@ i32 component_id;
 Item item;
 } ItemComponent;
 
+#define MAX_ITEMS_IN_RECIPE (10)
+typedef struct RecipeTypeData
+{
+Item output;
+Item input[MAX_ITEMS_IN_RECIPE];
+} RecipeTypeData;
+
+typedef enum RecipeType RecipeType;
+enum RecipeType
+{
+RECIPE_TYPE_flint_sword,
+RECIPE_TYPE_MAX,
+};
+global RecipeTypeData global_recipe_type_data[RECIPE_TYPE_MAX] = {
+    { {ITEM_TYPE_flint_sword, 1}, {{ITEM_TYPE_flint, 3}, {ITEM_TYPE_twig, 2}}, },
+};
+
+static char *GetRecipeTypeName(RecipeType type);
+
 typedef struct TriggerComponent
 {
 i32 parent_entity_id;
@@ -477,6 +496,16 @@ v2 grabbed_item_offset;
 Item *grabbed_item_origin_slot;
 } PlayerDataComponent;
 
+typedef struct InteractableComponent
+{
+i32 parent_entity_id;
+i32 component_id;
+c2Shape bounds;
+c2ShapeType bounds_type;
+f32 priority;
+InteractCallback interact_callback;
+} InteractableComponent;
+
 typedef struct Chunk Chunk;
 
 typedef enum ComponentType
@@ -493,6 +522,7 @@ COMPONENT_trigger,
 COMPONENT_parallax,
 COMPONENT_particle_emitter,
 COMPONENT_player_data,
+COMPONENT_interactable,
 COMPONENT_MAX,
 } ComponentType;
 
@@ -531,6 +561,9 @@ i32 free_particle_emitter_component_id;
 PlayerDataComponent player_data_components[MAX_ENTITIES];
 i32 player_data_component_count;
 i32 free_player_data_component_id;
+InteractableComponent interactable_components[MAX_ENTITIES];
+i32 interactable_component_count;
+i32 free_interactable_component_id;
 } ComponentSet;
 
 // NOTE(randy): Gets a PositionComponent from a specified entity, it must have one.
@@ -555,6 +588,8 @@ internal ParallaxComponent *GetParallaxComponentFromEntityID(i32 id);
 internal ParticleEmitterComponent *GetParticleEmitterComponentFromEntityID(i32 id);
 // NOTE(randy): Gets a PlayerDataComponent from a specified entity, it must have one.
 internal PlayerDataComponent *GetPlayerDataComponentFromEntityID(i32 id);
+// NOTE(randy): Gets a InteractableComponent from a specified entity, it must have one.
+internal InteractableComponent *GetInteractableComponentFromEntityID(i32 id);
 internal void RemoveComponent(Entity *entity, ComponentType type);
 #define MINIMUM_AIR_PRESSURE (1.0f)
 #define LIQUID_RESOLUTION (0.2f)
@@ -632,7 +667,7 @@ CELL_MATERIAL_TYPE_dirt,
 CELL_MATERIAL_TYPE_sand,
 CELL_MATERIAL_TYPE_MAX,
 };
-global CellMaterialTypeData cell_material_type_data[CELL_MATERIAL_TYPE_MAX] = {
+global CellMaterialTypeData global_cell_material_type_data[CELL_MATERIAL_TYPE_MAX] = {
     { .static_properties.air = { .resting_temp = 2.0f, .test = 1}, CELL_PROPERTIES_TYPE_air, },
     { .static_properties.liquid = { .default_mass = 1.5f} , CELL_PROPERTIES_TYPE_liquid, },
     { .static_properties.solid = { .default_mass = 1.0f, .max_height = 3, .crust_depth = 3 }, CELL_PROPERTIES_TYPE_solid, },
@@ -762,6 +797,7 @@ i32 free_dynamic_cell_id;
 CellHelper queued_dynamic_cells[MAX_DYNAMIC_CELLS];
 i32 queued_dynamic_cell_count;
 Entity *character_entity;
+InteractableComponent *current_interactable;
 EditorState editor_state;
 DebugFlags saved_debug_flags;
 DebugFlags debug_flags;
@@ -832,6 +868,10 @@ static void ReadParticleEmitterComponentFromFile(FILE *file, ParticleEmitterComp
 static void WritePlayerDataComponentToFile(FILE *file, PlayerDataComponent *data);
 
 static void ReadPlayerDataComponentFromFile(FILE *file, PlayerDataComponent *data);
+
+static void WriteInteractableComponentToFile(FILE *file, InteractableComponent *data);
+
+static void ReadInteractableComponentFromFile(FILE *file, InteractableComponent *data);
 
 static void WriteComponentSetToFile(FILE *file, ComponentSet *data);
 

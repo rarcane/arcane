@@ -2,13 +2,13 @@ internal void InitialiseSpriteData()
 {
 	for (int i = 0; i < STATIC_SPRITE_MAX; i++)
 	{
-		StaticSpriteData *sprite = &static_sprite_data[i];
+		StaticSpriteData *sprite = &global_static_sprite_data[i];
 		sprite->texture_atlas = TsAssetsRequestAssetByName(ASSET_TYPE_Ts2dTexture, sprite->texture_path);
 	}
 	
 	for (int i = 0; i < DYNAMIC_SPRITE_MAX; i++)
 	{
-		DynamicSpriteData *sprite = &dynamic_sprite_data[i];
+		DynamicSpriteData *sprite = &global_dynamic_sprite_data[i];
 		sprite->texture_atlas = TsAssetsRequestAssetByName(ASSET_TYPE_Ts2dTexture, sprite->texture_path);
 	}
 }
@@ -23,7 +23,7 @@ internal void UpdateAnimations()
 			Entity *entity = &core->run_data->entities[animation_comp->parent_entity_id - 1];
 			SpriteComponent *sprite_comp = GetSpriteComponentFromEntityID(entity->entity_id);
 			
-			DynamicSpriteData *dynamic_sprite = &dynamic_sprite_data[sprite_comp->sprite_data.dynamic_sprite];
+			DynamicSpriteData *dynamic_sprite = &global_dynamic_sprite_data[sprite_comp->sprite_data.dynamic_sprite];
 			
 			b8 animation_flags = animation_comp->flags;
 			if (animation_flags & ANIMATION_FLAGS_playing) // ((animation_flags & (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat)) == (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat))
@@ -139,7 +139,7 @@ internal void RenderBackgroundSprites()
 	{
 		if (ordered_sprites[i].dynamic_sprite)
 		{
-			DynamicSpriteData *dynamic_sprite = &dynamic_sprite_data[ordered_sprites[i].dynamic_sprite];
+			DynamicSpriteData *dynamic_sprite = &global_dynamic_sprite_data[ordered_sprites[i].dynamic_sprite];
 			
 			AnimationComponent *animation_comp = ordered_sprites[i].animation_comp;
 			Assert(animation_comp);
@@ -161,7 +161,7 @@ internal void RenderBackgroundSprites()
 		}
 		else if (ordered_sprites[i].static_sprite)
 		{
-			StaticSpriteData *static_sprite = &static_sprite_data[ordered_sprites[i].static_sprite];
+			StaticSpriteData *static_sprite = &global_static_sprite_data[ordered_sprites[i].static_sprite];
 			
 			AnimationComponent *animation_comp = ordered_sprites[i].animation_comp;
 			Assert(!animation_comp); // NOTE(randy): There should be no animation component if this sprite is static.
@@ -252,7 +252,7 @@ internal void RenderForegroundSprites()
 	{
 		if (ordered_sprites[i].dynamic_sprite)
 		{
-			DynamicSpriteData *dynamic_sprite = &dynamic_sprite_data[ordered_sprites[i].dynamic_sprite];
+			DynamicSpriteData *dynamic_sprite = &global_dynamic_sprite_data[ordered_sprites[i].dynamic_sprite];
 			
 			AnimationComponent *animation_comp = ordered_sprites[i].animation_comp;
 			Assert(animation_comp); // NOTE(randy): Animation component does not exist, even though a DynamicSprite is being used.
@@ -274,7 +274,7 @@ internal void RenderForegroundSprites()
 		}
 		else if (ordered_sprites[i].static_sprite)
 		{
-			StaticSpriteData *static_sprite = &static_sprite_data[ordered_sprites[i].static_sprite];
+			StaticSpriteData *static_sprite = &global_static_sprite_data[ordered_sprites[i].static_sprite];
 			
 			AnimationComponent *animation_comp = ordered_sprites[i].animation_comp;
 			Assert(!animation_comp);
@@ -286,10 +286,30 @@ internal void RenderForegroundSprites()
 			render_pos = V2AddV2(render_pos, v2(render_size.x / -2.0f, -render_size.y));
 			render_pos = V2AddV2(render_pos, v2zoom(v2((static_sprite->offset.x + ordered_sprites[i].offset.x) * (ordered_sprites[i].is_flipped ? -1.0f : 1.0f), static_sprite->offset.y + ordered_sprites[i].offset.y)));
 			
+			InteractableComponent *sprite_interactable = 0;
+			if (GetEntityWithID(ordered_sprites[i].position_comp->parent_entity_id)->component_ids[COMPONENT_interactable])
+				sprite_interactable = GetInteractableComponentFromEntityID(ordered_sprites[i].position_comp->parent_entity_id);
+			
+			v4 tint_multiplier = v4u(1.0f);
+			if ((core->run_data->editor_state &&
+				 ordered_sprites[i].entity == core->run_data->entity_editor.selected_entity) ||
+				(core->run_data->current_interactable &&
+				 core->run_data->current_interactable == sprite_interactable))
+			{
+				tint_multiplier = v4(1.0f, 0.8f, 0.8f, 1.0f);
+			}
+			
 			Ts2dPushTintedTexture(static_sprite->texture_atlas,
-								  v4(static_sprite->source.x, static_sprite->source.y, static_sprite->source.z - 0.5f, static_sprite->source.w - 0.5f),
-								  v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-								  (core->run_data->editor_state && ordered_sprites[i].entity == core->run_data->entity_editor.selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), ordered_sprites[i].tint) : ordered_sprites[i].tint));
+								  v4(static_sprite->source.x,
+									 static_sprite->source.y,
+									 static_sprite->source.z - 0.5f,
+									 static_sprite->source.w - 0.5f),
+								  v4(render_pos.x,
+									 render_pos.y,
+									 render_size.x,
+									 render_size.y),
+								  V4MultiplyV4(tint_multiplier,
+											   ordered_sprites[i].tint));
 		}
 		else
 		{

@@ -128,6 +128,8 @@ internal void WorldUpdate()
     
 	UpdateChunks();
     
+	InteractableUpdate();
+	
 	DrawWorld();
 	RenderCells();
     
@@ -380,6 +382,12 @@ internal void GenerateTestPlatform()
 		
 		SpriteComponent *sprite_comp = AddSpriteComponent(entity);
 		sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_crafting_stump;
+		
+		InteractableComponent *inter_comp = AddInteractableComponent(entity);
+		inter_comp->bounds.aabb.min = c2V(-20.0f, -20.0f);
+		inter_comp->bounds.aabb.max = c2V(20.0f, 20.0f);
+		inter_comp->bounds_type = C2_SHAPE_TYPE_aabb;
+		inter_comp->priority = 5.0f;
 	}
 	
 	// NOTE(randy): $Generate background stuff
@@ -948,8 +956,8 @@ internal b8 CreateWorld(char *world_name)
 	
 	// NOTE(randy): Initial save.
 	SaveWorld();
-	Assert(core->run_data->save_job_index != -1);
-	while(!platform->WaitForJob(core->run_data->save_job_index, TS_WAIT_FOREVER));
+	//Assert(core->run_data->save_job_index != -1);
+	//while(!platform->WaitForJob(core->run_data->save_job_index, TS_WAIT_FOREVER));
 	
 	core->is_ingame = 1;
 	

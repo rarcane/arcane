@@ -90,177 +90,54 @@ internal void PreMoveUpdatePlayer()
 
 internal void PostMoveUpdatePlayer()
 {
-	/*
-		if (platform->key_pressed[KEY_e])
-		{
-			PhysicsBodyComponent *overlapping_bodies[MAX_OVERLAPPING_COLLIDERS];
-			
-			PositionComponent *player_pos_comp = GetPositionComponentFromEntityID(core->run_data->character_entity->entity_id);
-			
-			c2Shape shape = {
-				.aabb = {
-					.min = c2V(-20, -20),
-					.max = c2V(20, 20)
-				}
-			};
-			AddPositionOffsetToShape(&shape, C2_SHAPE_TYPE_aabb, player_pos_comp->position);
-			PushDebugShape(shape, C2_SHAPE_TYPE_aabb, v2(0.0f, 0.0f), v3(1.0f, 1.0f, 1.0f));
-			
-			i32 overlap_count = GetOverlappingBodiesWithShape(overlapping_bodies,
-															  shape,
-															  C2_SHAPE_TYPE_aabb);
-			for (i32 i = 0; i < overlap_count; i++)
-			{
-				PhysicsBodyComponent *overlapped_body = overlapping_bodies[i];
-				if (overlapped_body->parent_entity_id != player_pos_comp->parent_entity_id)
-				{
-					LogWarning("%s caught", GetEntityWithID(overlapped_body->parent_entity_id)->name);
-				}
-			}
-		}
-	 */
+}
+
+internal void InteractableUpdate()
+{
+	PositionComponent *player_pos_comp = GetPositionComponentFromEntityID(core->run_data->character_entity->entity_id);
+	PhysicsBodyComponent *player_body_comp = GetPhysicsBodyComponentFromEntityID(core->run_data->character_entity->entity_id);
 	
-	// NOTE(randy): Check for an interaction with the world.
-	/* if (platform->key_pressed[KEY_e])
+	InteractableComponent *highest_priority_interactable = 0;
+	for (i32 i = 0; i < core->run_data->entity_components.interactable_component_count; i++)
 	{
-		ColliderComponent *overlapping_colliders[MAX_OVERLAPPING_COLLIDERS];
-
-		PositionComponent *player_pos = core->run_data->character_entity.position_comp;
-		SubSpriteComponent *player_sprite = core->run_data->character_entity.sub_sprite_comp;
-
-		i32 overlap_count = GetOverlappingCollidersAtPosition(overlapping_colliders,
-															  GetRectangleShape(v2(20.0f, 30.0f), v2(0.0f, 0.0f)),
-															  v2(player_pos->position.x + 20 * (player_sprite->is_flipped ? -1.0f : 1.0f), player_pos->position.y),
-															  COLLIDER_FLAGS_item);
-
-		Entity *closest_item = 0;
-		ItemComponent *closest_item_comp = 0;
-		for (int i = 0; i < overlap_count; i++)
+		InteractableComponent *inter_comp = &core->run_data->entity_components.interactable_components[i];
+		if (inter_comp->parent_entity_id)
 		{
-			// TODO: find the closest one
-
-			closest_item = overlapping_colliders[0]->parent_entity;
-			closest_item_comp = closest_item->components[COMPONENT_item];
-			Assert(closest_item_comp, "Collider entity does not have an item component attached?");
-		}
-
-		if (closest_item)
-		{
-			i32 free_hotbar_slot = -1;
-			StorageComponent *hotbar_storage_comp = core->hotbar->components[COMPONENT_storage];
-			if (item_data[closest_item_comp->item_type].flags & ITEM_FLAGS_HOTBARABLE)
+			PositionComponent *pos_comp = GetPositionComponentFromEntityID(inter_comp->parent_entity_id);
+			Assert(pos_comp);
+			
+			c2Shape inter_shape = inter_comp->bounds;
+			AddPositionOffsetToShape(&inter_shape,
+									 inter_comp->bounds_type,
+									 pos_comp->position);
+			
+			c2Shape player_shape = player_body_comp->shape;
+			AddPositionOffsetToShape(&player_shape,
+									 player_body_comp->shape_type,
+									 player_pos_comp->position);
+			
+			c2Manifold manifold = {0};
+			GenerateCollisionManifold(inter_shape, inter_comp->bounds_type,
+									  player_shape, player_body_comp->shape_type,
+									  &manifold);
+			if (manifold.count > 0 && fabsf(manifold.depths[0]) != 0.0f)
 			{
-				for (int i = 0; i < hotbar_storage_comp->storage_size; i++)
+				// NOTE(randy): Player is within interaction bounds.
+				if (!highest_priority_interactable ||
+					inter_comp->priority > highest_priority_interactable->priority)
 				{
-					if (!hotbar_storage_comp->items[i])
-					{
-						free_hotbar_slot = i;
-						break;
-					}
-				}
-			}
-
-			if (free_hotbar_slot != -1)
-			{
-				StripItemGroundComponents(closest_item_comp);
-				AddItemToStorage(closest_item_comp, hotbar_storage_comp, free_hotbar_slot);
-			}
-			else // If it didn't find a slot in the hotbar, try the backpack.
-			{
-				if (core->backpack)
-				{
-					StorageComponent *storage_comp = core->backpack->components[COMPONENT_storage];
-					i32 first_free_inv_slot = -1;
-					for (int i = 0; i < storage_comp->storage_size; i++)
-					{
-						if (storage_comp->items[i] && storage_comp->items[i]->item_type == closest_item_comp->item_type)
-						{
-							if (storage_comp->items[i]->stack_size + closest_item_comp->stack_size <=
-								item_data[closest_item_comp->item_type].max_stack_size)
-							{
-								storage_comp->items[i]->stack_size += closest_item_comp->stack_size;
-								DeleteEntity(closest_item);
-								closest_item = 0;
-								break;
-							}
-							else
-							{
-								i32 partial_amount = item_data[closest_item_comp->item_type].max_stack_size - storage_comp->items[i]->stack_size;
-								storage_comp->items[i]->stack_size += partial_amount;
-								closest_item_comp->stack_size -= partial_amount;
-							}
-						}
-						else if (first_free_inv_slot == -1)
-						{
-							first_free_inv_slot = i;
-						}
-					}
-
-					if (closest_item && first_free_inv_slot != -1) // If it still exists and there's a free inv slot.
-					{
-						StripItemGroundComponents(closest_item_comp);
-						AddItemToStorage(closest_item_comp, storage_comp, first_free_inv_slot);
-					}
-				}
-			}
-		}
-	} */
-	
-	/* // NOTE(randy): Check for a hotbar slot update.
-	{
-		StorageComponent *hotbar_storage = GetStorageComponentFromEntityID(core->hotbar->entity_id);
-		for (int i = 0; i < hotbar_storage->storage_size; i++)
-		{
-			if (platform->key_pressed[KEY_1 + i])
-			{
-				if (core->active_hotbar_slot != i + 1)
-				{
-					if (hotbar_storage->items[i])
-					{
-						if (core->held_item)
-						{
-							RemoveHeldItem();
-						}
-
-						ItemComponent *new_held_item_comp = hotbar_storage->items[i];
-						Entity *new_held_item = GetEntityWithID(hotbar_storage->items[i]->parent_entity_id);
-
-						AddPositionComponent(new_held_item);
-						SpriteComponent *new_held_item_sprite = AddSpriteComponent(new_held_item);
-						new_held_item_sprite->sprite_data.static_sprite = item_type_data[new_held_item_comp->item_type].icon_sprite;
-						new_held_item_sprite->sprite_data.render_layer = -0.025f;
-
-						core->held_item = new_held_item;
-						core->active_hotbar_slot = i + 1;
-					}
-					else
-					{
-						if (core->held_item)
-						{
-							RemoveHeldItem();
-						}
-					}
-				}
-				else
-				{
-					RemoveHeldItem(); // Should definitely be a held item equipped.
+					highest_priority_interactable = inter_comp;
 				}
 			}
 		}
 	}
-
-	// NOTE(randy): Update held item to player hand position.
-	if (core->held_item)
+	
+	core->run_data->current_interactable = highest_priority_interactable;
+	if (highest_priority_interactable && platform->key_pressed[KEY_e])
 	{
-	} */
+		if (highest_priority_interactable->interact_callback)
+		{
+			highest_priority_interactable->interact_callback(GetEntityWithID(highest_priority_interactable->parent_entity_id));
+		}
+	}
 }
-/*
-internal void RemoveHeldItem()
-{
-	Assert(core->held_item, "No held iem active.");
-
-	RemovePositionComponent(core->held_item);
-	RemoveSpriteComponent(core->held_item);
-	core->held_item = 0;
-	core->active_hotbar_slot = 0;
-} */

@@ -61,14 +61,6 @@ internal TriggerComponent GetDefaultTriggerComponent()
 	return comp;
 }
 
-/*
-internal StorageComponent GetDefaultStorageComponent()
-{
-	StorageComponent comp = {0};
-	return comp;
-}
- */
-
 internal ParallaxComponent GetDefaultParallaxComponent()
 {
 	ParallaxComponent comp = {0};
@@ -85,5 +77,11 @@ internal ParticleEmitterComponent GetDefaultParticleEmitterComponent()
 internal PlayerDataComponent GetDefaultPlayerDataComponent()
 {
 	PlayerDataComponent comp = {0};
+	return comp;
+}
+
+internal InteractableComponent GetDefaultInteractableComponent()
+{
+	InteractableComponent comp = {0};
 	return comp;
 }

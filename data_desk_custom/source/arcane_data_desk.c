@@ -154,7 +154,7 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 							strncpy(trimmed_name, macro_data_node->name_uppercase_with_underscores, string_length - 5);
 							trimmed_name[string_length - 5] = '\0';
 							
-							fprintf(h_file, "global %s %s[%s_MAX] = {\n", macro_data_node->name, macro_data_node->name_lowercase_with_underscores, trimmed_name);
+							fprintf(h_file, "global %s global_%s[%s_MAX] = {\n", macro_data_node->name, macro_data_node->name_lowercase_with_underscores, trimmed_name);
 							for (DataDeskNode *enum_field = root->enum_declaration.first_constant; enum_field; enum_field = enum_field->next)
 							{
 								DataDeskNode *data_tag = DataDeskGetNodeTag(enum_field, "Data");

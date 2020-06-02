@@ -30,7 +30,7 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 					{
 						// NOTE(randy): Try combine the stacks
 						if (player_data->grabbed_item.stack_size + icon_data->item->stack_size <=
-							item_type_data[icon_data->item->type].max_stack_size)
+							global_item_type_data[icon_data->item->type].max_stack_size)
 						{
 							// NOTE(randy): Combine stack
 							icon_data->item->stack_size += player_data->grabbed_item.stack_size;
@@ -45,8 +45,8 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 							player_data->grabbed_item.stack_size =
 								player_data->grabbed_item.stack_size +
 								icon_data->item->stack_size -
-								item_type_data[icon_data->item->type].max_stack_size;
-							icon_data->item->stack_size = item_type_data[icon_data->item->type].max_stack_size;
+								global_item_type_data[icon_data->item->type].max_stack_size;
+							icon_data->item->stack_size = global_item_type_data[icon_data->item->type].max_stack_size;
 						}
 					}
 					else
@@ -223,7 +223,7 @@ internal void inventory_icon_canvas_render_callback(char *name, v4 rect, v2 mous
 	if (icon_data->item->type)
 	{
 		f32 padding = 15;
-		StaticSpriteData *sprite = &static_sprite_data[item_type_data[icon_data->item->type].icon_sprite];
+		StaticSpriteData *sprite = &global_static_sprite_data[global_item_type_data[icon_data->item->type].icon_sprite];
 		Ts2dPushTexture(sprite->texture_atlas, sprite->source, v4(rect.x + padding / 2, rect.y + padding / 2, rect.z - padding, rect.w - padding));
 		
 		if (icon_data->item->stack_size > 1)
@@ -282,7 +282,7 @@ internal void hotbar_icon_canvas_update_callback(char *name, v4 rect, v2 mouse, 
 					{
 						// NOTE(randy): Try combine the stacks
 						if (player_data->grabbed_item.stack_size + icon_data->item->stack_size <=
-							item_type_data[icon_data->item->type].max_stack_size)
+							global_item_type_data[icon_data->item->type].max_stack_size)
 						{
 							// NOTE(randy): Combine stack
 							icon_data->item->stack_size += player_data->grabbed_item.stack_size;
@@ -297,8 +297,8 @@ internal void hotbar_icon_canvas_update_callback(char *name, v4 rect, v2 mouse, 
 							player_data->grabbed_item.stack_size =
 								player_data->grabbed_item.stack_size +
 								icon_data->item->stack_size -
-								item_type_data[icon_data->item->type].max_stack_size;
-							icon_data->item->stack_size = item_type_data[icon_data->item->type].max_stack_size;
+								global_item_type_data[icon_data->item->type].max_stack_size;
+							icon_data->item->stack_size = global_item_type_data[icon_data->item->type].max_stack_size;
 						}
 					}
 					else
@@ -405,7 +405,7 @@ internal void hotbar_icon_canvas_render_callback(char *name, v4 rect, v2 mouse, 
 	if (icon_data->item->type)
 	{
 		f32 padding = 15;
-		StaticSpriteData *sprite = &static_sprite_data[item_type_data[icon_data->item->type].icon_sprite];
+		StaticSpriteData *sprite = &global_static_sprite_data[global_item_type_data[icon_data->item->type].icon_sprite];
 		Ts2dPushTexture(sprite->texture_atlas, sprite->source, v4(rect.x + padding / 2, rect.y + padding / 2, rect.z - padding, rect.w - padding));
 		
 		// Assert(icon_data->item->stack_size == 1); // NOTE(randy): Don't yet support hotbar items with stacks. Is this intentional?
@@ -565,7 +565,7 @@ internal void DrawGameUI()
 			TsUIPushSize(v2(60, 60));
 			
 			GrabbedIconCanvasData *grabbed_icon_data = MemoryArenaAllocateAndZero(core->frame_arena, sizeof(GrabbedIconCanvasData));
-			grabbed_icon_data->static_sprite = &static_sprite_data[item_type_data[player_data->grabbed_item.type].icon_sprite];
+			grabbed_icon_data->static_sprite = &global_static_sprite_data[global_item_type_data[player_data->grabbed_item.type].icon_sprite];
 			TsUICanvas("Texture",
 					   &grabbed_icon_canvas_update_callback, 0, &grabbed_icon_canvas_render_callback, grabbed_icon_data);
 			
@@ -581,9 +581,9 @@ internal void DrawGameUI()
 		{
 			if (core->run_data->entity_editor.selected_entity)
 			{
-				StaticSpriteData *x_arrow = &static_sprite_data[STATIC_SPRITE_x_axis_arrow_icon];
-				StaticSpriteData *y_arrow = &static_sprite_data[STATIC_SPRITE_y_axis_arrow_icon];
-				StaticSpriteData *middle = &static_sprite_data[STATIC_SPRITE_circle_icon];
+				StaticSpriteData *x_arrow = &global_static_sprite_data[STATIC_SPRITE_x_axis_arrow_icon];
+				StaticSpriteData *y_arrow = &global_static_sprite_data[STATIC_SPRITE_y_axis_arrow_icon];
+				StaticSpriteData *middle = &global_static_sprite_data[STATIC_SPRITE_circle_icon];
 				
 				b8 entity_has_position = 0;
 				v2 position = {0};
@@ -726,7 +726,7 @@ internal void DrawGameUI()
 					PhysicsBodyComponent *seg_body = GetPhysicsBodyComponentFromEntityID(seg_entity->entity_id);
 					PositionComponent *seg_pos = GetPositionComponentFromEntityID(seg_entity->entity_id);
 					
-					StaticSpriteData *circle_sprite = &static_sprite_data[STATIC_SPRITE_circle_icon];
+					StaticSpriteData *circle_sprite = &global_static_sprite_data[STATIC_SPRITE_circle_icon];
 					f32 circle_size = 4.0f;
 					
 					v4 p1_tint = {0.9f, 0.9f, 0.9f, 1.0f};
@@ -1196,7 +1196,7 @@ internal void DrawEditorUI()
 								{
 									cell->dynamic_properties.solid.hardness = 1.0f;
 								}
-								else if (cell_material_type_data[cell->material_type].properties_type == CELL_PROPERTIES_TYPE_solid)
+								else if (global_cell_material_type_data[cell->material_type].properties_type == CELL_PROPERTIES_TYPE_solid)
 								{
 									cell->dynamic_properties.solid.hardness = 0.0f;
 								}
@@ -1262,7 +1262,7 @@ internal void DrawEditorUI()
 					{
 						cell->material_type = selected_material;
 						
-						switch (cell_material_type_data[cell->material_type].properties_type)
+						switch (global_cell_material_type_data[cell->material_type].properties_type)
 						{
 							case CELL_PROPERTIES_TYPE_air:
 							{
@@ -1319,7 +1319,7 @@ internal void DrawEditorUI()
 							{
 								cell->material_type = selected_material;
 								
-								switch (cell_material_type_data[cell->material_type].properties_type)
+								switch (global_cell_material_type_data[cell->material_type].properties_type)
 								{
 									case CELL_PROPERTIES_TYPE_air:
 									{
