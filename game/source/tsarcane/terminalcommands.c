@@ -4,7 +4,7 @@ TSDEVTERMINAL_COMMAND_PROC(SaveLevelCommand)
 		SaveWorld();
 	else
 		LogError("No level is currently active.");
-
+	
 	return 0;
 }
 
@@ -14,6 +14,13 @@ TSDEVTERMINAL_COMMAND_PROC(LoadLevelCommand)
 		LogError("Please provide a level name.");
 	else if (!LoadWorld(words[0]))
 		LogError("Failed to load world \'%s\'", words[0]);
+	
+	return 0;
+}
 
+TSDEVTERMINAL_COMMAND_PROC(DrawCollidersCommand)
+{
+	core->run_data->debug_flags ^= DEBUG_FLAGS_draw_collision;
+	
 	return 0;
 }

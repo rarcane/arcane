@@ -108,6 +108,7 @@ internal void WorldUpdate()
     
 	START_PERF_TIMER("Update");
     
+	
 	if ((core->world_delta_t == 0.0f ? (core->run_data->debug_flags & DEBUG_FLAGS_manual_step) : 1))
 	{
 		UpdateCells();
@@ -132,6 +133,8 @@ internal void WorldUpdate()
 	
 	DrawWorld();
 	RenderCells();
+	
+	StationUpdate(); // TODO(randy): Ordered renderer. This is out of place.
     
 #ifdef DEVELOPER_TOOLS
 	RenderColliders();
@@ -384,10 +387,28 @@ internal void GenerateTestPlatform()
 		sprite_comp->sprite_data.static_sprite = STATIC_SPRITE_crafting_stump;
 		
 		InteractableComponent *inter_comp = AddInteractableComponent(entity);
-		inter_comp->bounds.aabb.min = c2V(-20.0f, -20.0f);
-		inter_comp->bounds.aabb.max = c2V(20.0f, 20.0f);
+		inter_comp->bounds.aabb.min = c2V(-30.0f, -30.0f);
+		inter_comp->bounds.aabb.max = c2V(30.0f, 30.0f);
 		inter_comp->bounds_type = C2_SHAPE_TYPE_aabb;
-		inter_comp->priority = 5.0f;
+		inter_comp->priority = 1.0f;
+		inter_comp->interact_callback = OnCraftingTableInteract;
+		
+		StationComponent *station_comp = AddStationComponent(entity);
+		station_comp->type = STATION_TYPE_crafting;
+		
+		PhysicsBodyComponent *phys_comp = AddPhysicsBodyComponent(entity);
+		c2AABB aabb = {
+			.min = c2V(-15.0f, -25.0f),
+			.max = c2V(15.0f, 0.0f),
+		};
+		phys_comp->shape.aabb = aabb;
+		phys_comp->shape_type = C2_SHAPE_TYPE_aabb;
+		phys_comp->material.restitution = 0.1f;
+		phys_comp->material.static_friction = 0.1f;
+		phys_comp->material.dynamic_friction = 0.1f;
+		phys_comp->gravity_multiplier = 0.0f;
+		phys_comp->type |= PHYSICS_BODY_TYPE_FLAGS_station;
+		phys_comp->collide_against |= PHYSICS_BODY_TYPE_FLAGS_item;
 	}
 	
 	// NOTE(randy): $Generate background stuff

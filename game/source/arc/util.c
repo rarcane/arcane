@@ -276,7 +276,7 @@ internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v3 co
 {
 	switch (type)
 	{
-        case C2_SHAPE_TYPE_aabb:
+        case C2_SHAPE_TYPE_aabb :
         {
             v2 p0 = V2AddV2(position, v2(shape.aabb.min.x, shape.aabb.min.y));
             v2 p1 = V2AddV2(position, v2(shape.aabb.max.x, shape.aabb.min.y));
@@ -287,10 +287,9 @@ internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v3 co
             PushDebugLine(p1, p2, colour);
             PushDebugLine(p2, p3, colour);
             PushDebugLine(p3, p0, colour);
-        }
-        break;
+        } break;
         
-        case C2_SHAPE_TYPE_poly:
+        case C2_SHAPE_TYPE_poly :
         {
             for (int i = 0; i < shape.poly.count; i++)
             {
@@ -303,20 +302,29 @@ internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v3 co
                               p2,
                               colour);
             }
-        }
-        break;
+        } break;
         
-        case C2_SHAPE_TYPE_line:
+        case C2_SHAPE_TYPE_line :
         {
             PushDebugLine(V2AddV2(position, shape.line.p1),
                           V2AddV2(position, shape.line.p2),
                           colour);
-        }
-        break;
-        
-        default:
-		//R_TODO;
-		break;
+        } break;
+		
+		case C2_SHAPE_TYPE_circle :
+		{
+			position = V2AddV2(position, v2(shape.circle.p.x, shape.circle.p.y));
+			
+			v2 p0 = V2AddV2(position, v2(shape.circle.r, shape.circle.r));
+            v2 p1 = V2AddV2(position, v2(shape.circle.r, -shape.circle.r));
+            v2 p2 = V2AddV2(position, v2(-shape.circle.r, -shape.circle.r));
+            v2 p3 = V2AddV2(position, v2(-shape.circle.r, shape.circle.r));
+            
+            PushDebugLine(p0, p1, colour);
+            PushDebugLine(p1, p2, colour);
+            PushDebugLine(p2, p3, colour);
+            PushDebugLine(p3, p0, colour);
+		} break;
 	}
 }
 

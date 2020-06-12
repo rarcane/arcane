@@ -14,6 +14,7 @@
 #include "arcane.h"
 #include "core.h"
 // NOTE(randy): Game Header Code
+#include "arc/interactable.h"
 #include "arc/sprite.h"
 #include "arc/particle.h"
 #include "generated/catchall.h"
@@ -33,6 +34,7 @@
 // NOTE(randy): Game Implementation Code
 #include "arc/util.c"
 #include "tsarcane/terminalcommands.c"
+#include "arc/interactable.c"
 #include "arc/sprite.c"
 #include "arc/arc_entity.c"
 #include "arc/particle.c"
@@ -74,6 +76,7 @@ GameInit(void)
             {
                 {"save", "[Level name]", "Saves current data to the provided level name. If left blank, uses the current level name.", 1, SaveLevelCommand},
                 {"load", "[Level name]", "Loads data in from the specified level.", 1, LoadLevelCommand},
+				{"draw_colliders", "", "Toggles collision drawing.", 0, DrawCollidersCommand}
             };
             
 			TsDevTerminalVariable variables[] =
@@ -385,6 +388,10 @@ internal void InitialiseRunData()
 	core->run_data->load_job_index = -1;
 	core->run_data->free_entity_id = 1;
 	InitialiseComponents();
+	
+#ifdef DEVELOPER_ENVIRONMENT
+	core->run_data->debug_flags |= DEBUG_FLAGS_draw_collision;
+#endif
 }
 
 internal void FreeRunData()

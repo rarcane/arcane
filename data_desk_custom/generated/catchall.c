@@ -220,6 +220,9 @@ break;
 case STATIC_SPRITE_circle_icon:
 return "Circle Icon";
 break;
+case STATIC_SPRITE_side_arrow:
+return "Side Arrow";
+break;
 case STATIC_SPRITE_crafting_stump:
 return "Crafting Stump";
 break;
@@ -354,12 +357,37 @@ break;
 }
 }
 
-static char *GetRecipeTypeName(RecipeType type)
+static char *GetCraftingRecipeTypeName(CraftingRecipeType type)
 {
 switch(type)
 {
-case RECIPE_TYPE_flint_sword:
+case CRAFTING_RECIPE_TYPE_none:
+return "None";
+break;
+case CRAFTING_RECIPE_TYPE_flint_sword:
 return "Flint Sword";
+break;
+case CRAFTING_RECIPE_TYPE_flint:
+return "Flint";
+break;
+case CRAFTING_RECIPE_TYPE_twig:
+return "Twig";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
+static char *GetStationTypeName(StationType type)
+{
+switch(type)
+{
+case STATION_TYPE_crafting:
+return "Crafting";
+break;
+case STATION_TYPE_smelting:
+return "Smelting";
 break;
 default:
 return "INVALID";
@@ -1147,6 +1175,71 @@ internal InteractableComponent *GetInteractableComponentFromEntityID(i32 id)
     return comp;
 }
 
+internal StationComponent *AddStationComponent(Entity *entity)
+{
+    Assert(core->run_data->entity_components.free_station_component_id > 0);
+    Assert(entity->component_ids[COMPONENT_station] == 0);
+    i32 new_comp_id = core->run_data->entity_components.free_station_component_id;
+
+    StationComponent *comp = &core->run_data->entity_components.station_components[new_comp_id - 1];
+    *comp = GetDefaultStationComponent();
+    comp->parent_entity_id = entity->entity_id;
+    comp->component_id = new_comp_id;
+    entity->component_ids[COMPONENT_station] = new_comp_id;
+
+    if (core->run_data->entity_components.station_component_count == core->run_data->entity_components.free_station_component_id - 1)
+    {
+        core->run_data->entity_components.station_component_count++;
+        core->run_data->entity_components.free_station_component_id++;
+    }
+
+    if (core->run_data->entity_components.station_component_count < MAX_ENTITIES)
+    {
+        if (core->run_data->entity_components.station_component_count != core->run_data->entity_components.free_station_component_id - 1)
+        {
+            b8 found = 0;
+            for (i32 i = 0; i < core->run_data->entity_components.station_component_count + 1; i++)
+            {
+                if (!core->run_data->entity_components.station_components[i].component_id)
+                {
+                    core->run_data->entity_components.free_station_component_id = i + 1;
+                    found = 1;
+                    break;
+                }
+            }
+            Assert(found);
+        }
+    }
+    else
+    {
+        core->run_data->entity_components.free_station_component_id = 0;
+    }
+
+    return comp;
+}
+
+internal void RemoveStationComponent(Entity *entity)
+{
+    Assert(entity->component_ids[COMPONENT_station] != 0);
+    StationComponent *comp = &core->run_data->entity_components.station_components[entity->component_ids[COMPONENT_station] - 1];
+
+    if (comp->component_id < core->run_data->entity_components.free_station_component_id)
+        core->run_data->entity_components.free_station_component_id = comp->component_id;
+
+    StationComponent empty_comp = {0};
+    *comp = empty_comp;
+    entity->component_ids[COMPONENT_station] = 0;
+}
+
+internal StationComponent *GetStationComponentFromEntityID(i32 id)
+{
+    Entity *entity = GetEntityWithID(id);
+    Assert(entity->component_ids[COMPONENT_station]);
+    StationComponent *comp = &core->run_data->entity_components.station_components[entity->component_ids[COMPONENT_station] - 1];
+    Assert(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_station]);
+    return comp;
+}
+
 internal void RemoveComponent(Entity *entity, ComponentType type)
 {
     switch (type)
@@ -1247,6 +1340,14 @@ internal void RemoveComponent(Entity *entity, ComponentType type)
             Assert(0);
         break;
     }
+    case COMPONENT_station:
+    {
+        if (entity->component_ids[COMPONENT_station])
+            RemoveStationComponent(entity);
+        else
+            Assert(0);
+        break;
+    }
     default:
         Assert(0);
         break;
@@ -1266,6 +1367,7 @@ internal void InitialiseComponents()
     core->run_data->entity_components.free_particle_emitter_component_id = 1;
     core->run_data->entity_components.free_player_data_component_id = 1;
     core->run_data->entity_components.free_interactable_component_id = 1;
+    core->run_data->entity_components.free_station_component_id = 1;
 }
 static char *GetCellPropertiesTypeName(CellPropertiesType type)
 {
@@ -1359,6 +1461,10 @@ WriteComponentToFile(FILE *file, i32 comp_id, ComponentType type)
         case COMPONENT_interactable:
         {
             WriteInteractableComponentToFile(file, &core->run_data->entity_components.interactable_components[comp_id - 1]);
+        } break;
+        case COMPONENT_station:
+        {
+            WriteStationComponentToFile(file, &core->run_data->entity_components.station_components[comp_id - 1]);
         } break;
     }
 }
@@ -1481,6 +1587,16 @@ ReadComponentFromFile(FILE *file, Entity *entity, ComponentType type)
             InteractableComponent component = {0};
             ReadInteractableComponentFromFile(file, &component);
             InteractableComponent *new_comp = AddInteractableComponent(entity);
+            i32 new_comp_id = new_comp->component_id;
+            *new_comp = component;
+            new_comp->component_id = new_comp_id;
+            new_comp->parent_entity_id = entity->entity_id;
+        } break;
+        case COMPONENT_station:
+        {
+            StationComponent component = {0};
+            ReadStationComponentFromFile(file, &component);
+            StationComponent *new_comp = AddStationComponent(entity);
             i32 new_comp_id = new_comp->component_id;
             *new_comp = component;
             new_comp->component_id = new_comp_id;
@@ -1804,6 +1920,32 @@ SerialiseEntityComponentsFromIDList(FILE *file, Entity *entity_list, ComponentSe
                 WriteInteractableComponentToFile(file, comps[i].comp_data);
             }
         } break;
+        case COMPONENT_station:
+        {
+            typedef struct ComponentSave {
+                i32 entity_offset;
+                StationComponent *comp_data;
+            } ComponentSave;
+            ComponentSave comps[MAX_ENTITIES];
+            i32 comp_count = 0;
+
+            for (i32 i = 0; i < id_count; i++)
+            {
+                if (entity_list[ids[i] - 1].component_ids[type])
+                {
+                    comps[comp_count].entity_offset = i;
+                    comps[comp_count].comp_data = &component_set->station_components[entity_list[ids[i] - 1].component_ids[type] - 1];
+                    comp_count++;
+                }
+            }
+
+            WriteToFile(file, &comp_count, sizeof(comp_count));
+            for (i32 i = 0; i < comp_count; i++)
+            {
+                WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
+                WriteStationComponentToFile(file, comps[i].comp_data);
+            }
+        } break;
     }
 }
 
@@ -2097,6 +2239,30 @@ SerialiseComponentsFromDataSet(FILE *file, Entity *entity_list, i32 entity_count
         }
     }
 
+    {
+        ComponentSaveHelper comps[MAX_ENTITIES];
+        i32 comp_count = 0;
+
+        for (i32 i = 0; i < id_count; i++)
+        {
+            Entity *entity = &entity_list[ids[i] - 1];
+            Assert(ids[i] - 1 < entity_count);
+            if (entity->component_ids[COMPONENT_station])
+            {
+                comps[comp_count].entity_offset = i;
+                comps[comp_count].comp_data = &component_set->station_components[entity->component_ids[COMPONENT_station] - 1];
+                comp_count++;
+            }
+        }
+
+        WriteToFile(file, &comp_count, sizeof(comp_count)); 
+        for (i32 i = 0; i < comp_count; i++)
+        {
+            WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
+            WriteStationComponentToFile(file, comps[i].comp_data);
+        }
+    }
+
 }
 
 DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, ComponentType type)
@@ -2331,6 +2497,25 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
                 new_comp->parent_entity_id = entity->entity_id;
             }
         } break;
+        case COMPONENT_station:
+        {
+            i32 comp_count = 0;
+            ReadFromFile(file, &comp_count, sizeof(comp_count));
+            for (i32 i = 0; i < comp_count; i++)
+            {
+                i32 entity_offset = 0;
+                ReadFromFile(file, &entity_offset, sizeof(i32));
+                Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
+                Assert(entity->entity_id)
+                StationComponent component = {0};
+                ReadStationComponentFromFile(file, &component);
+                StationComponent *new_comp = AddStationComponent(entity);
+                i32 new_comp_id = new_comp->component_id;
+                *new_comp = component;
+                new_comp->component_id = new_comp_id;
+                new_comp->parent_entity_id = entity->entity_id;
+            }
+        } break;
     }
 }
 
@@ -2504,6 +2689,20 @@ DeserialiseComponentsToLoadData(FILE *file, ComponentSet *component_set, EntityS
             component_set->interactable_components[component_set->interactable_component_count++] = component_data;
         }
     }
+    {
+        i32 component_count;
+        ReadFromFile(file, &component_count, sizeof(i32));
+        for (i32 i = 0; i < component_count; i++)
+        {
+            i32 entity_offset;
+            ReadFromFile(file, &entity_offset, sizeof(i32));
+            EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
+            StationComponent component_data;
+            ReadStationComponentFromFile(file, &component_data);
+            component_data.parent_entity_id = ids[entity_offset];
+            component_set->station_components[component_set->station_component_count++] = component_data;
+        }
+    }
 }
 
 DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
@@ -2640,6 +2839,17 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
         new_comp->component_id = new_comp_id;
         new_comp->parent_entity_id = entity->entity_id;
     }
+    for (i32 i = 0; i < core->run_data->loaded_entity_components.station_component_count; i++)
+    {
+        StationComponent *saved_comp = &core->run_data->loaded_entity_components.station_components[i];
+        Entity *entity = &core->run_data->entities[entity_id_map[saved_comp->parent_entity_id - 1] - 1];
+        Assert(entity->entity_id);
+        StationComponent *new_comp = AddStationComponent(entity);
+        i32 new_comp_id = new_comp->component_id;
+        *new_comp = *saved_comp;
+        new_comp->component_id = new_comp_id;
+        new_comp->parent_entity_id = entity->entity_id;
+    }
 }
 
 internal void ResetComponentSet(ComponentSet *comp_set)
@@ -2656,6 +2866,7 @@ internal void ResetComponentSet(ComponentSet *comp_set)
     comp_set->particle_emitter_component_count = 0;
     comp_set->player_data_component_count = 0;
     comp_set->interactable_component_count = 0;
+    comp_set->station_component_count = 0;
 }
 static void WritePositionComponentToFile(FILE *file, PositionComponent *data)
 {
@@ -2989,6 +3200,22 @@ static void ReadInteractableComponentFromFile(FILE *file, InteractableComponent 
 
 }
 
+static void WriteStationComponentToFile(FILE *file, StationComponent *data)
+{
+    WriteToFile(file, &data->data, sizeof(data->data));
+
+    WriteToFile(file, &data->type, sizeof(data->type));
+
+}
+
+static void ReadStationComponentFromFile(FILE *file, StationComponent *data)
+{
+    ReadFromFile(file, &data->data, sizeof(data->data));
+
+    ReadFromFile(file, &data->type, sizeof(data->type));
+
+}
+
 static void WriteComponentSetToFile(FILE *file, ComponentSet *data)
 {
     for (i32 i = 0; i < MAX_ENTITIES; i++)
@@ -3098,6 +3325,15 @@ static void WriteComponentSetToFile(FILE *file, ComponentSet *data)
     WriteToFile(file, &data->interactable_component_count, sizeof(data->interactable_component_count));
 
     WriteToFile(file, &data->free_interactable_component_id, sizeof(data->free_interactable_component_id));
+
+    for (i32 i = 0; i < MAX_ENTITIES; i++)
+    {
+        WriteStationComponentToFile(file, &(data->station_components[i]));
+    }
+
+    WriteToFile(file, &data->station_component_count, sizeof(data->station_component_count));
+
+    WriteToFile(file, &data->free_station_component_id, sizeof(data->free_station_component_id));
 
 }
 
@@ -3210,6 +3446,15 @@ static void ReadComponentSetFromFile(FILE *file, ComponentSet *data)
     ReadFromFile(file, &data->interactable_component_count, sizeof(data->interactable_component_count));
 
     ReadFromFile(file, &data->free_interactable_component_id, sizeof(data->free_interactable_component_id));
+
+    for (i32 i = 0; i < MAX_ENTITIES; i++)
+    {
+        ReadStationComponentFromFile(file, &(data->station_components[i]));
+    }
+
+    ReadFromFile(file, &data->station_component_count, sizeof(data->station_component_count));
+
+    ReadFromFile(file, &data->free_station_component_id, sizeof(data->free_station_component_id));
 
 }
 

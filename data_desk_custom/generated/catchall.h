@@ -135,6 +135,7 @@ STATIC_SPRITE_bg3_pine_tree_v8,
 STATIC_SPRITE_y_axis_arrow_icon,
 STATIC_SPRITE_x_axis_arrow_icon,
 STATIC_SPRITE_circle_icon,
+STATIC_SPRITE_side_arrow,
 STATIC_SPRITE_crafting_stump,
 STATIC_SPRITE_flint_sword_icon,
 STATIC_SPRITE_flint_sword_ground,
@@ -194,6 +195,7 @@ global StaticSpriteData global_static_sprite_data[STATIC_SPRITE_MAX] = {
     { "icon/axis_icons", {0.0f, 0.0f, 7.0f, 40.0f}, {0.0f, 0.0f}, },
     { "icon/axis_icons", {0.0f, 33.0f, 40.0f, 7.0f}, {0.0f, 0.0f}, },
     { "icon/axis_icons", {33.0f, 0.0f, 7.0f, 7.0f}, {0.0f, 0.0f}, },
+    { "icon/side_arrow", {0.0f, 0.0f, 5.0f, 9.0f}, {0.0f, 0.0f}, },
     { "structures/crafting_stump", {0.0f, 0.0f, 32.0f, 32.0f}, {0.0f, 0.0f}, },
     { "item/flint_sword", {0.0f, 0.0f, 16.0f, 16.0f}, {6.0f, 2.0f}, },
     { "item/flint_sword_ground", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, },
@@ -380,6 +382,7 @@ f32 inv_mass;
 #define PHYSICS_BODY_TYPE_FLAGS_ground (1<<0)
 #define PHYSICS_BODY_TYPE_FLAGS_item (1<<1)
 #define PHYSICS_BODY_TYPE_FLAGS_character (1<<2)
+#define PHYSICS_BODY_TYPE_FLAGS_station (1<<3)
 typedef uint32 PhysicsBodyTypeFlags;
 
 typedef struct PhysicsBodyComponent
@@ -427,25 +430,6 @@ i32 parent_entity_id;
 i32 component_id;
 Item item;
 } ItemComponent;
-
-#define MAX_ITEMS_IN_RECIPE (10)
-typedef struct RecipeTypeData
-{
-Item output;
-Item input[MAX_ITEMS_IN_RECIPE];
-} RecipeTypeData;
-
-typedef enum RecipeType RecipeType;
-enum RecipeType
-{
-RECIPE_TYPE_flint_sword,
-RECIPE_TYPE_MAX,
-};
-global RecipeTypeData global_recipe_type_data[RECIPE_TYPE_MAX] = {
-    { {ITEM_TYPE_flint_sword, 1}, {{ITEM_TYPE_flint, 3}, {ITEM_TYPE_twig, 2}}, },
-};
-
-static char *GetRecipeTypeName(RecipeType type);
 
 typedef struct TriggerComponent
 {
@@ -506,6 +490,64 @@ f32 priority;
 InteractCallback interact_callback;
 } InteractableComponent;
 
+#define MAX_ITEMS_IN_RECIPE (10)
+typedef struct CraftingRecipeTypeData
+{
+Item output;
+Item input[MAX_ITEMS_IN_RECIPE];
+} CraftingRecipeTypeData;
+
+typedef enum CraftingRecipeType CraftingRecipeType;
+enum CraftingRecipeType
+{
+CRAFTING_RECIPE_TYPE_none,
+CRAFTING_RECIPE_TYPE_flint_sword,
+CRAFTING_RECIPE_TYPE_flint,
+CRAFTING_RECIPE_TYPE_twig,
+CRAFTING_RECIPE_TYPE_MAX,
+};
+global CraftingRecipeTypeData global_crafting_recipe_type_data[CRAFTING_RECIPE_TYPE_MAX] = {
+    { {0}, {0}, },
+    { {ITEM_TYPE_flint_sword, 1}, {{ITEM_TYPE_flint, 3}, {ITEM_TYPE_twig, 2}}, },
+    { {ITEM_TYPE_flint, 2}, {{ITEM_TYPE_flint, 1}}, },
+    { {ITEM_TYPE_twig, 2}, {{ITEM_TYPE_twig, 1}}, },
+};
+
+static char *GetCraftingRecipeTypeName(CraftingRecipeType type);
+
+typedef struct CraftingStation
+{
+CraftingRecipeType current_recipe;
+} CraftingStation;
+
+typedef struct SmeltingStation
+{
+i32 temp;
+} SmeltingStation;
+
+typedef union StationData
+{
+CraftingStation crafting;
+SmeltingStation smelting;
+} StationData;
+
+typedef enum StationType StationType;
+enum StationType
+{
+STATION_TYPE_crafting,
+STATION_TYPE_smelting,
+STATION_TYPE_MAX,
+};
+static char *GetStationTypeName(StationType type);
+
+typedef struct StationComponent
+{
+i32 parent_entity_id;
+i32 component_id;
+StationData data;
+StationType type;
+} StationComponent;
+
 typedef struct Chunk Chunk;
 
 typedef enum ComponentType
@@ -523,6 +565,7 @@ COMPONENT_parallax,
 COMPONENT_particle_emitter,
 COMPONENT_player_data,
 COMPONENT_interactable,
+COMPONENT_station,
 COMPONENT_MAX,
 } ComponentType;
 
@@ -564,6 +607,9 @@ i32 free_player_data_component_id;
 InteractableComponent interactable_components[MAX_ENTITIES];
 i32 interactable_component_count;
 i32 free_interactable_component_id;
+StationComponent station_components[MAX_ENTITIES];
+i32 station_component_count;
+i32 free_station_component_id;
 } ComponentSet;
 
 // NOTE(randy): Gets a PositionComponent from a specified entity, it must have one.
@@ -590,6 +636,8 @@ internal ParticleEmitterComponent *GetParticleEmitterComponentFromEntityID(i32 i
 internal PlayerDataComponent *GetPlayerDataComponentFromEntityID(i32 id);
 // NOTE(randy): Gets a InteractableComponent from a specified entity, it must have one.
 internal InteractableComponent *GetInteractableComponentFromEntityID(i32 id);
+// NOTE(randy): Gets a StationComponent from a specified entity, it must have one.
+internal StationComponent *GetStationComponentFromEntityID(i32 id);
 internal void RemoveComponent(Entity *entity, ComponentType type);
 #define MINIMUM_AIR_PRESSURE (1.0f)
 #define LIQUID_RESOLUTION (0.2f)
@@ -797,7 +845,11 @@ i32 free_dynamic_cell_id;
 CellHelper queued_dynamic_cells[MAX_DYNAMIC_CELLS];
 i32 queued_dynamic_cell_count;
 Entity *character_entity;
+b8 disable_player_input;
+b8 disable_interaction;
 InteractableComponent *current_interactable;
+StationComponent *engaged_station;
+StationType engaged_station_type;
 EditorState editor_state;
 DebugFlags saved_debug_flags;
 DebugFlags debug_flags;
@@ -872,6 +924,10 @@ static void ReadPlayerDataComponentFromFile(FILE *file, PlayerDataComponent *dat
 static void WriteInteractableComponentToFile(FILE *file, InteractableComponent *data);
 
 static void ReadInteractableComponentFromFile(FILE *file, InteractableComponent *data);
+
+static void WriteStationComponentToFile(FILE *file, StationComponent *data);
+
+static void ReadStationComponentFromFile(FILE *file, StationComponent *data);
 
 static void WriteComponentSetToFile(FILE *file, ComponentSet *data);
 

@@ -85,3 +85,9 @@ internal InteractableComponent GetDefaultInteractableComponent()
 	InteractableComponent comp = {0};
 	return comp;
 }
+
+internal StationComponent GetDefaultStationComponent()
+{
+	StationComponent comp = {0};
+	return comp;
+}

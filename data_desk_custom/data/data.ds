@@ -226,6 +226,8 @@ StaticSprite :: enum
 		x_axis_arrow_icon,
 	@Data("'icon/axis_icons'", "{33.0f, 0.0f, 7.0f, 7.0f}", "{0.0f, 0.0f}")
 		circle_icon,
+	@Data("'icon/side_arrow'", "{0.0f, 0.0f, 5.0f, 9.0f}", "{0.0f, 0.0f}")
+		side_arrow,
 
 	// NOTE(randy): Structures
 	@Data("'structures/crafting_stump'", "{0.0f, 0.0f, 32.0f, 32.0f}", "{0.0f, 0.0f}")
@@ -403,6 +405,7 @@ PhysicsBodyTypeFlags :: flags
 	ground,
 	item,
 	character,
+	station,
 }
 
 @Component @SerialisableStruct
@@ -444,19 +447,6 @@ Item :: struct
 ItemComponent :: struct
 {
 	item : Item;
-}
-MAX_ITEMS_IN_RECIPE :: 10
-@XMacro
-RecipeTypeData :: struct
-{
-	output : Item;
-	input : Item[MAX_ITEMS_IN_RECIPE];
-}
-@XMacro
-RecipeType :: enum
-{
-	@Data("{ITEM_TYPE_flint_sword, 1}", "{{ITEM_TYPE_flint, 3}, {ITEM_TYPE_twig, 2}}")
-		flint_sword,
 }
 
 @Component @SerialisableStruct
@@ -511,6 +501,53 @@ InteractableComponent :: struct
 	bounds_type : c2ShapeType;
 	priority : f32;
 	interact_callback : InteractCallback;
+}
+
+// NOTE(randy): $Crafting recipes
+MAX_ITEMS_IN_RECIPE :: 10
+@XMacro
+CraftingRecipeTypeData :: struct
+{
+	output : Item;
+	input : Item[MAX_ITEMS_IN_RECIPE];
+}
+@XMacro
+CraftingRecipeType :: enum
+{
+	@Data("{0}", "{0}")
+		none,
+	@Data("{ITEM_TYPE_flint_sword, 1}", "{{ITEM_TYPE_flint, 3}, {ITEM_TYPE_twig, 2}}")
+		flint_sword,
+	@Data("{ITEM_TYPE_flint, 2}", "{{ITEM_TYPE_flint, 1}}")
+		flint,
+	@Data("{ITEM_TYPE_twig, 2}", "{{ITEM_TYPE_twig, 1}}")
+		twig,
+}
+
+// NOTE(randy): $Stations
+CraftingStation :: struct
+{
+	current_recipe : CraftingRecipeType;
+}
+SmeltingStation :: struct
+{
+	temp : i32;
+}
+StationData :: union
+{
+	crafting : CraftingStation;
+	smelting : SmeltingStation;
+}
+StationType :: enum
+{
+	crafting,
+	smelting,
+}
+@Component @SerialisableStruct
+StationComponent :: struct
+{
+	data : StationData;
+	type : StationType;
 }
 
 @ForwardDeclare(Chunk)
@@ -735,7 +772,13 @@ RunData :: struct // Game data used for run-time operations
 	queued_dynamic_cell_count : i32;
 	
 	character_entity : *Entity;
+	disable_player_input : b8;
+	disable_interaction : b8;
+	
 	current_interactable : *InteractableComponent;
+
+	engaged_station : *StationComponent;
+	engaged_station_type : StationType;
 
 	/* ~ Editor ~ */
 	editor_state : EditorState;

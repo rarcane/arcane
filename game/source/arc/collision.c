@@ -194,38 +194,33 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 			{
 				case C2_SHAPE_TYPE_aabb:
 				{
-					//c2AABB a_aabb = v2AddAABB(a_body_world_pos, a_body_comp->shape.aabb);
-					//c2AABB b_aabb = v2AddAABB(b_body_world_pos, b_body_comp->shape.aabb);
+					// NOTE(randy): $AABB -> AABB
 					c2AABBtoAABBManifold(a_shape.aabb, b_shape.aabb, manifold);
 				} break;
 				
 				case C2_SHAPE_TYPE_capsule:
 				{
-					//c2AABB a_aabb = v2AddAABB(a_body_world_pos, a_body_comp->shape.aabb);
-					
-					//c2Capsule b_capsule = b_body_comp->shape.capsule;
-					//CapsuleToWorldSpace(&b_capsule, b_body_world_pos);
-					
+					// NOTE(randy): $AABB - > capsule
 					c2AABBtoCapsuleManifold(a_shape.aabb, b_shape.capsule, manifold);
 				} break;
 				
 				case C2_SHAPE_TYPE_poly:
 				{
-					/*
-										c2AABB a_aabb = v2AddAABB(a_body_world_pos, a_body_comp->shape.aabb);
-										
-										c2Poly b_poly = b_body_comp->shape.poly;
-										c2x world_pos = c2xIdentity();
-										world_pos.p.x = b_body_world_pos.x;
-										world_pos.p.y = b_body_world_pos.y;
-					 */
-					
+					// NOTE(randy): $AABB -> Poly
 					c2AABBtoPolyManifold(a_shape.aabb, &b_shape.poly, 0, manifold);
 				} break;
 				
 				case C2_SHAPE_TYPE_line:
 				{
 					//Assert(0);
+				} break;
+				
+				case C2_SHAPE_TYPE_circle :
+				{
+					// NOTE(randy): $AABB -> Circle
+					c2CircletoAABBManifold(b_shape.circle, a_shape.aabb, manifold);
+					manifold->n.x *= -1.0f;
+					manifold->n.y *= -1.0f;
 				} break;
 				
 				default:
@@ -460,6 +455,12 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 				{
 					// NOTE(randy): $Circle -> Circle
 					c2CircletoCircleManifold(a_shape.circle, b_shape.circle, manifold);
+				} break;
+				
+				case C2_SHAPE_TYPE_aabb :
+				{
+					// NOTE(randy): $Circle -> AABB
+					c2CircletoAABBManifold(a_shape.circle, b_shape.aabb, manifold);
 				} break;
 				
 				default:

@@ -38,8 +38,8 @@ internal Entity *NewGroundItemEntity(v2 position, Item item_data)
 	
 	PhysicsBodyComponent *phys_comp = AddPhysicsBodyComponent(entity);
 	c2Circle circle = {
-		.p = c2V(0.0f, 0.0f),
-		.r = 5.0f,
+		.p = c2V(0.0f, -10.0f),
+		.r = 10.0f,
 	};
 	phys_comp->shape.circle = circle;
 	phys_comp->shape_type = C2_SHAPE_TYPE_circle;
@@ -50,7 +50,7 @@ internal Entity *NewGroundItemEntity(v2 position, Item item_data)
 	phys_comp->material.dynamic_friction = 0.1f;
 	phys_comp->gravity_multiplier = 1.0f;
 	phys_comp->type |= PHYSICS_BODY_TYPE_FLAGS_item;
-	phys_comp->collide_against |= PHYSICS_BODY_TYPE_FLAGS_ground;
+	phys_comp->collide_against |= PHYSICS_BODY_TYPE_FLAGS_ground | PHYSICS_BODY_TYPE_FLAGS_station;
 	
 	InteractableComponent *inter_comp = AddInteractableComponent(entity);
 	inter_comp->bounds.aabb.min = c2V(-20.0f, -20.0f);
@@ -77,4 +77,34 @@ internal Entity *NewGroundItemEntityAtPlayer(Item item_data)
 	body_comp->velocity.x = 50.0f * flipped_multiplier;
 	
 	return entity;
+}
+
+internal void RemoveItemFromContianer(Item item, Item *container, i32 container_size)
+{
+	Assert(item.type);
+	
+	for (i32 i = 0; i < container_size; i++)
+	{
+		Item *container_item = &container[i];
+		if (container_item->type == item.type)
+		{
+			if (container_item->stack_size == item.stack_size)
+			{
+				container_item->type = 0;
+				container_item->stack_size = 0;
+				return;
+			}
+			else if (container_item->stack_size > item.stack_size)
+			{
+				container_item->stack_size -= item.stack_size;
+				return;
+			}
+			else
+			{
+				item.stack_size -= container_item->stack_size;
+				container_item->type = 0;
+				container_item->stack_size = 0;
+			}
+		}
+	}
 }
