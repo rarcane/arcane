@@ -11,6 +11,7 @@ MAX_PARTICLE_AMOUNT :: 300
 MAX_WORLD_CHUNKS :: 128
 CHUNK_SIZE :: 256
 MAX_DYNAMIC_CELLS :: 16384‬
+MAX_QUEUED_TEXTURES :: 1024
 
 
 /* --- ENUMS --- */
@@ -717,6 +718,16 @@ ChunkEditorData :: struct
 	selected_chunk : SkeletonChunk;
 }
 
+QueuedTexture :: struct
+{
+	texture : *Ts2dTexture;
+	flags : i32;
+	source : v4;
+	destination : v4;
+	tint : v4;
+	layer : f32;
+}
+
 RunData :: struct // Game data used for run-time operations
 {
 	active_chunks : Chunk[MAX_WORLD_CHUNKS];
@@ -779,6 +790,9 @@ RunData :: struct // Game data used for run-time operations
 
 	engaged_station : *StationComponent;
 	engaged_station_type : StationType;
+
+	queued_texture_count : i32;
+	queued_textures : QueuedTexture[MAX_QUEUED_TEXTURES];
 
 	/* ~ Editor ~ */
 	editor_state : EditorState;

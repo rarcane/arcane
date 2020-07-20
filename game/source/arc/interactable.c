@@ -180,13 +180,16 @@ internal void StationUpdate()
 											  station_pos_comp->position.y - 40.0f));
 					v2 render_size = v2zoom(v2(arrow_sprite->source.width,
 											   arrow_sprite->source.height));
-					Ts2dPushTintedTexture(arrow_sprite->texture_atlas,
-										  arrow_sprite->source,
-										  v4(render_pos.x,
-											 render_pos.y,
-											 render_size.x,
-											 render_size.y),
-										  tint);
+					
+					ArcPushTexture(arrow_sprite->texture_atlas,
+								   0,
+								   arrow_sprite->source,
+								   v4(render_pos.x,
+									  render_pos.y,
+									  render_size.x,
+									  render_size.y),
+								   tint,
+								   LAYER_HUD);
 				}
 				if (existing_recipe_index + 1 < craftable_recipe_count)
 				{
@@ -207,13 +210,15 @@ internal void StationUpdate()
 											  station_pos_comp->position.y - 40.0f));
 					v2 render_size = v2zoom(v2(arrow_sprite->source.width,
 											   arrow_sprite->source.height));
-					Ts2dPushTintedTexture(arrow_sprite->texture_atlas,
-										  arrow_sprite->source,
-										  v4(render_pos.x,
-											 render_pos.y,
-											 -render_size.x,
-											 render_size.y),
-										  tint);
+					ArcPushTexture(arrow_sprite->texture_atlas,
+								   0,
+								   arrow_sprite->source,
+								   v4(render_pos.x,
+									  render_pos.y,
+									  -render_size.x,
+									  render_size.y),
+								   tint,
+								   LAYER_HUD);
 				}
 				
 				// NOTE(randy): Render the craftable sprite.
@@ -227,13 +232,15 @@ internal void StationUpdate()
 				v2 render_size = v2zoom(v2(recipe_output_sprite->source.width,
 										   recipe_output_sprite->source.height));
 				
-				Ts2dPushTintedTexture(recipe_output_sprite->texture_atlas,
-									  recipe_output_sprite->source,
-									  v4(render_pos.x,
-										 render_pos.y,
-										 render_size.x,
-										 render_size.y),
-									  v4(0.75f, 0.75f, 1.0f, 0.8f));
+				ArcPushTexture(recipe_output_sprite->texture_atlas,
+							   0,
+							   recipe_output_sprite->source,
+							   v4(render_pos.x,
+								  render_pos.y,
+								  render_size.x,
+								  render_size.y),
+							   v4(0.75f, 0.75f, 1.0f, 0.8f),
+							   LAYER_HUD);
 				
 				// NOTE(randy): Craft the recipe
 				if (platform->key_pressed[KEY_e])

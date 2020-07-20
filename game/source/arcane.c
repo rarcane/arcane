@@ -15,7 +15,7 @@
 #include "core.h"
 // NOTE(randy): Game Header Code
 #include "arc/interactable.h"
-#include "arc/sprite.h"
+#include "arc/render.h"
 #include "arc/particle.h"
 #include "generated/catchall.h"
 #include "arc/ecs.h"
@@ -35,7 +35,7 @@
 #include "arc/util.c"
 #include "tsarcane/terminalcommands.c"
 #include "arc/interactable.c"
-#include "arc/sprite.c"
+#include "arc/render.c"
 #include "arc/arc_entity.c"
 #include "arc/particle.c"
 #include "generated/catchall.c"

@@ -156,6 +156,7 @@ internal void DrawWorld()
 		return;
 #endif
     
+	
 	Ts2dPushBackgroundBegin();
 	{
 		v4 top_sky_colour = v4(88.0f / 255.0f, 152.0f / 255.0f, 194.0f / 255.0f, 1.0f);
@@ -174,7 +175,7 @@ internal void DrawWorld()
 										bottom_sky_colour,
 										v4(0.0f, core->render_height / 2.0f, core->render_width, core->render_height / 2.0f));
         
-		RenderBackgroundSprites();
+		//RenderBackgroundSprites();
 	}
 	Ts2dPushBackgroundEnd();
     
@@ -184,7 +185,7 @@ internal void DrawWorld()
 		world_info.flags |= TS2D_BLUR_BACKGROUNDS;
 		if (core->client_data->bloom)
 			world_info.flags |= TS2D_BLOOM;
-		//world_info.shadow_opacity = core->shadow_opacity;
+		//world_info.shadow_opacity = 1.0f;
 		world_info.shadow_vector = v2(32.0f, 64.0f);
 		world_info.camera_pos = core->camera_position;
 		world_info.camera_zoom = core->camera_zoom;
@@ -198,16 +199,18 @@ internal void DrawWorld()
 	{
 		UpdateAnimations();
 		// PostUpdateWorldAnimations();
-		RenderForegroundSprites();
+		//RenderForegroundSprites();
+		
+		RenderSprites();
 	}
     
-	/* v2 pos = v2view(v2(-350.0f, 35.0f));
-                v2 size = v2zoom(v2(700.0f, 200.0f));
-                Ts2dPushReflectiveRect(
-                core->renderer,
-                v4(pos.x, pos.y, size.x, size.y),
-                v4(1.0f, 1.0f, 1.0f, 1.0f),
-                0.0f, 0.75f); */
+	/*
+		v2 pos = v2view(v2(-350.0f, 35.0f));
+		v2 size = v2zoom(v2(700.0f, 200.0f));
+		Ts2dPushReflectiveRect(v4(pos.x, pos.y, size.x, size.y),
+							   v4(1.0f, 1.0f, 1.0f, 1.0f),
+							   0.0f, 0.75f);
+	 */
     
 	Ts2dPushWorldEnd();
     

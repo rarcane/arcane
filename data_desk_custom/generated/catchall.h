@@ -8,6 +8,7 @@
 #define MAX_WORLD_CHUNKS (128)
 #define CHUNK_SIZE (256)
 #define MAX_DYNAMIC_CELLS (16384)
+#define MAX_QUEUED_TEXTURES (1024)
 typedef enum GeneralisedEntityType GeneralisedEntityType;
 enum GeneralisedEntityType
 {
@@ -801,6 +802,16 @@ b8 is_chunk_selected;
 SkeletonChunk selected_chunk;
 } ChunkEditorData;
 
+typedef struct QueuedTexture
+{
+Ts2dTexture *texture;
+i32 flags;
+v4 source;
+v4 destination;
+v4 tint;
+f32 layer;
+} QueuedTexture;
+
 typedef struct RunData
 {
 Chunk active_chunks[MAX_WORLD_CHUNKS];
@@ -850,6 +861,8 @@ b8 disable_interaction;
 InteractableComponent *current_interactable;
 StationComponent *engaged_station;
 StationType engaged_station_type;
+i32 queued_texture_count;
+QueuedTexture queued_textures[MAX_QUEUED_TEXTURES];
 EditorState editor_state;
 DebugFlags saved_debug_flags;
 DebugFlags debug_flags;
