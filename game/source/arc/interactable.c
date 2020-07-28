@@ -72,7 +72,7 @@ internal b8 IsRecipeCraftable(CraftingRecipeType recipe, Item *item_pool, i32 it
 {
 	Assert(recipe);
 	CraftingRecipeTypeData *recipe_data = &global_crafting_recipe_type_data[recipe];
-	for (i32 i = 0; i < MAX_ITEMS_IN_RECIPE; i++)
+	for (i32 i = 0; i < MAX_ITEMS_IN_CRAFTING_RECIPE; i++)
 	{
 		if (recipe_data->input[i].type)
 		{
@@ -245,7 +245,7 @@ internal void StationUpdate()
 				// NOTE(randy): Craft the recipe
 				if (platform->key_pressed[KEY_e])
 				{
-					for (i32 i = 0; i < MAX_ITEMS_IN_RECIPE; i++)
+					for (i32 i = 0; i < MAX_ITEMS_IN_CRAFTING_RECIPE; i++)
 					{
 						Item *recipe_item = &recipe->input[i];
 						if (!recipe_item->type)
@@ -280,5 +280,76 @@ internal void StationUpdate()
 		}
 		
 		TsPlatformCaptureKeyboard();
+	}
+}
+
+internal void BlueprintUpdate()
+{
+	PlayerDataComponent *player_dat = GetPlayerDataComponentFromEntityID(core->run_data->character_entity->entity_id);
+	PositionComponent *pos_comp = GetPositionComponentFromEntityID(core->run_data->character_entity->entity_id);
+	
+	if (player_dat->hotbar[player_dat->active_hotbar_slot].type == ITEM_TYPE_crafting_tool &&
+		platform->left_mouse_pressed)
+	{
+		core->run_data->disable_player_input = 1;
+		core->run_data->is_blueprinting = 1;
+	}
+	
+	// NOTE(randy): comment go brr
+	if (core->run_data->is_blueprinting)
+	{
+		i32 structure_count = STRUCTURE_CATEGORY_MAX - 1;
+		
+		f32 start_pos = structure_count * 20.0f / -2.0f;
+		
+		local_persist i32 selected_category = (STRUCTURE_CATEGORY_MAX - 1) / 2 + 1;
+		
+		if (platform->key_pressed[KEY_a])
+		{
+			selected_category = selected_category > 1 ?
+				selected_category - 1 : STRUCTURE_CATEGORY_MAX - 1;
+		}
+		
+		if (platform->key_pressed[KEY_d])
+		{
+			selected_category = selected_category < STRUCTURE_CATEGORY_MAX - 1 ?
+				selected_category + 1 : 1;
+		}
+		
+		// NOTE(randy): this is a comment.
+		for (i32 i = 1; i < STRUCTURE_CATEGORY_MAX;  i++)
+		{
+			v2 render_pos = v2view(v2(pos_comp->position.x + start_pos + (i - 1) * 20.0f, pos_comp->position.y - 60.0f));
+			v2 render_size = v2zoom(v2(20.0f, 20.0f));
+			
+			StaticSprite texture = STATIC_SPRITE_INVALID;
+			switch(i)
+			{
+				case STRUCTURE_CATEGORY_shia:
+				{
+					texture = STATIC_SPRITE_shia;2
+				} break;
+				
+				case STRUCTURE_CATEGORY_crafting:
+				{
+					texture = STATIC_SPRITE_crafting_tool;
+				} break;
+				
+				case STRUCTURE_CATEGORY_base:
+				{
+					texture = STATIC_SPRITE_flint_sword_icon;
+				} break;
+			}
+			
+			// NOTE(randy): i have successfully documented this function with adequate comments.
+			StaticSpriteData *category_sprite = &global_static_sprite_data[texture];
+			ArcPushTexture(category_sprite->texture_atlas,
+						   0,
+						   category_sprite->source,
+						   v4(render_pos.x, render_pos.y,
+							  render_size.x, render_size.y),
+						   selected_category == i ? v4(1.0f, 0.0f, 0.0f, 1.0f) : v4u(1.0f),
+						   LAYER_FOREGROUND_GEORGE);
+		}
 	}
 }

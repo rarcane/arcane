@@ -233,6 +233,8 @@ StaticSprite :: enum
 	// NOTE(randy): Structures
 	@Data("'structures/crafting_stump'", "{0.0f, 0.0f, 32.0f, 32.0f}", "{0.0f, 0.0f}")
 		crafting_stump,
+	@Data("'structures/crafting_tool'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{0.0f, 0.0f}")
+		crafting_tool,
 
 	// NOTE(randy): Items
 	@Data("'item/flint_sword'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{6.0f, 2.0f}")
@@ -243,6 +245,9 @@ StaticSprite :: enum
 		flint,
 	@Data("'item/twig'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{0.0f, 0.0f}")
 		twig,
+
+	@Data("'item/shia'", "{0.0f, 0.0f, 800.0f, 1200.0f}", "{0.0f, 0.0f}")
+		shia,
 }
 
 @XMacro
@@ -331,6 +336,8 @@ ItemType :: enum
 		flint,
 	@Data("'Twig'", STATIC_SPRITE_twig, STATIC_SPRITE_twig, 8, 0)
 		twig,
+	@Data("'Crafting Tool'", STATIC_SPRITE_crafting_tool, STATIC_SPRITE_crafting_tool, 1, 0)
+		crafting_tool,
 }
 
 
@@ -505,12 +512,12 @@ InteractableComponent :: struct
 }
 
 // NOTE(randy): $Crafting recipes
-MAX_ITEMS_IN_RECIPE :: 10
+MAX_ITEMS_IN_CRAFTING_RECIPE :: 10
 @XMacro
 CraftingRecipeTypeData :: struct
 {
 	output : Item;
-	input : Item[MAX_ITEMS_IN_RECIPE];
+	input : Item[MAX_ITEMS_IN_CRAFTING_RECIPE];
 }
 @XMacro
 CraftingRecipeType :: enum
@@ -549,6 +556,48 @@ StationComponent :: struct
 {
 	data : StationData;
 	type : StationType;
+}
+
+// NOTE(randy): $Strucutres
+@XMacro
+StructureTypeData :: struct
+{
+	print_name : char[20];
+	icon_sprite : StaticSprite;
+	world_sprite : StaticSprite;
+}
+@XMacro
+StructureType :: enum
+{
+	@Data("'none'", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, 0, 0)
+		none,
+	@Data("'Shia'", STATIC_SPRITE_shia, STATIC_SPRITE_shia)
+		shia,
+}
+
+StructureCategory :: enum
+{
+	none,
+	shia,
+	crafting,
+	base,
+}
+
+// NOTE(randy): $Blueprints
+MAX_ITEMS_IN_BLUEPRINT_RECIPE :: 10
+@XMacro
+BlueprintRecipeTypeData :: struct
+{
+	output : StructureType;
+	input : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
+}
+@XMacro
+BlueprintRecipeType :: enum
+{
+	@Data("{0}", "{0}")
+		none,
+	@Data(STRUCTURE_TYPE_shia, "{{ITEM_TYPE_flint, 3}}")
+		shia,
 }
 
 @ForwardDeclare(Chunk)
@@ -785,11 +834,14 @@ RunData :: struct // Game data used for run-time operations
 	character_entity : *Entity;
 	disable_player_input : b8;
 	disable_interaction : b8;
+	// interaction_state : InteractionState; ??
 	
 	current_interactable : *InteractableComponent;
 
 	engaged_station : *StationComponent;
 	engaged_station_type : StationType;
+
+	is_blueprinting : b8;
 
 	queued_texture_count : i32;
 	queued_textures : QueuedTexture[MAX_QUEUED_TEXTURES];

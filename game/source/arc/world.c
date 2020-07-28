@@ -98,6 +98,11 @@ internal void WorldUpdate()
 		}
 	}
 	
+	// NOTE(randy): TEMP
+	/*
+		PlayerDataComponent *player_dat = GetPlayerDataComponentFromEntityID(core->run_data->character_entity->entity_id);
+	 */
+	
 #ifdef DEVELOPER_TOOLS
 	DrawEditorUI();
 	if (core->run_data->editor_state)
@@ -107,7 +112,6 @@ internal void WorldUpdate()
 	core->performance_timer_count = 0;
     
 	START_PERF_TIMER("Update");
-    
 	
 	if ((core->world_delta_t == 0.0f ? (core->run_data->debug_flags & DEBUG_FLAGS_manual_step) : 1))
 	{
@@ -136,6 +140,8 @@ internal void WorldUpdate()
 	
 	StationUpdate(); // TODO(randy): Ordered renderer. This is out of place.
     
+	BlueprintUpdate();
+	
 #ifdef DEVELOPER_TOOLS
 	RenderColliders();
 #endif
@@ -966,12 +972,19 @@ internal b8 CreateWorld(char *world_name)
 		sprite_comp->sprite_data.dynamic_sprite = DYNAMIC_SPRITE_player_idle;
 		
 		PlayerDataComponent *player_comp = AddPlayerDataComponent(character);
+		
 		Item flint_sword = { .type = ITEM_TYPE_flint_sword, .stack_size = 1 };
-		Item flint = { .type = ITEM_TYPE_flint, .stack_size = 7 };
-		Item twig = { .type = ITEM_TYPE_twig, .stack_size = 14 };
 		player_comp->inventory[0] = flint_sword;
+		
+		Item flint = { .type = ITEM_TYPE_flint, .stack_size = 7 };
 		player_comp->inventory[1] = flint;
+		
+		Item twig = { .type = ITEM_TYPE_twig, .stack_size = 14 };
 		player_comp->inventory[2] = twig;
+		
+		Item tool = { .type = ITEM_TYPE_crafting_tool, .stack_size = 1 };
+		player_comp->hotbar[0] = tool;
+		
 		player_comp->inventory_size = 9;
 		player_comp->hotbar_size = 2;
 	}

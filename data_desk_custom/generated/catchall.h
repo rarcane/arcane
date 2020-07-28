@@ -138,10 +138,12 @@ STATIC_SPRITE_x_axis_arrow_icon,
 STATIC_SPRITE_circle_icon,
 STATIC_SPRITE_side_arrow,
 STATIC_SPRITE_crafting_stump,
+STATIC_SPRITE_crafting_tool,
 STATIC_SPRITE_flint_sword_icon,
 STATIC_SPRITE_flint_sword_ground,
 STATIC_SPRITE_flint,
 STATIC_SPRITE_twig,
+STATIC_SPRITE_shia,
 STATIC_SPRITE_MAX,
 };
 global StaticSpriteData global_static_sprite_data[STATIC_SPRITE_MAX] = {
@@ -198,10 +200,12 @@ global StaticSpriteData global_static_sprite_data[STATIC_SPRITE_MAX] = {
     { "icon/axis_icons", {33.0f, 0.0f, 7.0f, 7.0f}, {0.0f, 0.0f}, },
     { "icon/side_arrow", {0.0f, 0.0f, 5.0f, 9.0f}, {0.0f, 0.0f}, },
     { "structures/crafting_stump", {0.0f, 0.0f, 32.0f, 32.0f}, {0.0f, 0.0f}, },
+    { "structures/crafting_tool", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
     { "item/flint_sword", {0.0f, 0.0f, 16.0f, 16.0f}, {6.0f, 2.0f}, },
     { "item/flint_sword_ground", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, },
     { "item/flint", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
     { "item/twig", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
+    { "item/shia", {0.0f, 0.0f, 800.0f, 1200.0f}, {0.0f, 0.0f}, },
 };
 
 static char *GetStaticSpriteName(StaticSprite type);
@@ -299,6 +303,7 @@ ITEM_TYPE_none,
 ITEM_TYPE_flint_sword,
 ITEM_TYPE_flint,
 ITEM_TYPE_twig,
+ITEM_TYPE_crafting_tool,
 ITEM_TYPE_MAX,
 };
 global ItemTypeData global_item_type_data[ITEM_TYPE_MAX] = {
@@ -306,6 +311,7 @@ global ItemTypeData global_item_type_data[ITEM_TYPE_MAX] = {
     { "Flint Sword", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_FLAGS_sword, },
     { "Flint", STATIC_SPRITE_flint, STATIC_SPRITE_flint, 8, 0, },
     { "Twig", STATIC_SPRITE_twig, STATIC_SPRITE_twig, 8, 0, },
+    { "Crafting Tool", STATIC_SPRITE_crafting_tool, STATIC_SPRITE_crafting_tool, 1, 0, },
 };
 
 static char *GetItemTypeName(ItemType type);
@@ -491,11 +497,11 @@ f32 priority;
 InteractCallback interact_callback;
 } InteractableComponent;
 
-#define MAX_ITEMS_IN_RECIPE (10)
+#define MAX_ITEMS_IN_CRAFTING_RECIPE (10)
 typedef struct CraftingRecipeTypeData
 {
 Item output;
-Item input[MAX_ITEMS_IN_RECIPE];
+Item input[MAX_ITEMS_IN_CRAFTING_RECIPE];
 } CraftingRecipeTypeData;
 
 typedef enum CraftingRecipeType CraftingRecipeType;
@@ -548,6 +554,59 @@ i32 component_id;
 StationData data;
 StationType type;
 } StationComponent;
+
+typedef struct StructureTypeData
+{
+char print_name[20];
+StaticSprite icon_sprite;
+StaticSprite world_sprite;
+} StructureTypeData;
+
+typedef enum StructureType StructureType;
+enum StructureType
+{
+STRUCTURE_TYPE_none,
+STRUCTURE_TYPE_shia,
+STRUCTURE_TYPE_MAX,
+};
+global StructureTypeData global_structure_type_data[STRUCTURE_TYPE_MAX] = {
+    { "none", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, },
+    { "Shia", STATIC_SPRITE_shia, STATIC_SPRITE_shia, },
+};
+
+static char *GetStructureTypeName(StructureType type);
+
+typedef enum StructureCategory StructureCategory;
+enum StructureCategory
+{
+STRUCTURE_CATEGORY_none,
+STRUCTURE_CATEGORY_shia,
+STRUCTURE_CATEGORY_crafting,
+STRUCTURE_CATEGORY_base,
+STRUCTURE_CATEGORY_MAX,
+};
+static char *GetStructureCategoryName(StructureCategory type);
+
+#define MAX_ITEMS_IN_BLUEPRINT_RECIPE (10)
+typedef struct BlueprintRecipeTypeData
+{
+StructureType output;
+Item input[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
+} BlueprintRecipeTypeData;
+
+typedef enum BlueprintRecipeType BlueprintRecipeType;
+enum BlueprintRecipeType
+{
+BLUEPRINT_RECIPE_TYPE_none,
+BLUEPRINT_RECIPE_TYPE_shia,
+BLUEPRINT_RECIPE_TYPE_MAX,
+};
+global BlueprintRecipeTypeData global_blueprint_recipe_type_data[BLUEPRINT_RECIPE_TYPE_MAX] = {
+    { {0}, {0}, },
+    { STRUCTURE_TYPE_shia, {{ITEM_TYPE_flint, 3}}, },
+};
+
+static char *GetBlueprintRecipeTypeName(BlueprintRecipeType type);
 
 typedef struct Chunk Chunk;
 
@@ -861,6 +920,7 @@ b8 disable_interaction;
 InteractableComponent *current_interactable;
 StationComponent *engaged_station;
 StationType engaged_station_type;
+b8 is_blueprinting;
 i32 queued_texture_count;
 QueuedTexture queued_textures[MAX_QUEUED_TEXTURES];
 EditorState editor_state;

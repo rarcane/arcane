@@ -8,6 +8,7 @@ internal void PreMoveUpdatePlayer()
 	ArcEntityComponent *arc_entity_comp = GetArcEntityComponentFromEntityID(core->run_data->character_entity->entity_id);
 	SpriteComponent *sprite_comp = GetSpriteComponentFromEntityID(core->run_data->character_entity->entity_id);
 	AnimationComponent *animation_comp = GetAnimationComponentFromEntityID(core->run_data->character_entity->entity_id);
+	PlayerDataComponent *player_dat = GetPlayerDataComponentFromEntityID(core->run_data->character_entity->entity_id);
 	
 	b8 is_sprinting = 0;
 	if (!core->run_data->disable_player_input &&
@@ -92,6 +93,16 @@ internal void PreMoveUpdatePlayer()
 	}
 	
 	// Acceleration calculations?
+	
+	// NOTE(randy): Player keybind stuff
+	if (platform->key_pressed[KEY_1])
+	{
+		player_dat->active_hotbar_slot = 0;
+	}
+	else if (platform->key_pressed[KEY_2])
+	{
+		player_dat->active_hotbar_slot = 1;
+	}
 }
 
 internal void PostMoveUpdatePlayer()

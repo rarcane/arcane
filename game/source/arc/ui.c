@@ -426,7 +426,7 @@ internal void hotbar_icon_canvas_render_callback(char *name, v4 rect, v2 mouse, 
 		Ts2dPushFilledRect(v4(0.0f, 0.0f, 0.0f, 0.2f), rect);
 	}
 	
-	if (player_data->active_hotbar_slot == icon_data->slot + 1)
+	if (player_data->active_hotbar_slot == icon_data->slot)
 	{
 		f32 padding = 5.0f;
 		Ts2dPushRect(v4(1.0f, 0.0f, 0.0f, 0.8f), v4(rect.x - padding / 2.0f, rect.y - padding / 2.0f, rect.z + padding, rect.w + padding));

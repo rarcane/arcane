@@ -226,6 +226,9 @@ break;
 case STATIC_SPRITE_crafting_stump:
 return "Crafting Stump";
 break;
+case STATIC_SPRITE_crafting_tool:
+return "Crafting Tool";
+break;
 case STATIC_SPRITE_flint_sword_icon:
 return "Flint Sword Icon";
 break;
@@ -237,6 +240,9 @@ return "Flint";
 break;
 case STATIC_SPRITE_twig:
 return "Twig";
+break;
+case STATIC_SPRITE_shia:
+return "Shia";
 break;
 default:
 return "INVALID";
@@ -326,6 +332,9 @@ break;
 case ITEM_TYPE_twig:
 return "Twig";
 break;
+case ITEM_TYPE_crafting_tool:
+return "Crafting Tool";
+break;
 default:
 return "INVALID";
 break;
@@ -388,6 +397,60 @@ return "Crafting";
 break;
 case STATION_TYPE_smelting:
 return "Smelting";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
+static char *GetStructureTypeName(StructureType type)
+{
+switch(type)
+{
+case STRUCTURE_TYPE_none:
+return "None";
+break;
+case STRUCTURE_TYPE_shia:
+return "Shia";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
+static char *GetStructureCategoryName(StructureCategory type)
+{
+switch(type)
+{
+case STRUCTURE_CATEGORY_none:
+return "None";
+break;
+case STRUCTURE_CATEGORY_shia:
+return "Shia";
+break;
+case STRUCTURE_CATEGORY_crafting:
+return "Crafting";
+break;
+case STRUCTURE_CATEGORY_base:
+return "Base";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
+static char *GetBlueprintRecipeTypeName(BlueprintRecipeType type)
+{
+switch(type)
+{
+case BLUEPRINT_RECIPE_TYPE_none:
+return "None";
+break;
+case BLUEPRINT_RECIPE_TYPE_shia:
+return "Shia";
 break;
 default:
 return "INVALID";
