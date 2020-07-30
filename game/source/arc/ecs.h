@@ -55,11 +55,13 @@ internal ItemComponent GetDefaultItemComponent()
 	return comp;
 }
 
+/*
 internal TriggerComponent GetDefaultTriggerComponent()
 {
 	TriggerComponent comp = {0};
 	return comp;
 }
+ */
 
 internal ParallaxComponent GetDefaultParallaxComponent()
 {
@@ -89,5 +91,11 @@ internal InteractableComponent GetDefaultInteractableComponent()
 internal StationComponent GetDefaultStationComponent()
 {
 	StationComponent comp = {0};
+	return comp;
+}
+
+internal BlueprintComponent GetDefaultBlueprintComponent()
+{
+	BlueprintComponent comp = {0};
 	return comp;
 }

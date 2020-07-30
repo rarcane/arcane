@@ -34,6 +34,16 @@ internal void InteractableUpdate()
 									  &manifold);
 			if (manifold.count > 0 && fabsf(manifold.depths[0]) != 0.0f)
 			{
+				// NOTE(randy): Enter testing
+				if (!inter_comp->is_overlapping_player)
+				{
+					inter_comp->is_overlapping_player = 1;
+					if (inter_comp->enter_interactable_callback)
+					{
+						inter_comp->enter_interactable_callback(GetEntityWithID(inter_comp->parent_entity_id));
+					}
+				}
+				
 				// NOTE(randy): Player is within interaction bounds.
 				if (!highest_priority_interactable ||
 					inter_comp->priority > highest_priority_interactable->priority)
@@ -41,9 +51,22 @@ internal void InteractableUpdate()
 					highest_priority_interactable = inter_comp;
 				}
 			}
+			else
+			{
+				// NOTE(randy): Exit testing
+				if (inter_comp->is_overlapping_player)
+				{
+					inter_comp->is_overlapping_player = 0;
+					if (inter_comp->exit_interactable_callback)
+					{
+						inter_comp->exit_interactable_callback(GetEntityWithID(inter_comp->parent_entity_id));
+					}
+				}
+			}
 		}
 	}
 	
+	// NOTE(randy): Interaction dispatch
 	core->run_data->current_interactable = highest_priority_interactable;
 	if (highest_priority_interactable && platform->key_pressed[KEY_e])
 	{
@@ -283,6 +306,21 @@ internal void StationUpdate()
 	}
 }
 
+internal void OnBlueprintInteract(Entity *entity)
+{
+	Log("called");
+}
+
+internal void OnBlueprintEnter(Entity *entity)
+{
+	Log("blueprint entered");
+}
+
+internal void OnBlueprintExit(Entity *entity)
+{
+	Log("blueprint exited");
+}
+
 internal void BlueprintUpdate()
 {
 	PlayerDataComponent *player_dat = GetPlayerDataComponentFromEntityID(core->run_data->character_entity->entity_id);
@@ -295,61 +333,199 @@ internal void BlueprintUpdate()
 		core->run_data->is_blueprinting = 1;
 	}
 	
-	// NOTE(randy): comment go brr
+	// NOTE(randy): Blueprint UI & placement
 	if (core->run_data->is_blueprinting)
 	{
-		i32 structure_count = STRUCTURE_CATEGORY_MAX - 1;
-		
-		f32 start_pos = structure_count * 20.0f / -2.0f;
-		
 		local_persist i32 selected_category = (STRUCTURE_CATEGORY_MAX - 1) / 2 + 1;
 		
-		if (platform->key_pressed[KEY_a])
+		local_persist StructureTypeData *selected_structure = 0;
+		local_persist b8 is_in_category = 0;
+		b8 in_new_cat = 0;
+		
+		if (platform->right_mouse_pressed)
 		{
-			selected_category = selected_category > 1 ?
-				selected_category - 1 : STRUCTURE_CATEGORY_MAX - 1;
+			core->run_data->is_blueprinting = 0;
+			core->run_data->disable_player_input = 0;
+			return;
 		}
 		
-		if (platform->key_pressed[KEY_d])
+		if (platform->key_pressed[KEY_w] && !is_in_category)
 		{
-			selected_category = selected_category < STRUCTURE_CATEGORY_MAX - 1 ?
-				selected_category + 1 : 1;
+			is_in_category = 1;
+			in_new_cat = 1;
 		}
 		
-		// NOTE(randy): this is a comment.
-		for (i32 i = 1; i < STRUCTURE_CATEGORY_MAX;  i++)
+		if (platform->key_pressed[KEY_s] && is_in_category)
 		{
-			v2 render_pos = v2view(v2(pos_comp->position.x + start_pos + (i - 1) * 20.0f, pos_comp->position.y - 60.0f));
-			v2 render_size = v2zoom(v2(20.0f, 20.0f));
+			is_in_category = 0;
+		}
+		
+		if (!is_in_category)
+		{
+			i32 category_count = STRUCTURE_CATEGORY_MAX - 1;
+			f32 start_pos = category_count * 20.0f / -2.0f;
 			
-			StaticSprite texture = STATIC_SPRITE_INVALID;
-			switch(i)
+			if (platform->key_pressed[KEY_a])
 			{
-				case STRUCTURE_CATEGORY_shia:
-				{
-					texture = STATIC_SPRITE_shia;2
-				} break;
-				
-				case STRUCTURE_CATEGORY_crafting:
-				{
-					texture = STATIC_SPRITE_crafting_tool;
-				} break;
-				
-				case STRUCTURE_CATEGORY_base:
-				{
-					texture = STATIC_SPRITE_flint_sword_icon;
-				} break;
+				selected_category = selected_category > 1 ?
+					selected_category - 1 : STRUCTURE_CATEGORY_MAX - 1;
 			}
 			
-			// NOTE(randy): i have successfully documented this function with adequate comments.
-			StaticSpriteData *category_sprite = &global_static_sprite_data[texture];
-			ArcPushTexture(category_sprite->texture_atlas,
+			if (platform->key_pressed[KEY_d])
+			{
+				selected_category = selected_category < STRUCTURE_CATEGORY_MAX - 1 ?
+					selected_category + 1 : 1;
+			}
+			
+			// NOTE(randy): this is a comment.
+			for (i32 i = 1; i < STRUCTURE_CATEGORY_MAX;  i++)
+			{
+				v2 render_pos = v2view(v2(pos_comp->position.x + start_pos + (i - 1) * 20.0f, pos_comp->position.y - 60.0f));
+				v2 render_size = v2zoom(v2(20.0f, 20.0f));
+				
+				StaticSprite texture = STATIC_SPRITE_INVALID;
+				switch(i)
+				{
+					case STRUCTURE_CATEGORY_shia:
+					{
+						texture = STATIC_SPRITE_shia;
+					} break;
+					
+					case STRUCTURE_CATEGORY_crafting:
+					{
+						texture = STATIC_SPRITE_crafting_tool;
+					} break;
+					
+					case STRUCTURE_CATEGORY_base:
+					{
+						texture = STATIC_SPRITE_flint_sword_icon;
+					} break;
+				}
+				
+				// NOTE(randy): i have successfully documented this function with adequate comments.
+				StaticSpriteData *category_sprite = &global_static_sprite_data[texture];
+				ArcPushTexture(category_sprite->texture_atlas,
+							   0,
+							   category_sprite->source,
+							   v4(render_pos.x, render_pos.y,
+								  render_size.x, render_size.y),
+							   selected_category == i ? v4(1.0f, 0.0f, 0.0f, 1.0f) : v4u(1.0f),
+							   LAYER_HUD);
+			}
+		}
+		else
+		{
+#define MAX_STRUCTURES_IN_CATEGORY 40
+			typedef struct structure_pair
+			{
+				StructureType type;
+				StructureTypeData *data;
+			} structure_pair;
+			
+			i32 structure_count = 0;
+			structure_pair structures[MAX_STRUCTURES_IN_CATEGORY];
+			
+			for (i32 i = 1; i < STRUCTURE_TYPE_MAX; i++)
+			{
+				StructureTypeData *structure = &global_structure_type_data[i];
+				if (structure->category == selected_category)
+				{
+					structures[structure_count].data = structure;
+					structures[structure_count++].type = i;
+				}
+			}
+			
+			if (in_new_cat && structure_count)
+			{
+				selected_structure = structures[structure_count / 2].data;
+			}
+			
+			i32 selected_structure_index = 0;
+			for (i32 i = 0; i < structure_count; i++)
+			{
+				if (structures[i].data == selected_structure)
+				{
+					selected_structure = structures[i].data;
+					selected_structure_index = i;
+					break;
+				}
+			}
+			
+			if (platform->key_pressed[KEY_a])
+			{
+				i32 new_index = selected_structure_index > 0 ?
+					selected_structure_index - 1 : structure_count - 1;
+				selected_structure = structures[new_index].data;
+			}
+			
+			if (platform->key_pressed[KEY_d])
+			{
+				i32 new_index = selected_structure_index < structure_count - 1 ?
+					selected_structure_index + 1 : 0;
+				selected_structure = structures[new_index].data;
+			}
+			
+			f32 start_pos = structure_count * 20.0f / -2.0f;
+			
+			for (i32 i = 0; i < structure_count; i++)
+			{
+				v2 render_pos = v2view(v2(pos_comp->position.x + start_pos + i * 20.0f, pos_comp->position.y - 60.0f));
+				v2 render_size = v2zoom(v2(20.0f, 20.0f));
+				
+				// NOTE(randy): i have successfully documented this function with adequate comments.
+				StaticSpriteData *sprite = &global_static_sprite_data[structures[i].data->icon_sprite];
+				ArcPushTexture(sprite->texture_atlas,
+							   0,
+							   sprite->source,
+							   v4(render_pos.x, render_pos.y,
+								  render_size.x, render_size.y),
+							   selected_structure == structures[i].data ? v4(1.0f, 0.0f, 0.0f, 1.0f) : v4u(1.0f),
+							   LAYER_HUD);
+			}
+			
+			// NOTE(randy): Render blueprint at mouse location
+			StaticSpriteData *sprite = &global_static_sprite_data[selected_structure->world_sprite];
+			v2 render_size = v2zoom(v2(sprite->source.z, sprite->source.w));
+			v2 render_pos = v2view(V2AddV2(GetMousePositionInWorldSpace(),
+										   v2(sprite->source.z / -2.0f, -sprite->source.w)));
+			ArcPushTexture(sprite->texture_atlas,
 						   0,
-						   category_sprite->source,
+						   sprite->source,
 						   v4(render_pos.x, render_pos.y,
 							  render_size.x, render_size.y),
-						   selected_category == i ? v4(1.0f, 0.0f, 0.0f, 1.0f) : v4u(1.0f),
-						   LAYER_FOREGROUND_GEORGE);
+						   v4(0.5f, 0.5f, 1.0f, 0.4f),
+						   LAYER_HUD);
+			
+			if (platform->left_mouse_pressed)
+			{
+				Entity *new_structure = NewEntity("structure", GENERALISED_ENTITY_TYPE_structure);
+				PositionComponent *pos_comp = AddPositionComponent(new_structure);
+				pos_comp->position = GetMousePositionInWorldSpace();
+				
+				SpriteComponent *sprite_comp = AddSpriteComponent(new_structure);
+				sprite_comp->sprite_data.static_sprite = selected_structure->world_sprite;
+				sprite_comp->sprite_data.tint = v4(0.5f, 0.5f, 1.0f, 0.4f);
+				
+				BlueprintComponent *blueprint_comp = AddBlueprintComponent(new_structure);
+				blueprint_comp->type = structures[selected_structure_index].type;
+				
+				InteractableComponent *inter_comp = AddInteractableComponent(new_structure);
+				inter_comp->bounds.aabb.min = c2V(-30.0f, -30.0f);
+				inter_comp->bounds.aabb.max = c2V(30.0f, 30.0f);
+				inter_comp->bounds_type = C2_SHAPE_TYPE_aabb;
+				inter_comp->priority = 5.0f;
+				inter_comp->interact_callback = OnBlueprintInteract;
+				inter_comp->enter_interactable_callback = OnBlueprintEnter;
+				inter_comp->exit_interactable_callback = OnBlueprintExit;
+			}
 		}
 	}
+	
+	// NOTE(randy): $Remaining Items UI
+	/*
+		if ()
+		{
+			
+		}
+	 */
 }

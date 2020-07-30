@@ -32,6 +32,9 @@ break;
 case GENERALISED_ENTITY_TYPE_pixel_object:
 return "Pixel Object";
 break;
+case GENERALISED_ENTITY_TYPE_structure:
+return "Structure";
+break;
 default:
 return "INVALID";
 break;
@@ -244,6 +247,9 @@ break;
 case STATIC_SPRITE_shia:
 return "Shia";
 break;
+case STATIC_SPRITE_shia2:
+return "Shia2";
+break;
 default:
 return "INVALID";
 break;
@@ -404,22 +410,6 @@ break;
 }
 }
 
-static char *GetStructureTypeName(StructureType type)
-{
-switch(type)
-{
-case STRUCTURE_TYPE_none:
-return "None";
-break;
-case STRUCTURE_TYPE_shia:
-return "Shia";
-break;
-default:
-return "INVALID";
-break;
-}
-}
-
 static char *GetStructureCategoryName(StructureCategory type)
 {
 switch(type)
@@ -442,15 +432,24 @@ break;
 }
 }
 
-static char *GetBlueprintRecipeTypeName(BlueprintRecipeType type)
+static char *GetStructureTypeName(StructureType type)
 {
 switch(type)
 {
-case BLUEPRINT_RECIPE_TYPE_none:
+case STRUCTURE_TYPE_none:
 return "None";
 break;
-case BLUEPRINT_RECIPE_TYPE_shia:
+case STRUCTURE_TYPE_shia:
 return "Shia";
+break;
+case STRUCTURE_TYPE_crafting_stump:
+return "Crafting Stump";
+break;
+case STRUCTURE_TYPE_shia2:
+return "Shia2";
+break;
+case STRUCTURE_TYPE_base:
+return "Base";
 break;
 default:
 return "INVALID";
@@ -913,71 +912,6 @@ internal ItemComponent *GetItemComponentFromEntityID(i32 id)
     return comp;
 }
 
-internal TriggerComponent *AddTriggerComponent(Entity *entity)
-{
-    Assert(core->run_data->entity_components.free_trigger_component_id > 0);
-    Assert(entity->component_ids[COMPONENT_trigger] == 0);
-    i32 new_comp_id = core->run_data->entity_components.free_trigger_component_id;
-
-    TriggerComponent *comp = &core->run_data->entity_components.trigger_components[new_comp_id - 1];
-    *comp = GetDefaultTriggerComponent();
-    comp->parent_entity_id = entity->entity_id;
-    comp->component_id = new_comp_id;
-    entity->component_ids[COMPONENT_trigger] = new_comp_id;
-
-    if (core->run_data->entity_components.trigger_component_count == core->run_data->entity_components.free_trigger_component_id - 1)
-    {
-        core->run_data->entity_components.trigger_component_count++;
-        core->run_data->entity_components.free_trigger_component_id++;
-    }
-
-    if (core->run_data->entity_components.trigger_component_count < MAX_ENTITIES)
-    {
-        if (core->run_data->entity_components.trigger_component_count != core->run_data->entity_components.free_trigger_component_id - 1)
-        {
-            b8 found = 0;
-            for (i32 i = 0; i < core->run_data->entity_components.trigger_component_count + 1; i++)
-            {
-                if (!core->run_data->entity_components.trigger_components[i].component_id)
-                {
-                    core->run_data->entity_components.free_trigger_component_id = i + 1;
-                    found = 1;
-                    break;
-                }
-            }
-            Assert(found);
-        }
-    }
-    else
-    {
-        core->run_data->entity_components.free_trigger_component_id = 0;
-    }
-
-    return comp;
-}
-
-internal void RemoveTriggerComponent(Entity *entity)
-{
-    Assert(entity->component_ids[COMPONENT_trigger] != 0);
-    TriggerComponent *comp = &core->run_data->entity_components.trigger_components[entity->component_ids[COMPONENT_trigger] - 1];
-
-    if (comp->component_id < core->run_data->entity_components.free_trigger_component_id)
-        core->run_data->entity_components.free_trigger_component_id = comp->component_id;
-
-    TriggerComponent empty_comp = {0};
-    *comp = empty_comp;
-    entity->component_ids[COMPONENT_trigger] = 0;
-}
-
-internal TriggerComponent *GetTriggerComponentFromEntityID(i32 id)
-{
-    Entity *entity = GetEntityWithID(id);
-    Assert(entity->component_ids[COMPONENT_trigger]);
-    TriggerComponent *comp = &core->run_data->entity_components.trigger_components[entity->component_ids[COMPONENT_trigger] - 1];
-    Assert(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_trigger]);
-    return comp;
-}
-
 internal ParallaxComponent *AddParallaxComponent(Entity *entity)
 {
     Assert(core->run_data->entity_components.free_parallax_component_id > 0);
@@ -1303,6 +1237,71 @@ internal StationComponent *GetStationComponentFromEntityID(i32 id)
     return comp;
 }
 
+internal BlueprintComponent *AddBlueprintComponent(Entity *entity)
+{
+    Assert(core->run_data->entity_components.free_blueprint_component_id > 0);
+    Assert(entity->component_ids[COMPONENT_blueprint] == 0);
+    i32 new_comp_id = core->run_data->entity_components.free_blueprint_component_id;
+
+    BlueprintComponent *comp = &core->run_data->entity_components.blueprint_components[new_comp_id - 1];
+    *comp = GetDefaultBlueprintComponent();
+    comp->parent_entity_id = entity->entity_id;
+    comp->component_id = new_comp_id;
+    entity->component_ids[COMPONENT_blueprint] = new_comp_id;
+
+    if (core->run_data->entity_components.blueprint_component_count == core->run_data->entity_components.free_blueprint_component_id - 1)
+    {
+        core->run_data->entity_components.blueprint_component_count++;
+        core->run_data->entity_components.free_blueprint_component_id++;
+    }
+
+    if (core->run_data->entity_components.blueprint_component_count < MAX_ENTITIES)
+    {
+        if (core->run_data->entity_components.blueprint_component_count != core->run_data->entity_components.free_blueprint_component_id - 1)
+        {
+            b8 found = 0;
+            for (i32 i = 0; i < core->run_data->entity_components.blueprint_component_count + 1; i++)
+            {
+                if (!core->run_data->entity_components.blueprint_components[i].component_id)
+                {
+                    core->run_data->entity_components.free_blueprint_component_id = i + 1;
+                    found = 1;
+                    break;
+                }
+            }
+            Assert(found);
+        }
+    }
+    else
+    {
+        core->run_data->entity_components.free_blueprint_component_id = 0;
+    }
+
+    return comp;
+}
+
+internal void RemoveBlueprintComponent(Entity *entity)
+{
+    Assert(entity->component_ids[COMPONENT_blueprint] != 0);
+    BlueprintComponent *comp = &core->run_data->entity_components.blueprint_components[entity->component_ids[COMPONENT_blueprint] - 1];
+
+    if (comp->component_id < core->run_data->entity_components.free_blueprint_component_id)
+        core->run_data->entity_components.free_blueprint_component_id = comp->component_id;
+
+    BlueprintComponent empty_comp = {0};
+    *comp = empty_comp;
+    entity->component_ids[COMPONENT_blueprint] = 0;
+}
+
+internal BlueprintComponent *GetBlueprintComponentFromEntityID(i32 id)
+{
+    Entity *entity = GetEntityWithID(id);
+    Assert(entity->component_ids[COMPONENT_blueprint]);
+    BlueprintComponent *comp = &core->run_data->entity_components.blueprint_components[entity->component_ids[COMPONENT_blueprint] - 1];
+    Assert(comp->parent_entity_id == entity->entity_id && comp->component_id == entity->component_ids[COMPONENT_blueprint]);
+    return comp;
+}
+
 internal void RemoveComponent(Entity *entity, ComponentType type)
 {
     switch (type)
@@ -1363,14 +1362,6 @@ internal void RemoveComponent(Entity *entity, ComponentType type)
             Assert(0);
         break;
     }
-    case COMPONENT_trigger:
-    {
-        if (entity->component_ids[COMPONENT_trigger])
-            RemoveTriggerComponent(entity);
-        else
-            Assert(0);
-        break;
-    }
     case COMPONENT_parallax:
     {
         if (entity->component_ids[COMPONENT_parallax])
@@ -1411,6 +1402,14 @@ internal void RemoveComponent(Entity *entity, ComponentType type)
             Assert(0);
         break;
     }
+    case COMPONENT_blueprint:
+    {
+        if (entity->component_ids[COMPONENT_blueprint])
+            RemoveBlueprintComponent(entity);
+        else
+            Assert(0);
+        break;
+    }
     default:
         Assert(0);
         break;
@@ -1425,12 +1424,12 @@ internal void InitialiseComponents()
     core->run_data->entity_components.free_movement_component_id = 1;
     core->run_data->entity_components.free_arc_entity_component_id = 1;
     core->run_data->entity_components.free_item_component_id = 1;
-    core->run_data->entity_components.free_trigger_component_id = 1;
     core->run_data->entity_components.free_parallax_component_id = 1;
     core->run_data->entity_components.free_particle_emitter_component_id = 1;
     core->run_data->entity_components.free_player_data_component_id = 1;
     core->run_data->entity_components.free_interactable_component_id = 1;
     core->run_data->entity_components.free_station_component_id = 1;
+    core->run_data->entity_components.free_blueprint_component_id = 1;
 }
 static char *GetCellPropertiesTypeName(CellPropertiesType type)
 {
@@ -1505,10 +1504,6 @@ WriteComponentToFile(FILE *file, i32 comp_id, ComponentType type)
         {
             WriteItemComponentToFile(file, &core->run_data->entity_components.item_components[comp_id - 1]);
         } break;
-        case COMPONENT_trigger:
-        {
-            WriteTriggerComponentToFile(file, &core->run_data->entity_components.trigger_components[comp_id - 1]);
-        } break;
         case COMPONENT_parallax:
         {
             WriteParallaxComponentToFile(file, &core->run_data->entity_components.parallax_components[comp_id - 1]);
@@ -1528,6 +1523,10 @@ WriteComponentToFile(FILE *file, i32 comp_id, ComponentType type)
         case COMPONENT_station:
         {
             WriteStationComponentToFile(file, &core->run_data->entity_components.station_components[comp_id - 1]);
+        } break;
+        case COMPONENT_blueprint:
+        {
+            WriteBlueprintComponentToFile(file, &core->run_data->entity_components.blueprint_components[comp_id - 1]);
         } break;
     }
 }
@@ -1605,16 +1604,6 @@ ReadComponentFromFile(FILE *file, Entity *entity, ComponentType type)
             new_comp->component_id = new_comp_id;
             new_comp->parent_entity_id = entity->entity_id;
         } break;
-        case COMPONENT_trigger:
-        {
-            TriggerComponent component = {0};
-            ReadTriggerComponentFromFile(file, &component);
-            TriggerComponent *new_comp = AddTriggerComponent(entity);
-            i32 new_comp_id = new_comp->component_id;
-            *new_comp = component;
-            new_comp->component_id = new_comp_id;
-            new_comp->parent_entity_id = entity->entity_id;
-        } break;
         case COMPONENT_parallax:
         {
             ParallaxComponent component = {0};
@@ -1660,6 +1649,16 @@ ReadComponentFromFile(FILE *file, Entity *entity, ComponentType type)
             StationComponent component = {0};
             ReadStationComponentFromFile(file, &component);
             StationComponent *new_comp = AddStationComponent(entity);
+            i32 new_comp_id = new_comp->component_id;
+            *new_comp = component;
+            new_comp->component_id = new_comp_id;
+            new_comp->parent_entity_id = entity->entity_id;
+        } break;
+        case COMPONENT_blueprint:
+        {
+            BlueprintComponent component = {0};
+            ReadBlueprintComponentFromFile(file, &component);
+            BlueprintComponent *new_comp = AddBlueprintComponent(entity);
             i32 new_comp_id = new_comp->component_id;
             *new_comp = component;
             new_comp->component_id = new_comp_id;
@@ -1853,32 +1852,6 @@ SerialiseEntityComponentsFromIDList(FILE *file, Entity *entity_list, ComponentSe
                 WriteItemComponentToFile(file, comps[i].comp_data);
             }
         } break;
-        case COMPONENT_trigger:
-        {
-            typedef struct ComponentSave {
-                i32 entity_offset;
-                TriggerComponent *comp_data;
-            } ComponentSave;
-            ComponentSave comps[MAX_ENTITIES];
-            i32 comp_count = 0;
-
-            for (i32 i = 0; i < id_count; i++)
-            {
-                if (entity_list[ids[i] - 1].component_ids[type])
-                {
-                    comps[comp_count].entity_offset = i;
-                    comps[comp_count].comp_data = &component_set->trigger_components[entity_list[ids[i] - 1].component_ids[type] - 1];
-                    comp_count++;
-                }
-            }
-
-            WriteToFile(file, &comp_count, sizeof(comp_count));
-            for (i32 i = 0; i < comp_count; i++)
-            {
-                WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
-                WriteTriggerComponentToFile(file, comps[i].comp_data);
-            }
-        } break;
         case COMPONENT_parallax:
         {
             typedef struct ComponentSave {
@@ -2007,6 +1980,32 @@ SerialiseEntityComponentsFromIDList(FILE *file, Entity *entity_list, ComponentSe
             {
                 WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
                 WriteStationComponentToFile(file, comps[i].comp_data);
+            }
+        } break;
+        case COMPONENT_blueprint:
+        {
+            typedef struct ComponentSave {
+                i32 entity_offset;
+                BlueprintComponent *comp_data;
+            } ComponentSave;
+            ComponentSave comps[MAX_ENTITIES];
+            i32 comp_count = 0;
+
+            for (i32 i = 0; i < id_count; i++)
+            {
+                if (entity_list[ids[i] - 1].component_ids[type])
+                {
+                    comps[comp_count].entity_offset = i;
+                    comps[comp_count].comp_data = &component_set->blueprint_components[entity_list[ids[i] - 1].component_ids[type] - 1];
+                    comp_count++;
+                }
+            }
+
+            WriteToFile(file, &comp_count, sizeof(comp_count));
+            for (i32 i = 0; i < comp_count; i++)
+            {
+                WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
+                WriteBlueprintComponentToFile(file, comps[i].comp_data);
             }
         } break;
     }
@@ -2190,30 +2189,6 @@ SerialiseComponentsFromDataSet(FILE *file, Entity *entity_list, i32 entity_count
         {
             Entity *entity = &entity_list[ids[i] - 1];
             Assert(ids[i] - 1 < entity_count);
-            if (entity->component_ids[COMPONENT_trigger])
-            {
-                comps[comp_count].entity_offset = i;
-                comps[comp_count].comp_data = &component_set->trigger_components[entity->component_ids[COMPONENT_trigger] - 1];
-                comp_count++;
-            }
-        }
-
-        WriteToFile(file, &comp_count, sizeof(comp_count)); 
-        for (i32 i = 0; i < comp_count; i++)
-        {
-            WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
-            WriteTriggerComponentToFile(file, comps[i].comp_data);
-        }
-    }
-
-    {
-        ComponentSaveHelper comps[MAX_ENTITIES];
-        i32 comp_count = 0;
-
-        for (i32 i = 0; i < id_count; i++)
-        {
-            Entity *entity = &entity_list[ids[i] - 1];
-            Assert(ids[i] - 1 < entity_count);
             if (entity->component_ids[COMPONENT_parallax])
             {
                 comps[comp_count].entity_offset = i;
@@ -2323,6 +2298,30 @@ SerialiseComponentsFromDataSet(FILE *file, Entity *entity_list, i32 entity_count
         {
             WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
             WriteStationComponentToFile(file, comps[i].comp_data);
+        }
+    }
+
+    {
+        ComponentSaveHelper comps[MAX_ENTITIES];
+        i32 comp_count = 0;
+
+        for (i32 i = 0; i < id_count; i++)
+        {
+            Entity *entity = &entity_list[ids[i] - 1];
+            Assert(ids[i] - 1 < entity_count);
+            if (entity->component_ids[COMPONENT_blueprint])
+            {
+                comps[comp_count].entity_offset = i;
+                comps[comp_count].comp_data = &component_set->blueprint_components[entity->component_ids[COMPONENT_blueprint] - 1];
+                comp_count++;
+            }
+        }
+
+        WriteToFile(file, &comp_count, sizeof(comp_count)); 
+        for (i32 i = 0; i < comp_count; i++)
+        {
+            WriteToFile(file, &(comps[i].entity_offset), sizeof(i32));
+            WriteBlueprintComponentToFile(file, comps[i].comp_data);
         }
     }
 
@@ -2465,25 +2464,6 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
                 new_comp->parent_entity_id = entity->entity_id;
             }
         } break;
-        case COMPONENT_trigger:
-        {
-            i32 comp_count = 0;
-            ReadFromFile(file, &comp_count, sizeof(comp_count));
-            for (i32 i = 0; i < comp_count; i++)
-            {
-                i32 entity_offset = 0;
-                ReadFromFile(file, &entity_offset, sizeof(i32));
-                Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
-                Assert(entity->entity_id)
-                TriggerComponent component = {0};
-                ReadTriggerComponentFromFile(file, &component);
-                TriggerComponent *new_comp = AddTriggerComponent(entity);
-                i32 new_comp_id = new_comp->component_id;
-                *new_comp = component;
-                new_comp->component_id = new_comp_id;
-                new_comp->parent_entity_id = entity->entity_id;
-            }
-        } break;
         case COMPONENT_parallax:
         {
             i32 comp_count = 0;
@@ -2573,6 +2553,25 @@ DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, Compon
                 StationComponent component = {0};
                 ReadStationComponentFromFile(file, &component);
                 StationComponent *new_comp = AddStationComponent(entity);
+                i32 new_comp_id = new_comp->component_id;
+                *new_comp = component;
+                new_comp->component_id = new_comp_id;
+                new_comp->parent_entity_id = entity->entity_id;
+            }
+        } break;
+        case COMPONENT_blueprint:
+        {
+            i32 comp_count = 0;
+            ReadFromFile(file, &comp_count, sizeof(comp_count));
+            for (i32 i = 0; i < comp_count; i++)
+            {
+                i32 entity_offset = 0;
+                ReadFromFile(file, &entity_offset, sizeof(i32));
+                Entity *entity = &core->run_data->entities[ids[entity_offset] - 1];
+                Assert(entity->entity_id)
+                BlueprintComponent component = {0};
+                ReadBlueprintComponentFromFile(file, &component);
+                BlueprintComponent *new_comp = AddBlueprintComponent(entity);
                 i32 new_comp_id = new_comp->component_id;
                 *new_comp = component;
                 new_comp->component_id = new_comp_id;
@@ -2690,20 +2689,6 @@ DeserialiseComponentsToLoadData(FILE *file, ComponentSet *component_set, EntityS
             i32 entity_offset;
             ReadFromFile(file, &entity_offset, sizeof(i32));
             EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
-            TriggerComponent component_data;
-            ReadTriggerComponentFromFile(file, &component_data);
-            component_data.parent_entity_id = ids[entity_offset];
-            component_set->trigger_components[component_set->trigger_component_count++] = component_data;
-        }
-    }
-    {
-        i32 component_count;
-        ReadFromFile(file, &component_count, sizeof(i32));
-        for (i32 i = 0; i < component_count; i++)
-        {
-            i32 entity_offset;
-            ReadFromFile(file, &entity_offset, sizeof(i32));
-            EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
             ParallaxComponent component_data;
             ReadParallaxComponentFromFile(file, &component_data);
             component_data.parent_entity_id = ids[entity_offset];
@@ -2764,6 +2749,20 @@ DeserialiseComponentsToLoadData(FILE *file, ComponentSet *component_set, EntityS
             ReadStationComponentFromFile(file, &component_data);
             component_data.parent_entity_id = ids[entity_offset];
             component_set->station_components[component_set->station_component_count++] = component_data;
+        }
+    }
+    {
+        i32 component_count;
+        ReadFromFile(file, &component_count, sizeof(i32));
+        for (i32 i = 0; i < component_count; i++)
+        {
+            i32 entity_offset;
+            ReadFromFile(file, &entity_offset, sizeof(i32));
+            EntitySave *entity_save = &entity_list[ids[entity_offset] - 1];
+            BlueprintComponent component_data;
+            ReadBlueprintComponentFromFile(file, &component_data);
+            component_data.parent_entity_id = ids[entity_offset];
+            component_set->blueprint_components[component_set->blueprint_component_count++] = component_data;
         }
     }
 }
@@ -2847,17 +2846,6 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
         new_comp->component_id = new_comp_id;
         new_comp->parent_entity_id = entity->entity_id;
     }
-    for (i32 i = 0; i < core->run_data->loaded_entity_components.trigger_component_count; i++)
-    {
-        TriggerComponent *saved_comp = &core->run_data->loaded_entity_components.trigger_components[i];
-        Entity *entity = &core->run_data->entities[entity_id_map[saved_comp->parent_entity_id - 1] - 1];
-        Assert(entity->entity_id);
-        TriggerComponent *new_comp = AddTriggerComponent(entity);
-        i32 new_comp_id = new_comp->component_id;
-        *new_comp = *saved_comp;
-        new_comp->component_id = new_comp_id;
-        new_comp->parent_entity_id = entity->entity_id;
-    }
     for (i32 i = 0; i < core->run_data->loaded_entity_components.parallax_component_count; i++)
     {
         ParallaxComponent *saved_comp = &core->run_data->loaded_entity_components.parallax_components[i];
@@ -2913,6 +2901,17 @@ DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count)
         new_comp->component_id = new_comp_id;
         new_comp->parent_entity_id = entity->entity_id;
     }
+    for (i32 i = 0; i < core->run_data->loaded_entity_components.blueprint_component_count; i++)
+    {
+        BlueprintComponent *saved_comp = &core->run_data->loaded_entity_components.blueprint_components[i];
+        Entity *entity = &core->run_data->entities[entity_id_map[saved_comp->parent_entity_id - 1] - 1];
+        Assert(entity->entity_id);
+        BlueprintComponent *new_comp = AddBlueprintComponent(entity);
+        i32 new_comp_id = new_comp->component_id;
+        *new_comp = *saved_comp;
+        new_comp->component_id = new_comp_id;
+        new_comp->parent_entity_id = entity->entity_id;
+    }
 }
 
 internal void ResetComponentSet(ComponentSet *comp_set)
@@ -2924,12 +2923,12 @@ internal void ResetComponentSet(ComponentSet *comp_set)
     comp_set->movement_component_count = 0;
     comp_set->arc_entity_component_count = 0;
     comp_set->item_component_count = 0;
-    comp_set->trigger_component_count = 0;
     comp_set->parallax_component_count = 0;
     comp_set->particle_emitter_component_count = 0;
     comp_set->player_data_component_count = 0;
     comp_set->interactable_component_count = 0;
     comp_set->station_component_count = 0;
+    comp_set->blueprint_component_count = 0;
 }
 static void WritePositionComponentToFile(FILE *file, PositionComponent *data)
 {
@@ -3087,40 +3086,6 @@ static void ReadItemComponentFromFile(FILE *file, ItemComponent *data)
 
 }
 
-static void WriteTriggerComponentToFile(FILE *file, TriggerComponent *data)
-{
-    WriteToFile(file, &data->enter_trigger_callback, sizeof(data->enter_trigger_callback));
-
-    WriteToFile(file, &data->exit_trigger_callback, sizeof(data->exit_trigger_callback));
-
-    for (i32 i = 0; i < MAX_OVERLAPPING_COLLIDERS; i++)
-    {
-        WriteToFile(file, &data->previous_overlaps[i], sizeof(OverlappedColliderInfo));
-    }
-
-    WriteToFile(file, &data->previous_overlaps_count, sizeof(data->previous_overlaps_count));
-
-    WriteToFile(file, &data->trigger_against, sizeof(data->trigger_against));
-
-}
-
-static void ReadTriggerComponentFromFile(FILE *file, TriggerComponent *data)
-{
-    ReadFromFile(file, &data->enter_trigger_callback, sizeof(data->enter_trigger_callback));
-
-    ReadFromFile(file, &data->exit_trigger_callback, sizeof(data->exit_trigger_callback));
-
-    for (i32 i = 0; i < MAX_OVERLAPPING_COLLIDERS; i++)
-    {
-        ReadFromFile(file, &data->previous_overlaps[i], sizeof(OverlappedColliderInfo));
-    }
-
-    ReadFromFile(file, &data->previous_overlaps_count, sizeof(data->previous_overlaps_count));
-
-    ReadFromFile(file, &data->trigger_against, sizeof(data->trigger_against));
-
-}
-
 static void WriteParallaxComponentToFile(FILE *file, ParallaxComponent *data)
 {
     WriteToFile(file, &data->parallax_amount, sizeof(data->parallax_amount));
@@ -3249,6 +3214,12 @@ static void WriteInteractableComponentToFile(FILE *file, InteractableComponent *
 
     WriteToFile(file, &data->interact_callback, sizeof(data->interact_callback));
 
+    WriteToFile(file, &data->enter_interactable_callback, sizeof(data->enter_interactable_callback));
+
+    WriteToFile(file, &data->exit_interactable_callback, sizeof(data->exit_interactable_callback));
+
+    WriteToFile(file, &data->is_overlapping_player, sizeof(data->is_overlapping_player));
+
 }
 
 static void ReadInteractableComponentFromFile(FILE *file, InteractableComponent *data)
@@ -3260,6 +3231,12 @@ static void ReadInteractableComponentFromFile(FILE *file, InteractableComponent 
     ReadFromFile(file, &data->priority, sizeof(data->priority));
 
     ReadFromFile(file, &data->interact_callback, sizeof(data->interact_callback));
+
+    ReadFromFile(file, &data->enter_interactable_callback, sizeof(data->enter_interactable_callback));
+
+    ReadFromFile(file, &data->exit_interactable_callback, sizeof(data->exit_interactable_callback));
+
+    ReadFromFile(file, &data->is_overlapping_player, sizeof(data->is_overlapping_player));
 
 }
 
@@ -3276,6 +3253,28 @@ static void ReadStationComponentFromFile(FILE *file, StationComponent *data)
     ReadFromFile(file, &data->data, sizeof(data->data));
 
     ReadFromFile(file, &data->type, sizeof(data->type));
+
+}
+
+static void WriteBlueprintComponentToFile(FILE *file, BlueprintComponent *data)
+{
+    WriteToFile(file, &data->type, sizeof(data->type));
+
+    for (i32 i = 0; i < MAX_ITEMS_IN_BLUEPRINT_RECIPE; i++)
+    {
+        WriteToFile(file, &data->items_contributed[i], sizeof(Item));
+    }
+
+}
+
+static void ReadBlueprintComponentFromFile(FILE *file, BlueprintComponent *data)
+{
+    ReadFromFile(file, &data->type, sizeof(data->type));
+
+    for (i32 i = 0; i < MAX_ITEMS_IN_BLUEPRINT_RECIPE; i++)
+    {
+        ReadFromFile(file, &data->items_contributed[i], sizeof(Item));
+    }
 
 }
 
@@ -3346,15 +3345,6 @@ static void WriteComponentSetToFile(FILE *file, ComponentSet *data)
 
     for (i32 i = 0; i < MAX_ENTITIES; i++)
     {
-        WriteTriggerComponentToFile(file, &(data->trigger_components[i]));
-    }
-
-    WriteToFile(file, &data->trigger_component_count, sizeof(data->trigger_component_count));
-
-    WriteToFile(file, &data->free_trigger_component_id, sizeof(data->free_trigger_component_id));
-
-    for (i32 i = 0; i < MAX_ENTITIES; i++)
-    {
         WriteParallaxComponentToFile(file, &(data->parallax_components[i]));
     }
 
@@ -3397,6 +3387,15 @@ static void WriteComponentSetToFile(FILE *file, ComponentSet *data)
     WriteToFile(file, &data->station_component_count, sizeof(data->station_component_count));
 
     WriteToFile(file, &data->free_station_component_id, sizeof(data->free_station_component_id));
+
+    for (i32 i = 0; i < MAX_ENTITIES; i++)
+    {
+        WriteBlueprintComponentToFile(file, &(data->blueprint_components[i]));
+    }
+
+    WriteToFile(file, &data->blueprint_component_count, sizeof(data->blueprint_component_count));
+
+    WriteToFile(file, &data->free_blueprint_component_id, sizeof(data->free_blueprint_component_id));
 
 }
 
@@ -3467,15 +3466,6 @@ static void ReadComponentSetFromFile(FILE *file, ComponentSet *data)
 
     for (i32 i = 0; i < MAX_ENTITIES; i++)
     {
-        ReadTriggerComponentFromFile(file, &(data->trigger_components[i]));
-    }
-
-    ReadFromFile(file, &data->trigger_component_count, sizeof(data->trigger_component_count));
-
-    ReadFromFile(file, &data->free_trigger_component_id, sizeof(data->free_trigger_component_id));
-
-    for (i32 i = 0; i < MAX_ENTITIES; i++)
-    {
         ReadParallaxComponentFromFile(file, &(data->parallax_components[i]));
     }
 
@@ -3518,6 +3508,15 @@ static void ReadComponentSetFromFile(FILE *file, ComponentSet *data)
     ReadFromFile(file, &data->station_component_count, sizeof(data->station_component_count));
 
     ReadFromFile(file, &data->free_station_component_id, sizeof(data->free_station_component_id));
+
+    for (i32 i = 0; i < MAX_ENTITIES; i++)
+    {
+        ReadBlueprintComponentFromFile(file, &(data->blueprint_components[i]));
+    }
+
+    ReadFromFile(file, &data->blueprint_component_count, sizeof(data->blueprint_component_count));
+
+    ReadFromFile(file, &data->free_blueprint_component_id, sizeof(data->free_blueprint_component_id));
 
 }
 

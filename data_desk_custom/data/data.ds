@@ -10,7 +10,7 @@ MAX_STORAGE_SIZE :: 30
 MAX_PARTICLE_AMOUNT :: 300
 MAX_WORLD_CHUNKS :: 128
 CHUNK_SIZE :: 256
-MAX_DYNAMIC_CELLS :: 16384‬
+MAX_DYNAMIC_CELLS :: 16384
 MAX_QUEUED_TEXTURES :: 1024
 
 
@@ -28,6 +28,7 @@ GeneralisedEntityType :: enum
 	scenic,
 	ground,
 	pixel_object,
+	structure,
 }
 
 EditorState :: enum
@@ -248,6 +249,8 @@ StaticSprite :: enum
 
 	@Data("'item/shia'", "{0.0f, 0.0f, 800.0f, 1200.0f}", "{0.0f, 0.0f}")
 		shia,
+	@Data("'item/shia2'", "{0.0f, 0.0f, 590.0f, 631.0f}", "{0.0f, 0.0f}")
+		shia2,
 }
 
 @XMacro
@@ -457,6 +460,7 @@ ItemComponent :: struct
 	item : Item;
 }
 
+/*
 @Component @SerialisableStruct
 TriggerComponent :: struct
 {
@@ -466,6 +470,7 @@ TriggerComponent :: struct
 	previous_overlaps_count : i32;
 	trigger_against : b8;
 }
+ */
 
 @Component @SerialisableStruct
 ParallaxComponent :: struct
@@ -509,6 +514,9 @@ InteractableComponent :: struct
 	bounds_type : c2ShapeType;
 	priority : f32;
 	interact_callback : InteractCallback;
+	enter_interactable_callback : EnterInteractableCallback;
+	exit_interactable_callback : ExitInteractableCallback;
+	is_overlapping_player : b8;
 }
 
 // NOTE(randy): $Crafting recipes
@@ -558,23 +566,6 @@ StationComponent :: struct
 	type : StationType;
 }
 
-// NOTE(randy): $Strucutres
-@XMacro
-StructureTypeData :: struct
-{
-	print_name : char[20];
-	icon_sprite : StaticSprite;
-	world_sprite : StaticSprite;
-}
-@XMacro
-StructureType :: enum
-{
-	@Data("'none'", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, 0, 0)
-		none,
-	@Data("'Shia'", STATIC_SPRITE_shia, STATIC_SPRITE_shia)
-		shia,
-}
-
 StructureCategory :: enum
 {
 	none,
@@ -583,21 +574,37 @@ StructureCategory :: enum
 	base,
 }
 
-// NOTE(randy): $Blueprints
 MAX_ITEMS_IN_BLUEPRINT_RECIPE :: 10
+// NOTE(randy): $Strucutres
 @XMacro
-BlueprintRecipeTypeData :: struct
+StructureTypeData :: struct
 {
-	output : StructureType;
-	input : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
+	print_name : char[20];
+	category : StructureCategory;
+	icon_sprite : StaticSprite;
+	world_sprite : StaticSprite;
+	recipe : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
 }
 @XMacro
-BlueprintRecipeType :: enum
+StructureType :: enum
 {
-	@Data("{0}", "{0}")
+	@Data("'none'", STRUCTURE_CATEGORY_none, STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, "{0}")
 		none,
-	@Data(STRUCTURE_TYPE_shia, "{{ITEM_TYPE_flint, 3}}")
+	@Data("'Shia'", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia, STATIC_SPRITE_shia, "{0}")
 		shia,
+	@Data("'Crafting Stump'", STRUCTURE_CATEGORY_crafting, STATIC_SPRITE_crafting_stump, STATIC_SPRITE_crafting_stump, "{0}")
+		crafting_stump,
+	@Data("'Shia 2'", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, "{0}")
+		shia2,
+	@Data("'Base'", STRUCTURE_CATEGORY_base, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, "{0}")
+		base,
+}
+
+@Component @SerialisableStruct
+BlueprintComponent :: struct
+{
+	type : StructureType;
+	items_contributed : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
 }
 
 @ForwardDeclare(Chunk)

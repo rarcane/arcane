@@ -1577,6 +1577,7 @@ internal Chunk *GetChunkAtIndex(i32 x, i32 y)
 	return 0;
 }
 
+/*
 internal f32 GetTerrainHeight(f32 x_pos)
 {
 	f32 world_height = 300.0f;
@@ -1600,6 +1601,7 @@ internal f32 GetTerrainHeight(f32 x_pos)
 	
 	return world_height * noise;
 }
+ */
 
 internal void GetSurroundingChunks(Chunk **chunks, v2 position)
 {

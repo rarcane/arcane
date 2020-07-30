@@ -60,6 +60,11 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 			DataDeskNode *tag = DataDeskGetNodeTag(root, "ForwardDeclare");
 			fprintf(h_file, "typedef struct %s %s;\n\n", DataDeskGetTagParameter(tag, 0)->name, DataDeskGetTagParameter(tag, 0)->name);
 		}
+		else if (DataDeskNodeHasTag(root, "ForwardDeclareEnum"))
+		{
+			DataDeskNode *tag = DataDeskGetNodeTag(root, "ForwardDeclareEnum");
+			fprintf(h_file, "typedef enum %s %s;\n\n", DataDeskGetTagParameter(tag, 0)->name, DataDeskGetTagParameter(tag, 0)->name);
+		}
 		else
 		{
 			switch (root->type)
@@ -358,6 +363,7 @@ internal void GenerateComponentCode(void)
 		
 		// NOTE(randy): Add Component function.
 		{
+			fprintf(h_file, "internal %s *Add%s(Entity *entity);\n", comp_node->name, comp_node->name);
 			fprintf(c_file, "internal %s *Add%s(Entity *entity)\n", comp_node->name, comp_node->name);
 			fprintf(c_file, "{\n");
 			fprintf(c_file, "    Assert(core->run_data->entity_components.free_%s_id > 0);\n", comp_node->name_lowercase_with_underscores, comp_node->name);
@@ -404,6 +410,7 @@ internal void GenerateComponentCode(void)
 		
 		// NOTE(randy): Remove Component function.
 		{
+			fprintf(h_file, "internal void Remove%s(Entity *entity);\n", comp_node->name);
 			fprintf(c_file, "internal void Remove%s(Entity *entity)\n", comp_node->name);
 			fprintf(c_file, "{\n");
 			fprintf(c_file, "    Assert(entity->component_ids[COMPONENT_%s] != 0);\n", trimmed_lowercase_name);

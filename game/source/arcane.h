@@ -10,6 +10,8 @@ typedef struct OverlappedColliderInfo
 
 typedef void (*TriggerCallback)(OverlappedColliderInfo);
 typedef void (*InteractCallback)(Entity *);
+typedef void (*EnterInteractableCallback)(Entity *);
+typedef void (*ExitInteractableCallback)(Entity *);
 
 internal void InitialiseRunData();
 internal void FreeRunData();

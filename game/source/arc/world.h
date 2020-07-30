@@ -53,7 +53,7 @@ inline internal i32 WorldSpaceToChunkIndex(f32 world_space_coord)
 	return index;
 }
 // NOTE(randy): Gets the desired terrain height at a specific x position via perlin noise
-internal f32 GetTerrainHeight(f32 x_pos);
+//internal f32 GetTerrainHeight(f32 x_pos);
 // NOTE(randy): Returns NINE surrounding chunks relative to a world-pos.
 // If a surrounding chunk is not loaded, it'll be NULL
 internal void GetSurroundingChunks(Chunk **chunks, v2 position);

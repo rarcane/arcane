@@ -22,6 +22,7 @@ GENERALISED_ENTITY_TYPE_resource,
 GENERALISED_ENTITY_TYPE_scenic,
 GENERALISED_ENTITY_TYPE_ground,
 GENERALISED_ENTITY_TYPE_pixel_object,
+GENERALISED_ENTITY_TYPE_structure,
 GENERALISED_ENTITY_TYPE_MAX,
 };
 static char *GetGeneralisedEntityTypeName(GeneralisedEntityType type);
@@ -144,6 +145,7 @@ STATIC_SPRITE_flint_sword_ground,
 STATIC_SPRITE_flint,
 STATIC_SPRITE_twig,
 STATIC_SPRITE_shia,
+STATIC_SPRITE_shia2,
 STATIC_SPRITE_MAX,
 };
 global StaticSpriteData global_static_sprite_data[STATIC_SPRITE_MAX] = {
@@ -206,6 +208,7 @@ global StaticSpriteData global_static_sprite_data[STATIC_SPRITE_MAX] = {
     { "item/flint", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
     { "item/twig", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
     { "item/shia", {0.0f, 0.0f, 800.0f, 1200.0f}, {0.0f, 0.0f}, },
+    { "item/shia2", {0.0f, 0.0f, 590.0f, 631.0f}, {0.0f, 0.0f}, },
 };
 
 static char *GetStaticSpriteName(StaticSprite type);
@@ -438,17 +441,6 @@ i32 component_id;
 Item item;
 } ItemComponent;
 
-typedef struct TriggerComponent
-{
-i32 parent_entity_id;
-i32 component_id;
-TriggerCallback enter_trigger_callback;
-TriggerCallback exit_trigger_callback;
-OverlappedColliderInfo previous_overlaps[MAX_OVERLAPPING_COLLIDERS];
-i32 previous_overlaps_count;
-b8 trigger_against;
-} TriggerComponent;
-
 typedef struct ParallaxComponent
 {
 i32 parent_entity_id;
@@ -495,6 +487,9 @@ c2Shape bounds;
 c2ShapeType bounds_type;
 f32 priority;
 InteractCallback interact_callback;
+EnterInteractableCallback enter_interactable_callback;
+ExitInteractableCallback exit_interactable_callback;
+b8 is_overlapping_player;
 } InteractableComponent;
 
 #define MAX_ITEMS_IN_CRAFTING_RECIPE (10)
@@ -555,27 +550,6 @@ StationData data;
 StationType type;
 } StationComponent;
 
-typedef struct StructureTypeData
-{
-char print_name[20];
-StaticSprite icon_sprite;
-StaticSprite world_sprite;
-} StructureTypeData;
-
-typedef enum StructureType StructureType;
-enum StructureType
-{
-STRUCTURE_TYPE_none,
-STRUCTURE_TYPE_shia,
-STRUCTURE_TYPE_MAX,
-};
-global StructureTypeData global_structure_type_data[STRUCTURE_TYPE_MAX] = {
-    { "none", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, },
-    { "Shia", STATIC_SPRITE_shia, STATIC_SPRITE_shia, },
-};
-
-static char *GetStructureTypeName(StructureType type);
-
 typedef enum StructureCategory StructureCategory;
 enum StructureCategory
 {
@@ -588,25 +562,42 @@ STRUCTURE_CATEGORY_MAX,
 static char *GetStructureCategoryName(StructureCategory type);
 
 #define MAX_ITEMS_IN_BLUEPRINT_RECIPE (10)
-typedef struct BlueprintRecipeTypeData
+typedef struct StructureTypeData
 {
-StructureType output;
-Item input[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
-} BlueprintRecipeTypeData;
+char print_name[20];
+StructureCategory category;
+StaticSprite icon_sprite;
+StaticSprite world_sprite;
+Item recipe[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
+} StructureTypeData;
 
-typedef enum BlueprintRecipeType BlueprintRecipeType;
-enum BlueprintRecipeType
+typedef enum StructureType StructureType;
+enum StructureType
 {
-BLUEPRINT_RECIPE_TYPE_none,
-BLUEPRINT_RECIPE_TYPE_shia,
-BLUEPRINT_RECIPE_TYPE_MAX,
+STRUCTURE_TYPE_none,
+STRUCTURE_TYPE_shia,
+STRUCTURE_TYPE_crafting_stump,
+STRUCTURE_TYPE_shia2,
+STRUCTURE_TYPE_base,
+STRUCTURE_TYPE_MAX,
 };
-global BlueprintRecipeTypeData global_blueprint_recipe_type_data[BLUEPRINT_RECIPE_TYPE_MAX] = {
-    { {0}, {0}, },
-    { STRUCTURE_TYPE_shia, {{ITEM_TYPE_flint, 3}}, },
+global StructureTypeData global_structure_type_data[STRUCTURE_TYPE_MAX] = {
+    { "none", STRUCTURE_CATEGORY_none, STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, {0}, },
+    { "Shia", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia, STATIC_SPRITE_shia, {0}, },
+    { "Crafting Stump", STRUCTURE_CATEGORY_crafting, STATIC_SPRITE_crafting_stump, STATIC_SPRITE_crafting_stump, {0}, },
+    { "Shia 2", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, {0}, },
+    { "Base", STRUCTURE_CATEGORY_base, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, {0}, },
 };
 
-static char *GetBlueprintRecipeTypeName(BlueprintRecipeType type);
+static char *GetStructureTypeName(StructureType type);
+
+typedef struct BlueprintComponent
+{
+i32 parent_entity_id;
+i32 component_id;
+StructureType type;
+Item items_contributed[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
+} BlueprintComponent;
 
 typedef struct Chunk Chunk;
 
@@ -620,12 +611,12 @@ COMPONENT_physics_body,
 COMPONENT_movement,
 COMPONENT_arc_entity,
 COMPONENT_item,
-COMPONENT_trigger,
 COMPONENT_parallax,
 COMPONENT_particle_emitter,
 COMPONENT_player_data,
 COMPONENT_interactable,
 COMPONENT_station,
+COMPONENT_blueprint,
 COMPONENT_MAX,
 } ComponentType;
 
@@ -652,9 +643,6 @@ i32 free_arc_entity_component_id;
 ItemComponent item_components[MAX_ENTITIES];
 i32 item_component_count;
 i32 free_item_component_id;
-TriggerComponent trigger_components[MAX_ENTITIES];
-i32 trigger_component_count;
-i32 free_trigger_component_id;
 ParallaxComponent parallax_components[MAX_ENTITIES];
 i32 parallax_component_count;
 i32 free_parallax_component_id;
@@ -670,34 +658,63 @@ i32 free_interactable_component_id;
 StationComponent station_components[MAX_ENTITIES];
 i32 station_component_count;
 i32 free_station_component_id;
+BlueprintComponent blueprint_components[MAX_ENTITIES];
+i32 blueprint_component_count;
+i32 free_blueprint_component_id;
 } ComponentSet;
 
+internal PositionComponent *AddPositionComponent(Entity *entity);
+internal void RemovePositionComponent(Entity *entity);
 // NOTE(randy): Gets a PositionComponent from a specified entity, it must have one.
 internal PositionComponent *GetPositionComponentFromEntityID(i32 id);
+internal SpriteComponent *AddSpriteComponent(Entity *entity);
+internal void RemoveSpriteComponent(Entity *entity);
 // NOTE(randy): Gets a SpriteComponent from a specified entity, it must have one.
 internal SpriteComponent *GetSpriteComponentFromEntityID(i32 id);
+internal AnimationComponent *AddAnimationComponent(Entity *entity);
+internal void RemoveAnimationComponent(Entity *entity);
 // NOTE(randy): Gets a AnimationComponent from a specified entity, it must have one.
 internal AnimationComponent *GetAnimationComponentFromEntityID(i32 id);
+internal PhysicsBodyComponent *AddPhysicsBodyComponent(Entity *entity);
+internal void RemovePhysicsBodyComponent(Entity *entity);
 // NOTE(randy): Gets a PhysicsBodyComponent from a specified entity, it must have one.
 internal PhysicsBodyComponent *GetPhysicsBodyComponentFromEntityID(i32 id);
+internal MovementComponent *AddMovementComponent(Entity *entity);
+internal void RemoveMovementComponent(Entity *entity);
 // NOTE(randy): Gets a MovementComponent from a specified entity, it must have one.
 internal MovementComponent *GetMovementComponentFromEntityID(i32 id);
+internal ArcEntityComponent *AddArcEntityComponent(Entity *entity);
+internal void RemoveArcEntityComponent(Entity *entity);
 // NOTE(randy): Gets a ArcEntityComponent from a specified entity, it must have one.
 internal ArcEntityComponent *GetArcEntityComponentFromEntityID(i32 id);
+internal ItemComponent *AddItemComponent(Entity *entity);
+internal void RemoveItemComponent(Entity *entity);
 // NOTE(randy): Gets a ItemComponent from a specified entity, it must have one.
 internal ItemComponent *GetItemComponentFromEntityID(i32 id);
-// NOTE(randy): Gets a TriggerComponent from a specified entity, it must have one.
-internal TriggerComponent *GetTriggerComponentFromEntityID(i32 id);
+internal ParallaxComponent *AddParallaxComponent(Entity *entity);
+internal void RemoveParallaxComponent(Entity *entity);
 // NOTE(randy): Gets a ParallaxComponent from a specified entity, it must have one.
 internal ParallaxComponent *GetParallaxComponentFromEntityID(i32 id);
+internal ParticleEmitterComponent *AddParticleEmitterComponent(Entity *entity);
+internal void RemoveParticleEmitterComponent(Entity *entity);
 // NOTE(randy): Gets a ParticleEmitterComponent from a specified entity, it must have one.
 internal ParticleEmitterComponent *GetParticleEmitterComponentFromEntityID(i32 id);
+internal PlayerDataComponent *AddPlayerDataComponent(Entity *entity);
+internal void RemovePlayerDataComponent(Entity *entity);
 // NOTE(randy): Gets a PlayerDataComponent from a specified entity, it must have one.
 internal PlayerDataComponent *GetPlayerDataComponentFromEntityID(i32 id);
+internal InteractableComponent *AddInteractableComponent(Entity *entity);
+internal void RemoveInteractableComponent(Entity *entity);
 // NOTE(randy): Gets a InteractableComponent from a specified entity, it must have one.
 internal InteractableComponent *GetInteractableComponentFromEntityID(i32 id);
+internal StationComponent *AddStationComponent(Entity *entity);
+internal void RemoveStationComponent(Entity *entity);
 // NOTE(randy): Gets a StationComponent from a specified entity, it must have one.
 internal StationComponent *GetStationComponentFromEntityID(i32 id);
+internal BlueprintComponent *AddBlueprintComponent(Entity *entity);
+internal void RemoveBlueprintComponent(Entity *entity);
+// NOTE(randy): Gets a BlueprintComponent from a specified entity, it must have one.
+internal BlueprintComponent *GetBlueprintComponentFromEntityID(i32 id);
 internal void RemoveComponent(Entity *entity, ComponentType type);
 #define MINIMUM_AIR_PRESSURE (1.0f)
 #define LIQUID_RESOLUTION (0.2f)
@@ -978,10 +995,6 @@ static void WriteItemComponentToFile(FILE *file, ItemComponent *data);
 
 static void ReadItemComponentFromFile(FILE *file, ItemComponent *data);
 
-static void WriteTriggerComponentToFile(FILE *file, TriggerComponent *data);
-
-static void ReadTriggerComponentFromFile(FILE *file, TriggerComponent *data);
-
 static void WriteParallaxComponentToFile(FILE *file, ParallaxComponent *data);
 
 static void ReadParallaxComponentFromFile(FILE *file, ParallaxComponent *data);
@@ -1001,6 +1014,10 @@ static void ReadInteractableComponentFromFile(FILE *file, InteractableComponent 
 static void WriteStationComponentToFile(FILE *file, StationComponent *data);
 
 static void ReadStationComponentFromFile(FILE *file, StationComponent *data);
+
+static void WriteBlueprintComponentToFile(FILE *file, BlueprintComponent *data);
+
+static void ReadBlueprintComponentFromFile(FILE *file, BlueprintComponent *data);
 
 static void WriteComponentSetToFile(FILE *file, ComponentSet *data);
 
