@@ -1,7 +1,7 @@
 internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mouse, void *user_data)
 {
 	InventoryIconCanvasData *icon_data = user_data;
-	PlayerDataComponent *player_data = GetPlayerDataComponentFromEntityID(core->run_data->character_entity->entity_id);
+	Entity *character = GetCharacterEntity();
 	
 	if (mouse.x >= 0.0f && mouse.x < rect.z && mouse.y >= 0.0f && mouse.y < rect.w)
 		icon_data->is_hovered = 1;
@@ -22,28 +22,28 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 		{
 			platform->left_mouse_pressed = 0;
 			
-			if (player_data->grabbed_item.type)
+			if (character->grabbed_item.type)
 			{
 				if (icon_data->item->type)
 				{
-					if (player_data->grabbed_item.type == icon_data->item->type)
+					if (character->grabbed_item.type == icon_data->item->type)
 					{
 						// NOTE(randy): Try combine the stacks
-						if (player_data->grabbed_item.stack_size + icon_data->item->stack_size <=
+						if (character->grabbed_item.stack_size + icon_data->item->stack_size <=
 							global_item_type_data[icon_data->item->type].max_stack_size)
 						{
 							// NOTE(randy): Combine stack
-							icon_data->item->stack_size += player_data->grabbed_item.stack_size;
+							icon_data->item->stack_size += character->grabbed_item.stack_size;
 							
 							// NOTE(randy): Delete held item
-							MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
-							player_data->grabbed_item_origin_slot = 0;
+							MemorySet(&character->grabbed_item, 0, sizeof(Item));
+							character->grabbed_item_origin_slot = 0;
 						}
 						else
 						{
 							// NOTE(randy): Combine stack to max, but leave remainder.
-							player_data->grabbed_item.stack_size =
-								player_data->grabbed_item.stack_size +
+							character->grabbed_item.stack_size =
+								character->grabbed_item.stack_size +
 								icon_data->item->stack_size -
 								global_item_type_data[icon_data->item->type].max_stack_size;
 							icon_data->item->stack_size = global_item_type_data[icon_data->item->type].max_stack_size;
@@ -53,15 +53,15 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 					{
 						// NOTE(randy): Swap items
 						Item temp = *icon_data->item;
-						*icon_data->item = player_data->grabbed_item;
-						player_data->grabbed_item = temp;
+						*icon_data->item = character->grabbed_item;
+						character->grabbed_item = temp;
 					}
 				}
 				else
 				{
 					// NOTE(randy): Put grabbed item in slot
-					*icon_data->item = player_data->grabbed_item;
-					MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
+					*icon_data->item = character->grabbed_item;
+					MemorySet(&character->grabbed_item, 0, sizeof(Item));
 				}
 			}
 			else
@@ -69,8 +69,8 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 				if (icon_data->item->type)
 				{
 					// NOTE(randy): Pick up item.
-					player_data->grabbed_item = *icon_data->item;
-					player_data->grabbed_item_offset = mouse;
+					character->grabbed_item = *icon_data->item;
+					character->grabbed_item_offset = mouse;
 					MemorySet(icon_data->item, 0, sizeof(Item));
 				}
 			}
@@ -79,11 +79,11 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 		{
 			platform->right_mouse_pressed = 0;
 			
-			if (icon_data->item->type && !player_data->grabbed_item.type)
+			if (icon_data->item->type && !character->grabbed_item.type)
 			{
-				player_data->grabbed_item = *icon_data->item;
-				player_data->grabbed_item.stack_size /= 2;
-				player_data->grabbed_item_offset = mouse;
+				character->grabbed_item = *icon_data->item;
+				character->grabbed_item.stack_size /= 2;
+				character->grabbed_item_offset = mouse;
 				
 				if (IsOdd(icon_data->item->stack_size))
 				{
@@ -100,50 +100,50 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 		/*
 				else if (!core->is_mid_right_click && platform->left_mouse_pressed)
 				{
-					Assert(player_data->grabbed_item.type == ITEM_TYPE_none); // NOTE(randy): Shouldn't be an existing grabbed item if it's a new press.
+					Assert(character->grabbed_item.type == ITEM_TYPE_none); // NOTE(randy): Shouldn't be an existing grabbed item if it's a new press.
 					
 					platform->left_mouse_pressed = 0;
 					
 					if (icon_data->item->type)
 					{
-						player_data->grabbed_item = *(icon_data->item);
-						player_data->grabbed_item_origin_slot = icon_data->item;
+						character->grabbed_item = *(icon_data->item);
+						character->grabbed_item_origin_slot = icon_data->item;
 						MemorySet(icon_data->item, 0, sizeof(Item));
 						
-						player_data->grabbed_item_offset = mouse;
+						character->grabbed_item_offset = mouse;
 					}
 				}
 				else if (!core->is_mid_right_click && core->left_mouse_released)
 				{
 					core->left_mouse_released = 0;
 					
-					if (player_data->grabbed_item.type)
+					if (character->grabbed_item.type)
 					{
 						if (icon_data->item->type)
 						{
-							if (player_data->grabbed_item.type == icon_data->item->type)
+							if (character->grabbed_item.type == icon_data->item->type)
 							{
-								if (player_data->grabbed_item.stack_size + icon_data->item->stack_size <=
+								if (character->grabbed_item.stack_size + icon_data->item->stack_size <=
 									item_type_data[icon_data->item->type].max_stack_size)
 								{
 									// NOTE(randy): Combine stack
-									icon_data->item->stack_size += player_data->grabbed_item.stack_size;
+									icon_data->item->stack_size += character->grabbed_item.stack_size;
 									
 									// NOTE(randy): Delete held item
-									MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
-									player_data->grabbed_item_origin_slot = 0;
+									MemorySet(&character->grabbed_item, 0, sizeof(Item));
+									character->grabbed_item_origin_slot = 0;
 								}
 								else
 								{
 									// NOTE(randy): Combine stack to max, but leave remainder.
-									player_data->grabbed_item.stack_size =
-										player_data->grabbed_item.stack_size +
+									character->grabbed_item.stack_size =
+										character->grabbed_item.stack_size +
 										icon_data->item->stack_size -
 										item_type_data[icon_data->item->type].max_stack_size;
 									
-									*player_data->grabbed_item_origin_slot = player_data->grabbed_item;
-									MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
-									player_data->grabbed_item_origin_slot = 0;
+									*character->grabbed_item_origin_slot = character->grabbed_item;
+									MemorySet(&character->grabbed_item, 0, sizeof(Item));
+									character->grabbed_item_origin_slot = 0;
 									
 									// NOTE(randy): Max the stack size of the released item.
 									icon_data->item->stack_size = item_type_data[icon_data->item->type].max_stack_size;
@@ -152,34 +152,34 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 							else
 							{
 								// NOTE(randy): Swap the two items.
-								*player_data->grabbed_item_origin_slot = *icon_data->item;
-								*icon_data->item = player_data->grabbed_item;
+								*character->grabbed_item_origin_slot = *icon_data->item;
+								*icon_data->item = character->grabbed_item;
 								
-								MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
-								player_data->grabbed_item_origin_slot = 0;
+								MemorySet(&character->grabbed_item, 0, sizeof(Item));
+								character->grabbed_item_origin_slot = 0;
 							}
 						}
 						else
 						{
 							// NOTE(randy): Empty slot, just add the item
-							*icon_data->item = player_data->grabbed_item;
-							MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
-							player_data->grabbed_item_origin_slot = 0;
+							*icon_data->item = character->grabbed_item;
+							MemorySet(&character->grabbed_item, 0, sizeof(Item));
+							character->grabbed_item_origin_slot = 0;
 						}
 					}
 				}
 				else if (!core->is_mid_left_click && platform->right_mouse_pressed)
 				{
-					Assert(player_data->grabbed_item.type == ITEM_TYPE_none); // NOTE(randy): Shouldn't be an existing grabbed item if it's a new press.
+					Assert(character->grabbed_item.type == ITEM_TYPE_none); // NOTE(randy): Shouldn't be an existing grabbed item if it's a new press.
 					
 					platform->right_mouse_pressed = 0;
 					
 					if (icon_data->item->type && icon_data->item->stack_size > 1)
 					{
-						player_data->grabbed_item = *icon_data->item;
-						player_data->grabbed_item->stack_size /= 2;
-						player_data->grabbed_item_offset = mouse;
-						player_data->grabbed_item_origin_slot = icon_data->item;
+						character->grabbed_item = *icon_data->item;
+						character->grabbed_item->stack_size /= 2;
+						character->grabbed_item_offset = mouse;
+						character->grabbed_item_origin_slot = icon_data->item;
 						
 						if (IsOdd(icon_data->item->stack_size))
 						{
@@ -249,7 +249,7 @@ internal void inventory_icon_canvas_render_callback(char *name, v4 rect, v2 mous
 internal void hotbar_icon_canvas_update_callback(char *name, v4 rect, v2 mouse, void *user_data)
 {
 	InventoryIconCanvasData *icon_data = user_data;
-	PlayerDataComponent *player_data = GetPlayerDataComponentFromEntityID(core->run_data->character_entity->entity_id);
+	Entity *character = GetCharacterEntity();
 	
 	if (mouse.x >= 0.0f && mouse.x < rect.z && mouse.y >= 0.0f && mouse.y < rect.w)
 	{
@@ -274,28 +274,28 @@ internal void hotbar_icon_canvas_update_callback(char *name, v4 rect, v2 mouse, 
 		{
 			platform->left_mouse_pressed = 0;
 			
-			if (player_data->grabbed_item.type)
+			if (character->grabbed_item.type)
 			{
 				if (icon_data->item->type)
 				{
-					if (player_data->grabbed_item.type == icon_data->item->type)
+					if (character->grabbed_item.type == icon_data->item->type)
 					{
 						// NOTE(randy): Try combine the stacks
-						if (player_data->grabbed_item.stack_size + icon_data->item->stack_size <=
+						if (character->grabbed_item.stack_size + icon_data->item->stack_size <=
 							global_item_type_data[icon_data->item->type].max_stack_size)
 						{
 							// NOTE(randy): Combine stack
-							icon_data->item->stack_size += player_data->grabbed_item.stack_size;
+							icon_data->item->stack_size += character->grabbed_item.stack_size;
 							
 							// NOTE(randy): Delete held item
-							MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
-							player_data->grabbed_item_origin_slot = 0;
+							MemorySet(&character->grabbed_item, 0, sizeof(Item));
+							character->grabbed_item_origin_slot = 0;
 						}
 						else
 						{
 							// NOTE(randy): Combine stack to max, but leave remainder.
-							player_data->grabbed_item.stack_size =
-								player_data->grabbed_item.stack_size +
+							character->grabbed_item.stack_size =
+								character->grabbed_item.stack_size +
 								icon_data->item->stack_size -
 								global_item_type_data[icon_data->item->type].max_stack_size;
 							icon_data->item->stack_size = global_item_type_data[icon_data->item->type].max_stack_size;
@@ -305,15 +305,15 @@ internal void hotbar_icon_canvas_update_callback(char *name, v4 rect, v2 mouse, 
 					{
 						// NOTE(randy): Swap items
 						Item temp = *icon_data->item;
-						*icon_data->item = player_data->grabbed_item;
-						player_data->grabbed_item = temp;
+						*icon_data->item = character->grabbed_item;
+						character->grabbed_item = temp;
 					}
 				}
 				else
 				{
 					// NOTE(randy): Put grabbed item in slot
-					*icon_data->item = player_data->grabbed_item;
-					MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
+					*icon_data->item = character->grabbed_item;
+					MemorySet(&character->grabbed_item, 0, sizeof(Item));
 				}
 			}
 			else
@@ -321,8 +321,8 @@ internal void hotbar_icon_canvas_update_callback(char *name, v4 rect, v2 mouse, 
 				if (icon_data->item->type)
 				{
 					// NOTE(randy): Pick up item.
-					player_data->grabbed_item = *icon_data->item;
-					player_data->grabbed_item_offset = mouse;
+					character->grabbed_item = *icon_data->item;
+					character->grabbed_item_offset = mouse;
 					MemorySet(icon_data->item, 0, sizeof(Item));
 				}
 			}
@@ -346,7 +346,7 @@ internal void hotbar_icon_canvas_update_callback(char *name, v4 rect, v2 mouse, 
 				}
 				else if (platform->left_mouse_pressed)
 				{
-					Assert(player_data->grabbed_item.type == ITEM_TYPE_none);
+					Assert(character->grabbed_item.type == ITEM_TYPE_none);
 					
 					platform->left_mouse_pressed = 0;
 					
@@ -398,7 +398,7 @@ internal void hotbar_icon_canvas_update_callback(char *name, v4 rect, v2 mouse, 
 internal void hotbar_icon_canvas_render_callback(char *name, v4 rect, v2 mouse, void *user_data)
 {
 	InventoryIconCanvasData *icon_data = user_data;
-	PlayerDataComponent *player_data = GetPlayerDataComponentFromEntityID(core->run_data->character_entity->entity_id);
+	Entity *character = GetCharacterEntity();
 	
 	Ts2dPushRect(v4(1.0f, 1.0f, 1.0f, 0.8f), rect);
 	
@@ -426,7 +426,7 @@ internal void hotbar_icon_canvas_render_callback(char *name, v4 rect, v2 mouse, 
 		Ts2dPushFilledRect(v4(0.0f, 0.0f, 0.0f, 0.2f), rect);
 	}
 	
-	if (player_data->active_hotbar_slot == icon_data->slot)
+	if (character->active_hotbar_slot == icon_data->slot)
 	{
 		f32 padding = 5.0f;
 		Ts2dPushRect(v4(1.0f, 0.0f, 0.0f, 0.8f), v4(rect.x - padding / 2.0f, rect.y - padding / 2.0f, rect.z + padding, rect.w + padding));
@@ -440,14 +440,14 @@ internal void grabbed_icon_canvas_update_callback(char *name, v4 rect, v2 mouse,
 internal void grabbed_icon_canvas_render_callback(char *name, v4 rect, v2 mouse, void *user_data)
 {
 	GrabbedIconCanvasData *texture_data = user_data;
-	PlayerDataComponent *player_data = GetPlayerDataComponentFromEntityID(core->run_data->character_entity->entity_id);
+	Entity *character = GetCharacterEntity();
 	
 	Ts2dPushTexture(texture_data->static_sprite->texture_atlas, texture_data->static_sprite->source, rect);
 	
-	if (player_data->grabbed_item.stack_size > 1)
+	if (character->grabbed_item.stack_size > 1)
 	{
 		char txt[100];
-		sprintf(txt, "%i", player_data->grabbed_item.stack_size);
+		sprintf(txt, "%i", character->grabbed_item.stack_size);
 		Ts2dPushText(Ts2dGetDefaultFont(),
 					 TS2D_TEXT_ALIGN_CENTER_X | TS2D_TEXT_ALIGN_CENTER_Y,
 					 v4(1.0f, 1.0f, 1.0f, 1.0f),
@@ -466,8 +466,7 @@ internal void DrawGameUI()
 		is_backpack_open = !is_backpack_open;
 	}
 	
-	PlayerDataComponent *player_data = GetPlayerDataComponentFromEntityID(core->run_data->character_entity->entity_id);
-	SpriteComponent *player_sprite_comp = GetSpriteComponentFromEntityID(core->run_data->character_entity->entity_id);
+	Entity *character = GetCharacterEntity();
 	
 	// NOTE(randy): Draw backpack UI.
 	if (is_backpack_open)
@@ -480,7 +479,7 @@ internal void DrawGameUI()
 			{
 				i32 column_length = 3;
 				
-				if (player_sprite_comp->is_flipped)
+				if (character->is_flipped)
 				{
 					TsUIPushX(core->render_w / 2 - 50 - column_length * 60.0f);
 				}
@@ -488,15 +487,15 @@ internal void DrawGameUI()
 				{
 					TsUIPushX(core->render_w / 2 + 50);
 				}
-				TsUIPushY(core->render_h / 2 + 110 - (player_data->inventory_size / column_length * 30));
+				TsUIPushY(core->render_h / 2 + 110 - (character->inventory_size / column_length * 30));
 				
-				for (int i = 0; i < player_data->inventory_size; i++)
+				for (int i = 0; i < character->inventory_size; i++)
 				{
 					TsUIPushX((i % column_length) * 60.0f);
 					TsUIPushY((i / column_length) * 60.0f);
 					
 					InventoryIconCanvasData *icon_data = MemoryArenaAllocateAndZero(core->frame_arena, sizeof(InventoryIconCanvasData));
-					icon_data->item = &player_data->inventory[i];
+					icon_data->item = &character->inventory[i];
 					icon_data->slot = i;
 					TsUICanvas("Icon",
 							   &inventory_icon_canvas_update_callback, icon_data,
@@ -518,16 +517,16 @@ internal void DrawGameUI()
 			
 			// NOTE(randy): Render hotbar.
 			{
-				if (player_sprite_comp->is_flipped)
+				if (character->is_flipped)
 					TsUIPushX(core->render_w / 2 + 50.0f);
 				else
-					TsUIPushX(core->render_w / 2 - 50.0f - player_data->hotbar_size * 60);
+					TsUIPushX(core->render_w / 2 - 50.0f - character->hotbar_size * 60);
 				TsUIPushY(core->render_h / 2 + 110.0f - 30.0f);
 				
-				for (int i = 0; i < player_data->hotbar_size; i++)
+				for (int i = 0; i < character->hotbar_size; i++)
 				{
 					InventoryIconCanvasData *icon_data = MemoryArenaAllocateAndZero(core->frame_arena, sizeof(InventoryIconCanvasData));
-					icon_data->item = &player_data->hotbar[i];
+					icon_data->item = &character->hotbar[i];
 					icon_data->slot = i;
 					TsUICanvas("Icon",
 							   &hotbar_icon_canvas_update_callback, icon_data,
@@ -543,29 +542,29 @@ internal void DrawGameUI()
 		TsUIEndInputGroup();
 		
 		// NOTE(randy): If there's a held item but none of the slots have picked up on a press then throw it onto the ground.
-		if (player_data->grabbed_item.type != ITEM_TYPE_none &&
+		if (character->grabbed_item.type != ITEM_TYPE_none &&
 			platform->left_mouse_pressed)
 		{
-			NewGroundItemEntityAtPlayer(player_data->grabbed_item);
-			MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
+			NewGroundItemEntityAtPlayer(character->grabbed_item);
+			MemorySet(&character->grabbed_item, 0, sizeof(Item));
 		}
-		else if (player_data->grabbed_item.type != ITEM_TYPE_none &&
+		else if (character->grabbed_item.type != ITEM_TYPE_none &&
 				 platform->right_mouse_pressed)
 		{
-			NewGroundItemEntityAtPlayer(player_data->grabbed_item);
-			MemorySet(&player_data->grabbed_item, 0, sizeof(Item));
+			NewGroundItemEntityAtPlayer(character->grabbed_item);
+			MemorySet(&character->grabbed_item, 0, sizeof(Item));
 		}
 		
 		// NOTE(randy): Render grabbed item.
-		if (player_data->grabbed_item.type)
+		if (character->grabbed_item.type)
 		{
 			TsUIPushPosition(V2SubtractV2(v2(platform->mouse_x,
 											 platform->mouse_y),
-										  player_data->grabbed_item_offset));
+										  character->grabbed_item_offset));
 			TsUIPushSize(v2(60, 60));
 			
 			GrabbedIconCanvasData *grabbed_icon_data = MemoryArenaAllocateAndZero(core->frame_arena, sizeof(GrabbedIconCanvasData));
-			grabbed_icon_data->static_sprite = &global_static_sprite_data[global_item_type_data[player_data->grabbed_item.type].icon_sprite];
+			grabbed_icon_data->static_sprite = &global_static_sprite_data[global_item_type_data[character->grabbed_item.type].icon_sprite];
 			TsUICanvas("Texture",
 					   &grabbed_icon_canvas_update_callback, 0, &grabbed_icon_canvas_render_callback, grabbed_icon_data);
 			
@@ -579,7 +578,7 @@ internal void DrawGameUI()
 	{
 		case EDITOR_STATE_entity:
 		{
-			if (core->run_data->entity_editor.selected_entity)
+			/*if (core->run_data->entity_editor.selected_entity)
 			{
 				StaticSpriteData *x_arrow = &global_static_sprite_data[STATIC_SPRITE_x_axis_arrow_icon];
 				StaticSpriteData *y_arrow = &global_static_sprite_data[STATIC_SPRITE_y_axis_arrow_icon];
@@ -711,111 +710,116 @@ internal void DrawGameUI()
 								middle->source,
 								v4(middle_pos.x, middle_pos.y, middle_size.x, middle_size.y),
 								v4(1.0f * middle_tint, 1.0f * middle_tint, 1.0f * middle_tint, 1.0f));
-			} */
-			}
+			} --
+		}*/
 			break;
 		}
 		
 		case EDITOR_STATE_collision:
-		{
-			for (int i = 0; i < core->run_data->entity_count; i++)
-			{
-				Entity *seg_entity = &core->run_data->entities[i];
-				if (seg_entity->entity_id && seg_entity->generalised_type == GENERALISED_ENTITY_TYPE_ground)
-				{
-					PhysicsBodyComponent *seg_body = GetPhysicsBodyComponentFromEntityID(seg_entity->entity_id);
-					PositionComponent *seg_pos = GetPositionComponentFromEntityID(seg_entity->entity_id);
-					
-					StaticSpriteData *circle_sprite = &global_static_sprite_data[STATIC_SPRITE_circle_icon];
-					f32 circle_size = 4.0f;
-					
-					v4 p1_tint = {0.9f, 0.9f, 0.9f, 1.0f};
-					v2 p1 = V2AddV2(seg_pos->position, seg_body->shape.line.p1);
-					v2 p2 = V2AddV2(seg_pos->position, seg_body->shape.line.p2);
-					
-					if (core->run_data->collision_editor.is_seg_grabbed)
-					{
-						if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p1, 1.0f))
-						{
-							p1 = GetMousePositionInWorldSpace();
-							seg_body->shape.line.p1 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
-						}
-						else if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p2, 1.0f))
-						{
-							p2 = GetMousePositionInWorldSpace();
-							seg_body->shape.line.p2 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
-						}
-					}
-					
-					c2Shape p1_box;
-					p1_box.aabb.min = c2V(p1.x - circle_size / 2.0f, p1.y - circle_size / 2.0f);
-					p1_box.aabb.max = c2V(p1.x + circle_size / 2.0f, p1.y + circle_size / 2.0f);
-					if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), p1_box, C2_SHAPE_TYPE_aabb))
-					{
-						p1_tint = v4u(1.0f);
-						
-						if (platform->left_mouse_pressed)
-						{
-							if (platform->key_down[KEY_alt])
-							{
-								v2 mid_point = V2DivideF32(V2SubtractV2(p2, p1), 2.0f);
-								seg_body->shape.line.p2 = V2AddV2(mid_point, seg_body->shape.line.p1);
-								
-								Entity *new_segment = NewEntity("Ground Seg", GENERALISED_ENTITY_TYPE_ground);
-								AddPositionComponent(new_segment);
-								AddPhysicsBodyComponent(new_segment);
-								GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape_type = C2_SHAPE_TYPE_line;
-								GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->mass_data = seg_body->mass_data;
-								GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->material = seg_body->material;
-								GetPositionComponentFromEntityID(new_segment->entity_id)->position = V2AddV2(V2AddV2(mid_point, seg_body->shape.line.p1), seg_pos->position);
-								GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape.line.p2 = V2SubtractV2(p2, GetPositionComponentFromEntityID(new_segment->entity_id)->position);
-							}
-							else
-							{
-								core->run_data->collision_editor.grabbed_seg_pos = p1;
-								core->run_data->collision_editor.is_seg_grabbed = 1;
-								TsPlatformCaptureMouseButtons();
-							}
-						}
-						else if (platform->key_pressed[KEY_delete])
-						{
-							DeleteEntity(seg_entity);
-							for (int j = 0; j < core->run_data->entity_count; j++)
-							{
-								Entity *seg_entity_2 = &core->run_data->entities[j];
-								if (seg_entity_2->entity_id && seg_entity_2->generalised_type == GENERALISED_ENTITY_TYPE_ground)
-								{
-									PhysicsBodyComponent *seg_body_2 = GetPhysicsBodyComponentFromEntityID(seg_entity_2->entity_id);
-									PositionComponent *seg_pos_2 = GetPositionComponentFromEntityID(seg_entity_2->entity_id);
-									
-									v2 p2_2 = V2AddV2(seg_body_2->shape.line.p2, seg_pos_2->position);
-									if (EqualV2(p2_2, p1, 1.0f))
+		{ /*
+									for (i32 i = 0; i < core->run_data->entity_count; i++)
 									{
-										seg_body_2->shape.line.p2 = V2SubtractV2(p2, seg_pos_2->position);
-										break;
+										Entity *seg_entity = &core->run_data->entities[i];
+										if ((entity->flags & ENTITY_FLAGS_sprite) == 0)
+										{
+											continue;
+										}
+										
+										if (seg_entity->generalised_type == GENERALISED_ENTITY_TYPE_ground)
+										{
+											PhysicsBodyComponent *seg_body = GetPhysicsBodyComponentFromEntityID(seg_entity->entity_id);
+											PositionComponent *seg_pos = GetPositionComponentFromEntityID(seg_entity->entity_id);
+											
+											StaticSpriteData *circle_sprite = &global_static_sprite_data[STATIC_SPRITE_circle_icon];
+											f32 circle_size = 4.0f;
+											
+											v4 p1_tint = {0.9f, 0.9f, 0.9f, 1.0f};
+											v2 p1 = V2AddV2(seg_pos->position, seg_body->shape.line.p1);
+											v2 p2 = V2AddV2(seg_pos->position, seg_body->shape.line.p2);
+											
+											if (core->run_data->collision_editor.is_seg_grabbed)
+											{
+												if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p1, 1.0f))
+												{
+													p1 = GetMousePositionInWorldSpace();
+													seg_body->shape.line.p1 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
+												}
+												else if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p2, 1.0f))
+												{
+													p2 = GetMousePositionInWorldSpace();
+													seg_body->shape.line.p2 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
+												}
+											}
+											
+											c2Shape p1_box;
+											p1_box.aabb.min = c2V(p1.x - circle_size / 2.0f, p1.y - circle_size / 2.0f);
+											p1_box.aabb.max = c2V(p1.x + circle_size / 2.0f, p1.y + circle_size / 2.0f);
+											if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), p1_box, C2_SHAPE_TYPE_aabb))
+											{
+												p1_tint = v4u(1.0f);
+												
+												if (platform->left_mouse_pressed)
+												{
+													if (platform->key_down[KEY_alt])
+													{
+														v2 mid_point = V2DivideF32(V2SubtractV2(p2, p1), 2.0f);
+														seg_body->shape.line.p2 = V2AddV2(mid_point, seg_body->shape.line.p1);
+														
+														Entity *new_segment = NewEntity("Ground Seg", GENERALISED_ENTITY_TYPE_ground);
+														AddPositionComponent(new_segment);
+														AddPhysicsBodyComponent(new_segment);
+														GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape_type = C2_SHAPE_TYPE_line;
+														GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->mass_data = seg_body->mass_data;
+														GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->material = seg_body->material;
+														GetPositionComponentFromEntityID(new_segment->entity_id)->position = V2AddV2(V2AddV2(mid_point, seg_body->shape.line.p1), seg_pos->position);
+														GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape.line.p2 = V2SubtractV2(p2, GetPositionComponentFromEntityID(new_segment->entity_id)->position);
+													}
+													else
+													{
+														core->run_data->collision_editor.grabbed_seg_pos = p1;
+														core->run_data->collision_editor.is_seg_grabbed = 1;
+														TsPlatformCaptureMouseButtons();
+													}
+												}
+												else if (platform->key_pressed[KEY_delete])
+												{
+													DeleteEntity(seg_entity);
+													for (int j = 0; j < core->run_data->entity_count; j++)
+													{
+														Entity *seg_entity_2 = &core->run_data->entities[j];
+														if (seg_entity_2->entity_id && seg_entity_2->generalised_type == GENERALISED_ENTITY_TYPE_ground)
+														{
+															PhysicsBodyComponent *seg_body_2 = GetPhysicsBodyComponentFromEntityID(seg_entity_2->entity_id);
+															PositionComponent *seg_pos_2 = GetPositionComponentFromEntityID(seg_entity_2->entity_id);
+															
+															v2 p2_2 = V2AddV2(seg_body_2->shape.line.p2, seg_pos_2->position);
+															if (EqualV2(p2_2, p1, 1.0f))
+															{
+																seg_body_2->shape.line.p2 = V2SubtractV2(p2, seg_pos_2->position);
+																break;
+						 }
+														}
+													}
+													
+													if (core->run_data->collision_editor.selected_ground_seg == seg_entity)
+														core->run_data->collision_editor.selected_ground_seg = 0;
+												}
+											}
+											
+											v2 p1_render = v2view(V2SubtractF32(p1, circle_size / 2.0f));
+											Ts2dPushTintedTexture(circle_sprite->texture_atlas, circle_sprite->source, v4(p1_render.x, p1_render.y, circle_size * core->camera_zoom, circle_size * core->camera_zoom), p1_tint);
+										}
 									}
-								}
-							}
-							
-							if (core->run_data->collision_editor.selected_ground_seg == seg_entity)
-								core->run_data->collision_editor.selected_ground_seg = 0;
-						}
-					}
-					
-					v2 p1_render = v2view(V2SubtractF32(p1, circle_size / 2.0f));
-					Ts2dPushTintedTexture(circle_sprite->texture_atlas, circle_sprite->source, v4(p1_render.x, p1_render.y, circle_size * core->camera_zoom, circle_size * core->camera_zoom), p1_tint);
-				}
-			}
-			
-			if (core->left_mouse_released)
-			{
-				core->run_data->collision_editor.grabbed_seg_pos = v2(0.0f, 0.0f);
-				core->run_data->collision_editor.is_seg_grabbed = 0;
-			}
-			else if (platform->left_mouse_down)
-			{
-				core->run_data->collision_editor.grabbed_seg_pos = GetMousePositionInWorldSpace();
-			}
+									
+									if (core->left_mouse_released)
+									{
+										core->run_data->collision_editor.grabbed_seg_pos = v2(0.0f, 0.0f);
+										core->run_data->collision_editor.is_seg_grabbed = 0;
+									}
+									else if (platform->left_mouse_down)
+									{
+										core->run_data->collision_editor.grabbed_seg_pos = GetMousePositionInWorldSpace();
+									}*/
 			
 			break;
 		}
@@ -972,31 +976,33 @@ internal void DrawEditorUI()
 		// NOTE(randy): $Entity Editor
 		case EDITOR_STATE_entity:
 		{
-			{
-				v2 window_size = {300.0f, 400.0f};
-				TsUIWindowBegin("Entities", v4(0.0f, 10.0f, window_size.x, window_size.y), 0, 0);
-				{
-					TsUIPushColumn(v2(10, 10), v2(150, 30));
-					TsUIPushWidth(270.0f);
-					
-					{
-						char label[100];
-						sprintf(label, "Entity Count: %i", core->run_data->entity_count);
-						TsUILabel(label);
-					}
-					
-					for (i32 i = 0; i < core->run_data->entity_count; i++)
-					{
-						char label[100];
-						sprintf(label, "[%i] #%i %s", i, core->run_data->entities[i].entity_id, core->run_data->entities[i].name);
-						TsUILabel(label);
-					}
-					
-					TsUIPopWidth();
-					TsUIPopColumn();
-				}
-				TsUIWindowEnd();
-			}
+			/*
+						{
+							v2 window_size = {300.0f, 400.0f};
+							TsUIWindowBegin("Entities", v4(0.0f, 10.0f, window_size.x, window_size.y), 0, 0);
+							{
+								TsUIPushColumn(v2(10, 10), v2(150, 30));
+								TsUIPushWidth(270.0f);
+								
+								{
+									char label[100];
+									sprintf(label, "Entity Count: %i", core->run_data->entity_count);
+									TsUILabel(label);
+								}
+								
+								for (i32 i = 0; i < core->run_data->entity_count; i++)
+								{
+									char label[100];
+									sprintf(label, "[%i] #%i %s", i, core->run_data->entities[i].entity_id, core->run_data->entities[i].name);
+									TsUILabel(label);
+								}
+								
+								TsUIPopWidth();
+								TsUIPopColumn();
+							}
+							TsUIWindowEnd();
+						}
+			 */
 			
 			break;
 		}
@@ -1096,15 +1102,15 @@ internal void DrawEditorUI()
 				}
 				
 				/*
-							if (TsUIButton("Delete All Dynamic"))
-							{
-								for (i32 i = 0; i < core->run_data->dynamic_cell_count; i++)
-								{
-									if (core->run_data->dynamic_cells[i])
-										DeleteCell(core->run_data->dynamic_cells[i]);
-								}
-							}
-				 */
+				if (TsUIButton("Delete All Dynamic"))
+				{
+					for (i32 i = 0; i < core->run_data->dynamic_cell_count; i++)
+					{
+						if (core->run_data->dynamic_cells[i])
+							DeleteCell(core->run_data->dynamic_cells[i]);
+					}
+				}
+	 */
 				
 				if (core->run_data->terrain_editor.selected_cell)
 				{
@@ -1115,24 +1121,24 @@ internal void DrawEditorUI()
 						TsUILabel(GetCellMaterialTypeName(core->run_data->terrain_editor.selected_cell->material_type));
 						
 						/*
-											{
-												char lbl[20];
-												sprintf(lbl, "Dynamic ID #%i", core->run_data->terrain_editor.selected_cell->dynamic_id);
-												TsUILabel(lbl);
-											}
-						
-											{
-												char lbl[20];
-												sprintf(lbl, "Posx %i", core->run_data->terrain_editor.selected_cell->x_position);
-												TsUILabel(lbl);
-											}
-						
-											{
-												char lbl[20];
-												sprintf(lbl, "Posy %i", core->run_data->terrain_editor.selected_cell->y_position);
-												TsUILabel(lbl);
-											}
-						 */
+						{
+							char lbl[20];
+							sprintf(lbl, "Dynamic ID #%i", core->run_data->terrain_editor.selected_cell->dynamic_id);
+							TsUILabel(lbl);
+						}
+	
+						{
+							char lbl[20];
+							sprintf(lbl, "Posx %i", core->run_data->terrain_editor.selected_cell->x_position);
+							TsUILabel(lbl);
+						}
+	
+						{
+							char lbl[20];
+							sprintf(lbl, "Posy %i", core->run_data->terrain_editor.selected_cell->y_position);
+							TsUILabel(lbl);
+						}
+	 */
 						
 						{
 							char lbl[20];
@@ -1156,12 +1162,12 @@ internal void DrawEditorUI()
 					}
 					
 					/*
-									if (TsUIButton("Clear Selection"))
-									{
-										QueueChunkForTextureUpdate(core->run_data->terrain_editor.selected_cell->parent_chunk);
-										core->run_data->terrain_editor.selected_cell = 0;
-									}
-					 */
+					if (TsUIButton("Clear Selection"))
+					{
+						QueueChunkForTextureUpdate(core->run_data->terrain_editor.selected_cell->parent_chunk);
+						core->run_data->terrain_editor.selected_cell = 0;
+					}
+	 */
 				}
 				else if (core->run_data->terrain_editor.selection_start.x != core->run_data->terrain_editor.selection_end.x && core->run_data->terrain_editor.selection_start.y != core->run_data->terrain_editor.selection_end.y)
 				{
@@ -1186,11 +1192,11 @@ internal void DrawEditorUI()
 							{
 								Cell *cell = GetCellAtPosition((i32)core->run_data->terrain_editor.selection_start.x + x * GetSign(selection_bounds.width), (i32)core->run_data->terrain_editor.selection_start.y + y * GetSign(selection_bounds.height));
 								/*
-															if (cell->dynamic_id)
-															{
-																RemoveCellDynamism(cell);
-															}
-								 */
+if (cell->dynamic_id)
+{
+RemoveCellDynamism(cell);
+}
+*/
 								
 								if (ShouldCellHarden(cell))
 								{
@@ -1284,11 +1290,11 @@ internal void DrawEditorUI()
 						}
 						
 						/*
-											if (!cell->dynamic_id)
-												MakeCellDynamic(cell);
-						
-											QueueChunkForTextureUpdate(cell->parent_chunk);
-						 */
+						if (!cell->dynamic_id)
+							MakeCellDynamic(cell);
+	
+						QueueChunkForTextureUpdate(cell->parent_chunk);
+	 */
 					}
 				}
 				else
@@ -1341,11 +1347,11 @@ internal void DrawEditorUI()
 								}
 								
 								/*
-															if (!cell->dynamic_id)
-																MakeCellDynamic(cell);
-								
-															QueueChunkForTextureUpdate(cell->parent_chunk);
-								 */
+								if (!cell->dynamic_id)
+									MakeCellDynamic(cell);
+	
+								QueueChunkForTextureUpdate(cell->parent_chunk);
+	 */
 							}
 						}
 						else
@@ -1369,55 +1375,57 @@ internal void DrawEditorUI()
 		// NOTE(randy): $Collision Editor
 		case EDITOR_STATE_collision:
 		{
-			v2 window_size = {300.0f, 400.0f};
-			TsUIWindowBegin("Ground Segments", v4(core->render_w - window_size.x - 10.0f, 10.0f, window_size.x, window_size.y), 0, 0);
-			{
-				TsUIPushColumn(v2(10, 10), v2(150, 30));
-				TsUIPushWidth(270.0f);
-				
-				// List segments
-				for (int i = 0; i < core->run_data->entity_count; i++)
-				{
-					Entity *ground_seg = &core->run_data->entities[i];
-					if (ground_seg->entity_id && ground_seg->generalised_type == GENERALISED_ENTITY_TYPE_ground)
-					{
-						char label[50];
-						sprintf(label, "Segment #%i", ground_seg->entity_id);
-						if (core->run_data->collision_editor.selected_ground_seg)
-						{
-							if (TsUIToggler(label, ground_seg->entity_id == core->run_data->collision_editor.selected_ground_seg->entity_id))
-								core->run_data->collision_editor.selected_ground_seg = ground_seg;
-							else if (core->run_data->collision_editor.selected_ground_seg->entity_id == ground_seg->entity_id)
-								core->run_data->collision_editor.selected_ground_seg = 0;
-						}
-						else
-						{
-							if (TsUIToggler(label, 0))
-								core->run_data->collision_editor.selected_ground_seg = ground_seg;
-						}
-						
-						if (core->run_data->collision_editor.selected_ground_seg && core->run_data->collision_editor.selected_ground_seg->entity_id == ground_seg->entity_id)
-						{
-							{
+			/*
+					v2 window_size = {300.0f, 400.0f};
+							TsUIWindowBegin("Ground Segments", v4(core->render_w - window_size.x - 10.0f, 10.0f, window_size.x, window_size.y), 0, 0);
+												{
+						TsUIPushColumn(v2(10, 10), v2(150, 30));
+														  TsUIPushWidth(270.0f);
+																			
+							// List segments
+							for (int i = 0; i < core->run_data->entity_count; i++)
+									 {
+							Entity *ground_seg = &core->run_data->entities[i];
+																			   if (ground_seg->entity_id && ground_seg->generalised_type == GENERALISED_ENTITY_TYPE_ground)
+																					   {
 								char label[50];
-								sprintf(label, "Point 1: %f, %f", GetPhysicsBodyComponentFromEntityID(ground_seg->entity_id)->shape.line.p1.x, GetPhysicsBodyComponentFromEntityID(ground_seg->entity_id)->shape.line.p1.y);
-								TsUILabel(label);
-							}
-							{
-								char label[50];
-								sprintf(label, "Point 2: %f, %f", GetPhysicsBodyComponentFromEntityID(ground_seg->entity_id)->shape.line.p2.x, GetPhysicsBodyComponentFromEntityID(ground_seg->entity_id)->shape.line.p2.y);
-								TsUILabel(label);
-							}
+											   sprintf(label, "Segment #%i", ground_seg->entity_id);
+														   if (core->run_data->collision_editor.selected_ground_seg)
+																   {
+									if (TsUIToggler(label, ground_seg->entity_id == core->run_data->collision_editor.selected_ground_seg->entity_id))
+															core->run_data->collision_editor.selected_ground_seg = ground_seg;
+										else if (core->run_data->collision_editor.selected_ground_seg->entity_id == ground_seg->entity_id)
+														 core->run_data->collision_editor.selected_ground_seg = 0;
+											}
+									else
+									{
+									if (TsUIToggler(label, 0))
+															core->run_data->collision_editor.selected_ground_seg = ground_seg;
+									}
+									
+									if (core->run_data->collision_editor.selected_ground_seg && core->run_data->collision_editor.selected_ground_seg->entity_id == ground_seg->entity_id)
+											{
+									{
+										char label[50];
+													   sprintf(label, "Point 1: %f, %f", GetPhysicsBodyComponentFromEntityID(ground_seg->entity_id)->shape.line.p1.x, GetPhysicsBodyComponentFromEntityID(ground_seg->entity_id)->shape.line.p1.y);
+																   TsUILabel(label);
+																			 }
+										{
+										char label[50];
+													   sprintf(label, "Point 2: %f, %f", GetPhysicsBodyComponentFromEntityID(ground_seg->entity_id)->shape.line.p2.x, GetPhysicsBodyComponentFromEntityID(ground_seg->entity_id)->shape.line.p2.y);
+																   TsUILabel(label);
+																			 }
+										
+										// PrintEntityDataUI(core->run_data->collision_editor.selected_ground_seg->parent_generic_entity);
+									}
+									}
+								}
 							
-							// PrintEntityDataUI(core->run_data->collision_editor.selected_ground_seg->parent_generic_entity);
-						}
-					}
-				}
-				
-				TsUIPopColumn();
-				TsUIPopWidth();
-			}
-			TsUIWindowEnd();
+							TsUIPopColumn();
+								TsUIPopWidth();
+							}
+						TsUIWindowEnd();
+			 */
 		} break;
 		
 		// NOTE(randy): $Chunk editor
@@ -1516,213 +1524,215 @@ internal void DrawEditorUI()
 	}
 	
 	// NOTE(randy): Draw windows.
-	if (pin_windows || core->run_data->editor_state)
-	{
-		if (is_entity_window_open)
+	/*
+		if (pin_windows || core->run_data->editor_state)
 		{
-			// NOTE(randy): Entity info window.
-			v4 entity_info_window_rect = {core->render_w - 360, 10, 350, 300};
-			TsUIWindowBegin("Entity Info", entity_info_window_rect, 0, 0);
+			if (is_entity_window_open)
 			{
-				TsUIPushColumn(v2(10, 10), v2(100, 30));
-				
-				if (!core->run_data->entity_editor.selected_entity)
+				// NOTE(randy): Entity info window.
+				v4 entity_info_window_rect = {core->render_w - 360, 10, 350, 300};
+				TsUIWindowBegin("Entity Info", entity_info_window_rect, 0, 0);
 				{
-					TsUIPushAutoWidth();
-					TsUILabel("No Entity selected.");
-					TsUIPopWidth();
-				}
-				else
-				{
-					TsUIPushWidth(entity_info_window_rect.width - 50);
-					{
-						char *label = MakeCStringOnMemoryArena(core->frame_arena, "%s #%i",
-															   core->run_data->entity_editor.selected_entity->name, core->run_data->entity_editor.selected_entity->entity_id);
-						TsUITitle(label);
-						
-						//PrintEntityDataUI(core->run_data->entity_editor.selected_entity);
-					}
-					TsUIPopWidth();
+					TsUIPushColumn(v2(10, 10), v2(100, 30));
 					
-					TsUIDivider();
-					
-					TsUIPushAutoWidth();
-					if (!(core->run_data->entity_editor.selected_entity->flags & ENTITY_FLAGS_no_delete))
+					if (!core->run_data->entity_editor.selected_entity)
 					{
-						if (TsUIButton("Delete Entity"))
-						{
-							DeleteEntity(core->run_data->entity_editor.selected_entity);
-							core->run_data->entity_editor.selected_entity = 0;
-						}
+						TsUIPushAutoWidth();
+						TsUILabel("No Entity selected.");
+						TsUIPopWidth();
 					}
-					TsUIPopWidth();
-				}
-				
-				TsUIPopColumn();
-			}
-			TsUIWindowEnd();
-			
-			v4 entity_list_window_rect = {core->render_w - 360, 310, 350, 500};
-			TsUIWindowBegin("Entity List", entity_list_window_rect, 0, 0);
-			{
-				TsUIPushColumn(v2(10, 10), v2(150, 30));
-				
-				local_persist b8 is_index_mode = 0;
-				
-				// NOTE(rjf): Sort Controls
-				{
-					TsUIPushWidth(90);
-					TsUILabel("Sort by: ");
-					TsUIPopWidth();
-					
-					TsUIPushAutoWidth();
+					else
 					{
-						TsUISameLine();
-						if (TsUIToggler("Index", is_index_mode))
+						TsUIPushWidth(entity_info_window_rect.width - 50);
 						{
-							is_index_mode = 1;
-						}
-						
-						TsUISameLine();
-						if (TsUIToggler("Category", !is_index_mode))
-						{
-							is_index_mode = 0;
-						}
-					}
-					TsUIPopWidth();
-				}
-				
-				TsUIDivider();
-				
-				if (is_index_mode)
-				{
-					// NOTE(randy): Index view
-					for (int i = 1; i < core->run_data->entity_count; i++)
-					{
-						TsUIPushWidth(30);
-						{
-							char label[100];
-							sprintf(label, "%i", i);
-							TsUILabel(label);
+							char *label = MakeCStringOnMemoryArena(core->frame_arena, "%s #%i",
+																   core->run_data->entity_editor.selected_entity->name, core->run_data->entity_editor.selected_entity->entity_id);
+							TsUITitle(label);
+							
+							//PrintEntityDataUI(core->run_data->entity_editor.selected_entity);
 						}
 						TsUIPopWidth();
 						
-						Entity *entity = &core->run_data->entities[i];
-						if (entity->entity_id > 0)
+						TsUIDivider();
+						
+						TsUIPushAutoWidth();
+						if (!(core->run_data->entity_editor.selected_entity->flags & ENTITY_FLAGS_no_delete))
+						{
+							if (TsUIButton("Delete Entity"))
+							{
+								DeleteEntity(core->run_data->entity_editor.selected_entity);
+								core->run_data->entity_editor.selected_entity = 0;
+							}
+						}
+						TsUIPopWidth();
+					}
+					
+					TsUIPopColumn();
+				}
+				TsUIWindowEnd();
+				
+				v4 entity_list_window_rect = {core->render_w - 360, 310, 350, 500};
+				TsUIWindowBegin("Entity List", entity_list_window_rect, 0, 0);
+				{
+					TsUIPushColumn(v2(10, 10), v2(150, 30));
+					
+					local_persist b8 is_index_mode = 0;
+					
+					// NOTE(rjf): Sort Controls
+					{
+						TsUIPushWidth(90);
+						TsUILabel("Sort by: ");
+						TsUIPopWidth();
+						
+						TsUIPushAutoWidth();
 						{
 							TsUISameLine();
-							TsUIPushWidth(entity_list_window_rect.width - 80);
-							if (TsUIToggler(entity->name, (core->run_data->entity_editor.selected_entity ? core->run_data->entity_editor.selected_entity->entity_id == i : 0)))
+							if (TsUIToggler("Index", is_index_mode))
 							{
-								core->run_data->entity_editor.selected_entity = entity;
+								is_index_mode = 1;
+							}
+							
+							TsUISameLine();
+							if (TsUIToggler("Category", !is_index_mode))
+							{
+								is_index_mode = 0;
+							}
+						}
+						TsUIPopWidth();
+					}
+					
+					TsUIDivider();
+					
+					if (is_index_mode)
+					{
+						// NOTE(randy): Index view
+						for (int i = 1; i < core->run_data->entity_count; i++)
+						{
+							TsUIPushWidth(30);
+							{
+								char label[100];
+								sprintf(label, "%i", i);
+								TsUILabel(label);
+							}
+							TsUIPopWidth();
+							
+							Entity *entity = &core->run_data->entities[i];
+							if (entity->entity_id > 0)
+							{
+								TsUISameLine();
+								TsUIPushWidth(entity_list_window_rect.width - 80);
+								if (TsUIToggler(entity->name, (core->run_data->entity_editor.selected_entity ? core->run_data->entity_editor.selected_entity->entity_id == i : 0)))
+								{
+									core->run_data->entity_editor.selected_entity = entity;
+								}
+								else
+								{
+									if (core->run_data->entity_editor.selected_entity && core->run_data->entity_editor.selected_entity->entity_id == i)
+									{
+										core->run_data->entity_editor.selected_entity = 0;
+									}
+								}
+								TsUIPopWidth();
 							}
 							else
 							{
-								if (core->run_data->entity_editor.selected_entity && core->run_data->entity_editor.selected_entity->entity_id == i)
-								{
-									core->run_data->entity_editor.selected_entity = 0;
-								}
+								TsUISameLine();
+								TsUIPushSize(v2(100, 30));
+								TsUILabel("- - - - -");
+								TsUIPopSize();
 							}
-							TsUIPopWidth();
-						}
-						else
-						{
-							TsUISameLine();
-							TsUIPushSize(v2(100, 30));
-							TsUILabel("- - - - -");
-							TsUIPopSize();
 						}
 					}
-				}
-				else
-				{
-					TsUIPushWidth(entity_list_window_rect.width - 50);
-					
-					// NOTE(randy): Entity category (type) view
-					for (int i = 0; i < GENERALISED_ENTITY_TYPE_MAX; i++)
+					else
 					{
-						if (TsUICollapsable(GetGeneralisedEntityTypeName(i)))
+						TsUIPushWidth(entity_list_window_rect.width - 50);
+						
+						// NOTE(randy): Entity category (type) view
+						for (int i = 0; i < GENERALISED_ENTITY_TYPE_MAX; i++)
 						{
-							for (int j = 1; j < core->run_data->entity_count; j++) // TEMP: Need to sort these before-hand. Will eventually get too inefficient.
+							if (TsUICollapsable(GetGeneralisedEntityTypeName(i)))
 							{
-								Entity *entity = &core->run_data->entities[j];
-								if (entity->entity_id > 0 && entity->generalised_type == i)
+								for (int j = 1; j < core->run_data->entity_count; j++) // TEMP: Need to sort these before-hand. Will eventually get too inefficient.
 								{
-									if (TsUIToggler(entity->name, (core->run_data->entity_editor.selected_entity ? core->run_data->entity_editor.selected_entity->entity_id == j : 0)))
+									Entity *entity = &core->run_data->entities[j];
+									if (entity->entity_id > 0 && entity->generalised_type == i)
 									{
-										core->run_data->entity_editor.selected_entity = entity;
-									}
-									else
-									{
-										if (core->run_data->entity_editor.selected_entity &&
-											core->run_data->entity_editor.selected_entity->entity_id == j)
+										if (TsUIToggler(entity->name, (core->run_data->entity_editor.selected_entity ? core->run_data->entity_editor.selected_entity->entity_id == j : 0)))
 										{
-											core->run_data->entity_editor.selected_entity = 0;
+											core->run_data->entity_editor.selected_entity = entity;
+										}
+										else
+										{
+											if (core->run_data->entity_editor.selected_entity &&
+												core->run_data->entity_editor.selected_entity->entity_id == j)
+											{
+												core->run_data->entity_editor.selected_entity = 0;
+											}
 										}
 									}
 								}
+								
+								TsUICollapsableEnd();
 							}
-							
-							TsUICollapsableEnd();
 						}
+						
+						TsUIPopWidth();
 					}
 					
-					TsUIPopWidth();
+					TsUIPopColumn();
 				}
-				
-				TsUIPopColumn();
+				TsUIWindowEnd();
 			}
-			TsUIWindowEnd();
-		}
-		
-		if (is_performance_window_open)
-		{
-			// NOTE(randy): Display performance data.
-			TsUIWindowBegin("Performance", v4(10, 500, 300, 280), 0, 0);
+			
+			if (is_performance_window_open)
 			{
-				TsUIPushColumn(v2(10, 0), v2(100, 50));
-				
-				f32 budget_total = 0.0f; // NOTE(randy): Not actual amount, need to calculate this more accurately. Need to create some sort of "Unnaccounted" measurement
-				for (int i = 0; i < core->performance_timer_count; i++)
+				// NOTE(randy): Display performance data.
+				TsUIWindowBegin("Performance", v4(10, 500, 300, 280), 0, 0);
 				{
+					TsUIPushColumn(v2(10, 0), v2(100, 50));
+					
+					f32 budget_total = 0.0f; // NOTE(randy): Not actual amount, need to calculate this more accurately. Need to create some sort of "Unnaccounted" measurement
+					for (int i = 0; i < core->performance_timer_count; i++)
+					{
+						char label[100];
+						
+						f32 timer_budget_amount = (core->performance_timers[i].finish_time - core->performance_timers[i].start_time) / core->raw_delta_t * 100.0f;
+						sprintf(label,
+								"%s: %f",
+								core->performance_timers[i].name,
+								timer_budget_amount);
+						
+						budget_total += timer_budget_amount;
+						
+						TsUILabel(label);
+					}
+					
 					char label[100];
-					
-					f32 timer_budget_amount = (core->performance_timers[i].finish_time - core->performance_timers[i].start_time) / core->raw_delta_t * 100.0f;
-					sprintf(label,
-							"%s: %f",
-							core->performance_timers[i].name,
-							timer_budget_amount);
-					
-					budget_total += timer_budget_amount;
-					
+					sprintf(label, "Frame Budget Usage: %f", budget_total);
 					TsUILabel(label);
+					
+					TsUIPopColumn();
 				}
-				
-				char label[100];
-				sprintf(label, "Frame Budget Usage: %f", budget_total);
-				TsUILabel(label);
-				
-				TsUIPopColumn();
+				TsUIWindowEnd();
 			}
-			TsUIWindowEnd();
-		}
-		
-		if (is_debug_window_open)
-		{
-			// NOTE(randy): Debug random stuff
-			TsUIWindowBegin("Debug", v4(310, 500, 300, 200), 0, 0);
+			
+			if (is_debug_window_open)
 			{
-				TsUIPushColumn(v2(10, 0), v2(200, 30));
-				
-				char label[100];
-				sprintf(label, "Camera Pos: %f, %f", core->camera_position.x, core->camera_position.y);
-				TsUILabel(label);
-				
-				TsUIPopColumn();
+				// NOTE(randy): Debug random stuff
+				TsUIWindowBegin("Debug", v4(310, 500, 300, 200), 0, 0);
+				{
+					TsUIPushColumn(v2(10, 0), v2(200, 30));
+					
+					char label[100];
+					sprintf(label, "Camera Pos: %f, %f", core->camera_position.x, core->camera_position.y);
+					TsUILabel(label);
+					
+					TsUIPopColumn();
+				}
+				TsUIWindowEnd();
 			}
-			TsUIWindowEnd();
 		}
-	}
+	 */
 }
 
 internal void SwitchEditorState(EditorState editor_state)

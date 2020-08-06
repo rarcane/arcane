@@ -43,12 +43,6 @@ EditorState :: enum
 
 /* --- FLAGS --- */
 
-EntityFlags :: flags
-{
-	no_delete,
-	force_floating,
-}
-
 ColliderFlags :: flags
 {
 	ground,
@@ -349,30 +343,6 @@ ItemType :: enum
 @ForwardDeclare(Entity)
 ForwardEntity :: _;
 
-@Component @SerialisableStruct
-PositionComponent :: struct
-{
-	position : v2;
-}
-
-@Component @SerialisableStruct
-SpriteComponent :: struct
-{
-	sprite_data : SpriteData;
-	@Editable
-	is_flipped : b8;
-	is_background_sprite : b8; // Temp solution
-}
-
-@Component @SerialisableStruct
-AnimationComponent :: struct
-{
-	flags : AnimationFlags;
-	current_frame : i32;
-	interval_mult : f32;
-	frame_start_time : f32;
-}
-
 Line :: struct
 {
 	p1 : v2;
@@ -419,104 +389,10 @@ PhysicsBodyTypeFlags :: flags
 	station,
 }
 
-@Component @SerialisableStruct
-PhysicsBodyComponent :: struct
-{
-	shape : c2Shape;
-	shape_type : c2ShapeType;
-	material : PhysicsMaterial;
-	mass_data : MassData;
-	velocity : v2;
-	force : v2;
-	gravity_multiplier : f32;
-	type : PhysicsBodyTypeFlags;
-	collide_against : PhysicsBodyTypeFlags;
-}
-
-@Component @SerialisableStruct
-MovementComponent :: struct
-{
-	axis_x : f32;
-	move_speed : f32;
-	move_speed_mult : f32;
-}
-
-@Component @SerialisableStruct
-ArcEntityComponent :: struct
-{
-	entity_type : ArcEntityType;
-	current_general_state : *char;
-	current_animation_state : ArcEntityAnimationState;
-}
-
 Item :: struct
 {
 	type : ItemType;
 	stack_size : i32;
-}
-@Component @SerialisableStruct
-ItemComponent :: struct
-{
-	item : Item;
-}
-
-/*
-@Component @SerialisableStruct
-TriggerComponent :: struct
-{
-	enter_trigger_callback : TriggerCallback;
-	exit_trigger_callback : TriggerCallback;
-	previous_overlaps : OverlappedColliderInfo[MAX_OVERLAPPING_COLLIDERS];
-	previous_overlaps_count : i32;
-	trigger_against : b8;
-}
- */
-
-@Component @SerialisableStruct
-ParallaxComponent :: struct
-{
-	parallax_amount : v2;
-	desired_position : v2;
-}
-
-@Component @SerialisableStruct
-ParticleEmitterComponent :: struct
-{
-	life_time : f32;
-	start_time : f32;
-	flags : ParticleEmitterFlags;
-	particles : Particle[MAX_PARTICLE_AMOUNT]; // Need to put this somewhere else?
-	particle_count : i32;
-	free_particle_index : i32;
-	begin_callback : EmitterBeginCallback;
-	finish_callback : EmitterFinishCallback;
-}
-
-MAX_HOTBAR_SLOTS :: 9;
-MAX_INVENTORY_SLOTS :: 9;
-@Component @SerialisableStruct
-PlayerDataComponent :: struct
-{
-	inventory : Item[MAX_INVENTORY_SLOTS];
-	inventory_size : i32;
-	hotbar : Item[MAX_HOTBAR_SLOTS];
-	hotbar_size : i32;
-	active_hotbar_slot : i32;
-	grabbed_item : Item;
-	grabbed_item_offset : v2;
-	grabbed_item_origin_slot : *Item;
-}
-
-@Component @SerialisableStruct
-InteractableComponent :: struct
-{
-	bounds : c2Shape;
-	bounds_type : c2ShapeType;
-	priority : f32;
-	interact_callback : InteractCallback;
-	enter_interactable_callback : EnterInteractableCallback;
-	exit_interactable_callback : ExitInteractableCallback;
-	is_overlapping_player : b8;
 }
 
 // NOTE(randy): $Crafting recipes
@@ -559,12 +435,6 @@ StationType :: enum
 	crafting,
 	smelting,
 }
-@Component @SerialisableStruct
-StationComponent :: struct
-{
-	data : StationData;
-	type : StationType;
-}
 
 StructureCategory :: enum
 {
@@ -600,19 +470,117 @@ StructureType :: enum
 		base,
 }
 
-@Component @SerialisableStruct
-BlueprintComponent :: struct
-{
-	type : StructureType;
-	items_contributed : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
-}
-
 @ForwardDeclare(Chunk)
 ForwardChunk :: _;
 
 @GenerateComponentCode
 Dummy2 :: _;
 
+MAX_HOTBAR_SLOTS :: 9;
+MAX_INVENTORY_SLOTS :: 9;
+
+PhysicsBodyData :: struct
+{
+	shape : c2Shape;
+	shape_type : c2ShapeType;
+	material : PhysicsMaterial;
+	mass_data : MassData;
+	velocity : v2;
+	force : v2;
+	gravity_multiplier : f32;
+	type : PhysicsBodyTypeFlags;
+	collide_against : PhysicsBodyTypeFlags;
+}
+
+InteractableData :: struct
+{
+	bounds : c2Shape;
+	bounds_type : c2ShapeType;
+	priority : f32;
+	interact_callback : InteractCallback;
+	enter_interactable_callback : EnterInteractableCallback;
+	exit_interactable_callback : ExitInteractableCallback;
+	is_overlapping_player : b8;
+}
+
+EntityFlags :: flags
+{
+	no_delete,
+	force_floating,
+	interactable,
+	animation,
+	sprite,
+	parallax,
+	physics,
+}
+
+Entity :: struct
+{
+	flags : EntityFlags;
+
+	position : v2;
+
+	sprite_data : SpriteData;
+	is_flipped : b8;
+	is_background_sprite : b8; // Temp solution
+
+	animation_flags : AnimationFlags;
+	current_frame : i32;
+	interval_mult : f32;
+	frame_start_time : f32;
+
+	// NOTE(randy): physics body
+	physics : PhysicsBodyData;
+
+	// NOTE(randy): movement
+	axis_x : f32;
+	move_speed : f32;
+	move_speed_mult : f32;
+
+	// NOTE(randy): arcentity
+	entity_type : ArcEntityType;
+	current_general_state : *char;
+	current_animation_state : ArcEntityAnimationState;
+
+	item : Item;
+
+	// NOTE(randy): Parallax
+	parallax_amount : v2;
+	desired_position : v2;
+
+	// NOTE(randy): Particle emitter
+/*
+	life_time : f32;
+	start_time : f32;
+	particle_flags : ParticleEmitterFlags;
+	particles : Particle[MAX_PARTICLE_AMOUNT]; // Need to put this somewhere else?
+	particle_count : i32;
+	free_particle_index : i32;
+	begin_callback : EmitterBeginCallback;
+	finish_callback : EmitterFinishCallback;
+*/
+
+	// NOTE(randy): Player data
+	inventory : Item[MAX_INVENTORY_SLOTS];
+	inventory_size : i32;
+	hotbar : Item[MAX_HOTBAR_SLOTS];
+	hotbar_size : i32;
+	active_hotbar_slot : i32;
+	grabbed_item : Item;
+	grabbed_item_offset : v2;
+	grabbed_item_origin_slot : *Item;
+
+	// NOTE(randy): interactable
+	interactable : InteractableData;
+
+	// NOTE(randy): blueprint
+	structure_type : StructureType;
+	items_contributed : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
+
+	// NOTE(randy): station comp
+	station_data : StationData;
+	station_type : StationType;
+}
 
 /* ----------------------------------------- */
 /* ----------- CELLULAR AUTOMATA ----------- */
@@ -711,17 +679,6 @@ CellHelper :: struct
 /* ----------- WORLD DATA ----------- */
 /* ---------------------------------- */
 
-@SerialisableStruct
-Entity :: struct
-{
-	entity_id : i32;
-	component_ids : i32[COMPONENT_MAX];
-	name : char[20];
-	
-	flags : EntityFlags;
-	generalised_type : GeneralisedEntityType;
-}
-
 CELL_CHUNKS_IN_CHUNK :: CHUNK_SIZE / CELL_CHUNK_SIZE
 CHUNK_AREA :: CHUNK_SIZE * CHUNK_SIZE
 Chunk :: struct
@@ -789,6 +746,7 @@ RunData :: struct // Game data used for run-time operations
 	active_chunks : Chunk[MAX_WORLD_CHUNKS];
 	active_chunk_count : i32;
 
+/*
 	// TODO(randy): Extract these into their own dynamically allocated buffer
 	save_job_index : i32;
 	entities_snapshot : Entity[MAX_ENTITIES];
@@ -810,9 +768,12 @@ RunData :: struct // Game data used for run-time operations
 	chunk_load_queue_count : i32;
 	chunk_generate_queue : *ChunkSave[MAX_WORLD_CHUNKS];
 	chunk_generate_queue_count : i32;
+*/
 
 	entities : Entity[MAX_ENTITIES];
 	entity_count : i32;
+
+/*
 	free_entity_id : i32;
 	positional_entity_ids : i32[MAX_POSITIONAL_ENTITIES];
 	positional_entity_id_count : i32;
@@ -820,6 +781,7 @@ RunData :: struct // Game data used for run-time operations
 	floating_entity_id_count : i32;
 	
 	entity_components : ComponentSet;
+ */
 	
 	world_name : char[50];
 	world_path : char[300];
@@ -843,10 +805,9 @@ RunData :: struct // Game data used for run-time operations
 	disable_interaction : b8;
 	// interaction_state : InteractionState; ??
 	
-	current_interactable : *InteractableComponent;
+	current_interactable : *InteractableData;
 
-	engaged_station : *StationComponent;
-	engaged_station_type : StationType;
+	engaged_station_entity : *Entity;
 
 	is_blueprinting : b8;
 

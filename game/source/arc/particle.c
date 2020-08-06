@@ -1,3 +1,4 @@
+/*
 internal void UpdateParticleEmitters()
 {
 	for (int i = 0; i < core->run_data->entity_components.particle_emitter_component_count; i++)
@@ -109,7 +110,7 @@ internal void GeneratePineParticles(ParticleEmitterComponent *emitter)
 
 internal void GenerateGroundParticles(ParticleEmitterComponent *emitter)
 {
-	/* for (int i = 0; i < 3; i++)
+	 for (int i = 0; i < 3; i++)
     {
        v4 colour = {155.0f / 255.0f, 117.0f / 255.0f, 82.0f / 255.0f, 1.0f};
        NewParticle(emitter,
@@ -117,5 +118,6 @@ internal void GenerateGroundParticles(ParticleEmitterComponent *emitter)
                 v2(RandomF32(-50.0f, 50.0f), 0.0f),
                 v2(RandomF32(-3.0f, 3.0f), RandomF32(-2.0f, -5.0f)),
                 colour);
-    } */
+    }
 }
+ */

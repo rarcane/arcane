@@ -6,88 +6,89 @@ internal void InteractableUpdate()
 		return;
 	}
 	
-	PositionComponent *player_pos_comp = GetPositionComponentFromEntityID(core->run_data->character_entity->entity_id);
-	PhysicsBodyComponent *player_body_comp = GetPhysicsBodyComponentFromEntityID(core->run_data->character_entity->entity_id);
+	Entity *character = core->run_data->character_entity;
+	PhysicsBodyData *player_physics = &core->run_data->character_entity->physics;
 	
-	InteractableComponent *highest_priority_interactable = 0;
-	for (i32 i = 0; i < core->run_data->entity_components.interactable_component_count; i++)
+	Entity *highest_priority_entity = 0;
+	
+	for (i32 i = 0; i < core->run_data->entity_count; i++)
 	{
-		InteractableComponent *inter_comp = &core->run_data->entity_components.interactable_components[i];
-		if (inter_comp->parent_entity_id)
+		Entity *entity = &core->run_data->entities[i];
+		// TODO(randy): figure out how to do deletion and whatnot for checking
+		if ((entity->flags & ENTITY_FLAGS_interactable) == 0)
 		{
-			PositionComponent *pos_comp = GetPositionComponentFromEntityID(inter_comp->parent_entity_id);
-			Assert(pos_comp);
-			
-			c2Shape inter_shape = inter_comp->bounds;
-			AddPositionOffsetToShape(&inter_shape,
-									 inter_comp->bounds_type,
-									 pos_comp->position);
-			
-			c2Shape player_shape = player_body_comp->shape;
-			AddPositionOffsetToShape(&player_shape,
-									 player_body_comp->shape_type,
-									 player_pos_comp->position);
-			
-			c2Manifold manifold = {0};
-			GenerateCollisionManifold(inter_shape, inter_comp->bounds_type,
-									  player_shape, player_body_comp->shape_type,
-									  &manifold);
-			if (manifold.count > 0 && fabsf(manifold.depths[0]) != 0.0f)
+			continue;
+		}
+		
+		InteractableData *inter = &entity->interactable;
+		
+		c2Shape inter_shape = inter->bounds;
+		AddPositionOffsetToShape(&inter_shape,
+								 inter->bounds_type,
+								 entity->position);
+		
+		c2Shape character_shape = character->interactable.bounds;
+		AddPositionOffsetToShape(&character_shape,
+								 character->interactable.bounds_type,
+								 character->position);
+		
+		c2Manifold manifold = {0};
+		GenerateCollisionManifold(inter_shape, inter->bounds_type,
+								  character_shape, character->interactable.bounds_type,
+								  &manifold);
+		if (manifold.count > 0 && fabsf(manifold.depths[0]) != 0.0f)
+		{
+			// NOTE(randy): Enter testing
+			if (!inter->is_overlapping_player)
 			{
-				// NOTE(randy): Enter testing
-				if (!inter_comp->is_overlapping_player)
+				inter->is_overlapping_player = 1;
+				if (inter->enter_interactable_callback)
 				{
-					inter_comp->is_overlapping_player = 1;
-					if (inter_comp->enter_interactable_callback)
-					{
-						inter_comp->enter_interactable_callback(GetEntityWithID(inter_comp->parent_entity_id));
-					}
-				}
-				
-				// NOTE(randy): Player is within interaction bounds.
-				if (!highest_priority_interactable ||
-					inter_comp->priority > highest_priority_interactable->priority)
-				{
-					highest_priority_interactable = inter_comp;
+					inter->enter_interactable_callback(character);
 				}
 			}
-			else
+			
+			// NOTE(randy): Player is within interaction bounds.
+			if (!highest_priority_entity ||
+				inter->priority > highest_priority_entity->interactable.priority)
 			{
-				// NOTE(randy): Exit testing
-				if (inter_comp->is_overlapping_player)
+				highest_priority_entity = entity;
+			}
+		}
+		else
+		{
+			// NOTE(randy): Exit testing
+			if (inter->is_overlapping_player)
+			{
+				inter->is_overlapping_player = 0;
+				if (inter->exit_interactable_callback)
 				{
-					inter_comp->is_overlapping_player = 0;
-					if (inter_comp->exit_interactable_callback)
-					{
-						inter_comp->exit_interactable_callback(GetEntityWithID(inter_comp->parent_entity_id));
-					}
+					inter->exit_interactable_callback(character);
 				}
 			}
 		}
 	}
 	
 	// NOTE(randy): Interaction dispatch
-	core->run_data->current_interactable = highest_priority_interactable;
-	if (highest_priority_interactable && platform->key_pressed[KEY_e])
+	core->run_data->current_interactable = &highest_priority_entity->interactable;
+	if (highest_priority_entity && platform->key_pressed[KEY_e])
 	{
 		platform->key_pressed[KEY_e] = 0;
 		
-		if (highest_priority_interactable->interact_callback)
+		if (highest_priority_entity->interactable.interact_callback)
 		{
-			highest_priority_interactable->interact_callback(GetEntityWithID(highest_priority_interactable->parent_entity_id));
+			highest_priority_entity->interactable.interact_callback(highest_priority_entity);
 		}
 	}
 }
 
 internal void OnCraftingTableInteract(Entity *entity)
 {
-	Assert(!core->run_data->engaged_station);
+	Assert(!core->run_data->engaged_station_entity);
 	
-	StationComponent *station_comp = GetStationComponentFromEntityID(entity->entity_id);
-	Assert(station_comp && station_comp->type == STATION_TYPE_crafting);
+	Assert(entity->station_type == STATION_TYPE_crafting);
 	
-	core->run_data->engaged_station = station_comp;
-	core->run_data->engaged_station_type = STATION_TYPE_crafting;
+	core->run_data->engaged_station_entity = entity;
 	core->run_data->disable_interaction = 1;
 }
 
@@ -135,18 +136,18 @@ internal b8 IsRecipeCraftable(CraftingRecipeType recipe, Item *item_pool, i32 it
 
 internal void StationUpdate()
 {
-	PlayerDataComponent *player_data = GetPlayerDataComponentFromEntityID(core->run_data->character_entity->entity_id);
+	Entity *character = core->run_data->character_entity;
 	
-	if (core->run_data->engaged_station)
+	if (core->run_data->engaged_station_entity)
 	{
-		PositionComponent *station_pos_comp = GetPositionComponentFromEntityID(core->run_data->engaged_station->parent_entity_id);
+		Entity *engaged_station = core->run_data->engaged_station_entity;
 		core->run_data->disable_player_input = 1;
 		
-		switch (core->run_data->engaged_station_type)
+		switch (core->run_data->engaged_station_entity->station_type)
 		{
 			case STATION_TYPE_crafting :
 			{
-				CraftingStation *crafting_station_data = &core->run_data->engaged_station->data.crafting;
+				CraftingStation *crafting_station_data = &core->run_data->engaged_station_entity->station_data.crafting;
 				
 				CraftingRecipeType craftable_recipes[CRAFTING_RECIPE_TYPE_MAX];
 				i32 craftable_recipe_count = 0;
@@ -156,7 +157,7 @@ internal void StationUpdate()
 					 i < CRAFTING_RECIPE_TYPE_MAX;
 					 i++)
 				{
-					if (IsRecipeCraftable(i, player_data->inventory, player_data->inventory_size))
+					if (IsRecipeCraftable(i, character->inventory, character->inventory_size))
 					{
 						craftable_recipes[craftable_recipe_count] = i;
 						if (crafting_station_data->current_recipe == i)
@@ -199,8 +200,8 @@ internal void StationUpdate()
 					
 					// NOTE(randy): Render left arrow
 					StaticSpriteData *arrow_sprite = &global_static_sprite_data[STATIC_SPRITE_side_arrow];
-					v2 render_pos = v2view(v2(station_pos_comp->position.x - 20.0f,
-											  station_pos_comp->position.y - 40.0f));
+					v2 render_pos = v2view(v2(engaged_station->position.x - 20.0f,
+											  engaged_station->position.y - 40.0f));
 					v2 render_size = v2zoom(v2(arrow_sprite->source.width,
 											   arrow_sprite->source.height));
 					
@@ -229,8 +230,8 @@ internal void StationUpdate()
 					
 					// NOTE(randy): Render left arrow
 					StaticSpriteData *arrow_sprite = &global_static_sprite_data[STATIC_SPRITE_side_arrow];
-					v2 render_pos = v2view(v2(station_pos_comp->position.x + 20.0f,
-											  station_pos_comp->position.y - 40.0f));
+					v2 render_pos = v2view(v2(core->run_data->engaged_station_entity->position.x + 20.0f,
+											  core->run_data->engaged_station_entity->position.y - 40.0f));
 					v2 render_size = v2zoom(v2(arrow_sprite->source.width,
 											   arrow_sprite->source.height));
 					ArcPushTexture(arrow_sprite->texture_atlas,
@@ -250,8 +251,8 @@ internal void StationUpdate()
 				
 				StaticSpriteData *recipe_output_sprite = &global_static_sprite_data[global_item_type_data[recipe->output.type].icon_sprite];
 				
-				v2 render_pos = v2view(v2(station_pos_comp->position.x - 7.0f,
-										  station_pos_comp->position.y - 43.0f));
+				v2 render_pos = v2view(v2(engaged_station->position.x - 7.0f,
+										  engaged_station->position.y - 43.0f));
 				v2 render_size = v2zoom(v2(recipe_output_sprite->source.width,
 										   recipe_output_sprite->source.height));
 				
@@ -275,18 +276,17 @@ internal void StationUpdate()
 							break;
 						
 						RemoveItemFromContianer(*recipe_item,
-												player_data->inventory,
-												player_data->inventory_size);
+												character->inventory,
+												character->inventory_size);
 					}
 					
-					core->run_data->engaged_station = 0;
+					core->run_data->engaged_station_entity = 0;
 					core->run_data->disable_player_input = 0;
 					core->run_data->disable_interaction = 0;
 					
-					Entity *entity = NewGroundItemEntity(v2(station_pos_comp->position.x,
-															station_pos_comp->position.y - 43.0f),
+					Entity *entity = NewGroundItemEntity(v2(engaged_station->position.x,
+															engaged_station->position.y - 43.0f),
 														 recipe->output);
-					InteractableComponent *inter_comp = GetInteractableComponentFromEntityID(entity->entity_id);
 				}
 			} break;
 			
@@ -297,7 +297,7 @@ internal void StationUpdate()
 		
 		if (platform->key_pressed[KEY_esc])
 		{
-			core->run_data->engaged_station = 0;
+			core->run_data->engaged_station_entity = 0;
 			core->run_data->disable_player_input = 0;
 			core->run_data->disable_interaction = 0;
 		}
@@ -323,10 +323,9 @@ internal void OnBlueprintExit(Entity *entity)
 
 internal void BlueprintUpdate()
 {
-	PlayerDataComponent *player_dat = GetPlayerDataComponentFromEntityID(core->run_data->character_entity->entity_id);
-	PositionComponent *pos_comp = GetPositionComponentFromEntityID(core->run_data->character_entity->entity_id);
+	Entity *character = core->run_data->character_entity;
 	
-	if (player_dat->hotbar[player_dat->active_hotbar_slot].type == ITEM_TYPE_crafting_tool &&
+	if (character->hotbar[character->active_hotbar_slot].type == ITEM_TYPE_crafting_tool &&
 		platform->left_mouse_pressed)
 	{
 		core->run_data->disable_player_input = 1;
@@ -380,7 +379,7 @@ internal void BlueprintUpdate()
 			// NOTE(randy): this is a comment.
 			for (i32 i = 1; i < STRUCTURE_CATEGORY_MAX;  i++)
 			{
-				v2 render_pos = v2view(v2(pos_comp->position.x + start_pos + (i - 1) * 20.0f, pos_comp->position.y - 60.0f));
+				v2 render_pos = v2view(v2(character->position.x + start_pos + (i - 1) * 20.0f, character->position.y - 60.0f));
 				v2 render_size = v2zoom(v2(20.0f, 20.0f));
 				
 				StaticSprite texture = STATIC_SPRITE_INVALID;
@@ -469,7 +468,7 @@ internal void BlueprintUpdate()
 			
 			for (i32 i = 0; i < structure_count; i++)
 			{
-				v2 render_pos = v2view(v2(pos_comp->position.x + start_pos + i * 20.0f, pos_comp->position.y - 60.0f));
+				v2 render_pos = v2view(v2(character->position.x + start_pos + i * 20.0f, character->position.y - 60.0f));
 				v2 render_size = v2zoom(v2(20.0f, 20.0f));
 				
 				// NOTE(randy): i have successfully documented this function with adequate comments.
@@ -498,25 +497,21 @@ internal void BlueprintUpdate()
 			
 			if (platform->left_mouse_pressed)
 			{
-				Entity *new_structure = NewEntity("structure", GENERALISED_ENTITY_TYPE_structure);
-				PositionComponent *pos_comp = AddPositionComponent(new_structure);
-				pos_comp->position = GetMousePositionInWorldSpace();
+				Entity *new_structure = NewEntity();
+				new_structure->position = GetMousePositionInWorldSpace();
 				
-				SpriteComponent *sprite_comp = AddSpriteComponent(new_structure);
-				sprite_comp->sprite_data.static_sprite = selected_structure->world_sprite;
-				sprite_comp->sprite_data.tint = v4(0.5f, 0.5f, 1.0f, 0.4f);
+				new_structure->sprite_data.static_sprite = selected_structure->world_sprite;
+				new_structure->sprite_data.tint = v4(0.5f, 0.5f, 1.0f, 0.4f);
 				
-				BlueprintComponent *blueprint_comp = AddBlueprintComponent(new_structure);
-				blueprint_comp->type = structures[selected_structure_index].type;
+				new_structure->structure_type = structures[selected_structure_index].type;
 				
-				InteractableComponent *inter_comp = AddInteractableComponent(new_structure);
-				inter_comp->bounds.aabb.min = c2V(-30.0f, -30.0f);
-				inter_comp->bounds.aabb.max = c2V(30.0f, 30.0f);
-				inter_comp->bounds_type = C2_SHAPE_TYPE_aabb;
-				inter_comp->priority = 5.0f;
-				inter_comp->interact_callback = OnBlueprintInteract;
-				inter_comp->enter_interactable_callback = OnBlueprintEnter;
-				inter_comp->exit_interactable_callback = OnBlueprintExit;
+				new_structure->interactable.bounds.aabb.min = c2V(-30.0f, -30.0f);
+				new_structure->interactable.bounds.aabb.max = c2V(30.0f, 30.0f);
+				new_structure->interactable.bounds_type = C2_SHAPE_TYPE_aabb;
+				new_structure->interactable.priority = 5.0f;
+				new_structure->interactable.interact_callback = OnBlueprintInteract;
+				new_structure->interactable.enter_interactable_callback = OnBlueprintEnter;
+				new_structure->interactable.exit_interactable_callback = OnBlueprintExit;
 			}
 		}
 	}

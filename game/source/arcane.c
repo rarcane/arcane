@@ -18,7 +18,7 @@
 #include "arc/render.h"
 #include "arc/particle.h"
 #include "generated/catchall.h"
-#include "arc/ecs.h"
+#include "arc/entity.h"
 #include "arc/item.h"
 #include "arc/cell.h"
 #include "arc/world.h"
@@ -39,7 +39,7 @@
 #include "arc/arc_entity.c"
 #include "arc/particle.c"
 #include "generated/catchall.c"
-#include "arc/ecs.c"
+#include "arc/entity.c"
 #include "arc/item.c"
 #include "arc/cell.c"
 #include "arc/world.c"
@@ -384,10 +384,12 @@ internal void InitialiseRunData()
 {
 	core->run_data->debug_flags |= DEBUG_FLAGS_draw_world;
 	core->run_data->free_dynamic_cell_id = 1;
-	core->run_data->save_job_index = -1;
-	core->run_data->load_job_index = -1;
-	core->run_data->free_entity_id = 1;
-	InitialiseComponents();
+	/*
+		core->run_data->save_job_index = -1;
+		core->run_data->load_job_index = -1;
+		core->run_data->free_entity_id = 1;
+		InitialiseComponents();
+	 */
 	
 #ifdef DEVELOPER_ENVIRONMENT
 	core->run_data->debug_flags |= DEBUG_FLAGS_draw_collision;

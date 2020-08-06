@@ -4,21 +4,23 @@ internal void RenderColliders()
 	if (!(core->run_data->debug_flags & DEBUG_FLAGS_draw_collision))
 		return;
 	
-	for (int i = 0; i < core->run_data->entity_components.physics_body_component_count; i++)
+	for (i32 i = 0; i < core->run_data->entity_count; i++)
 	{
-		PhysicsBodyComponent *body_comp = &core->run_data->entity_components.physics_body_components[i];
-		if (body_comp->component_id)
+		Entity *entity = &core->run_data->entities[i];
+		if ((entity->flags & ENTITY_FLAGS_physics) == 0)
 		{
-			PositionComponent *pos_comp = GetPositionComponentFromEntityID(body_comp->parent_entity_id);
-			Assert(pos_comp);
-			
-			v3 col = {1.0f, 1.0f, 1.0f};
-			if (core->run_data->collision_editor.selected_ground_seg)
-				if (body_comp->parent_entity_id == core->run_data->collision_editor.selected_ground_seg->entity_id)
-				col = v3(1.0f, 0.0f, 0.0f);
-			
-			PushDebugShape(body_comp->shape, body_comp->shape_type, pos_comp->position, col);
+			continue;
 		}
+		
+		v3 col = {1.0f, 1.0f, 1.0f};
+		if (core->run_data->collision_editor.selected_ground_seg &&
+			entity == core->run_data->collision_editor.selected_ground_seg)
+			col = v3(1.0f, 0.0f, 0.0f);
+		
+		PushDebugShape(entity->physics.shape,
+					   entity->physics.shape_type,
+					   entity->position,
+					   col);
 	}
 	
 	if (core->run_data->debug_flags & DEBUG_FLAGS_draw_chunk_grid)
@@ -50,25 +52,24 @@ internal void RenderColliders()
 
 internal void UpdatePhysics()
 {
-	for (int i = 0; i < core->run_data->entity_components.physics_body_component_count; i++)
+	for (i32 i = 0; i < core->run_data->entity_count; i++)
 	{
-		PhysicsBodyComponent *body_comp = &core->run_data->entity_components.physics_body_components[i];
-		if (body_comp->component_id)
+		Entity *entity = &core->run_data->entities[i];
+		if ((entity->flags & ENTITY_FLAGS_physics) == 0)
 		{
-			PositionComponent *pos_comp = GetPositionComponentFromEntityID(body_comp->parent_entity_id);
-			Assert(pos_comp);
-			
-			// Apply gravity
-			if (body_comp->gravity_multiplier != 0.0f && body_comp->mass_data.mass != 0.0f)
-				body_comp->force.y += (WORLD_GRAVITY * body_comp->gravity_multiplier) / body_comp->mass_data.inv_mass;
-			
-			// Integrate next position
-			v2 acceleration = V2MultiplyF32(body_comp->force, body_comp->mass_data.inv_mass);
-			body_comp->velocity = V2AddV2(body_comp->velocity, V2MultiplyF32(acceleration, core->world_delta_t));
-			pos_comp->position = V2AddV2(pos_comp->position, V2MultiplyF32(body_comp->velocity, core->world_delta_t));
-			
-			body_comp->force = v2(0.0f, 0.0f);
+			continue;
 		}
+		
+		// Apply gravity
+		if (entity->physics.gravity_multiplier != 0.0f && entity->physics.mass_data.mass != 0.0f)
+			entity->physics.force.y += (WORLD_GRAVITY * entity->physics.gravity_multiplier) / entity->physics.mass_data.inv_mass;
+		
+		// Integrate next position
+		v2 acceleration = V2MultiplyF32(entity->physics.force, entity->physics.mass_data.inv_mass);
+		entity->physics.velocity = V2AddV2(entity->physics.velocity, V2MultiplyF32(acceleration, core->world_delta_t));
+		entity->position = V2AddV2(entity->position, V2MultiplyF32(entity->physics.velocity, core->world_delta_t));
+		
+		entity->physics.force = v2(0.0f, 0.0f);
 	}
 	
 	CollisionPair collision_pairs[MAX_COLLISION_PAIRS];
@@ -77,80 +78,78 @@ internal void UpdatePhysics()
 	
 	for (int i = 0; i < pair_count; i++)
 	{
-		PhysicsBodyComponent *a_body_comp = collision_pairs[i].a;
-		PositionComponent *a_pos_comp = GetPositionComponentFromEntityID(a_body_comp->parent_entity_id);
-		PhysicsBodyComponent *b_body_comp = collision_pairs[i].b;
-		PositionComponent *b_pos_comp = GetPositionComponentFromEntityID(b_body_comp->parent_entity_id);
+		Entity *entity_a = collision_pairs[i].a;
+		Entity *entity_b = collision_pairs[i].b;
 		
 		c2Manifold manifold = {0};
 		
-		c2Shape a_shape = a_body_comp->shape;
-		AddPositionOffsetToShape(&a_shape, a_body_comp->shape_type, a_pos_comp->position);
+		c2Shape a_shape = entity_a->physics.shape;
+		AddPositionOffsetToShape(&a_shape, entity_a->physics.shape_type, entity_a->position);
 		
-		c2Shape b_shape = b_body_comp->shape;
-		AddPositionOffsetToShape(&b_shape, b_body_comp->shape_type, b_pos_comp->position);
+		c2Shape b_shape = entity_b->physics.shape;
+		AddPositionOffsetToShape(&b_shape, entity_b->physics.shape_type, entity_b->position);
 		
-		GenerateCollisionManifold(a_shape, a_body_comp->shape_type,
-								  b_shape, b_body_comp->shape_type,
+		GenerateCollisionManifold(a_shape, entity_a->physics.shape_type,
+								  b_shape, entity_b->physics.shape_type,
 								  &manifold);
-		//GenerateCollisionManifold(a_body_comp, a_pos_comp->position, b_body_comp, b_pos_comp->position, &manifold);
+		//GenerateCollisionManifold(a_body_comp, entity_a->position, b_body_comp, entity_b->position, &manifold);
 		
 		if (manifold.count > 0 && fabsf(manifold.depths[0]) != 0.0f)
 		{
-			Assert(!(a_body_comp->mass_data.mass == 0 && b_body_comp->mass_data.mass == 0)); // NOTE(randy): Two static bodies are colliding?
+			Assert(!(entity_a->physics.mass_data.mass == 0 && entity_b->physics.mass_data.mass == 0)); // NOTE(randy): Two static bodies are colliding?
 			
 			v2 normal = v2(manifold.n.x, manifold.n.y);
 			
-			v2 relative_velocity = V2SubtractV2(b_body_comp->velocity, a_body_comp->velocity);
+			v2 relative_velocity = V2SubtractV2(entity_b->physics.velocity, entity_a->physics.velocity);
 			f32 velocity_along_normal = relative_velocity.x * normal.x + relative_velocity.y * normal.y;
 			
 			if (velocity_along_normal <= 0)
 			{
 				// Impulse resolution
-				f32 restitution = MinimumF32(a_body_comp->material.restitution, b_body_comp->material.restitution);
+				f32 restitution = MinimumF32(entity_a->physics.material.restitution, entity_b->physics.material.restitution);
 				
 				f32 j = -(1 + restitution) * velocity_along_normal;
-				j = j / (a_body_comp->mass_data.inv_mass + b_body_comp->mass_data.inv_mass);
+				j = j / (entity_a->physics.mass_data.inv_mass + entity_b->physics.mass_data.inv_mass);
 				
 				v2 impulse = V2MultiplyF32(normal, j);
 				
-				v2 impulse_a = V2MultiplyF32(impulse, a_body_comp->mass_data.inv_mass);
-				a_body_comp->velocity = V2AddV2(a_body_comp->velocity, impulse_a);
+				v2 impulse_a = V2MultiplyF32(impulse, entity_a->physics.mass_data.inv_mass);
+				entity_a->physics.velocity = V2AddV2(entity_a->physics.velocity, impulse_a);
 				
-				v2 impulse_b = V2MultiplyF32(impulse, b_body_comp->mass_data.inv_mass);
-				b_body_comp->velocity = V2AddV2(b_body_comp->velocity, impulse_b);
+				v2 impulse_b = V2MultiplyF32(impulse, entity_b->physics.mass_data.inv_mass);
+				entity_b->physics.velocity = V2AddV2(entity_b->physics.velocity, impulse_b);
 				
 				// Friction
-				v2 new_rv = V2SubtractV2(b_body_comp->velocity, a_body_comp->velocity);
+				v2 new_rv = V2SubtractV2(entity_b->physics.velocity, entity_a->physics.velocity);
 				v2 tangent = V2SubtractV2(new_rv, V2MultiplyF32(normal, new_rv.x * normal.x + new_rv.y * normal.y));
 				v2Normalise(&tangent);
 				
 				f32 jt = -(new_rv.x * tangent.x + new_rv.y * tangent.y);
-				jt = jt / (a_body_comp->mass_data.inv_mass + b_body_comp->mass_data.inv_mass);
+				jt = jt / (entity_a->physics.mass_data.inv_mass + entity_b->physics.mass_data.inv_mass);
 				
-				f32 mu = MinimumF32(a_body_comp->material.static_friction, b_body_comp->material.static_friction); //PythagSolve(a_body_comp->material.static_friction, b_body_comp->material.static_friction);
+				f32 mu = MinimumF32(entity_a->physics.material.static_friction, entity_b->physics.material.static_friction); //PythagSolve(entity_a->physics.material.static_friction, entity_b->physics.material.static_friction);
 				
 				v2 friction_impulse;
 				if (fabsf(jt) < j * mu)
 					friction_impulse = V2MultiplyF32(tangent, jt);
 				else
 				{
-					f32 dynamic_friction = MinimumF32(a_body_comp->material.dynamic_friction, b_body_comp->material.dynamic_friction); //PythagSolve(a_body_comp->material.dynamic_friction, b_body_comp->material.dynamic_friction);
+					f32 dynamic_friction = MinimumF32(entity_a->physics.material.dynamic_friction, entity_b->physics.material.dynamic_friction); //PythagSolve(entity_a->physics.material.dynamic_friction, entity_b->physics.material.dynamic_friction);
 					friction_impulse = V2MultiplyF32(tangent, -j * dynamic_friction);
 				}
 				
-				v2 friction_impulse_a = V2MultiplyF32(friction_impulse, a_body_comp->mass_data.inv_mass);
-				a_body_comp->velocity = V2SubtractV2(a_body_comp->velocity, friction_impulse_a);
+				v2 friction_impulse_a = V2MultiplyF32(friction_impulse, entity_a->physics.mass_data.inv_mass);
+				entity_a->physics.velocity = V2SubtractV2(entity_a->physics.velocity, friction_impulse_a);
 				
-				v2 friction_impulse_b = V2MultiplyF32(friction_impulse, b_body_comp->mass_data.inv_mass);
-				b_body_comp->velocity = V2AddV2(b_body_comp->velocity, friction_impulse_b);
+				v2 friction_impulse_b = V2MultiplyF32(friction_impulse, entity_b->physics.mass_data.inv_mass);
+				entity_b->physics.velocity = V2AddV2(entity_b->physics.velocity, friction_impulse_b);
 				
 				// Positional correction
 				const f32 percent = 0.2f;
 				const f32 slop = 0.01f;
-				v2 correction = V2MultiplyF32(normal, (MaximumF32(manifold.depths[0] - slop, 0.0f) / (a_body_comp->mass_data.inv_mass + b_body_comp->mass_data.inv_mass)) * percent);
-				a_pos_comp->position = V2SubtractV2(a_pos_comp->position, V2MultiplyF32(correction, a_body_comp->mass_data.inv_mass));
-				b_pos_comp->position = V2AddV2(b_pos_comp->position, V2MultiplyF32(correction, b_body_comp->mass_data.inv_mass));
+				v2 correction = V2MultiplyF32(normal, (MaximumF32(manifold.depths[0] - slop, 0.0f) / (entity_a->physics.mass_data.inv_mass + entity_b->physics.mass_data.inv_mass)) * percent);
+				entity_a->position = V2SubtractV2(entity_a->position, V2MultiplyF32(correction, entity_a->physics.mass_data.inv_mass));
+				entity_b->position = V2AddV2(entity_b->position, V2MultiplyF32(correction, entity_b->physics.mass_data.inv_mass));
 			}
 		}
 	}
@@ -158,25 +157,30 @@ internal void UpdatePhysics()
 
 internal void GenerateCollisionPairs(CollisionPair pairs[], i32 *count)
 {
-	for (int i = 0; i < core->run_data->entity_components.physics_body_component_count; i++)
+	for (i32 i = 0; i < core->run_data->entity_count; i++)
 	{
-		PhysicsBodyComponent *body_comp_a = &core->run_data->entity_components.physics_body_components[i];
-		if (body_comp_a->component_id)
+		Entity *entity_a = &core->run_data->entities[i];
+		if ((entity_a->flags & ENTITY_FLAGS_physics) == 0)
 		{
-			for (int j = 0; j < core->run_data->entity_components.physics_body_component_count; j++)
+			continue;
+		}
+		
+		for (i32 i = 0; i < core->run_data->entity_count; i++)
+		{
+			Entity *entity_b = &core->run_data->entities[i];
+			if ((entity_b->flags & ENTITY_FLAGS_physics) == 0)
 			{
-				PhysicsBodyComponent *body_comp_b = &core->run_data->entity_components.physics_body_components[j];
-				
-				if (body_comp_b->component_id &&
-					body_comp_a != body_comp_b &&
-					!(body_comp_a->mass_data.mass == 0.0f &&
-					  body_comp_b->mass_data.mass == 0.0f) &&
-					(body_comp_a->collide_against & body_comp_b->type))
-				{
-					CollisionPair new_pair = {body_comp_a, body_comp_b};
-					Assert(*count + 1 < MAX_COLLISION_PAIRS)
-						pairs[(*count)++] = new_pair;
-				}
+				continue;
+			}
+			
+			if (entity_a != entity_b &&
+				!(entity_a->physics.mass_data.mass == 0.0f &&
+				  entity_b->physics.mass_data.mass == 0.0f) &&
+				(entity_a->physics.collide_against & entity_b->physics.type))
+			{
+				CollisionPair new_pair = {entity_a, entity_b};
+				Assert(*count + 1 < MAX_COLLISION_PAIRS)
+					pairs[(*count)++] = new_pair;
 			}
 		}
 	}
@@ -475,7 +479,7 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 	}
 }
 
-internal i32 GetOverlappingBodiesWithShape(PhysicsBodyComponent **overlapping_bodies,
+internal i32 GetOverlappingBodiesWithShape(Entity **overlapping_entities,
 										   c2Shape shape,
 										   c2ShapeType shape_type)
 {
@@ -483,26 +487,24 @@ internal i32 GetOverlappingBodiesWithShape(PhysicsBodyComponent **overlapping_bo
 	
 	for (i32 i = 0; i < core->run_data->entity_count; i++)
 	{
-		Entity *entity = &core->run_data->entities[i - 1];
-		if (entity->component_ids[COMPONENT_physics_body])
+		Entity *entity = &core->run_data->entities[i];
+		if ((entity->flags & ENTITY_FLAGS_physics) == 0)
 		{
-			PhysicsBodyComponent *phys_body = GetPhysicsBodyComponentFromEntityID(entity->entity_id);
-			PositionComponent *pos_comp = GetPositionComponentFromEntityID(entity->entity_id);
-			Assert(phys_body && pos_comp);
-			
-			c2Shape against_shape = phys_body->shape;
-			AddPositionOffsetToShape(&against_shape, phys_body->shape_type, pos_comp->position);
-			
-			c2Manifold manifold = {0};
-			GenerateCollisionManifold(shape, shape_type,
-									  against_shape, phys_body->shape_type,
-									  &manifold);
-			
-			if (manifold.count > 0 && fabsf(manifold.depths[0]) != 0.0f)
-			{
-				Assert(overlap_count + 1 < MAX_OVERLAPPING_COLLIDERS);
-				overlapping_bodies[overlap_count++] = phys_body;
-			}
+			continue;
+		}
+		
+		c2Shape against_shape = entity->physics.shape;
+		AddPositionOffsetToShape(&against_shape, entity->physics.shape_type, entity->position);
+		
+		c2Manifold manifold = {0};
+		GenerateCollisionManifold(shape, shape_type,
+								  against_shape, entity->physics.shape_type,
+								  &manifold);
+		
+		if (manifold.count > 0 && fabsf(manifold.depths[0]) != 0.0f)
+		{
+			Assert(overlap_count + 1 < MAX_OVERLAPPING_COLLIDERS);
+			overlapping_entities[overlap_count++] = entity;
 		}
 	}
 	

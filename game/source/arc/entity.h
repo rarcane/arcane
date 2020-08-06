@@ -1,0 +1,1 @@
+internal Entity *NewEntity();

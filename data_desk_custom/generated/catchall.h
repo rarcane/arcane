@@ -39,10 +39,6 @@ EDITOR_STATE_MAX,
 };
 static char *GetEditorStateName(EditorState type);
 
-#define ENTITY_FLAGS_no_delete (1<<0)
-#define ENTITY_FLAGS_force_floating (1<<1)
-typedef uint32 EntityFlags;
-
 #define COLLIDER_FLAGS_ground (1<<0)
 #define COLLIDER_FLAGS_player (1<<1)
 #define COLLIDER_FLAGS_entity (1<<2)
@@ -321,33 +317,6 @@ static char *GetItemTypeName(ItemType type);
 
 typedef struct Entity Entity;
 
-typedef struct PositionComponent
-{
-i32 parent_entity_id;
-i32 component_id;
-v2 position;
-} PositionComponent;
-
-typedef struct SpriteComponent
-{
-i32 parent_entity_id;
-i32 component_id;
-SpriteData sprite_data;
-// @Editable 
-b8 is_flipped;
-b8 is_background_sprite;
-} SpriteComponent;
-
-typedef struct AnimationComponent
-{
-i32 parent_entity_id;
-i32 component_id;
-AnimationFlags flags;
-i32 current_frame;
-f32 interval_mult;
-f32 frame_start_time;
-} AnimationComponent;
-
 typedef struct Line
 {
 v2 p1;
@@ -395,102 +364,11 @@ f32 inv_mass;
 #define PHYSICS_BODY_TYPE_FLAGS_station (1<<3)
 typedef uint32 PhysicsBodyTypeFlags;
 
-typedef struct PhysicsBodyComponent
-{
-i32 parent_entity_id;
-i32 component_id;
-c2Shape shape;
-c2ShapeType shape_type;
-PhysicsMaterial material;
-MassData mass_data;
-v2 velocity;
-v2 force;
-f32 gravity_multiplier;
-PhysicsBodyTypeFlags type;
-PhysicsBodyTypeFlags collide_against;
-} PhysicsBodyComponent;
-
-typedef struct MovementComponent
-{
-i32 parent_entity_id;
-i32 component_id;
-f32 axis_x;
-f32 move_speed;
-f32 move_speed_mult;
-} MovementComponent;
-
-typedef struct ArcEntityComponent
-{
-i32 parent_entity_id;
-i32 component_id;
-ArcEntityType entity_type;
-char *current_general_state;
-ArcEntityAnimationState current_animation_state;
-} ArcEntityComponent;
-
 typedef struct Item
 {
 ItemType type;
 i32 stack_size;
 } Item;
-
-typedef struct ItemComponent
-{
-i32 parent_entity_id;
-i32 component_id;
-Item item;
-} ItemComponent;
-
-typedef struct ParallaxComponent
-{
-i32 parent_entity_id;
-i32 component_id;
-v2 parallax_amount;
-v2 desired_position;
-} ParallaxComponent;
-
-typedef struct ParticleEmitterComponent
-{
-i32 parent_entity_id;
-i32 component_id;
-f32 life_time;
-f32 start_time;
-ParticleEmitterFlags flags;
-Particle particles[MAX_PARTICLE_AMOUNT];
-i32 particle_count;
-i32 free_particle_index;
-EmitterBeginCallback begin_callback;
-EmitterFinishCallback finish_callback;
-} ParticleEmitterComponent;
-
-#define MAX_HOTBAR_SLOTS (9)
-#define MAX_INVENTORY_SLOTS (9)
-typedef struct PlayerDataComponent
-{
-i32 parent_entity_id;
-i32 component_id;
-Item inventory[MAX_INVENTORY_SLOTS];
-i32 inventory_size;
-Item hotbar[MAX_HOTBAR_SLOTS];
-i32 hotbar_size;
-i32 active_hotbar_slot;
-Item grabbed_item;
-v2 grabbed_item_offset;
-Item *grabbed_item_origin_slot;
-} PlayerDataComponent;
-
-typedef struct InteractableComponent
-{
-i32 parent_entity_id;
-i32 component_id;
-c2Shape bounds;
-c2ShapeType bounds_type;
-f32 priority;
-InteractCallback interact_callback;
-EnterInteractableCallback enter_interactable_callback;
-ExitInteractableCallback exit_interactable_callback;
-b8 is_overlapping_player;
-} InteractableComponent;
 
 #define MAX_ITEMS_IN_CRAFTING_RECIPE (10)
 typedef struct CraftingRecipeTypeData
@@ -542,14 +420,6 @@ STATION_TYPE_MAX,
 };
 static char *GetStationTypeName(StationType type);
 
-typedef struct StationComponent
-{
-i32 parent_entity_id;
-i32 component_id;
-StationData data;
-StationType type;
-} StationComponent;
-
 typedef enum StructureCategory StructureCategory;
 enum StructureCategory
 {
@@ -591,131 +461,81 @@ global StructureTypeData global_structure_type_data[STRUCTURE_TYPE_MAX] = {
 
 static char *GetStructureTypeName(StructureType type);
 
-typedef struct BlueprintComponent
-{
-i32 parent_entity_id;
-i32 component_id;
-StructureType type;
-Item items_contributed[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
-} BlueprintComponent;
-
 typedef struct Chunk Chunk;
 
-typedef enum ComponentType
+// @GenerateComponentCode 
+#define Dummy2 (_)
+#define MAX_HOTBAR_SLOTS (9)
+#define MAX_INVENTORY_SLOTS (9)
+typedef struct PhysicsBodyData
 {
-COMPONENT_INVALID,
-COMPONENT_position,
-COMPONENT_sprite,
-COMPONENT_animation,
-COMPONENT_physics_body,
-COMPONENT_movement,
-COMPONENT_arc_entity,
-COMPONENT_item,
-COMPONENT_parallax,
-COMPONENT_particle_emitter,
-COMPONENT_player_data,
-COMPONENT_interactable,
-COMPONENT_station,
-COMPONENT_blueprint,
-COMPONENT_MAX,
-} ComponentType;
+c2Shape shape;
+c2ShapeType shape_type;
+PhysicsMaterial material;
+MassData mass_data;
+v2 velocity;
+v2 force;
+f32 gravity_multiplier;
+PhysicsBodyTypeFlags type;
+PhysicsBodyTypeFlags collide_against;
+} PhysicsBodyData;
 
-typedef struct ComponentSet
+typedef struct InteractableData
 {
-PositionComponent position_components[MAX_ENTITIES];
-i32 position_component_count;
-i32 free_position_component_id;
-SpriteComponent sprite_components[MAX_ENTITIES];
-i32 sprite_component_count;
-i32 free_sprite_component_id;
-AnimationComponent animation_components[MAX_ENTITIES];
-i32 animation_component_count;
-i32 free_animation_component_id;
-PhysicsBodyComponent physics_body_components[MAX_ENTITIES];
-i32 physics_body_component_count;
-i32 free_physics_body_component_id;
-MovementComponent movement_components[MAX_ENTITIES];
-i32 movement_component_count;
-i32 free_movement_component_id;
-ArcEntityComponent arc_entity_components[MAX_ENTITIES];
-i32 arc_entity_component_count;
-i32 free_arc_entity_component_id;
-ItemComponent item_components[MAX_ENTITIES];
-i32 item_component_count;
-i32 free_item_component_id;
-ParallaxComponent parallax_components[MAX_ENTITIES];
-i32 parallax_component_count;
-i32 free_parallax_component_id;
-ParticleEmitterComponent particle_emitter_components[MAX_ENTITIES];
-i32 particle_emitter_component_count;
-i32 free_particle_emitter_component_id;
-PlayerDataComponent player_data_components[MAX_ENTITIES];
-i32 player_data_component_count;
-i32 free_player_data_component_id;
-InteractableComponent interactable_components[MAX_ENTITIES];
-i32 interactable_component_count;
-i32 free_interactable_component_id;
-StationComponent station_components[MAX_ENTITIES];
-i32 station_component_count;
-i32 free_station_component_id;
-BlueprintComponent blueprint_components[MAX_ENTITIES];
-i32 blueprint_component_count;
-i32 free_blueprint_component_id;
-} ComponentSet;
+c2Shape bounds;
+c2ShapeType bounds_type;
+f32 priority;
+InteractCallback interact_callback;
+EnterInteractableCallback enter_interactable_callback;
+ExitInteractableCallback exit_interactable_callback;
+b8 is_overlapping_player;
+} InteractableData;
 
-internal PositionComponent *AddPositionComponent(Entity *entity);
-internal void RemovePositionComponent(Entity *entity);
-// NOTE(randy): Gets a PositionComponent from a specified entity, it must have one.
-internal PositionComponent *GetPositionComponentFromEntityID(i32 id);
-internal SpriteComponent *AddSpriteComponent(Entity *entity);
-internal void RemoveSpriteComponent(Entity *entity);
-// NOTE(randy): Gets a SpriteComponent from a specified entity, it must have one.
-internal SpriteComponent *GetSpriteComponentFromEntityID(i32 id);
-internal AnimationComponent *AddAnimationComponent(Entity *entity);
-internal void RemoveAnimationComponent(Entity *entity);
-// NOTE(randy): Gets a AnimationComponent from a specified entity, it must have one.
-internal AnimationComponent *GetAnimationComponentFromEntityID(i32 id);
-internal PhysicsBodyComponent *AddPhysicsBodyComponent(Entity *entity);
-internal void RemovePhysicsBodyComponent(Entity *entity);
-// NOTE(randy): Gets a PhysicsBodyComponent from a specified entity, it must have one.
-internal PhysicsBodyComponent *GetPhysicsBodyComponentFromEntityID(i32 id);
-internal MovementComponent *AddMovementComponent(Entity *entity);
-internal void RemoveMovementComponent(Entity *entity);
-// NOTE(randy): Gets a MovementComponent from a specified entity, it must have one.
-internal MovementComponent *GetMovementComponentFromEntityID(i32 id);
-internal ArcEntityComponent *AddArcEntityComponent(Entity *entity);
-internal void RemoveArcEntityComponent(Entity *entity);
-// NOTE(randy): Gets a ArcEntityComponent from a specified entity, it must have one.
-internal ArcEntityComponent *GetArcEntityComponentFromEntityID(i32 id);
-internal ItemComponent *AddItemComponent(Entity *entity);
-internal void RemoveItemComponent(Entity *entity);
-// NOTE(randy): Gets a ItemComponent from a specified entity, it must have one.
-internal ItemComponent *GetItemComponentFromEntityID(i32 id);
-internal ParallaxComponent *AddParallaxComponent(Entity *entity);
-internal void RemoveParallaxComponent(Entity *entity);
-// NOTE(randy): Gets a ParallaxComponent from a specified entity, it must have one.
-internal ParallaxComponent *GetParallaxComponentFromEntityID(i32 id);
-internal ParticleEmitterComponent *AddParticleEmitterComponent(Entity *entity);
-internal void RemoveParticleEmitterComponent(Entity *entity);
-// NOTE(randy): Gets a ParticleEmitterComponent from a specified entity, it must have one.
-internal ParticleEmitterComponent *GetParticleEmitterComponentFromEntityID(i32 id);
-internal PlayerDataComponent *AddPlayerDataComponent(Entity *entity);
-internal void RemovePlayerDataComponent(Entity *entity);
-// NOTE(randy): Gets a PlayerDataComponent from a specified entity, it must have one.
-internal PlayerDataComponent *GetPlayerDataComponentFromEntityID(i32 id);
-internal InteractableComponent *AddInteractableComponent(Entity *entity);
-internal void RemoveInteractableComponent(Entity *entity);
-// NOTE(randy): Gets a InteractableComponent from a specified entity, it must have one.
-internal InteractableComponent *GetInteractableComponentFromEntityID(i32 id);
-internal StationComponent *AddStationComponent(Entity *entity);
-internal void RemoveStationComponent(Entity *entity);
-// NOTE(randy): Gets a StationComponent from a specified entity, it must have one.
-internal StationComponent *GetStationComponentFromEntityID(i32 id);
-internal BlueprintComponent *AddBlueprintComponent(Entity *entity);
-internal void RemoveBlueprintComponent(Entity *entity);
-// NOTE(randy): Gets a BlueprintComponent from a specified entity, it must have one.
-internal BlueprintComponent *GetBlueprintComponentFromEntityID(i32 id);
-internal void RemoveComponent(Entity *entity, ComponentType type);
+#define ENTITY_FLAGS_no_delete (1<<0)
+#define ENTITY_FLAGS_force_floating (1<<1)
+#define ENTITY_FLAGS_interactable (1<<2)
+#define ENTITY_FLAGS_animation (1<<3)
+#define ENTITY_FLAGS_sprite (1<<4)
+#define ENTITY_FLAGS_parallax (1<<5)
+#define ENTITY_FLAGS_physics (1<<6)
+typedef uint32 EntityFlags;
+
+typedef struct Entity
+{
+EntityFlags flags;
+v2 position;
+SpriteData sprite_data;
+b8 is_flipped;
+b8 is_background_sprite;
+AnimationFlags animation_flags;
+i32 current_frame;
+f32 interval_mult;
+f32 frame_start_time;
+PhysicsBodyData physics;
+f32 axis_x;
+f32 move_speed;
+f32 move_speed_mult;
+ArcEntityType entity_type;
+char *current_general_state;
+ArcEntityAnimationState current_animation_state;
+Item item;
+v2 parallax_amount;
+v2 desired_position;
+Item inventory[MAX_INVENTORY_SLOTS];
+i32 inventory_size;
+Item hotbar[MAX_HOTBAR_SLOTS];
+i32 hotbar_size;
+i32 active_hotbar_slot;
+Item grabbed_item;
+v2 grabbed_item_offset;
+Item *grabbed_item_origin_slot;
+InteractableData interactable;
+StructureType structure_type;
+Item items_contributed[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
+StationData station_data;
+StationType station_type;
+} Entity;
+
 #define MINIMUM_AIR_PRESSURE (1.0f)
 #define LIQUID_RESOLUTION (0.2f)
 #define MAX_LIQUID_MASS (1.0f)
@@ -816,15 +636,6 @@ i32 y_position;
 Chunk *parent_chunk;
 } CellHelper;
 
-typedef struct Entity
-{
-i32 entity_id;
-i32 component_ids[COMPONENT_MAX];
-char name[20];
-EntityFlags flags;
-GeneralisedEntityType generalised_type;
-} Entity;
-
 #define CELL_CHUNKS_IN_CHUNK ((CHUNK_SIZE/CELL_CHUNK_SIZE))
 #define CHUNK_AREA ((CHUNK_SIZE*CHUNK_SIZE))
 typedef struct Chunk
@@ -892,33 +703,8 @@ typedef struct RunData
 {
 Chunk active_chunks[MAX_WORLD_CHUNKS];
 i32 active_chunk_count;
-i32 save_job_index;
-Entity entities_snapshot[MAX_ENTITIES];
-i32 entity_count_snapshot;
-ComponentSet entity_components_snapshot;
-i32 positional_entity_ids_snapshot[MAX_POSITIONAL_ENTITIES];
-i32 positional_entity_id_count_snapshot;
-ChunkSave chunk_saves[MAX_WORLD_CHUNKS];
-i32 chunk_save_count;
-i32 load_job_index;
-b8 not_first_time_temp;
-EntitySave loaded_entities[MAX_ENTITIES];
-i32 loaded_entity_count;
-ComponentSet loaded_entity_components;
-i32 loaded_positional_entity_ids[MAX_POSITIONAL_ENTITIES];
-i32 loaded_positional_entity_id_count;
-ChunkSave chunk_load_queue[MAX_WORLD_CHUNKS];
-i32 chunk_load_queue_count;
-ChunkSave *chunk_generate_queue[MAX_WORLD_CHUNKS];
-i32 chunk_generate_queue_count;
 Entity entities[MAX_ENTITIES];
 i32 entity_count;
-i32 free_entity_id;
-i32 positional_entity_ids[MAX_POSITIONAL_ENTITIES];
-i32 positional_entity_id_count;
-i32 floating_entity_ids[MAX_FLOATING_ENTITIES];
-i32 floating_entity_id_count;
-ComponentSet entity_components;
 char world_name[50];
 char world_path[300];
 char world_chunks_path[300];
@@ -934,9 +720,8 @@ i32 queued_dynamic_cell_count;
 Entity *character_entity;
 b8 disable_player_input;
 b8 disable_interaction;
-InteractableComponent *current_interactable;
-StationComponent *engaged_station;
-StationType engaged_station_type;
+InteractableData *current_interactable;
+Entity *engaged_station_entity;
 b8 is_blueprinting;
 i32 queued_texture_count;
 QueuedTexture queued_textures[MAX_QUEUED_TEXTURES];
@@ -953,79 +738,6 @@ typedef struct ClientData
 {
 b32 bloom;
 } ClientData;
-
-WriteComponentToFile(FILE *file, i32 comp_id, ComponentType type);
-ReadComponentFromFile(FILE *file, Entity *entity, ComponentType type);
-SerialiseEntityComponentsFromIDList(FILE *file, Entity *entity_list, ComponentSet *component_set, i32 *ids, i32 id_count, ComponentType type);
-
-SerialiseComponentsFromDataSet(FILE *file, Entity *entity_list, i32 entity_count, ComponentSet *component_set, i32 *ids, i32 id_count);
-
-DeserialiseEntityComponentsFromIDList(FILE *file, i32 *ids, i32 id_count, ComponentType type);
-
-DeserialiseComponentsToLoadData(FILE *file, ComponentSet *component_set, EntitySave *entity_list, i32 *ids, i32 id_count);
-
-DeserialiseComponentsFromMap(i32 *entity_id_map, i32 entity_count);
-
-internal void ResetComponentSet(ComponentSet *comp_set);
-static void WritePositionComponentToFile(FILE *file, PositionComponent *data);
-
-static void ReadPositionComponentFromFile(FILE *file, PositionComponent *data);
-
-static void WriteSpriteComponentToFile(FILE *file, SpriteComponent *data);
-
-static void ReadSpriteComponentFromFile(FILE *file, SpriteComponent *data);
-
-static void WriteAnimationComponentToFile(FILE *file, AnimationComponent *data);
-
-static void ReadAnimationComponentFromFile(FILE *file, AnimationComponent *data);
-
-static void WritePhysicsBodyComponentToFile(FILE *file, PhysicsBodyComponent *data);
-
-static void ReadPhysicsBodyComponentFromFile(FILE *file, PhysicsBodyComponent *data);
-
-static void WriteMovementComponentToFile(FILE *file, MovementComponent *data);
-
-static void ReadMovementComponentFromFile(FILE *file, MovementComponent *data);
-
-static void WriteArcEntityComponentToFile(FILE *file, ArcEntityComponent *data);
-
-static void ReadArcEntityComponentFromFile(FILE *file, ArcEntityComponent *data);
-
-static void WriteItemComponentToFile(FILE *file, ItemComponent *data);
-
-static void ReadItemComponentFromFile(FILE *file, ItemComponent *data);
-
-static void WriteParallaxComponentToFile(FILE *file, ParallaxComponent *data);
-
-static void ReadParallaxComponentFromFile(FILE *file, ParallaxComponent *data);
-
-static void WriteParticleEmitterComponentToFile(FILE *file, ParticleEmitterComponent *data);
-
-static void ReadParticleEmitterComponentFromFile(FILE *file, ParticleEmitterComponent *data);
-
-static void WritePlayerDataComponentToFile(FILE *file, PlayerDataComponent *data);
-
-static void ReadPlayerDataComponentFromFile(FILE *file, PlayerDataComponent *data);
-
-static void WriteInteractableComponentToFile(FILE *file, InteractableComponent *data);
-
-static void ReadInteractableComponentFromFile(FILE *file, InteractableComponent *data);
-
-static void WriteStationComponentToFile(FILE *file, StationComponent *data);
-
-static void ReadStationComponentFromFile(FILE *file, StationComponent *data);
-
-static void WriteBlueprintComponentToFile(FILE *file, BlueprintComponent *data);
-
-static void ReadBlueprintComponentFromFile(FILE *file, BlueprintComponent *data);
-
-static void WriteComponentSetToFile(FILE *file, ComponentSet *data);
-
-static void ReadComponentSetFromFile(FILE *file, ComponentSet *data);
-
-static void WriteEntityToFile(FILE *file, Entity *data);
-
-static void ReadEntityFromFile(FILE *file, Entity *data);
 
 static void WriteWorldSaveDataToFile(FILE *file, WorldSaveData *data);
 

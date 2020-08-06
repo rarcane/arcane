@@ -15,8 +15,8 @@ typedef struct CollisionInfo
 
 typedef struct CollisionPair
 {
-	PhysicsBodyComponent *a;
-	PhysicsBodyComponent *b;
+	Entity *a;
+	Entity *b;
 } CollisionPair;
 
 internal void UpdatePhysics();
