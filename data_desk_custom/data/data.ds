@@ -1,9 +1,5 @@
 /* --- CONSTANTS --- */
 
-MAX_POSITIONAL_ENTITIES :: 1024
-MAX_FLOATING_ENTITIES :: 1024
-MAX_ENTITIES :: MAX_POSITIONAL_ENTITIES + MAX_FLOATING_ENTITIES
-
 MAX_OVERLAPPING_COLLIDERS :: 50
 MAX_COLLISION_PAIRS :: 2048
 MAX_STORAGE_SIZE :: 30
@@ -503,20 +499,23 @@ InteractableData :: struct
 	is_overlapping_player : b8;
 }
 
-EntityFlags :: flags
+EntityProperty :: enum
 {
+	is_allocated,
 	no_delete,
 	force_floating,
 	interactable,
-	animation,
 	sprite,
-	parallax,
-	physics,
+	flipbook,
+	parallaxable,
+	physical,
 }
 
 Entity :: struct
 {
-	flags : EntityFlags;
+	properties : u64[ENTITY_PROPERTY_MAX / 64 + 1];
+	testint : i32;
+	debug_name : char[100];
 
 	position : v2;
 
@@ -741,6 +740,9 @@ QueuedTexture :: struct
 	layer : f32;
 }
 
+MAX_POSITIONAL_ENTITIES :: 2048
+MAX_FLOATING_ENTITIES :: 2048
+ENTITY_TABLE_SIZE :: (MAX_POSITIONAL_ENTITIES + MAX_FLOATING_ENTITIES)
 RunData :: struct // Game data used for run-time operations
 {
 	active_chunks : Chunk[MAX_WORLD_CHUNKS];
@@ -770,8 +772,7 @@ RunData :: struct // Game data used for run-time operations
 	chunk_generate_queue_count : i32;
 */
 
-	entities : Entity[MAX_ENTITIES];
-	entity_count : i32;
+	entities : Entity[ENTITY_TABLE_SIZE];
 
 /*
 	free_entity_id : i32;

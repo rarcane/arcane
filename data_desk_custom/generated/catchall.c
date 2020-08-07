@@ -457,6 +457,40 @@ break;
 }
 }
 
+static char *GetEntityPropertyName(EntityProperty type)
+{
+switch(type)
+{
+case ENTITY_PROPERTY_is_allocated:
+return "Is Allocated";
+break;
+case ENTITY_PROPERTY_no_delete:
+return "No Delete";
+break;
+case ENTITY_PROPERTY_force_floating:
+return "Force Floating";
+break;
+case ENTITY_PROPERTY_interactable:
+return "Interactable";
+break;
+case ENTITY_PROPERTY_sprite:
+return "Sprite";
+break;
+case ENTITY_PROPERTY_flipbook:
+return "Flipbook";
+break;
+case ENTITY_PROPERTY_parallaxable:
+return "Parallaxable";
+break;
+case ENTITY_PROPERTY_physical:
+return "Physical";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
 static char *GetCellPropertiesTypeName(CellPropertiesType type)
 {
 switch(type)

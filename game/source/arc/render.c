@@ -15,14 +15,8 @@ internal void InitialiseSpriteData()
 
 internal void UpdateAnimations()
 {
-	for (i32 i = 0; i < core->run_data->entity_count; i++)
+	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_flipbook);)
 	{
-		Entity *entity = &core->run_data->entities[i];
-		if ((entity->flags & ENTITY_FLAGS_animation) == 0)
-		{
-			continue;
-		}
-		
 		DynamicSpriteData *dynamic_sprite = &global_dynamic_sprite_data[entity->sprite_data.dynamic_sprite];
 		
 		if (entity->animation_flags & ANIMATION_FLAGS_playing) // ((animation_flags & (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat)) == (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat))
@@ -76,19 +70,13 @@ internal void UpdateAnimations()
 internal void RenderSprites()
 {
 	// NOTE(randy): Add all sprite components to queue
-	for (i32 i = 0; i < core->run_data->entity_count; i++)
+	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_sprite);)
 	{
-		Entity *entity = &core->run_data->entities[i];
-		if ((entity->flags & ENTITY_FLAGS_sprite) == 0)
-		{
-			continue;
-		}
-		
 		if (entity->sprite_data.dynamic_sprite)
 		{
 			DynamicSpriteData *dynamic_sprite = &global_dynamic_sprite_data[entity->sprite_data.dynamic_sprite];
 			
-			Assert(entity->flags & ENTITY_FLAGS_animation);
+			Assert(EntityHasProperty(entity, ENTITY_PROPERTY_flipbook));
 			
 			v2 render_size = v2zoom(v2(dynamic_sprite->source.z * entity->sprite_data.scale.x * (entity->is_flipped ? -1.0f : 1.0f), dynamic_sprite->source.w * entity->sprite_data.scale.y));
 			

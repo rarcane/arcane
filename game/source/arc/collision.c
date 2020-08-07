@@ -4,14 +4,8 @@ internal void RenderColliders()
 	if (!(core->run_data->debug_flags & DEBUG_FLAGS_draw_collision))
 		return;
 	
-	for (i32 i = 0; i < core->run_data->entity_count; i++)
+	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_physical);)
 	{
-		Entity *entity = &core->run_data->entities[i];
-		if ((entity->flags & ENTITY_FLAGS_physics) == 0)
-		{
-			continue;
-		}
-		
 		v3 col = {1.0f, 1.0f, 1.0f};
 		if (core->run_data->collision_editor.selected_ground_seg &&
 			entity == core->run_data->collision_editor.selected_ground_seg)
@@ -52,14 +46,8 @@ internal void RenderColliders()
 
 internal void UpdatePhysics()
 {
-	for (i32 i = 0; i < core->run_data->entity_count; i++)
+	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_physical);)
 	{
-		Entity *entity = &core->run_data->entities[i];
-		if ((entity->flags & ENTITY_FLAGS_physics) == 0)
-		{
-			continue;
-		}
-		
 		// Apply gravity
 		if (entity->physics.gravity_multiplier != 0.0f && entity->physics.mass_data.mass != 0.0f)
 			entity->physics.force.y += (WORLD_GRAVITY * entity->physics.gravity_multiplier) / entity->physics.mass_data.inv_mass;
@@ -157,22 +145,10 @@ internal void UpdatePhysics()
 
 internal void GenerateCollisionPairs(CollisionPair pairs[], i32 *count)
 {
-	for (i32 i = 0; i < core->run_data->entity_count; i++)
+	for (Entity *entity_a = 0; IncrementEntityWithProperty(&entity_a, ENTITY_PROPERTY_physical);)
 	{
-		Entity *entity_a = &core->run_data->entities[i];
-		if ((entity_a->flags & ENTITY_FLAGS_physics) == 0)
+		for (Entity *entity_b = 0; IncrementEntityWithProperty(&entity_b, ENTITY_PROPERTY_physical);)
 		{
-			continue;
-		}
-		
-		for (i32 i = 0; i < core->run_data->entity_count; i++)
-		{
-			Entity *entity_b = &core->run_data->entities[i];
-			if ((entity_b->flags & ENTITY_FLAGS_physics) == 0)
-			{
-				continue;
-			}
-			
 			if (entity_a != entity_b &&
 				!(entity_a->physics.mass_data.mass == 0.0f &&
 				  entity_b->physics.mass_data.mass == 0.0f) &&
@@ -485,14 +461,8 @@ internal i32 GetOverlappingBodiesWithShape(Entity **overlapping_entities,
 {
 	i32 overlap_count = 0;
 	
-	for (i32 i = 0; i < core->run_data->entity_count; i++)
+	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_physical);)
 	{
-		Entity *entity = &core->run_data->entities[i];
-		if ((entity->flags & ENTITY_FLAGS_physics) == 0)
-		{
-			continue;
-		}
-		
 		c2Shape against_shape = entity->physics.shape;
 		AddPositionOffsetToShape(&against_shape, entity->physics.shape_type, entity->position);
 		

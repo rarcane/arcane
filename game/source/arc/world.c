@@ -136,14 +136,8 @@ internal void DrawWorld()
 
 internal void UpdateParallax()
 {
-	for (i32 i = 0; i < core->run_data->entity_count; i++)
+	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_parallaxable);)
 	{
-		Entity *entity = &core->run_data->entities[i];
-		if ((entity->flags & ENTITY_FLAGS_parallax) == 0)
-		{
-			continue;
-		}
-		
 		// TODO: Need to find a way to centralise the desired_position of the parallax, whilst still maintaining spatial consistency across sprites
 		entity->position.x = entity->desired_position.x + -core->camera_position.x * entity->parallax_amount.x;
 		entity->position.y = entity->desired_position.y + (-core->camera_position.y + DEFAULT_CAMERA_OFFSET_Y) * entity->parallax_amount.y;
@@ -254,7 +248,7 @@ internal void GenerateTestPlatform()
 		if (i % ground_interval == 0)
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_physics;
+			EntitySetProperty(entity, ENTITY_PROPERTY_physical);
 			entity->position = v2((f32)x_pos, (f32)height);
 			
 			Line line = {0};
@@ -281,8 +275,8 @@ internal void GenerateTestPlatform()
 	// NOTE(randy): $Spawn structures
 	{
 		Entity *entity = NewEntity();
-		entity->flags |= ENTITY_FLAGS_sprite;
-		entity->flags |= ENTITY_FLAGS_interactable;
+		EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+		EntitySetProperty(entity, ENTITY_PROPERTY_interactable);
 		
 		entity->position = v2(-100, 0);
 		entity->sprite_data.static_sprite = STATIC_SPRITE_crafting_stump;
@@ -319,7 +313,7 @@ internal void GenerateTestPlatform()
 				i32 x_pos = i * 10 - width / 2 + 10;
 				
 				Entity *entity = NewEntity();
-				entity->flags |= ENTITY_FLAGS_sprite;
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
 				
 				entity->position = v2((f32)x_pos, (f32)height + 1);
 				entity->sprite_data.static_sprite = STATIC_SPRITE_pine_tree_v1;
@@ -330,9 +324,9 @@ internal void GenerateTestPlatform()
 		// NOTE(randy): $Hill layer 1
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -344,9 +338,9 @@ internal void GenerateTestPlatform()
 		}
 		{
 			Entity *entity = NewEntity("Hills", GENERALISED_ENTITY_TYPE_scenic);
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -358,9 +352,9 @@ internal void GenerateTestPlatform()
 		}
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -372,9 +366,9 @@ internal void GenerateTestPlatform()
 		}
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -386,9 +380,9 @@ internal void GenerateTestPlatform()
 		}
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -400,9 +394,9 @@ internal void GenerateTestPlatform()
 		}
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -417,9 +411,9 @@ internal void GenerateTestPlatform()
 		for (i32 x = width / -2 + 500; x < width / 2 - 500; x += RandomI32(80, 150))
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -435,9 +429,9 @@ internal void GenerateTestPlatform()
 		for (i32 x = width / -2 + 500; x < width / 2 - 500; x += RandomI32(40, 120))
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -453,9 +447,9 @@ internal void GenerateTestPlatform()
 		for (i32 x = width / -2 + 500; x < width / 2 - 500; x += RandomI32(30, 90))
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -470,9 +464,9 @@ internal void GenerateTestPlatform()
 		// NOTE(randy): $Hill layer 2
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -484,9 +478,9 @@ internal void GenerateTestPlatform()
 		}
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -498,9 +492,9 @@ internal void GenerateTestPlatform()
 		}
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -512,9 +506,9 @@ internal void GenerateTestPlatform()
 		}
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -526,9 +520,9 @@ internal void GenerateTestPlatform()
 		}
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -540,9 +534,9 @@ internal void GenerateTestPlatform()
 		}
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -557,9 +551,9 @@ internal void GenerateTestPlatform()
 		for (i32 x = width / -2 + 450; x < width / 2 - 450; x += RandomI32(80, 150))
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -575,9 +569,9 @@ internal void GenerateTestPlatform()
 		for (i32 x = width / -2 + 450; x < width / 2 - 450; x += RandomI32(40, 120))
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -592,9 +586,9 @@ internal void GenerateTestPlatform()
 		// NOTE(randy): $Hill layer 3
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -606,9 +600,9 @@ internal void GenerateTestPlatform()
 		}
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -620,9 +614,9 @@ internal void GenerateTestPlatform()
 		}
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -634,9 +628,9 @@ internal void GenerateTestPlatform()
 		}
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -648,9 +642,9 @@ internal void GenerateTestPlatform()
 		}
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -662,9 +656,9 @@ internal void GenerateTestPlatform()
 		}
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -679,9 +673,9 @@ internal void GenerateTestPlatform()
 		for (i32 x = width / -2 + 500; x < width / 2 - 650; x += RandomI32(30, 50))
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -697,9 +691,9 @@ internal void GenerateTestPlatform()
 		for (i32 x = width / -2 + 500; x < width / 2 - 650; x += RandomI32(40, 120))
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -715,9 +709,9 @@ internal void GenerateTestPlatform()
 		for (i32 x = -1; x < 2; x++)
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -731,9 +725,9 @@ internal void GenerateTestPlatform()
 		// NOTE(randy): $far mountains
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -745,9 +739,9 @@ internal void GenerateTestPlatform()
 		}
 		{
 			Entity *entity = NewEntity();
-			entity->flags |= ENTITY_FLAGS_force_floating;
-			entity->flags |= ENTITY_FLAGS_sprite;
-			entity->flags |= ENTITY_FLAGS_parallax;
+			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 			
 			entity->position = v2(0, 0);
 			
@@ -796,10 +790,13 @@ internal b8 CreateWorld(char *world_name)
 		Entity *character = NewEntity();
 		core->run_data->character_entity = character;
 		
-		character->flags |= ENTITY_FLAGS_no_delete;
-		character->flags |= ENTITY_FLAGS_sprite;
-		character->flags |= ENTITY_FLAGS_animation;
-		character->flags |= ENTITY_FLAGS_physics;
+		char nm[100] = "player";
+		strncpy(character->debug_name, nm, sizeof(nm));
+		
+		EntitySetProperty(character, ENTITY_PROPERTY_no_delete);
+		EntitySetProperty(character, ENTITY_PROPERTY_sprite);
+		EntitySetProperty(character, ENTITY_PROPERTY_flipbook);
+		EntitySetProperty(character, ENTITY_PROPERTY_physical);
 		character->position = v2(0.0f, -100.0f);
 		
 		c2Capsule capsule = {

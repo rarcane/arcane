@@ -1,6 +1,3 @@
-#define MAX_POSITIONAL_ENTITIES (1024)
-#define MAX_FLOATING_ENTITIES (1024)
-#define MAX_ENTITIES ((MAX_POSITIONAL_ENTITIES+MAX_FLOATING_ENTITIES))
 #define MAX_OVERLAPPING_COLLIDERS (50)
 #define MAX_COLLISION_PAIRS (2048)
 #define MAX_STORAGE_SIZE (30)
@@ -491,18 +488,26 @@ ExitInteractableCallback exit_interactable_callback;
 b8 is_overlapping_player;
 } InteractableData;
 
-#define ENTITY_FLAGS_no_delete (1<<0)
-#define ENTITY_FLAGS_force_floating (1<<1)
-#define ENTITY_FLAGS_interactable (1<<2)
-#define ENTITY_FLAGS_animation (1<<3)
-#define ENTITY_FLAGS_sprite (1<<4)
-#define ENTITY_FLAGS_parallax (1<<5)
-#define ENTITY_FLAGS_physics (1<<6)
-typedef uint32 EntityFlags;
+typedef enum EntityProperty EntityProperty;
+enum EntityProperty
+{
+ENTITY_PROPERTY_is_allocated,
+ENTITY_PROPERTY_no_delete,
+ENTITY_PROPERTY_force_floating,
+ENTITY_PROPERTY_interactable,
+ENTITY_PROPERTY_sprite,
+ENTITY_PROPERTY_flipbook,
+ENTITY_PROPERTY_parallaxable,
+ENTITY_PROPERTY_physical,
+ENTITY_PROPERTY_MAX,
+};
+static char *GetEntityPropertyName(EntityProperty type);
 
 typedef struct Entity
 {
-EntityFlags flags;
+u64 properties[((ENTITY_PROPERTY_MAX/64)+1)];
+i32 testint;
+char debug_name[100];
 v2 position;
 SpriteData sprite_data;
 b8 is_flipped;
@@ -699,12 +704,14 @@ v4 tint;
 f32 layer;
 } QueuedTexture;
 
+#define MAX_POSITIONAL_ENTITIES (2048)
+#define MAX_FLOATING_ENTITIES (2048)
+#define ENTITY_TABLE_SIZE ((MAX_POSITIONAL_ENTITIES+MAX_FLOATING_ENTITIES))
 typedef struct RunData
 {
 Chunk active_chunks[MAX_WORLD_CHUNKS];
 i32 active_chunk_count;
-Entity entities[MAX_ENTITIES];
-i32 entity_count;
+Entity entities[ENTITY_TABLE_SIZE];
 char world_name[50];
 char world_path[300];
 char world_chunks_path[300];

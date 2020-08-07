@@ -11,15 +11,8 @@ internal void InteractableUpdate()
 	
 	Entity *highest_priority_entity = 0;
 	
-	for (i32 i = 0; i < core->run_data->entity_count; i++)
+	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_interactable);)
 	{
-		Entity *entity = &core->run_data->entities[i];
-		// TODO(randy): figure out how to do deletion and whatnot for checking
-		if ((entity->flags & ENTITY_FLAGS_interactable) == 0)
-		{
-			continue;
-		}
-		
 		InteractableData *inter = &entity->interactable;
 		
 		c2Shape inter_shape = inter->bounds;
