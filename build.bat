@@ -7,7 +7,7 @@ goto endrole
 set role_name=PROGRAMMER
 :endrole
 set role=ROLE_%role_name% 
-set application_executable=arcane.exe 
+set application_executable=arcane_win32.exe 
 set application_dll=arcane.dll 
 set build_options= -DBUILD_WIN32=1 -DBUILD_DEBUG=1 -DBUILD_RELEASE=0 -DBUILD_DEVELOPER=1 -DROLE=%role%  -DTSFOUNDATION_PROGRAM_OPTIONS=\"program_options.h\"  -DTS2D=1  -DTSASSETS=1  -DTSDEVTERMINAL=1  -DTSINPUT=1  -DTSUI=1 
 set common_compiler_flags= /TC /GL- -MTd -nologo -Gm- -GR- -Gs- -Gy- -Gw- -EHa- -Od -W3 -wd4201 -wd4100 -wd4189 /Zi -D_CRT_SECURE_NO_WARNINGS /FS /FC /I..\source\ %build_options% 
