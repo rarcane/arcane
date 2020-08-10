@@ -22,8 +22,6 @@ internal void UpdateParallax();
 
 // NOTE(randy): Generates a new world, returns 0 if the world already exists.
 internal b8 CreateWorld(char *world_name);
-// NOTE(randy): Saves the currently loaded world's basic level data.
-internal void SaveLevelData();
 // NOTE(randy): Saves the currently loaded world in its entirety
 internal void SaveWorld();
 // NOTE(randy): Loads the given world from disk.

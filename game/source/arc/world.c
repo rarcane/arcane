@@ -797,6 +797,7 @@ internal b8 CreateWorld(char *world_name)
 		EntitySetProperty(character, ENTITY_PROPERTY_sprite);
 		EntitySetProperty(character, ENTITY_PROPERTY_flipbook);
 		EntitySetProperty(character, ENTITY_PROPERTY_physical);
+		EntitySetProperty(character, ENTITY_PROPERTY_is_character);
 		character->position = v2(0.0f, -100.0f);
 		
 		c2Capsule capsule = {
@@ -838,7 +839,7 @@ internal b8 CreateWorld(char *world_name)
 		character->hotbar_size = 2;
 	}
 	
-	FillChunkEntities();
+	// FillChunkEntities();
 	
 	// NOTE(randy): Initial save.
 	SaveWorld();
@@ -864,82 +865,32 @@ internal b8 LoadWorld(char *world_name)
 	{
 		FreeRunData();
 		MemorySet(core->run_data, 0, sizeof(RunData));
+		
 		strcpy(core->run_data->world_name, world_name);
 		strcpy(core->run_data->world_path, path);
-		
-		// TODO: refactor this
 		InitialiseRunData();
-		// NOTE(randy): Might want to seperate out some run data that is permanent
-		// and will not change between saves
 	}
 	
 	// Read in basic data from the world_data.save
 	{
 		char file_path[200] = "";
 		sprintf(file_path, "%slevel_data.save", path);
-		FILE *save = fopen(file_path, "rb");
-		//Assert(save);
+		FILE *file = fopen(file_path, "rb");
+		Assert(file);
 		
-		/*
-				// NOTE(randy): Read the player entity in
-				{
-					EntitySave entity_save;
-					ReadFromFile(save, &entity_save, sizeof(EntitySave));
-					
-					Entity *entity = NewEntity();
-					entity->flags = entity_save.flags;
-					
-					core->run_data->character_entity = entity;
-				}
-				
-				// NOTE(randy): Read in basic world data
-				ReadWorldSaveDataFromFile(save, &core->run_data->world);
-				
-				// NOTE(randy): Read in floating entities
-				ReadFromFile(save, &core->run_data->floating_entity_id_count, sizeof(i32));
-				for (i32 i = 0; i < core->run_data->floating_entity_id_count; i++)
-				{
-					EntitySave entity_save;
-					ReadFromFile(save, &entity_save, sizeof(EntitySave));
-					
-					Entity *entity = NewEntity(entity_save.name, entity_save.type);
-					entity->flags = entity_save.flags;
-					
-					core->run_data->floating_entity_ids[i] = entity->entity_id;
-				}
-				
-				for (i32 i = 1; i < COMPONENT_MAX; i++)
-				{
-					DeserialiseEntityComponentsFromIDList(save, core->run_data->floating_entity_ids, core->run_data->floating_entity_id_count, i);
-				}
-		 */
+		ReadWorldSaveDataFromFile(file, &core->run_data->world);
 		
-		fclose(save);
-	}
-	
-	// Load some surrounding chunks in based off of the player's position.
-	/*
+		for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
 		{
-			char file_path[300] = "";
-			sprintf(file_path, "%schunks\\", path);
-			Assert(platform->DoesDirectoryExist(file_path));
-			strcpy(core->run_data->world_chunks_path, file_path);
+			Entity *entity = NewEntity();
+			ReadEntityFromFile(file, entity);
 			
-			TransformInGameCamera();
-			
-			SkeletonChunk chunks[MAX_WORLD_CHUNKS];
-			i32 chunk_count;
-			GetSkeletonChunksInRegion(chunks, &chunk_count, GetCameraRegionRect(), 1);
-			
-			for (i32 i = 0; i < chunk_count; i++)
-			{
-				Chunk *chunk = LoadChunkFromDisk(file_path, chunks[i].x_index, chunks[i].y_index);
-				
-				if (!chunk)
-					LogError("A surrounding chunk in the player's region doesn't exist, is this intended?");
-			}
+			if (EntityHasProperty(entity, ENTITY_PROPERTY_is_character))
+				core->run_data->character_entity = entity;
 		}
-	 */
+		
+		fclose(file);
+	}
 	
 	core->is_ingame = 1;
 	
@@ -950,17 +901,13 @@ internal b8 LoadWorld(char *world_name)
 
 internal void UnloadWorld()
 {
-	/*
-		Assert(core->is_ingame && core->run_data->world_name[0]);
-		
-		SaveWorld();
-		Assert(core->run_data->save_job_index != -1);
-		platform->WaitForJob(core->run_data->save_job_index, TS_WAIT_FOREVER);
-		
-		FreeRunData();
-		MemorySet(core->run_data, 0, sizeof(RunData));
-		core->is_ingame = 0;
-	 */
+	Assert(core->is_ingame && core->run_data->world_name[0]);
+	
+	SaveWorld();
+	
+	FreeRunData();
+	MemorySet(core->run_data, 0, sizeof(RunData));
+	core->is_ingame = 0;
 }
 
 internal int SaveQueuedChunks(void *job_data)
@@ -1128,182 +1075,27 @@ internal b8 QueueChunkForSave(Chunk *chunk)
 	return 1;
 }
 
-internal void SaveLevelData()
-{
-	/*
-		Assert(core->run_data->world_path[0]);
-		
-		char file_path[200] = "";
-		sprintf(file_path, "%slevel_data.save", core->run_data->world_path);
-		FILE *file = fopen(file_path, "wb");
-		Assert(file);
-		
-		// NOTE(randy): Save the player entity
-		{
-			EntitySave entity_save = {.flags = core->run_data->character_entity->flags, .type = core->run_data->character_entity->generalised_type};
-			MemoryCopy(entity_save.name, core->run_data->character_entity->name, sizeof(entity_save.name));
-			
-			WriteToFile(file, &entity_save, sizeof(EntitySave));
-			
-			WriteToFile(file, &core->run_data->character_entity->component_ids, sizeof(core->run_data->character_entity->component_ids));
-			for (i32 i = 1; i < COMPONENT_MAX; i++)
-			{
-				if (core->run_data->character_entity->component_ids[i])
-				{
-					WriteComponentToFile(file, core->run_data->character_entity->component_ids[i], i);
-				}
-			}
-		}
-		
-		// NOTE(randy): Save world data struct
-		WriteWorldSaveDataToFile(file, &core->run_data->world);
-		
-		// NOTE(randy): Save all of the entities that don't belong to chunks.
-		{
-			WriteToFile(file, &core->run_data->floating_entity_id_count, sizeof(i32));
-			for (i32 i = 0; i < core->run_data->floating_entity_id_count; i++)
-			{
-				Entity *entity = &core->run_data->entities[core->run_data->floating_entity_ids[i] - 1];
-				
-				EntitySave entity_save = {.flags = entity->flags, .type = entity->generalised_type};
-				MemoryCopy(entity_save.name, entity->name, sizeof(entity_save.name));
-				
-				WriteToFile(file, &entity_save, sizeof(EntitySave));
-			}
-			
-			for (i32 i = 1; i < COMPONENT_MAX; i++)
-			{
-				SerialiseEntityComponentsFromIDList(file, core->run_data->entities, &core->run_data->entity_components, core->run_data->floating_entity_ids, core->run_data->floating_entity_id_count, i);
-			}
-		}
-		
-		fclose(file);
-		Log("Level data saved to %s", file_path);
-	 */
-}
-
 internal void SaveWorld()
 {
-	/*
-		if (core->run_data->chunk_save_count > 0 || core->run_data->save_job_index != -1)
-		{
-			LogWarning("A save is already in progress.");
-			return;
-		}
-		
-		SaveLevelData();
-		
-		// NOTE(randy): Capture a snapshot of the world's data
-		{
-			MemoryCopy(&core->run_data->entities_snapshot, &core->run_data->entities, sizeof(core->run_data->entities));
-			MemoryCopy(&core->run_data->entity_count_snapshot, &core->run_data->entity_count, sizeof(core->run_data->entity_count));
-			MemoryCopy(&core->run_data->entity_components_snapshot, &core->run_data->entity_components, sizeof(core->run_data->entity_components));
-			MemoryCopy(&core->run_data->positional_entity_ids_snapshot, &core->run_data->positional_entity_ids,
-					   sizeof(core->run_data->positional_entity_ids));
-			MemoryCopy(&core->run_data->positional_entity_id_count_snapshot, &core->run_data->positional_entity_id_count, sizeof(core->run_data->positional_entity_id_count));
-			
-			for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
-			{
-				Chunk *chunk = &core->run_data->active_chunks[i];
-				
-				if (chunk->is_valid)
-				{
-					Assert(QueueChunkForSave(chunk));
-				}
-			}
-		}
-		
-		core->run_data->save_job_index = platform->QueueJob(0, SaveQueuedChunks, 0);
-	 */
+	Assert(core->run_data->world_path[0]);
 	
-	// TODO(randy): Try doing a malloc and free for the snapshop data to see if it's more performant and we won't need to store scratch in RunData
+	// NOTE(randy): Save global level data
+	char file_path[200] = "";
+	sprintf(file_path, "%slevel_data.save", core->run_data->world_path);
+	FILE *file = fopen(file_path, "wb");
+	Assert(file);
+	
+	WriteWorldSaveDataToFile(file, &core->run_data->world);
+	
+	for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
+	{
+		Entity *entity = &core->run_data->entities[i];
+		WriteEntityToFile(file, entity);
+	}
+	
+	fclose(file);
 }
 
-internal void FillChunkEntities()
-{
-	// NOTE(randy): Reset counts
-	/*
-		core->run_data->floating_entity_id_count = 0;
-		core->run_data->positional_entity_id_count = 0;
-		MemorySet(core->run_data->positional_entity_ids, 0, sizeof(core->run_data->positional_entity_ids));
-		MemorySet(core->run_data->floating_entity_ids, 0, sizeof(core->run_data->floating_entity_ids));
-		for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
-		{
-			Chunk *chunk = &core->run_data->active_chunks[i];
-			chunk->entity_count = 0;
-			chunk->entity_ids = 0;
-		}
-		
-		// NOTE(randy): Find all positional entities currently within the world.
-		Entity *positional_entities[MAX_POSITIONAL_ENTITIES];
-		i32 positional_entity_count = 0;
-		for (i32 i = 0; i < core->run_data->entity_count; i++)
-		{
-			Entity *entity = &core->run_data->entities[i];
-			if (entity->entity_id)
-			{
-				if (entity == core->run_data->character_entity)
-					continue;
-				
-				v2 position = {0.0f, 0.0f};
-				if (entity->component_ids[COMPONENT_position] && ((entity->flags & ENTITY_FLAGS_force_floating) != ENTITY_FLAGS_force_floating))
-				{
-					position = GetPositionComponentFromEntityID(entity->entity_id)->position;
-					if (entity->component_ids[COMPONENT_parallax])
-					{
-						position = GetParallaxComponentFromEntityID(entity->entity_id)->desired_position;
-					}
-					Chunk *chunk = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x),
-												   WorldSpaceToChunkIndex(position.y));
-					if (!chunk)
-					{
-						LogError("Item found outside of chunk.");
-						continue;
-					}
-					
-					chunk->entity_count++;
-					positional_entities[positional_entity_count++] = entity;
-				}
-				else
-				{
-					Assert(core->run_data->floating_entity_id_count + 1 < MAX_FLOATING_ENTITIES);
-					core->run_data->floating_entity_ids[core->run_data->floating_entity_id_count++] = entity->entity_id;
-				}
-			}
-		}
-		
-		// NOTE(randy): Allocate each chunk's local array
-		i32 id_count = 0;
-		for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
-		{
-			Chunk *chunk = &core->run_data->active_chunks[i];
-			if (chunk->is_valid && chunk->entity_count)
-			{
-				chunk->entity_ids = &core->run_data->positional_entity_ids[id_count];
-				id_count += chunk->entity_count;
-				core->run_data->positional_entity_id_count += chunk->entity_count;
-				chunk->entity_count = 0;
-			}
-		}
-		
-		// NOTE(randy): Put all positional entities into their desired chunk arrays.
-		for (i32 i = 0; i < positional_entity_count; i++)
-		{
-			Entity *entity = positional_entities[i];
-			
-			v2 position = GetPositionComponentFromEntityID(entity->entity_id)->position;
-			if (entity->component_ids[COMPONENT_parallax])
-			{
-				position = GetParallaxComponentFromEntityID(entity->entity_id)->desired_position;
-			}
-			Chunk *chunk = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x),
-										   WorldSpaceToChunkIndex(position.y));
-			Assert(chunk);
-			
-			chunk->entity_ids[chunk->entity_count++] = entity->entity_id;
-		}
-	 */
-}
 
 internal void UpdateChunks()
 {

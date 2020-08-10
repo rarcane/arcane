@@ -22,6 +22,7 @@ typedef struct SerialisationPointer
 	i32 offset;
 } SerialisationPointer;
 
+/*
 typedef uint32 EntityFlags;
 typedef enum GeneralisedEntityType GeneralisedEntityType;
 typedef struct EntitySave
@@ -30,12 +31,15 @@ typedef struct EntitySave
 	EntityFlags flags;
 	GeneralisedEntityType type;
 } EntitySave;
+ */
 
+/*
 typedef struct ComponentSaveHelper
 {
 	i32 entity_offset;
 	void *comp_data;
 } ComponentSaveHelper;
+ */
 
 typedef struct SkeletonChunk
 {

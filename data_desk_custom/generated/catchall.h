@@ -492,6 +492,7 @@ typedef enum EntityProperty EntityProperty;
 enum EntityProperty
 {
 ENTITY_PROPERTY_is_allocated,
+ENTITY_PROPERTY_is_character,
 ENTITY_PROPERTY_no_delete,
 ENTITY_PROPERTY_force_floating,
 ENTITY_PROPERTY_interactable,
@@ -503,9 +504,10 @@ ENTITY_PROPERTY_MAX,
 };
 static char *GetEntityPropertyName(EntityProperty type);
 
+#define ENTITY_PROPERTY_SIZE (((ENTITY_PROPERTY_MAX/64)+1))
 typedef struct Entity
 {
-u64 properties[((ENTITY_PROPERTY_MAX/64)+1)];
+u64 properties[ENTITY_PROPERTY_SIZE];
 i32 testint;
 char debug_name[100];
 v2 position;
@@ -521,6 +523,7 @@ f32 axis_x;
 f32 move_speed;
 f32 move_speed_mult;
 ArcEntityType entity_type;
+// @DoNotSerialise 
 char *current_general_state;
 ArcEntityAnimationState current_animation_state;
 Item item;
@@ -533,6 +536,7 @@ i32 hotbar_size;
 i32 active_hotbar_slot;
 Item grabbed_item;
 v2 grabbed_item_offset;
+// @DoNotSerialise 
 Item *grabbed_item_origin_slot;
 InteractableData interactable;
 StructureType structure_type;
@@ -666,7 +670,6 @@ i32 *entity_ids;
 typedef struct WorldSaveData
 {
 f32 elapsed_world_time;
-i32 *test_ptr;
 } WorldSaveData;
 
 typedef struct EntityEditorData
@@ -745,6 +748,10 @@ typedef struct ClientData
 {
 b32 bloom;
 } ClientData;
+
+static void WriteEntityToFile(FILE *file, Entity *data);
+
+static void ReadEntityFromFile(FILE *file, Entity *data);
 
 static void WriteWorldSaveDataToFile(FILE *file, WorldSaveData *data);
 

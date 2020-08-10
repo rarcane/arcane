@@ -464,6 +464,9 @@ switch(type)
 case ENTITY_PROPERTY_is_allocated:
 return "Is Allocated";
 break;
+case ENTITY_PROPERTY_is_character:
+return "Is Character";
+break;
 case ENTITY_PROPERTY_no_delete:
 return "No Delete";
 break;
@@ -532,23 +535,181 @@ break;
 }
 }
 
+static void WriteEntityToFile(FILE *file, Entity *data)
+{
+    for (i32 i = 0; i < ENTITY_PROPERTY_SIZE; i++)
+    {
+        WriteToFile(file, &data->properties[i], sizeof(u64));
+    }
+
+    WriteToFile(file, &data->testint, sizeof(data->testint));
+
+    for (i32 i = 0; i < 100; i++)
+    {
+        WriteToFile(file, &data->debug_name[i], sizeof(char));
+    }
+
+    WriteToFile(file, &data->position, sizeof(data->position));
+
+    WriteToFile(file, &data->sprite_data, sizeof(data->sprite_data));
+
+    WriteToFile(file, &data->is_flipped, sizeof(data->is_flipped));
+
+    WriteToFile(file, &data->is_background_sprite, sizeof(data->is_background_sprite));
+
+    WriteToFile(file, &data->animation_flags, sizeof(data->animation_flags));
+
+    WriteToFile(file, &data->current_frame, sizeof(data->current_frame));
+
+    WriteToFile(file, &data->interval_mult, sizeof(data->interval_mult));
+
+    WriteToFile(file, &data->frame_start_time, sizeof(data->frame_start_time));
+
+    WriteToFile(file, &data->physics, sizeof(data->physics));
+
+    WriteToFile(file, &data->axis_x, sizeof(data->axis_x));
+
+    WriteToFile(file, &data->move_speed, sizeof(data->move_speed));
+
+    WriteToFile(file, &data->move_speed_mult, sizeof(data->move_speed_mult));
+
+    WriteToFile(file, &data->entity_type, sizeof(data->entity_type));
+
+    WriteToFile(file, &data->current_animation_state, sizeof(data->current_animation_state));
+
+    WriteToFile(file, &data->item, sizeof(data->item));
+
+    WriteToFile(file, &data->parallax_amount, sizeof(data->parallax_amount));
+
+    WriteToFile(file, &data->desired_position, sizeof(data->desired_position));
+
+    for (i32 i = 0; i < MAX_INVENTORY_SLOTS; i++)
+    {
+        WriteToFile(file, &data->inventory[i], sizeof(Item));
+    }
+
+    WriteToFile(file, &data->inventory_size, sizeof(data->inventory_size));
+
+    for (i32 i = 0; i < MAX_HOTBAR_SLOTS; i++)
+    {
+        WriteToFile(file, &data->hotbar[i], sizeof(Item));
+    }
+
+    WriteToFile(file, &data->hotbar_size, sizeof(data->hotbar_size));
+
+    WriteToFile(file, &data->active_hotbar_slot, sizeof(data->active_hotbar_slot));
+
+    WriteToFile(file, &data->grabbed_item, sizeof(data->grabbed_item));
+
+    WriteToFile(file, &data->grabbed_item_offset, sizeof(data->grabbed_item_offset));
+
+    WriteToFile(file, &data->interactable, sizeof(data->interactable));
+
+    WriteToFile(file, &data->structure_type, sizeof(data->structure_type));
+
+    for (i32 i = 0; i < MAX_ITEMS_IN_BLUEPRINT_RECIPE; i++)
+    {
+        WriteToFile(file, &data->items_contributed[i], sizeof(Item));
+    }
+
+    WriteToFile(file, &data->station_data, sizeof(data->station_data));
+
+    WriteToFile(file, &data->station_type, sizeof(data->station_type));
+
+}
+
+static void ReadEntityFromFile(FILE *file, Entity *data)
+{
+    for (i32 i = 0; i < ENTITY_PROPERTY_SIZE; i++)
+    {
+        ReadFromFile(file, &data->properties[i], sizeof(u64));
+    }
+
+    ReadFromFile(file, &data->testint, sizeof(data->testint));
+
+    for (i32 i = 0; i < 100; i++)
+    {
+        ReadFromFile(file, &data->debug_name[i], sizeof(char));
+    }
+
+    ReadFromFile(file, &data->position, sizeof(data->position));
+
+    ReadFromFile(file, &data->sprite_data, sizeof(data->sprite_data));
+
+    ReadFromFile(file, &data->is_flipped, sizeof(data->is_flipped));
+
+    ReadFromFile(file, &data->is_background_sprite, sizeof(data->is_background_sprite));
+
+    ReadFromFile(file, &data->animation_flags, sizeof(data->animation_flags));
+
+    ReadFromFile(file, &data->current_frame, sizeof(data->current_frame));
+
+    ReadFromFile(file, &data->interval_mult, sizeof(data->interval_mult));
+
+    ReadFromFile(file, &data->frame_start_time, sizeof(data->frame_start_time));
+
+    ReadFromFile(file, &data->physics, sizeof(data->physics));
+
+    ReadFromFile(file, &data->axis_x, sizeof(data->axis_x));
+
+    ReadFromFile(file, &data->move_speed, sizeof(data->move_speed));
+
+    ReadFromFile(file, &data->move_speed_mult, sizeof(data->move_speed_mult));
+
+    ReadFromFile(file, &data->entity_type, sizeof(data->entity_type));
+
+    ReadFromFile(file, &data->current_animation_state, sizeof(data->current_animation_state));
+
+    ReadFromFile(file, &data->item, sizeof(data->item));
+
+    ReadFromFile(file, &data->parallax_amount, sizeof(data->parallax_amount));
+
+    ReadFromFile(file, &data->desired_position, sizeof(data->desired_position));
+
+    for (i32 i = 0; i < MAX_INVENTORY_SLOTS; i++)
+    {
+        ReadFromFile(file, &data->inventory[i], sizeof(Item));
+    }
+
+    ReadFromFile(file, &data->inventory_size, sizeof(data->inventory_size));
+
+    for (i32 i = 0; i < MAX_HOTBAR_SLOTS; i++)
+    {
+        ReadFromFile(file, &data->hotbar[i], sizeof(Item));
+    }
+
+    ReadFromFile(file, &data->hotbar_size, sizeof(data->hotbar_size));
+
+    ReadFromFile(file, &data->active_hotbar_slot, sizeof(data->active_hotbar_slot));
+
+    ReadFromFile(file, &data->grabbed_item, sizeof(data->grabbed_item));
+
+    ReadFromFile(file, &data->grabbed_item_offset, sizeof(data->grabbed_item_offset));
+
+    ReadFromFile(file, &data->interactable, sizeof(data->interactable));
+
+    ReadFromFile(file, &data->structure_type, sizeof(data->structure_type));
+
+    for (i32 i = 0; i < MAX_ITEMS_IN_BLUEPRINT_RECIPE; i++)
+    {
+        ReadFromFile(file, &data->items_contributed[i], sizeof(Item));
+    }
+
+    ReadFromFile(file, &data->station_data, sizeof(data->station_data));
+
+    ReadFromFile(file, &data->station_type, sizeof(data->station_type));
+
+}
+
 static void WriteWorldSaveDataToFile(FILE *file, WorldSaveData *data)
 {
     WriteToFile(file, &data->elapsed_world_time, sizeof(data->elapsed_world_time));
-
-            i32 ptr = 0;
-            WriteToFile(file, &ptr, sizeof(i32));
-            // TODO(randy)
 
 }
 
 static void ReadWorldSaveDataFromFile(FILE *file, WorldSaveData *data)
 {
     ReadFromFile(file, &data->elapsed_world_time, sizeof(data->elapsed_world_time));
-
-            i32 ptr = 0;
-            ReadFromFile(file, &ptr, sizeof(i32));
-            Assert(ptr == 0); // Not implemented yet
 
 }
 

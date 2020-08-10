@@ -388,7 +388,6 @@ internal void InitialiseRunData()
 		core->run_data->save_job_index = -1;
 		core->run_data->load_job_index = -1;
 		core->run_data->free_entity_id = 1;
-		InitialiseComponents();
 	 */
 	
 #ifdef DEVELOPER_ENVIRONMENT

@@ -98,7 +98,7 @@ StaticSprite :: enum
 {
 	@Data("'invalid_texture'", "{0.0f, 0.0f, 64.0f, 64.0f}", "{0.0f, 0.0f}")
 		INVALID,
-		
+	
 	@Data("'scenic/biome_ground'", "{0.0f, 0.0f, 100.0f, 150.0f}", "{0.0f, 147.0f}")
 		ground_arctic,
 	@Data("'scenic/biome_ground'", "{100.0f, 0.0f, 100.0f, 150.0f}", "{0.0f, 147.0f}")
@@ -220,13 +220,13 @@ StaticSprite :: enum
 		circle_icon,
 	@Data("'icon/side_arrow'", "{0.0f, 0.0f, 5.0f, 9.0f}", "{0.0f, 0.0f}")
 		side_arrow,
-
+	
 	// NOTE(randy): Structures
 	@Data("'structures/crafting_stump'", "{0.0f, 0.0f, 32.0f, 32.0f}", "{0.0f, 0.0f}")
 		crafting_stump,
 	@Data("'structures/crafting_tool'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{0.0f, 0.0f}")
 		crafting_tool,
-
+	
 	// NOTE(randy): Items
 	@Data("'item/flint_sword'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{6.0f, 2.0f}")
 		flint_sword_icon,
@@ -236,7 +236,7 @@ StaticSprite :: enum
 		flint,
 	@Data("'item/twig'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{0.0f, 0.0f}")
 		twig,
-
+	
 	@Data("'item/shia'", "{0.0f, 0.0f, 800.0f, 1200.0f}", "{0.0f, 0.0f}")
 		shia,
 	@Data("'item/shia2'", "{0.0f, 0.0f, 590.0f, 631.0f}", "{0.0f, 0.0f}")
@@ -260,14 +260,14 @@ DynamicSprite :: enum
 {
 	@Data("'invalid_texture'", "{0.0f, 0.0f, 64.0f, 64.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		INVALID,
-		
+	
 	@Data("'entity/player/player_animations'", "{0.0f, 192.0f, 64.0f, 64.0f}", "{0.0f, 0.0f}", 4, 0.15f)
 		player_idle,
 	@Data("'entity/player/player_animations'", "{0.0f, 256.0f, 64.0f, 64.0f}", "{0.0f, 0.0f}", 8, 0.1f)
 		player_walking,
 	@Data("'entity/player/player_animations'", "{0.0f, 320.0f, 64.0f, 64.0f}", "{0.0f, 0.0f}", 8, 0.1f)
 		player_sprinting,
-		
+	
 	@Data("'scenic/trees/birch_idle'", "{0.0f, 0.0f, 120.0f, 160.0f}", "{0.0f, 0.0f}", 6, 0.1f)
 		birch_tree1,
 	@Data("'scenic/trees/birch_idle'", "{0.0f, 160.0f, 120.0f, 160.0f}", "{0.0f, 0.0f}", 6, 0.1f)
@@ -502,6 +502,7 @@ InteractableData :: struct
 EntityProperty :: enum
 {
 	is_allocated,
+	is_character,
 	no_delete,
 	force_floating,
 	interactable,
@@ -511,54 +512,58 @@ EntityProperty :: enum
 	physical,
 }
 
+ENTITY_PROPERTY_SIZE :: (ENTITY_PROPERTY_MAX / 64 + 1)
+
+@SerialisableStruct
 Entity :: struct
 {
-	properties : u64[ENTITY_PROPERTY_MAX / 64 + 1];
+	properties : u64[ENTITY_PROPERTY_SIZE];
 	testint : i32;
 	debug_name : char[100];
-
+	
 	position : v2;
-
+	
 	sprite_data : SpriteData;
 	is_flipped : b8;
 	is_background_sprite : b8; // Temp solution
-
+	
 	animation_flags : AnimationFlags;
 	current_frame : i32;
 	interval_mult : f32;
 	frame_start_time : f32;
-
+	
 	// NOTE(randy): physics body
 	physics : PhysicsBodyData;
-
+	
 	// NOTE(randy): movement
 	axis_x : f32;
 	move_speed : f32;
 	move_speed_mult : f32;
-
+	
 	// NOTE(randy): arcentity
 	entity_type : ArcEntityType;
-	current_general_state : *char;
+	@DoNotSerialise
+		current_general_state : *char;
 	current_animation_state : ArcEntityAnimationState;
-
+	
 	item : Item;
-
+	
 	// NOTE(randy): Parallax
 	parallax_amount : v2;
 	desired_position : v2;
-
+	
 	// NOTE(randy): Particle emitter
-/*
-	life_time : f32;
-	start_time : f32;
-	particle_flags : ParticleEmitterFlags;
-	particles : Particle[MAX_PARTICLE_AMOUNT]; // Need to put this somewhere else?
-	particle_count : i32;
-	free_particle_index : i32;
-	begin_callback : EmitterBeginCallback;
-	finish_callback : EmitterFinishCallback;
-*/
-
+	/*
+		life_time : f32;
+		start_time : f32;
+		particle_flags : ParticleEmitterFlags;
+		particles : Particle[MAX_PARTICLE_AMOUNT]; // Need to put this somewhere else?
+		particle_count : i32;
+		free_particle_index : i32;
+		begin_callback : EmitterBeginCallback;
+		finish_callback : EmitterFinishCallback;
+	*/
+	
 	// NOTE(randy): Player data
 	inventory : Item[MAX_INVENTORY_SLOTS];
 	inventory_size : i32;
@@ -567,15 +572,16 @@ Entity :: struct
 	active_hotbar_slot : i32;
 	grabbed_item : Item;
 	grabbed_item_offset : v2;
-	grabbed_item_origin_slot : *Item;
-
+	@DoNotSerialise
+		grabbed_item_origin_slot : *Item; // TODO(randy): serialisation issues?
+	
 	// NOTE(randy): interactable
 	interactable : InteractableData;
-
+	
 	// NOTE(randy): blueprint
 	structure_type : StructureType;
 	items_contributed : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
-
+	
 	// NOTE(randy): station comp
 	station_data : StationData;
 	station_type : StationType;
@@ -705,7 +711,6 @@ ChunkSave :: struct
 WorldSaveData :: struct
 {
 	elapsed_world_time : f32;
-	test_ptr : *i32;
 }
 
 EntityEditorData :: struct
@@ -747,42 +752,42 @@ RunData :: struct // Game data used for run-time operations
 {
 	active_chunks : Chunk[MAX_WORLD_CHUNKS];
 	active_chunk_count : i32;
-
-/*
-	// TODO(randy): Extract these into their own dynamically allocated buffer
-	save_job_index : i32;
-	entities_snapshot : Entity[MAX_ENTITIES];
-	entity_count_snapshot : i32;
-	entity_components_snapshot : ComponentSet;
-	positional_entity_ids_snapshot : i32[MAX_POSITIONAL_ENTITIES];
-	positional_entity_id_count_snapshot : i32;
-	chunk_saves : ChunkSave[MAX_WORLD_CHUNKS];
-	chunk_save_count : i32;
-
-	load_job_index : i32;
-	not_first_time_temp : b8;
-	loaded_entities : EntitySave[MAX_ENTITIES];
-	loaded_entity_count : i32;
-	loaded_entity_components : ComponentSet;
-	loaded_positional_entity_ids : i32[MAX_POSITIONAL_ENTITIES];
-	loaded_positional_entity_id_count : i32;
-	chunk_load_queue : ChunkSave[MAX_WORLD_CHUNKS];
-	chunk_load_queue_count : i32;
-	chunk_generate_queue : *ChunkSave[MAX_WORLD_CHUNKS];
-	chunk_generate_queue_count : i32;
-*/
-
-	entities : Entity[ENTITY_TABLE_SIZE];
-
-/*
-	free_entity_id : i32;
-	positional_entity_ids : i32[MAX_POSITIONAL_ENTITIES];
-	positional_entity_id_count : i32;
-	floating_entity_ids : i32[MAX_FLOATING_ENTITIES];
-	floating_entity_id_count : i32;
 	
-	entity_components : ComponentSet;
- */
+	/*
+		// TODO(randy): Extract these into their own dynamically allocated buffer
+		save_job_index : i32;
+		entities_snapshot : Entity[MAX_ENTITIES];
+		entity_count_snapshot : i32;
+		entity_components_snapshot : ComponentSet;
+		positional_entity_ids_snapshot : i32[MAX_POSITIONAL_ENTITIES];
+		positional_entity_id_count_snapshot : i32;
+		chunk_saves : ChunkSave[MAX_WORLD_CHUNKS];
+		chunk_save_count : i32;
+	
+		load_job_index : i32;
+		not_first_time_temp : b8;
+		loaded_entities : EntitySave[MAX_ENTITIES];
+		loaded_entity_count : i32;
+		loaded_entity_components : ComponentSet;
+		loaded_positional_entity_ids : i32[MAX_POSITIONAL_ENTITIES];
+		loaded_positional_entity_id_count : i32;
+		chunk_load_queue : ChunkSave[MAX_WORLD_CHUNKS];
+		chunk_load_queue_count : i32;
+		chunk_generate_queue : *ChunkSave[MAX_WORLD_CHUNKS];
+		chunk_generate_queue_count : i32;
+	*/
+	
+	entities : Entity[ENTITY_TABLE_SIZE];
+	
+	/*
+		free_entity_id : i32;
+		positional_entity_ids : i32[MAX_POSITIONAL_ENTITIES];
+		positional_entity_id_count : i32;
+		floating_entity_ids : i32[MAX_FLOATING_ENTITIES];
+		floating_entity_id_count : i32;
+		
+		entity_components : ComponentSet;
+	 */
 	
 	world_name : char[50];
 	world_path : char[300];
@@ -807,14 +812,14 @@ RunData :: struct // Game data used for run-time operations
 	// interaction_state : InteractionState; ??
 	
 	current_interactable : *InteractableData;
-
+	
 	engaged_station_entity : *Entity;
-
+	
 	is_blueprinting : b8;
-
+	
 	queued_texture_count : i32;
 	queued_textures : QueuedTexture[MAX_QUEUED_TEXTURES];
-
+	
 	/* ~ Editor ~ */
 	editor_state : EditorState;
 	saved_debug_flags : DebugFlags;
