@@ -12,6 +12,7 @@ typedef void (*TriggerCallback)(OverlappedColliderInfo);
 typedef void (*InteractCallback)(Entity *);
 typedef void (*EnterInteractableCallback)(Entity *);
 typedef void (*ExitInteractableCallback)(Entity *);
+typedef void (*StructureBuildCallback)(Entity *);
 
 internal void InitialiseRunData();
 internal void FreeRunData();

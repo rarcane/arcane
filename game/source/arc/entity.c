@@ -43,6 +43,12 @@ EntitySetProperty(Entity *entity, EntityProperty property)
 	entity->properties[property/64] |= ((u64)1 << (property%64));
 }
 
+internal void
+EntityUnsetProperty(Entity *entity, EntityProperty property)
+{
+	entity->properties[property/64] &= ~((u64)1 << (property%64));
+}
+
 internal b32
 IncrementEntity(Entity **entity_ptr)
 {

@@ -488,6 +488,9 @@ break;
 case ENTITY_PROPERTY_physical:
 return "Physical";
 break;
+case ENTITY_PROPERTY_blueprint:
+return "Blueprint";
+break;
 default:
 return "INVALID";
 break;
@@ -609,7 +612,7 @@ static void WriteEntityToFile(FILE *file, Entity *data)
 
     for (i32 i = 0; i < MAX_ITEMS_IN_BLUEPRINT_RECIPE; i++)
     {
-        WriteToFile(file, &data->items_contributed[i], sizeof(Item));
+        WriteToFile(file, &data->remaining_items_in_blueprint[i], sizeof(Item));
     }
 
     WriteToFile(file, &data->station_data, sizeof(data->station_data));
@@ -692,7 +695,7 @@ static void ReadEntityFromFile(FILE *file, Entity *data)
 
     for (i32 i = 0; i < MAX_ITEMS_IN_BLUEPRINT_RECIPE; i++)
     {
-        ReadFromFile(file, &data->items_contributed[i], sizeof(Item));
+        ReadFromFile(file, &data->remaining_items_in_blueprint[i], sizeof(Item));
     }
 
     ReadFromFile(file, &data->station_data, sizeof(data->station_data));

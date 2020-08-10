@@ -63,7 +63,7 @@ internal void InteractableUpdate()
 	}
 	
 	// NOTE(randy): Interaction dispatch
-	core->run_data->current_interactable = &highest_priority_entity->interactable;
+	core->run_data->current_interactable = highest_priority_entity;
 	if (highest_priority_entity && platform->key_pressed[KEY_e])
 	{
 		platform->key_pressed[KEY_e] = 0;
@@ -268,7 +268,7 @@ internal void StationUpdate()
 						if (!recipe_item->type)
 							break;
 						
-						RemoveItemFromContianer(*recipe_item,
+						RemoveItemFromContainer(*recipe_item,
 												character->inventory,
 												character->inventory_size);
 					}
@@ -299,9 +299,54 @@ internal void StationUpdate()
 	}
 }
 
+internal void OnCraftingStumpBuild(Entity *entity)
+{
+	EntityUnsetProperty(entity, ENTITY_PROPERTY_blueprint);
+	EntitySetProperty(entity, ENTITY_PROPERTY_physical);
+	entity->sprite_data.tint = v4u(1.0f);
+	entity->interactable.interact_callback = OnCraftingTableInteract;
+	entity->interactable.enter_interactable_callback = 0;
+	entity->interactable.exit_interactable_callback = 0;
+	entity->station_type = STATION_TYPE_crafting;
+	c2AABB aabb = {
+		.min = c2V(-15.0f, -25.0f),
+		.max = c2V(15.0f, 0.0f),
+	};
+	entity->physics.shape.aabb = aabb;
+	entity->physics.shape_type = C2_SHAPE_TYPE_aabb;
+	entity->physics.material.restitution = 0.1f;
+	entity->physics.material.static_friction = 0.1f;
+	entity->physics.material.dynamic_friction = 0.1f;
+	entity->physics.gravity_multiplier = 0.0f;
+	entity->physics.type |= PHYSICS_BODY_TYPE_FLAGS_station;
+	entity->physics.collide_against |= PHYSICS_BODY_TYPE_FLAGS_item;
+}
+
 internal void OnBlueprintInteract(Entity *entity)
 {
-	Log("called");
+	Entity *character = GetCharacterEntity();
+	
+	b8 blueprint_unfinished = 0;
+	for (i32 i = 0; i < MAX_ITEMS_IN_BLUEPRINT_RECIPE; i++)
+	{
+		if (!entity->remaining_items_in_blueprint[i].type)
+			continue;
+		
+		i32 removed_amount = RemoveItemFromContainer(entity->remaining_items_in_blueprint[i],
+													 character->inventory,
+													 character->inventory_size);
+		entity->remaining_items_in_blueprint[i].stack_size -= removed_amount;
+		
+		if (entity->remaining_items_in_blueprint[i].stack_size)
+			blueprint_unfinished = 1;
+	}
+	
+	if (!blueprint_unfinished)
+	{
+		StructureTypeData *structure_data = &global_structure_type_data[entity->structure_type];
+		if (structure_data->on_structure_build)
+			structure_data->on_structure_build(entity);
+	}
 }
 
 internal void OnBlueprintEnter(Entity *entity)
@@ -369,7 +414,6 @@ internal void BlueprintUpdate()
 					selected_category + 1 : 1;
 			}
 			
-			// NOTE(randy): this is a comment.
 			for (i32 i = 1; i < STRUCTURE_CATEGORY_MAX;  i++)
 			{
 				v2 render_pos = v2view(v2(character->position.x + start_pos + (i - 1) * 20.0f, character->position.y - 60.0f));
@@ -394,7 +438,6 @@ internal void BlueprintUpdate()
 					} break;
 				}
 				
-				// NOTE(randy): i have successfully documented this function with adequate comments.
 				StaticSpriteData *category_sprite = &global_static_sprite_data[texture];
 				ArcPushTexture(category_sprite->texture_atlas,
 							   0,
@@ -464,7 +507,6 @@ internal void BlueprintUpdate()
 				v2 render_pos = v2view(v2(character->position.x + start_pos + i * 20.0f, character->position.y - 60.0f));
 				v2 render_size = v2zoom(v2(20.0f, 20.0f));
 				
-				// NOTE(randy): i have successfully documented this function with adequate comments.
 				StaticSpriteData *sprite = &global_static_sprite_data[structures[i].data->icon_sprite];
 				ArcPushTexture(sprite->texture_atlas,
 							   0,
@@ -491,12 +533,17 @@ internal void BlueprintUpdate()
 			if (platform->left_mouse_pressed)
 			{
 				Entity *new_structure = NewEntity();
+				EntitySetProperty(new_structure, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(new_structure, ENTITY_PROPERTY_interactable);
+				EntitySetProperty(new_structure, ENTITY_PROPERTY_blueprint);
+				
 				new_structure->position = GetMousePositionInWorldSpace();
 				
 				new_structure->sprite_data.static_sprite = selected_structure->world_sprite;
 				new_structure->sprite_data.tint = v4(0.5f, 0.5f, 1.0f, 0.4f);
 				
 				new_structure->structure_type = structures[selected_structure_index].type;
+				StructureTypeData *structure_data = &global_structure_type_data[new_structure->structure_type];
 				
 				new_structure->interactable.bounds.aabb.min = c2V(-30.0f, -30.0f);
 				new_structure->interactable.bounds.aabb.max = c2V(30.0f, 30.0f);
@@ -505,15 +552,57 @@ internal void BlueprintUpdate()
 				new_structure->interactable.interact_callback = OnBlueprintInteract;
 				new_structure->interactable.enter_interactable_callback = OnBlueprintEnter;
 				new_structure->interactable.exit_interactable_callback = OnBlueprintExit;
+				
+				MemoryCopy(new_structure->remaining_items_in_blueprint,
+						   structure_data->recipe,
+						   sizeof(structure_data->recipe));
 			}
 		}
 	}
 	
 	// NOTE(randy): $Remaining Items UI
-	/*
-		if ()
+	Entity *current_blueprint = core->run_data->current_interactable;
+	if (current_blueprint &&
+		current_blueprint->structure_type)
+	{
+		StructureTypeData *structure_data = &global_structure_type_data[current_blueprint->structure_type];
+		
+		i32 remaining_count = 0;
+		for (i32 i = 0; i < MAX_ITEMS_IN_BLUEPRINT_RECIPE; i++)
 		{
-			
+			if (current_blueprint->remaining_items_in_blueprint[i].stack_size &&
+				current_blueprint->remaining_items_in_blueprint[i].type)
+				remaining_count++;
 		}
-	 */
+		
+		f32 start_pos = (remaining_count - 1) * 20.0f / -2.0f;
+		
+		i32 index = 0;
+		for (i32 i = 0; i < MAX_ITEMS_IN_BLUEPRINT_RECIPE; i++)
+		{
+			Item *item = &current_blueprint->remaining_items_in_blueprint[i];
+			ItemTypeData *item_data = &global_item_type_data[item->type];
+			
+			if (item->stack_size > 0)
+			{
+				StaticSpriteData *sprite = &global_static_sprite_data[item_data->icon_sprite];
+				
+				v2 render_pos = v2view(V2AddV2(v2(current_blueprint->position.x + start_pos + index * 20.0f,
+												  current_blueprint->position.y - 40.0f),
+											   v2(sprite->source.z / -2.0f,
+												  -sprite->source.w)));
+				v2 render_size = v2zoom(v2(sprite->source.z, sprite->source.w));
+				
+				ArcPushTexture(sprite->texture_atlas,
+							   0,
+							   sprite->source,
+							   v4(render_pos.x, render_pos.y,
+								  render_size.x, render_size.y),
+							   v4u(1.0f),
+							   LAYER_HUD);
+				
+				index++;
+			}
+		}
+	}
 }

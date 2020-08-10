@@ -450,19 +450,20 @@ StructureTypeData :: struct
 	icon_sprite : StaticSprite;
 	world_sprite : StaticSprite;
 	recipe : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
+	on_structure_build : StructureBuildCallback;
 }
 @XMacro
 StructureType :: enum
 {
-	@Data("'none'", STRUCTURE_CATEGORY_none, STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, "{0}")
+	@Data("'none'", STRUCTURE_CATEGORY_none, STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, "{0}", 0)
 		none,
-	@Data("'Shia'", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia, STATIC_SPRITE_shia, "{0}")
+	@Data("'Shia'", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia, STATIC_SPRITE_shia, "{0}", 0)
 		shia,
-	@Data("'Crafting Stump'", STRUCTURE_CATEGORY_crafting, STATIC_SPRITE_crafting_stump, STATIC_SPRITE_crafting_stump, "{0}")
+	@Data("'Crafting Stump'", STRUCTURE_CATEGORY_crafting, STATIC_SPRITE_crafting_stump, STATIC_SPRITE_crafting_stump, "{ {ITEM_TYPE_twig, 5}, {ITEM_TYPE_flint, 2} }", OnCraftingStumpBuild)
 		crafting_stump,
-	@Data("'Shia 2'", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, "{0}")
+	@Data("'Shia 2'", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, "{0}", 0)
 		shia2,
-	@Data("'Base'", STRUCTURE_CATEGORY_base, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, "{0}")
+	@Data("'Base'", STRUCTURE_CATEGORY_base, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, "{0}", 0)
 		base,
 }
 
@@ -510,6 +511,7 @@ EntityProperty :: enum
 	flipbook,
 	parallaxable,
 	physical,
+	blueprint,
 }
 
 ENTITY_PROPERTY_SIZE :: (ENTITY_PROPERTY_MAX / 64 + 1)
@@ -580,7 +582,7 @@ Entity :: struct
 	
 	// NOTE(randy): blueprint
 	structure_type : StructureType;
-	items_contributed : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
+	remaining_items_in_blueprint : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
 	
 	// NOTE(randy): station comp
 	station_data : StationData;
@@ -811,7 +813,7 @@ RunData :: struct // Game data used for run-time operations
 	disable_interaction : b8;
 	// interaction_state : InteractionState; ??
 	
-	current_interactable : *InteractableData;
+	current_interactable : *Entity;
 	
 	engaged_station_entity : *Entity;
 	

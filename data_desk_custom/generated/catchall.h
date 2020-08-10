@@ -436,6 +436,7 @@ StructureCategory category;
 StaticSprite icon_sprite;
 StaticSprite world_sprite;
 Item recipe[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
+StructureBuildCallback on_structure_build;
 } StructureTypeData;
 
 typedef enum StructureType StructureType;
@@ -449,11 +450,11 @@ STRUCTURE_TYPE_base,
 STRUCTURE_TYPE_MAX,
 };
 global StructureTypeData global_structure_type_data[STRUCTURE_TYPE_MAX] = {
-    { "none", STRUCTURE_CATEGORY_none, STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, {0}, },
-    { "Shia", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia, STATIC_SPRITE_shia, {0}, },
-    { "Crafting Stump", STRUCTURE_CATEGORY_crafting, STATIC_SPRITE_crafting_stump, STATIC_SPRITE_crafting_stump, {0}, },
-    { "Shia 2", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, {0}, },
-    { "Base", STRUCTURE_CATEGORY_base, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, {0}, },
+    { "none", STRUCTURE_CATEGORY_none, STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, {0}, 0, },
+    { "Shia", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia, STATIC_SPRITE_shia, {0}, 0, },
+    { "Crafting Stump", STRUCTURE_CATEGORY_crafting, STATIC_SPRITE_crafting_stump, STATIC_SPRITE_crafting_stump, { {ITEM_TYPE_twig, 5}, {ITEM_TYPE_flint, 2} }, OnCraftingStumpBuild, },
+    { "Shia 2", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, {0}, 0, },
+    { "Base", STRUCTURE_CATEGORY_base, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, {0}, 0, },
 };
 
 static char *GetStructureTypeName(StructureType type);
@@ -500,6 +501,7 @@ ENTITY_PROPERTY_sprite,
 ENTITY_PROPERTY_flipbook,
 ENTITY_PROPERTY_parallaxable,
 ENTITY_PROPERTY_physical,
+ENTITY_PROPERTY_blueprint,
 ENTITY_PROPERTY_MAX,
 };
 static char *GetEntityPropertyName(EntityProperty type);
@@ -540,7 +542,7 @@ v2 grabbed_item_offset;
 Item *grabbed_item_origin_slot;
 InteractableData interactable;
 StructureType structure_type;
-Item items_contributed[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
+Item remaining_items_in_blueprint[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
 StationData station_data;
 StationType station_type;
 } Entity;
@@ -730,7 +732,7 @@ i32 queued_dynamic_cell_count;
 Entity *character_entity;
 b8 disable_player_input;
 b8 disable_interaction;
-InteractableData *current_interactable;
+Entity *current_interactable;
 Entity *engaged_station_entity;
 b8 is_blueprinting;
 i32 queued_texture_count;

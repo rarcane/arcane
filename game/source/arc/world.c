@@ -277,6 +277,7 @@ internal void GenerateTestPlatform()
 		Entity *entity = NewEntity();
 		EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
 		EntitySetProperty(entity, ENTITY_PROPERTY_interactable);
+		EntitySetProperty(entity, ENTITY_PROPERTY_physical);
 		
 		entity->position = v2(-100, 0);
 		entity->sprite_data.static_sprite = STATIC_SPRITE_crafting_stump;
