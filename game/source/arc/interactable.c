@@ -1,6 +1,6 @@
 internal void InteractableUpdate()
 {
-	if (core->run_data->disable_interaction)
+	if (!CanPlayerInteract())
 	{
 		core->run_data->current_interactable = 0;
 		return;
@@ -77,12 +77,11 @@ internal void InteractableUpdate()
 
 internal void OnCraftingTableInteract(Entity *entity)
 {
-	Assert(!core->run_data->engaged_station_entity);
-	
-	Assert(entity->station_type == STATION_TYPE_crafting);
+	Assert(!core->run_data->engaged_station_entity &&
+		   entity->station_type == STATION_TYPE_crafting);
 	
 	core->run_data->engaged_station_entity = entity;
-	core->run_data->disable_interaction = 1;
+	core->run_data->character_state |= CHARACTER_STATE_is_crafting;;
 }
 
 internal b8 IsRecipeCraftable(CraftingRecipeType recipe, Item *item_pool, i32 item_count)
@@ -134,7 +133,7 @@ internal void StationUpdate()
 	if (core->run_data->engaged_station_entity)
 	{
 		Entity *engaged_station = core->run_data->engaged_station_entity;
-		core->run_data->disable_player_input = 1;
+		Assert(!CanPlayerInteract());
 		
 		switch (core->run_data->engaged_station_entity->station_type)
 		{
@@ -274,8 +273,7 @@ internal void StationUpdate()
 					}
 					
 					core->run_data->engaged_station_entity = 0;
-					core->run_data->disable_player_input = 0;
-					core->run_data->disable_interaction = 0;
+					core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;
 					
 					Entity *entity = NewGroundItemEntity(v2(engaged_station->position.x,
 															engaged_station->position.y - 43.0f),
@@ -290,12 +288,12 @@ internal void StationUpdate()
 		
 		if (platform->key_pressed[KEY_esc])
 		{
+			core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;
 			core->run_data->engaged_station_entity = 0;
-			core->run_data->disable_player_input = 0;
-			core->run_data->disable_interaction = 0;
+			
+			platform->key_pressed[KEY_esc] = 0;
+			platform->key_down[KEY_esc] = 0;
 		}
-		
-		TsPlatformCaptureKeyboard();
 	}
 }
 
@@ -364,14 +362,15 @@ internal void BlueprintUpdate()
 	Entity *character = core->run_data->character_entity;
 	
 	if (character->hotbar[character->active_hotbar_slot].type == ITEM_TYPE_crafting_tool &&
-		platform->left_mouse_pressed)
+		platform->left_mouse_pressed &&
+		CanPlayerInteract())
 	{
-		core->run_data->disable_player_input = 1;
-		core->run_data->is_blueprinting = 1;
+		core->run_data->character_state |= CHARACTER_STATE_is_blueprinting;
+		platform->left_mouse_pressed = 0;
 	}
 	
 	// NOTE(randy): Blueprint UI & placement
-	if (core->run_data->is_blueprinting)
+	if (!!(core->run_data->character_state & CHARACTER_STATE_is_blueprinting))
 	{
 		local_persist i32 selected_category = (STRUCTURE_CATEGORY_MAX - 1) / 2 + 1;
 		
@@ -381,8 +380,7 @@ internal void BlueprintUpdate()
 		
 		if (platform->right_mouse_pressed)
 		{
-			core->run_data->is_blueprinting = 0;
-			core->run_data->disable_player_input = 0;
+			core->run_data->character_state &= ~CHARACTER_STATE_is_blueprinting;
 			return;
 		}
 		
@@ -558,6 +556,14 @@ internal void BlueprintUpdate()
 						   sizeof(structure_data->recipe));
 			}
 		}
+		
+		if (platform->key_pressed[KEY_esc])
+		{
+			core->run_data->character_state &= ~CHARACTER_STATE_is_blueprinting;
+			
+			platform->key_pressed[KEY_esc] = 0;
+			platform->key_down[KEY_esc] = 0;
+		}
 	}
 	
 	// NOTE(randy): $Remaining Items UI
@@ -601,8 +607,26 @@ internal void BlueprintUpdate()
 							   v4u(1.0f),
 							   LAYER_HUD);
 				
+				char remaining_count[5];
+				sprintf(remaining_count, "%i", item->stack_size);
+				
+				Ts2dPushText(Ts2dGetDefaultFont(),
+							 0,
+							 v4u(1.0f),
+							 render_pos,
+							 0.3f,
+							 remaining_count);
+				
 				index++;
 			}
 		}
 	}
+}
+
+internal b8 CanPlayerInteract()
+{
+	return !(core->run_data->character_state & CHARACTER_STATE_is_crafting) &&
+		!(core->run_data->character_state & CHARACTER_STATE_is_backpack_open) &&
+		!(core->run_data->character_state & CHARACTER_STATE_is_blueprinting) &&
+		!core->run_data->is_paused;
 }

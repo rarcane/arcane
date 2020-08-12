@@ -460,16 +460,15 @@ internal void grabbed_icon_canvas_render_callback(char *name, v4 rect, v2 mouse,
 
 internal void DrawGameUI()
 {
-	local_persist b8 is_backpack_open = 0;
 	if (platform->key_pressed[KEY_b])
 	{
-		is_backpack_open = !is_backpack_open;
+		core->run_data->character_state ^= CHARACTER_STATE_is_backpack_open;
 	}
 	
 	Entity *character = GetCharacterEntity();
 	
 	// NOTE(randy): Draw backpack UI.
-	if (is_backpack_open)
+	if (!!(core->run_data->character_state & CHARACTER_STATE_is_backpack_open))
 	{
 		TsUIBeginInputGroup();
 		{
@@ -570,6 +569,14 @@ internal void DrawGameUI()
 			
 			TsUIPopSize();
 			TsUIPopPosition();
+		}
+		
+		if (platform->key_pressed[KEY_esc])
+		{
+			core->run_data->character_state &= ~CHARACTER_STATE_is_backpack_open;
+			
+			platform->key_pressed[KEY_esc] = 0;
+			platform->key_down[KEY_esc] = 0;
 		}
 	}
 	
@@ -717,125 +724,124 @@ internal void DrawGameUI()
 		
 		case EDITOR_STATE_collision:
 		{ /*
-									for (i32 i = 0; i < core->run_data->entity_count; i++)
-									{
-										Entity *seg_entity = &core->run_data->entities[i];
-										if ((entity->flags & ENTITY_FLAGS_sprite) == 0)
-										{
-											continue;
-										}
-										
-										if (seg_entity->generalised_type == GENERALISED_ENTITY_TYPE_ground)
-										{
-											PhysicsBodyComponent *seg_body = GetPhysicsBodyComponentFromEntityID(seg_entity->entity_id);
-											PositionComponent *seg_pos = GetPositionComponentFromEntityID(seg_entity->entity_id);
-											
-											StaticSpriteData *circle_sprite = &global_static_sprite_data[STATIC_SPRITE_circle_icon];
-											f32 circle_size = 4.0f;
-											
-											v4 p1_tint = {0.9f, 0.9f, 0.9f, 1.0f};
-											v2 p1 = V2AddV2(seg_pos->position, seg_body->shape.line.p1);
-											v2 p2 = V2AddV2(seg_pos->position, seg_body->shape.line.p2);
-											
-											if (core->run_data->collision_editor.is_seg_grabbed)
-											{
-												if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p1, 1.0f))
-												{
-													p1 = GetMousePositionInWorldSpace();
-													seg_body->shape.line.p1 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
-												}
-												else if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p2, 1.0f))
-												{
-													p2 = GetMousePositionInWorldSpace();
-													seg_body->shape.line.p2 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
-												}
-											}
-											
-											c2Shape p1_box;
-											p1_box.aabb.min = c2V(p1.x - circle_size / 2.0f, p1.y - circle_size / 2.0f);
-											p1_box.aabb.max = c2V(p1.x + circle_size / 2.0f, p1.y + circle_size / 2.0f);
-											if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), p1_box, C2_SHAPE_TYPE_aabb))
-											{
-												p1_tint = v4u(1.0f);
-												
-												if (platform->left_mouse_pressed)
-												{
-													if (platform->key_down[KEY_alt])
-													{
-														v2 mid_point = V2DivideF32(V2SubtractV2(p2, p1), 2.0f);
-														seg_body->shape.line.p2 = V2AddV2(mid_point, seg_body->shape.line.p1);
-														
-														Entity *new_segment = NewEntity("Ground Seg", GENERALISED_ENTITY_TYPE_ground);
-														AddPositionComponent(new_segment);
-														AddPhysicsBodyComponent(new_segment);
-														GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape_type = C2_SHAPE_TYPE_line;
-														GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->mass_data = seg_body->mass_data;
-														GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->material = seg_body->material;
-														GetPositionComponentFromEntityID(new_segment->entity_id)->position = V2AddV2(V2AddV2(mid_point, seg_body->shape.line.p1), seg_pos->position);
-														GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape.line.p2 = V2SubtractV2(p2, GetPositionComponentFromEntityID(new_segment->entity_id)->position);
-													}
-													else
-													{
-														core->run_data->collision_editor.grabbed_seg_pos = p1;
-														core->run_data->collision_editor.is_seg_grabbed = 1;
-														TsPlatformCaptureMouseButtons();
-													}
-												}
-												else if (platform->key_pressed[KEY_delete])
-												{
-													DeleteEntity(seg_entity);
-													for (int j = 0; j < core->run_data->entity_count; j++)
-													{
-														Entity *seg_entity_2 = &core->run_data->entities[j];
-														if (seg_entity_2->entity_id && seg_entity_2->generalised_type == GENERALISED_ENTITY_TYPE_ground)
-														{
-															PhysicsBodyComponent *seg_body_2 = GetPhysicsBodyComponentFromEntityID(seg_entity_2->entity_id);
-															PositionComponent *seg_pos_2 = GetPositionComponentFromEntityID(seg_entity_2->entity_id);
-															
-															v2 p2_2 = V2AddV2(seg_body_2->shape.line.p2, seg_pos_2->position);
-															if (EqualV2(p2_2, p1, 1.0f))
-															{
-																seg_body_2->shape.line.p2 = V2SubtractV2(p2, seg_pos_2->position);
-																break;
-						 }
-														}
-													}
-													
-													if (core->run_data->collision_editor.selected_ground_seg == seg_entity)
-														core->run_data->collision_editor.selected_ground_seg = 0;
-												}
-											}
-											
-											v2 p1_render = v2view(V2SubtractF32(p1, circle_size / 2.0f));
-											Ts2dPushTintedTexture(circle_sprite->texture_atlas, circle_sprite->source, v4(p1_render.x, p1_render.y, circle_size * core->camera_zoom, circle_size * core->camera_zoom), p1_tint);
-										}
-									}
-									
-									if (core->left_mouse_released)
-									{
-										core->run_data->collision_editor.grabbed_seg_pos = v2(0.0f, 0.0f);
-										core->run_data->collision_editor.is_seg_grabbed = 0;
-									}
-									else if (platform->left_mouse_down)
-									{
-										core->run_data->collision_editor.grabbed_seg_pos = GetMousePositionInWorldSpace();
-									}*/
+																					for (i32 i = 0; i < core->run_data->entity_count; i++)
+																					{
+																						Entity *seg_entity = &core->run_data->entities[i];
+																						if ((entity->flags & ENTITY_FLAGS_sprite) == 0)
+																						{
+																							continue;
+																						}
+																						
+																						if (seg_entity->generalised_type == GENERALISED_ENTITY_TYPE_ground)
+																						{
+																							PhysicsBodyComponent *seg_body = GetPhysicsBodyComponentFromEntityID(seg_entity->entity_id);
+																							PositionComponent *seg_pos = GetPositionComponentFromEntityID(seg_entity->entity_id);
+																							
+																							StaticSpriteData *circle_sprite = &global_static_sprite_data[STATIC_SPRITE_circle_icon];
+																							f32 circle_size = 4.0f;
+																							
+																							v4 p1_tint = {0.9f, 0.9f, 0.9f, 1.0f};
+																							v2 p1 = V2AddV2(seg_pos->position, seg_body->shape.line.p1);
+																							v2 p2 = V2AddV2(seg_pos->position, seg_body->shape.line.p2);
+																							
+																							if (core->run_data->collision_editor.is_seg_grabbed)
+																							{
+																								if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p1, 1.0f))
+																								{
+																									p1 = GetMousePositionInWorldSpace();
+																									seg_body->shape.line.p1 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
+																								}
+																								else if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p2, 1.0f))
+																								{
+																									p2 = GetMousePositionInWorldSpace();
+																									seg_body->shape.line.p2 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
+																								}
+																							}
+																							
+																							c2Shape p1_box;
+																							p1_box.aabb.min = c2V(p1.x - circle_size / 2.0f, p1.y - circle_size / 2.0f);
+																							p1_box.aabb.max = c2V(p1.x + circle_size / 2.0f, p1.y + circle_size / 2.0f);
+																							if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), p1_box, C2_SHAPE_TYPE_aabb))
+																							{
+																								p1_tint = v4u(1.0f);
+																								
+																								if (platform->left_mouse_pressed)
+																								{
+																									if (platform->key_down[KEY_alt])
+																									{
+																										v2 mid_point = V2DivideF32(V2SubtractV2(p2, p1), 2.0f);
+																										seg_body->shape.line.p2 = V2AddV2(mid_point, seg_body->shape.line.p1);
+																										
+																										Entity *new_segment = NewEntity("Ground Seg", GENERALISED_ENTITY_TYPE_ground);
+																										AddPositionComponent(new_segment);
+																										AddPhysicsBodyComponent(new_segment);
+																										GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape_type = C2_SHAPE_TYPE_line;
+																										GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->mass_data = seg_body->mass_data;
+																										GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->material = seg_body->material;
+																										GetPositionComponentFromEntityID(new_segment->entity_id)->position = V2AddV2(V2AddV2(mid_point, seg_body->shape.line.p1), seg_pos->position);
+																										GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape.line.p2 = V2SubtractV2(p2, GetPositionComponentFromEntityID(new_segment->entity_id)->position);
+																									}
+																									else
+																									{
+																										core->run_data->collision_editor.grabbed_seg_pos = p1;
+																										core->run_data->collision_editor.is_seg_grabbed = 1;
+																										TsPlatformCaptureMouseButtons();
+																									}
+																								}
+																								else if (platform->key_pressed[KEY_delete])
+																								{
+																									DeleteEntity(seg_entity);
+																									for (int j = 0; j < core->run_data->entity_count; j++)
+																									{
+																										Entity *seg_entity_2 = &core->run_data->entities[j];
+																										if (seg_entity_2->entity_id && seg_entity_2->generalised_type == GENERALISED_ENTITY_TYPE_ground)
+																										{
+																											PhysicsBodyComponent *seg_body_2 = GetPhysicsBodyComponentFromEntityID(seg_entity_2->entity_id);
+																											PositionComponent *seg_pos_2 = GetPositionComponentFromEntityID(seg_entity_2->entity_id);
+																											
+																											v2 p2_2 = V2AddV2(seg_body_2->shape.line.p2, seg_pos_2->position);
+																											if (EqualV2(p2_2, p1, 1.0f))
+																											{
+																												seg_body_2->shape.line.p2 = V2SubtractV2(p2, seg_pos_2->position);
+																												break;
+																		 }
+																										}
+																									}
+																									
+																									if (core->run_data->collision_editor.selected_ground_seg == seg_entity)
+																										core->run_data->collision_editor.selected_ground_seg = 0;
+																								}
+																							}
+																							
+																							v2 p1_render = v2view(V2SubtractF32(p1, circle_size / 2.0f));
+																							Ts2dPushTintedTexture(circle_sprite->texture_atlas, circle_sprite->source, v4(p1_render.x, p1_render.y, circle_size * core->camera_zoom, circle_size * core->camera_zoom), p1_tint);
+																						}
+																					}
+																					
+																					if (core->left_mouse_released)
+																					{
+																						core->run_data->collision_editor.grabbed_seg_pos = v2(0.0f, 0.0f);
+																						core->run_data->collision_editor.is_seg_grabbed = 0;
+																					}
+																					else if (platform->left_mouse_down)
+																					{
+																						core->run_data->collision_editor.grabbed_seg_pos = GetMousePositionInWorldSpace();
+																					}*/
 			
 			break;
 		}
 	}
 #endif
 	
-	local_persist b8 is_pause_menu_open = 0;
 	if (platform->key_pressed[KEY_esc])
 	{
-		is_pause_menu_open = !is_pause_menu_open;
-		if (is_pause_menu_open)
+		core->run_data->is_paused = !core->run_data->is_paused;
+		if (core->run_data->is_paused)
 			core->world_delta_mult = 0.0f;
 		else
 			core->world_delta_mult = 1.0f;
 	}
-	if (is_pause_menu_open)
+	if (core->run_data->is_paused)
 	{
 		Ts2dPushRectangleBlur(v4(0.0f, 0.0f, core->render_width, core->render_height), 0.5f);
 		
@@ -846,13 +852,13 @@ internal void DrawGameUI()
 			TsUIDivider();
 			if (TsUIMenuButton("Resume"))
 			{
-				is_pause_menu_open = 0;
+				core->run_data->is_paused = 0;
 				core->world_delta_mult = 1.0f;
 			}
 			if (TsUIMenuButton("Main Menu"))
 			{
 				UnloadWorld();
-				is_pause_menu_open = 0;
+				core->run_data->is_paused = 0;
 				core->world_delta_mult = 1.0f;
 			}
 		}

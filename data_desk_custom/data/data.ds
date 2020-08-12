@@ -747,6 +747,14 @@ QueuedTexture :: struct
 	layer : f32;
 }
 
+CharacterState :: flags
+{
+	// disable_player_input,
+	is_crafting,
+	is_backpack_open,
+	is_blueprinting,
+}
+
 MAX_POSITIONAL_ENTITIES :: 2048
 MAX_FLOATING_ENTITIES :: 2048
 ENTITY_TABLE_SIZE :: (MAX_POSITIONAL_ENTITIES + MAX_FLOATING_ENTITIES)
@@ -808,16 +816,15 @@ RunData :: struct // Game data used for run-time operations
 	queued_dynamic_cells : CellHelper[MAX_DYNAMIC_CELLS];
 	queued_dynamic_cell_count : i32;
 	
+	is_paused : b8;
+	
 	character_entity : *Entity;
-	disable_player_input : b8;
-	disable_interaction : b8;
+	character_state : CharacterState;
 	// interaction_state : InteractionState; ??
 	
 	current_interactable : *Entity;
 	
 	engaged_station_entity : *Entity;
-	
-	is_blueprinting : b8;
 	
 	queued_texture_count : i32;
 	queued_textures : QueuedTexture[MAX_QUEUED_TEXTURES];

@@ -4,8 +4,7 @@ internal void PreMoveUpdatePlayer()
 	Assert(character);
 	
 	b8 is_sprinting = 0;
-	if (!core->run_data->disable_player_input &&
-		core->run_data->editor_state == EDITOR_STATE_none &&
+	if (CanPlayerMove() &&
 		platform->key_down[KEY_a])
 	{
 		if (platform->key_down[KEY_d])
@@ -23,8 +22,7 @@ internal void PreMoveUpdatePlayer()
 			}
 		}
 	}
-	else if (!core->run_data->disable_player_input &&
-			 core->run_data->editor_state == EDITOR_STATE_none &&
+	else if (CanPlayerMove() &&
 			 platform->key_down[KEY_d])
 	{
 		if (platform->key_down[KEY_a])
@@ -50,8 +48,7 @@ internal void PreMoveUpdatePlayer()
 	if (fabsf(character->physics.velocity.x) < fabsf(character->move_speed * character->axis_x))
 		character->physics.force.x = character->axis_x * (1200 / character->physics.mass_data.inv_mass);
 	
-	if (!core->run_data->disable_player_input &&
-		core->run_data->editor_state == EDITOR_STATE_none &&
+	if (CanPlayerMove() &&
 		platform->key_pressed[KEY_space])
 	{
 		character->physics.force.y = -10000.0f / character->physics.mass_data.inv_mass;
@@ -88,11 +85,13 @@ internal void PreMoveUpdatePlayer()
 	// Acceleration calculations?
 	
 	// NOTE(randy): Player keybind stuff
-	if (platform->key_pressed[KEY_1])
+	if (CanPlayerMove() &&
+		platform->key_pressed[KEY_1])
 	{
 		character->active_hotbar_slot = 0;
 	}
-	else if (platform->key_pressed[KEY_2])
+	else if (CanPlayerMove() &&
+			 platform->key_pressed[KEY_2])
 	{
 		character->active_hotbar_slot = 1;
 	}
@@ -100,4 +99,10 @@ internal void PreMoveUpdatePlayer()
 
 internal void PostMoveUpdatePlayer()
 {
+}
+
+internal b8 CanPlayerMove()
+{
+	return !(core->run_data->character_state & CHARACTER_STATE_is_crafting) &&
+		!(core->run_data->character_state & CHARACTER_STATE_is_blueprinting);
 }

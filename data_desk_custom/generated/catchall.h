@@ -709,6 +709,11 @@ v4 tint;
 f32 layer;
 } QueuedTexture;
 
+#define CHARACTER_STATE_is_crafting (1<<0)
+#define CHARACTER_STATE_is_backpack_open (1<<1)
+#define CHARACTER_STATE_is_blueprinting (1<<2)
+typedef uint32 CharacterState;
+
 #define MAX_POSITIONAL_ENTITIES (2048)
 #define MAX_FLOATING_ENTITIES (2048)
 #define ENTITY_TABLE_SIZE ((MAX_POSITIONAL_ENTITIES+MAX_FLOATING_ENTITIES))
@@ -729,12 +734,11 @@ i32 dynamic_cell_count;
 i32 free_dynamic_cell_id;
 CellHelper queued_dynamic_cells[MAX_DYNAMIC_CELLS];
 i32 queued_dynamic_cell_count;
+b8 is_paused;
 Entity *character_entity;
-b8 disable_player_input;
-b8 disable_interaction;
+CharacterState character_state;
 Entity *current_interactable;
 Entity *engaged_station_entity;
-b8 is_blueprinting;
 i32 queued_texture_count;
 QueuedTexture queued_textures[MAX_QUEUED_TEXTURES];
 EditorState editor_state;
