@@ -5,7 +5,6 @@
 #define MAX_WORLD_CHUNKS (128)
 #define CHUNK_SIZE (256)
 #define MAX_DYNAMIC_CELLS (16384)
-#define MAX_QUEUED_TEXTURES (1024)
 typedef enum GeneralisedEntityType GeneralisedEntityType;
 enum GeneralisedEntityType
 {
@@ -699,19 +698,52 @@ b8 is_chunk_selected;
 SkeletonChunk selected_chunk;
 } ChunkEditorData;
 
-typedef struct QueuedTexture
+typedef enum RenderableType RenderableType;
+enum RenderableType
+{
+RENDERABLE_TYPE_texture,
+RENDERABLE_TYPE_text,
+RENDERABLE_TYPE_MAX,
+};
+static char *GetRenderableTypeName(RenderableType type);
+
+typedef struct Texture
 {
 Ts2dTexture *texture;
 i32 flags;
 v4 source;
 v4 destination;
 v4 tint;
+} Texture;
+
+typedef struct Text
+{
+Ts2dFont *font;
+i32 flags;
+v4 colour;
+v2 pos;
+f32 font_scale;
+char text[512];
+} Text;
+
+#define MAX_QUEUED_RENDERABLES (1024)
+typedef union Renderable
+{
+Texture texture;
+Text text;
+} Renderable;
+
+typedef struct SortRenderable
+{
+Renderable data;
+RenderableType type;
 f32 layer;
-} QueuedTexture;
+} SortRenderable;
 
 #define CHARACTER_STATE_is_crafting (1<<0)
 #define CHARACTER_STATE_is_backpack_open (1<<1)
 #define CHARACTER_STATE_is_blueprinting (1<<2)
+#define CHARACTER_STATE_arcane_mode (1<<3)
 typedef uint32 CharacterState;
 
 #define MAX_POSITIONAL_ENTITIES (2048)
@@ -739,8 +771,8 @@ Entity *character_entity;
 CharacterState character_state;
 Entity *current_interactable;
 Entity *engaged_station_entity;
-i32 queued_texture_count;
-QueuedTexture queued_textures[MAX_QUEUED_TEXTURES];
+SortRenderable queued_renderables[MAX_QUEUED_RENDERABLES];
+i32 queued_renderable_count;
 EditorState editor_state;
 DebugFlags saved_debug_flags;
 DebugFlags debug_flags;

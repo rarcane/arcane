@@ -120,38 +120,86 @@ internal void RenderSprites()
 	}
 	
 	// NOTE(randy): Sort & render everything in the queue
-	for (i32 step = 0; step < core->run_data->queued_texture_count - 1; step++)
+	for (i32 step = 0; step < core->run_data->queued_renderable_count - 1; step++)
 	{
-		for (i32 i = 0; i < (core->run_data->queued_texture_count - step - 1); i++)
+		for (i32 i = 0; i < (core->run_data->queued_renderable_count - step - 1); i++)
 		{
-			QueuedTexture *queued_texture = &core->run_data->queued_textures[i];
+			SortRenderable *queued_texture = &core->run_data->queued_renderables[i];
 			if (queued_texture->layer < (queued_texture + 1)->layer)
 			{
-				QueuedTexture temp_texture = core->run_data->queued_textures[i];
-				core->run_data->queued_textures[i] = core->run_data->queued_textures[i + 1];
-				core->run_data->queued_textures[i + 1] = temp_texture;
+				SortRenderable temp_renderable = core->run_data->queued_renderables[i];
+				core->run_data->queued_renderables[i] = core->run_data->queued_renderables[i + 1];
+				core->run_data->queued_renderables[i + 1] = temp_renderable;
 			}
 		}
 	}
 	
-	for (i32 i = 0; i < core->run_data->queued_texture_count; i++)
+	for (i32 i = 0; i < core->run_data->queued_renderable_count; i++)
 	{
-		QueuedTexture *queued_texture = &core->run_data->queued_textures[i];
-		Ts2dPushTintedTextureWithFlags(queued_texture->texture, queued_texture->flags, queued_texture->source, queued_texture->destination, queued_texture->tint);
+		SortRenderable *queued_renderable = &core->run_data->queued_renderables[i];
+		switch (queued_renderable->type)
+		{
+			case RENDERABLE_TYPE_texture :
+			{
+				Ts2dPushTintedTextureWithFlags(queued_renderable->data.texture.texture,
+											   queued_renderable->data.texture.flags,
+											   queued_renderable->data.texture.source,
+											   queued_renderable->data.texture.destination,
+											   queued_renderable->data.texture.tint);
+			} break;
+			
+			case RENDERABLE_TYPE_text :
+			{
+				Ts2dPushText(queued_renderable->data.text.font,
+							 queued_renderable->data.text.flags,
+							 queued_renderable->data.text.colour,
+							 queued_renderable->data.text.pos,
+							 queued_renderable->data.text.font_scale,
+							 queued_renderable->data.text.text);
+			} break;
+			
+			default :
+			Assert(0);
+			break;
+		}
 	}
 	
-	core->run_data->queued_texture_count = 0;
+	core->run_data->queued_renderable_count = 0;
+}
+
+internal void ArcPushText(Ts2dFont *font, i32 flags, v4 colour, v2 pos, f32 font_scale, char *text, f32 layer)
+{
+	SortRenderable new_text = {
+		.data = {
+			.text = {
+				.font = font,
+				.flags = flags,
+				.colour = colour,
+				.pos = pos,
+				.font_scale = font_scale,
+			},
+		},
+		.type = RENDERABLE_TYPE_text,
+		.layer = layer,
+	};
+	strcpy(new_text.data.text.text, text);
+	core->run_data->queued_renderables[core->run_data->queued_renderable_count++] = new_text;
 }
 
 internal void ArcPushTexture(Ts2dTexture *texture, i32 flags, v4 source, v4 destination, v4 tint, f32 layer)
 {
-	QueuedTexture new_texture = {
-		.texture = texture,
-		.flags = flags,
-		.source = source,
-		.destination = destination,
-		.tint = tint,
+	SortRenderable new_texture = {
+		.data = {
+			.texture = {
+				.texture = texture,
+				.flags = flags,
+				.source = source,
+				.destination = destination,
+				.tint = tint,
+			},
+		},
+		.type = RENDERABLE_TYPE_texture,
 		.layer = layer,
 	};
-	core->run_data->queued_textures[core->run_data->queued_texture_count++] = new_texture;
+	core->run_data->queued_renderables[core->run_data->queued_renderable_count++] = new_texture;
 }

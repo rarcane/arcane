@@ -40,6 +40,17 @@ internal void WorldUpdate()
     
 	BlueprintUpdate();
 	
+	// NOTE(randy): Temp Arcane mode testing
+	{
+		if (platform->key_pressed[KEY_x])
+			core->run_data->character_state ^= CHARACTER_STATE_arcane_mode;
+		
+		if (core->run_data->character_state & CHARACTER_STATE_arcane_mode)
+			core->run_data->character_entity->sprite_data.tint = v4(1.0f, 0.0f, 0.0f, 0.5f);
+		else
+			core->run_data->character_entity->sprite_data.tint = v4u(1.0f);
+	}
+	
 #ifdef DEVELOPER_TOOLS
 	RenderColliders();
 #endif
@@ -261,8 +272,8 @@ internal void GenerateTestPlatform()
 			
 			entity->physics.shape.line = line;
 			entity->physics.shape_type = C2_SHAPE_TYPE_line;
-			entity->physics.material.static_friction = 0.2f;
-			entity->physics.material.dynamic_friction = 0.2f;
+			entity->physics.material.static_friction = 0.7f;
+			entity->physics.material.dynamic_friction = 0.7f;
 			entity->physics.mass_data.mass = 0.0f;
 			entity->physics.mass_data.inv_mass = 0.0f;
 			entity->physics.type |= PHYSICS_BODY_TYPE_FLAGS_ground;
@@ -270,38 +281,6 @@ internal void GenerateTestPlatform()
 			
 			previous_ground_entity = entity;
 		}
-	}
-	
-	// NOTE(randy): $Spawn structures
-	{
-		Entity *entity = NewEntity();
-		EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-		EntitySetProperty(entity, ENTITY_PROPERTY_interactable);
-		EntitySetProperty(entity, ENTITY_PROPERTY_physical);
-		
-		entity->position = v2(-100, 0);
-		entity->sprite_data.static_sprite = STATIC_SPRITE_crafting_stump;
-		
-		entity->interactable.bounds.aabb.min = c2V(-30.0f, -30.0f);
-		entity->interactable.bounds.aabb.max = c2V(30.0f, 30.0f);
-		entity->interactable.bounds_type = C2_SHAPE_TYPE_aabb;
-		entity->interactable.priority = 1.0f;
-		entity->interactable.interact_callback = OnCraftingTableInteract;
-		
-		entity->station_type = STATION_TYPE_crafting;
-		
-		c2AABB aabb = {
-			.min = c2V(-15.0f, -25.0f),
-			.max = c2V(15.0f, 0.0f),
-		};
-		entity->physics.shape.aabb = aabb;
-		entity->physics.shape_type = C2_SHAPE_TYPE_aabb;
-		entity->physics.material.restitution = 0.1f;
-		entity->physics.material.static_friction = 0.1f;
-		entity->physics.material.dynamic_friction = 0.1f;
-		entity->physics.gravity_multiplier = 0.0f;
-		entity->physics.type |= PHYSICS_BODY_TYPE_FLAGS_station;
-		entity->physics.collide_against |= PHYSICS_BODY_TYPE_FLAGS_item;
 	}
 	
 	// NOTE(randy): $Generate background stuff
@@ -813,8 +792,8 @@ internal b8 CreateWorld(char *world_name)
 		character->physics.mass_data.mass = 60.0f;
 		character->physics.mass_data.inv_mass = 1.0f / character->physics.mass_data.mass;
 		character->physics.material.restitution = 0.4f;
-		character->physics.material.static_friction = 0.5f;
-		character->physics.material.dynamic_friction = 0.5f;
+		character->physics.material.static_friction = 0.9f;
+		character->physics.material.dynamic_friction = 0.9f;
 		character->physics.gravity_multiplier = 1.0f;
 		character->physics.collide_against |= PHYSICS_BODY_TYPE_FLAGS_ground;
 		character->physics.type |= PHYSICS_BODY_TYPE_FLAGS_character;

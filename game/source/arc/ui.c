@@ -724,109 +724,109 @@ internal void DrawGameUI()
 		
 		case EDITOR_STATE_collision:
 		{ /*
-																					for (i32 i = 0; i < core->run_data->entity_count; i++)
-																					{
-																						Entity *seg_entity = &core->run_data->entities[i];
-																						if ((entity->flags & ENTITY_FLAGS_sprite) == 0)
-																						{
-																							continue;
-																						}
-																						
-																						if (seg_entity->generalised_type == GENERALISED_ENTITY_TYPE_ground)
-																						{
-																							PhysicsBodyComponent *seg_body = GetPhysicsBodyComponentFromEntityID(seg_entity->entity_id);
-																							PositionComponent *seg_pos = GetPositionComponentFromEntityID(seg_entity->entity_id);
-																							
-																							StaticSpriteData *circle_sprite = &global_static_sprite_data[STATIC_SPRITE_circle_icon];
-																							f32 circle_size = 4.0f;
-																							
-																							v4 p1_tint = {0.9f, 0.9f, 0.9f, 1.0f};
-																							v2 p1 = V2AddV2(seg_pos->position, seg_body->shape.line.p1);
-																							v2 p2 = V2AddV2(seg_pos->position, seg_body->shape.line.p2);
-																							
-																							if (core->run_data->collision_editor.is_seg_grabbed)
-																							{
-																								if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p1, 1.0f))
-																								{
-																									p1 = GetMousePositionInWorldSpace();
-																									seg_body->shape.line.p1 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
-																								}
-																								else if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p2, 1.0f))
-																								{
-																									p2 = GetMousePositionInWorldSpace();
-																									seg_body->shape.line.p2 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
-																								}
-																							}
-																							
-																							c2Shape p1_box;
-																							p1_box.aabb.min = c2V(p1.x - circle_size / 2.0f, p1.y - circle_size / 2.0f);
-																							p1_box.aabb.max = c2V(p1.x + circle_size / 2.0f, p1.y + circle_size / 2.0f);
-																							if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), p1_box, C2_SHAPE_TYPE_aabb))
-																							{
-																								p1_tint = v4u(1.0f);
-																								
-																								if (platform->left_mouse_pressed)
-																								{
-																									if (platform->key_down[KEY_alt])
-																									{
-																										v2 mid_point = V2DivideF32(V2SubtractV2(p2, p1), 2.0f);
-																										seg_body->shape.line.p2 = V2AddV2(mid_point, seg_body->shape.line.p1);
-																										
-																										Entity *new_segment = NewEntity("Ground Seg", GENERALISED_ENTITY_TYPE_ground);
-																										AddPositionComponent(new_segment);
-																										AddPhysicsBodyComponent(new_segment);
-																										GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape_type = C2_SHAPE_TYPE_line;
-																										GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->mass_data = seg_body->mass_data;
-																										GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->material = seg_body->material;
-																										GetPositionComponentFromEntityID(new_segment->entity_id)->position = V2AddV2(V2AddV2(mid_point, seg_body->shape.line.p1), seg_pos->position);
-																										GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape.line.p2 = V2SubtractV2(p2, GetPositionComponentFromEntityID(new_segment->entity_id)->position);
-																									}
-																									else
-																									{
-																										core->run_data->collision_editor.grabbed_seg_pos = p1;
-																										core->run_data->collision_editor.is_seg_grabbed = 1;
-																										TsPlatformCaptureMouseButtons();
-																									}
-																								}
-																								else if (platform->key_pressed[KEY_delete])
-																								{
-																									DeleteEntity(seg_entity);
-																									for (int j = 0; j < core->run_data->entity_count; j++)
-																									{
-																										Entity *seg_entity_2 = &core->run_data->entities[j];
-																										if (seg_entity_2->entity_id && seg_entity_2->generalised_type == GENERALISED_ENTITY_TYPE_ground)
-																										{
-																											PhysicsBodyComponent *seg_body_2 = GetPhysicsBodyComponentFromEntityID(seg_entity_2->entity_id);
-																											PositionComponent *seg_pos_2 = GetPositionComponentFromEntityID(seg_entity_2->entity_id);
-																											
-																											v2 p2_2 = V2AddV2(seg_body_2->shape.line.p2, seg_pos_2->position);
-																											if (EqualV2(p2_2, p1, 1.0f))
-																											{
-																												seg_body_2->shape.line.p2 = V2SubtractV2(p2, seg_pos_2->position);
-																												break;
-																		 }
-																										}
-																									}
-																									
-																									if (core->run_data->collision_editor.selected_ground_seg == seg_entity)
-																										core->run_data->collision_editor.selected_ground_seg = 0;
-																								}
-																							}
-																							
-																							v2 p1_render = v2view(V2SubtractF32(p1, circle_size / 2.0f));
-																							Ts2dPushTintedTexture(circle_sprite->texture_atlas, circle_sprite->source, v4(p1_render.x, p1_render.y, circle_size * core->camera_zoom, circle_size * core->camera_zoom), p1_tint);
-																						}
-																					}
-																					
-																					if (core->left_mouse_released)
-																					{
-																						core->run_data->collision_editor.grabbed_seg_pos = v2(0.0f, 0.0f);
-																						core->run_data->collision_editor.is_seg_grabbed = 0;
-																					}
-																					else if (platform->left_mouse_down)
-																					{
-																						core->run_data->collision_editor.grabbed_seg_pos = GetMousePositionInWorldSpace();
-																					}*/
+																																																																																																								for (i32 i = 0; i < core->run_data->entity_count; i++)
+																																																																																																								{
+																																																																																																									Entity *seg_entity = &core->run_data->entities[i];
+																																																																																																									if ((entity->flags & ENTITY_FLAGS_sprite) == 0)
+																																																																																																									{
+																																																																																																										continue;
+																																																																																																									}
+																																																																																																									
+																																																																																																									if (seg_entity->generalised_type == GENERALISED_ENTITY_TYPE_ground)
+																																																																																																									{
+																																																																																																										PhysicsBodyComponent *seg_body = GetPhysicsBodyComponentFromEntityID(seg_entity->entity_id);
+																																																																																																										PositionComponent *seg_pos = GetPositionComponentFromEntityID(seg_entity->entity_id);
+																																																																																																										
+																																																																																																										StaticSpriteData *circle_sprite = &global_static_sprite_data[STATIC_SPRITE_circle_icon];
+																																																																																																										f32 circle_size = 4.0f;
+																																																																																																										
+																																																																																																										v4 p1_tint = {0.9f, 0.9f, 0.9f, 1.0f};
+																																																																																																										v2 p1 = V2AddV2(seg_pos->position, seg_body->shape.line.p1);
+																																																																																																										v2 p2 = V2AddV2(seg_pos->position, seg_body->shape.line.p2);
+																																																																																																										
+																																																																																																										if (core->run_data->collision_editor.is_seg_grabbed)
+																																																																																																										{
+																																																																																																											if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p1, 1.0f))
+																																																																																																											{
+																																																																																																												p1 = GetMousePositionInWorldSpace();
+																																																																																																												seg_body->shape.line.p1 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
+																																																																																																											}
+																																																																																																											else if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p2, 1.0f))
+																																																																																																											{
+																																																																																																												p2 = GetMousePositionInWorldSpace();
+																																																																																																												seg_body->shape.line.p2 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
+																																																																																																											}
+																																																																																																										}
+																																																																																																										
+																																																																																																										c2Shape p1_box;
+																																																																																																										p1_box.aabb.min = c2V(p1.x - circle_size / 2.0f, p1.y - circle_size / 2.0f);
+																																																																																																										p1_box.aabb.max = c2V(p1.x + circle_size / 2.0f, p1.y + circle_size / 2.0f);
+																																																																																																										if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), p1_box, C2_SHAPE_TYPE_aabb))
+																																																																																																										{
+																																																																																																											p1_tint = v4u(1.0f);
+																																																																																																											
+																																																																																																											if (platform->left_mouse_pressed)
+																																																																																																											{
+																																																																																																												if (platform->key_down[KEY_alt])
+																																																																																																												{
+																																																																																																													v2 mid_point = V2DivideF32(V2SubtractV2(p2, p1), 2.0f);
+																																																																																																													seg_body->shape.line.p2 = V2AddV2(mid_point, seg_body->shape.line.p1);
+																																																																																																													
+																																																																																																													Entity *new_segment = NewEntity("Ground Seg", GENERALISED_ENTITY_TYPE_ground);
+																																																																																																													AddPositionComponent(new_segment);
+																																																																																																													AddPhysicsBodyComponent(new_segment);
+																																																																																																													GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape_type = C2_SHAPE_TYPE_line;
+																																																																																																													GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->mass_data = seg_body->mass_data;
+																																																																																																													GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->material = seg_body->material;
+																																																																																																													GetPositionComponentFromEntityID(new_segment->entity_id)->position = V2AddV2(V2AddV2(mid_point, seg_body->shape.line.p1), seg_pos->position);
+																																																																																																													GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape.line.p2 = V2SubtractV2(p2, GetPositionComponentFromEntityID(new_segment->entity_id)->position);
+																																																																																																												}
+																																																																																																												else
+																																																																																																												{
+																																																																																																													core->run_data->collision_editor.grabbed_seg_pos = p1;
+																																																																																																													core->run_data->collision_editor.is_seg_grabbed = 1;
+																																																																																																													TsPlatformCaptureMouseButtons();
+																																																																																																												}
+																																																																																																											}
+																																																																																																											else if (platform->key_pressed[KEY_delete])
+																																																																																																											{
+																																																																																																												DeleteEntity(seg_entity);
+																																																																																																												for (int j = 0; j < core->run_data->entity_count; j++)
+																																																																																																												{
+																																																																																																													Entity *seg_entity_2 = &core->run_data->entities[j];
+																																																																																																													if (seg_entity_2->entity_id && seg_entity_2->generalised_type == GENERALISED_ENTITY_TYPE_ground)
+																																																																																																													{
+																																																																																																														PhysicsBodyComponent *seg_body_2 = GetPhysicsBodyComponentFromEntityID(seg_entity_2->entity_id);
+																																																																																																														PositionComponent *seg_pos_2 = GetPositionComponentFromEntityID(seg_entity_2->entity_id);
+																																																																																																														
+																																																																																																														v2 p2_2 = V2AddV2(seg_body_2->shape.line.p2, seg_pos_2->position);
+																																																																																																														if (EqualV2(p2_2, p1, 1.0f))
+																																																																																																														{
+																																																																																																															seg_body_2->shape.line.p2 = V2SubtractV2(p2, seg_pos_2->position);
+																																																																																																															break;
+																																																																																																					 }
+																																																																																																													}
+																																																																																																												}
+																																																																																																												
+																																																																																																												if (core->run_data->collision_editor.selected_ground_seg == seg_entity)
+																																																																																																													core->run_data->collision_editor.selected_ground_seg = 0;
+																																																																																																											}
+																																																																																																										}
+																																																																																																										
+																																																																																																										v2 p1_render = v2view(V2SubtractF32(p1, circle_size / 2.0f));
+																																																																																																										Ts2dPushTintedTexture(circle_sprite->texture_atlas, circle_sprite->source, v4(p1_render.x, p1_render.y, circle_size * core->camera_zoom, circle_size * core->camera_zoom), p1_tint);
+																																																																																																									}
+																																																																																																								}
+																																																																																																								
+																																																																																																								if (core->left_mouse_released)
+																																																																																																								{
+																																																																																																									core->run_data->collision_editor.grabbed_seg_pos = v2(0.0f, 0.0f);
+																																																																																																									core->run_data->collision_editor.is_seg_grabbed = 0;
+																																																																																																								}
+																																																																																																								else if (platform->left_mouse_down)
+																																																																																																								{
+																																																																																																									core->run_data->collision_editor.grabbed_seg_pos = GetMousePositionInWorldSpace();
+																																																																																																								}*/
 			
 			break;
 		}
@@ -1529,214 +1529,201 @@ RemoveCellDynamism(cell);
 		TsUIEndInputGroup();
 	}
 	
-	// NOTE(randy): Draw windows.
-	/*
-		if (pin_windows || core->run_data->editor_state)
+	DrawCraftingUI();
+}
+
+internal void DrawCraftingUI()
+{
+	local_persist CraftingRecipeType selected_recipe = CRAFTING_RECIPE_TYPE_none;
+	local_persist i32 selected_recipe_index = -1;
+	
+	if (!(core->run_data->character_state & CHARACTER_STATE_arcane_mode))
+		return;
+	
+	// NOTE(randy): Get items in range
+	Entity *overlapping_entities[MAX_OVERLAPPING_COLLIDERS];
+	c2Shape shape = {
+		.aabb = { .min = c2V(-100.0f, -100.0f), .max = c2V(100.0f, 100.0f) },
+	};
+	shape.aabb = v2AddAABB(GetCharacterEntity()->position, shape.aabb);
+	i32 overlap_count = GetOverlappingBodiesWithShape(overlapping_entities, shape, C2_SHAPE_TYPE_aabb);
+	
+	Item item_pool[32];
+	i32 item_pool_count = 0;
+	
+	v2 item_position = {0};
+	
+	for (i32 i = 0; i < overlap_count; i++)
+	{
+		if (overlapping_entities[i]->item.type)
 		{
-			if (is_entity_window_open)
+			if (item_pool_count == 0)
+				item_position = overlapping_entities[i]->position;
+			
+			item_pool[item_pool_count++] = overlapping_entities[i]->item;
+		}
+	}
+	
+	// NOTE(randy): Get craftable recipes from those items
+	CraftingRecipeType craftable_recipes[CRAFTING_RECIPE_TYPE_MAX];
+	i32 craftable_recipe_count = 0;
+	for (i32 i = 1;
+		 i < CRAFTING_RECIPE_TYPE_MAX;
+		 i++)
+	{
+		if (IsRecipeCraftable(i, item_pool, 32))
+		{
+			craftable_recipes[craftable_recipe_count++] = i;
+		}
+	}
+	
+	if (craftable_recipe_count == 0)
+	{
+		selected_recipe_index = -1;
+		return;
+	}
+	
+	if (platform->key_pressed[KEY_e])
+	{
+		core->run_data->character_state |= CHARACTER_STATE_is_crafting;
+	}
+	
+	if (core->run_data->character_state & CHARACTER_STATE_is_crafting)
+	{
+		// TODO(randy): Crafting ui impl
+	}
+	else
+	{
+		// NOTE(randy): Display crafting prompt
+		v2 render_pos = v2view(V2AddV2(item_position, v2(-2.0f, -30.0f)));
+		ArcPushText(Ts2dGetDefaultFont(),
+					0,
+					v4u(1.0f),
+					render_pos,
+					0.5f,
+					"E",
+					LAYER_HUD);
+	}
+	
+	// NOTE(randy): No crafting recipe has been selected prior, so just select the highest craftable one.
+	if (selected_recipe_index == -1)
+	{
+		selected_recipe_index = craftable_recipes[craftable_recipe_count - 1];
+	}
+	
+	// NOTE(randy): Left or right recipe checks
+	/*
+		if (platform->key_pressed[KEY_a] )
+		{
+			crafting_station_data->current_recipe = craftable_recipes[existing_recipe_index - 1];
+		}
+		if (platform->key_pressed[KEY_d])
+		{
+			
+		}
+		
+		
+		if (selected_recipe_index - 1 >= 0)
+		{
+			if (platform->key_pressed[KEY_a] )
 			{
-				// NOTE(randy): Entity info window.
-				v4 entity_info_window_rect = {core->render_w - 360, 10, 350, 300};
-				TsUIWindowBegin("Entity Info", entity_info_window_rect, 0, 0);
-				{
-					TsUIPushColumn(v2(10, 10), v2(100, 30));
-					
-					if (!core->run_data->entity_editor.selected_entity)
-					{
-						TsUIPushAutoWidth();
-						TsUILabel("No Entity selected.");
-						TsUIPopWidth();
-					}
-					else
-					{
-						TsUIPushWidth(entity_info_window_rect.width - 50);
-						{
-							char *label = MakeCStringOnMemoryArena(core->frame_arena, "%s #%i",
-																   core->run_data->entity_editor.selected_entity->name, core->run_data->entity_editor.selected_entity->entity_id);
-							TsUITitle(label);
-							
-							//PrintEntityDataUI(core->run_data->entity_editor.selected_entity);
-						}
-						TsUIPopWidth();
-						
-						TsUIDivider();
-						
-						TsUIPushAutoWidth();
-						if (!(core->run_data->entity_editor.selected_entity->flags & ENTITY_FLAGS_no_delete))
-						{
-							if (TsUIButton("Delete Entity"))
-							{
-								DeleteEntity(core->run_data->entity_editor.selected_entity);
-								core->run_data->entity_editor.selected_entity = 0;
-							}
-						}
-						TsUIPopWidth();
-					}
-					
-					TsUIPopColumn();
-				}
-				TsUIWindowEnd();
+				crafting_station_data->current_recipe = craftable_recipes[existing_recipe_index - 1];
+			}
+			
+			v4 tint = v4u(1.0f);
+			if (platform->key_down[KEY_a])
+			{
+				tint = v4u(0.75f);
+			}
+			
+			// NOTE(randy): Render left arrow
+			StaticSpriteData *arrow_sprite = &global_static_sprite_data[STATIC_SPRITE_side_arrow];
+			v2 render_pos = v2view(v2(engaged_station->position.x - 20.0f,
+									  engaged_station->position.y - 40.0f));
+			v2 render_size = v2zoom(v2(arrow_sprite->source.width,
+									   arrow_sprite->source.height));
+			
+			ArcPushTexture(arrow_sprite->texture_atlas,
+						   0,
+						   arrow_sprite->source,
+						   v4(render_pos.x,
+							  render_pos.y,
+							  render_size.x,
+							  render_size.y),
+						   tint,
+						   LAYER_HUD);
+		}
+		if (existing_recipe_index + 1 < craftable_recipe_count)
+		{
+			if (platform->key_pressed[KEY_d])
+			{
+				crafting_station_data->current_recipe = craftable_recipes[existing_recipe_index + 1];
+			}
+			
+			v4 tint = v4u(1.0f);
+			if (platform->key_down[KEY_d])
+			{
+				tint = v4u(0.75f);
+			}
+			
+			// NOTE(randy): Render left arrow
+			StaticSpriteData *arrow_sprite = &global_static_sprite_data[STATIC_SPRITE_side_arrow];
+			v2 render_pos = v2view(v2(core->run_data->engaged_station_entity->position.x + 20.0f,
+									  core->run_data->engaged_station_entity->position.y - 40.0f));
+			v2 render_size = v2zoom(v2(arrow_sprite->source.width,
+									   arrow_sprite->source.height));
+			ArcPushTexture(arrow_sprite->texture_atlas,
+						   0,
+						   arrow_sprite->source,
+						   v4(render_pos.x,
+							  render_pos.y,
+							  -render_size.x,
+							  render_size.y),
+						   tint,
+						   LAYER_HUD);
+		}
+		
+		// NOTE(randy): Render the craftable sprite.
+		Assert(crafting_station_data->current_recipe);
+		CraftingRecipeTypeData *recipe = &global_crafting_recipe_type_data[crafting_station_data->current_recipe];
+		
+		StaticSpriteData *recipe_output_sprite = &global_static_sprite_data[global_item_type_data[recipe->output.type].icon_sprite];
+		
+		v2 render_pos = v2view(v2(engaged_station->position.x - 7.0f,
+								  engaged_station->position.y - 43.0f));
+		v2 render_size = v2zoom(v2(recipe_output_sprite->source.width,
+								   recipe_output_sprite->source.height));
+		
+		ArcPushTexture(recipe_output_sprite->texture_atlas,
+					   0,
+					   recipe_output_sprite->source,
+					   v4(render_pos.x,
+						  render_pos.y,
+						  render_size.x,
+						  render_size.y),
+					   v4(0.75f, 0.75f, 1.0f, 0.8f),
+					   LAYER_HUD);
+		
+		// NOTE(randy): Craft the recipe
+		if (platform->key_pressed[KEY_e])
+		{
+			for (i32 i = 0; i < MAX_ITEMS_IN_CRAFTING_RECIPE; i++)
+			{
+				Item *recipe_item = &recipe->input[i];
+				if (!recipe_item->type)
+					break;
 				
-				v4 entity_list_window_rect = {core->render_w - 360, 310, 350, 500};
-				TsUIWindowBegin("Entity List", entity_list_window_rect, 0, 0);
-				{
-					TsUIPushColumn(v2(10, 10), v2(150, 30));
-					
-					local_persist b8 is_index_mode = 0;
-					
-					// NOTE(rjf): Sort Controls
-					{
-						TsUIPushWidth(90);
-						TsUILabel("Sort by: ");
-						TsUIPopWidth();
-						
-						TsUIPushAutoWidth();
-						{
-							TsUISameLine();
-							if (TsUIToggler("Index", is_index_mode))
-							{
-								is_index_mode = 1;
-							}
-							
-							TsUISameLine();
-							if (TsUIToggler("Category", !is_index_mode))
-							{
-								is_index_mode = 0;
-							}
-						}
-						TsUIPopWidth();
-					}
-					
-					TsUIDivider();
-					
-					if (is_index_mode)
-					{
-						// NOTE(randy): Index view
-						for (int i = 1; i < core->run_data->entity_count; i++)
-						{
-							TsUIPushWidth(30);
-							{
-								char label[100];
-								sprintf(label, "%i", i);
-								TsUILabel(label);
-							}
-							TsUIPopWidth();
-							
-							Entity *entity = &core->run_data->entities[i];
-							if (entity->entity_id > 0)
-							{
-								TsUISameLine();
-								TsUIPushWidth(entity_list_window_rect.width - 80);
-								if (TsUIToggler(entity->name, (core->run_data->entity_editor.selected_entity ? core->run_data->entity_editor.selected_entity->entity_id == i : 0)))
-								{
-									core->run_data->entity_editor.selected_entity = entity;
-								}
-								else
-								{
-									if (core->run_data->entity_editor.selected_entity && core->run_data->entity_editor.selected_entity->entity_id == i)
-									{
-										core->run_data->entity_editor.selected_entity = 0;
-									}
-								}
-								TsUIPopWidth();
-							}
-							else
-							{
-								TsUISameLine();
-								TsUIPushSize(v2(100, 30));
-								TsUILabel("- - - - -");
-								TsUIPopSize();
-							}
-						}
-					}
-					else
-					{
-						TsUIPushWidth(entity_list_window_rect.width - 50);
-						
-						// NOTE(randy): Entity category (type) view
-						for (int i = 0; i < GENERALISED_ENTITY_TYPE_MAX; i++)
-						{
-							if (TsUICollapsable(GetGeneralisedEntityTypeName(i)))
-							{
-								for (int j = 1; j < core->run_data->entity_count; j++) // TEMP: Need to sort these before-hand. Will eventually get too inefficient.
-								{
-									Entity *entity = &core->run_data->entities[j];
-									if (entity->entity_id > 0 && entity->generalised_type == i)
-									{
-										if (TsUIToggler(entity->name, (core->run_data->entity_editor.selected_entity ? core->run_data->entity_editor.selected_entity->entity_id == j : 0)))
-										{
-											core->run_data->entity_editor.selected_entity = entity;
-										}
-										else
-										{
-											if (core->run_data->entity_editor.selected_entity &&
-												core->run_data->entity_editor.selected_entity->entity_id == j)
-											{
-												core->run_data->entity_editor.selected_entity = 0;
-											}
-										}
-									}
-								}
-								
-								TsUICollapsableEnd();
-							}
-						}
-						
-						TsUIPopWidth();
-					}
-					
-					TsUIPopColumn();
-				}
-				TsUIWindowEnd();
+				RemoveItemFromContainer(*recipe_item,
+										character->inventory,
+										character->inventory_size);
 			}
 			
-			if (is_performance_window_open)
-			{
-				// NOTE(randy): Display performance data.
-				TsUIWindowBegin("Performance", v4(10, 500, 300, 280), 0, 0);
-				{
-					TsUIPushColumn(v2(10, 0), v2(100, 50));
-					
-					f32 budget_total = 0.0f; // NOTE(randy): Not actual amount, need to calculate this more accurately. Need to create some sort of "Unnaccounted" measurement
-					for (int i = 0; i < core->performance_timer_count; i++)
-					{
-						char label[100];
-						
-						f32 timer_budget_amount = (core->performance_timers[i].finish_time - core->performance_timers[i].start_time) / core->raw_delta_t * 100.0f;
-						sprintf(label,
-								"%s: %f",
-								core->performance_timers[i].name,
-								timer_budget_amount);
-						
-						budget_total += timer_budget_amount;
-						
-						TsUILabel(label);
-					}
-					
-					char label[100];
-					sprintf(label, "Frame Budget Usage: %f", budget_total);
-					TsUILabel(label);
-					
-					TsUIPopColumn();
-				}
-				TsUIWindowEnd();
-			}
+			core->run_data->engaged_station_entity = 0;
+			core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;
 			
-			if (is_debug_window_open)
-			{
-				// NOTE(randy): Debug random stuff
-				TsUIWindowBegin("Debug", v4(310, 500, 300, 200), 0, 0);
-				{
-					TsUIPushColumn(v2(10, 0), v2(200, 30));
-					
-					char label[100];
-					sprintf(label, "Camera Pos: %f, %f", core->camera_position.x, core->camera_position.y);
-					TsUILabel(label);
-					
-					TsUIPopColumn();
-				}
-				TsUIWindowEnd();
-			}
+			Entity *entity = NewGroundItemEntity(v2(engaged_station->position.x,
+													engaged_station->position.y - 43.0f),
+												 recipe->output);
 		}
 	 */
 }

@@ -7,7 +7,6 @@ MAX_PARTICLE_AMOUNT :: 300
 MAX_WORLD_CHUNKS :: 128
 CHUNK_SIZE :: 256
 MAX_DYNAMIC_CELLS :: 16384
-MAX_QUEUED_TEXTURES :: 1024
 
 
 /* --- ENUMS --- */
@@ -737,13 +736,42 @@ ChunkEditorData :: struct
 	selected_chunk : SkeletonChunk;
 }
 
-QueuedTexture :: struct
+RenderableType :: enum
+{
+	texture,
+	text,
+}
+
+Texture :: struct
 {
 	texture : *Ts2dTexture;
 	flags : i32;
 	source : v4;
 	destination : v4;
 	tint : v4;
+}
+
+Text :: struct
+{
+	font : *Ts2dFont;
+	flags : i32;
+	colour : v4;
+	pos : v2;
+	font_scale : f32;
+	text : char[512];
+}
+
+MAX_QUEUED_RENDERABLES :: 1024
+Renderable :: union
+{
+	texture : Texture;
+	text : Text;
+}
+
+SortRenderable :: struct
+{
+	data : Renderable;
+	type : RenderableType;
 	layer : f32;
 }
 
@@ -753,6 +781,7 @@ CharacterState :: flags
 	is_crafting,
 	is_backpack_open,
 	is_blueprinting,
+	arcane_mode,
 }
 
 MAX_POSITIONAL_ENTITIES :: 2048
@@ -826,8 +855,8 @@ RunData :: struct // Game data used for run-time operations
 	
 	engaged_station_entity : *Entity;
 	
-	queued_texture_count : i32;
-	queued_textures : QueuedTexture[MAX_QUEUED_TEXTURES];
+	queued_renderables : SortRenderable[MAX_QUEUED_RENDERABLES];
+	queued_renderable_count : i32;
 	
 	/* ~ Editor ~ */
 	editor_state : EditorState;

@@ -326,7 +326,7 @@ GameUpdate(void)
 	{
 		static b8 is_time_dilated = 0;
 		static f32 last_multiplier = 0.25f;
-		if (platform->key_pressed[KEY_x])
+		if (platform->key_pressed[KEY_z])
 		{
 			if (is_time_dilated)
 			{

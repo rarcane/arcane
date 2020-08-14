@@ -538,6 +538,22 @@ break;
 }
 }
 
+static char *GetRenderableTypeName(RenderableType type)
+{
+switch(type)
+{
+case RENDERABLE_TYPE_texture:
+return "Texture";
+break;
+case RENDERABLE_TYPE_text:
+return "Text";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
 static void WriteEntityToFile(FILE *file, Entity *data)
 {
     for (i32 i = 0; i < ENTITY_PROPERTY_SIZE; i++)

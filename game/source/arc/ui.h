@@ -1,5 +1,6 @@
 internal void DrawGameUI();
 internal void DrawEditorUI();
+internal void DrawCraftingUI();
 // NOTE(randy): Switches the editor to a new state, providing new state-specific debug flags. If the state is already set, nothing will happen.
 internal void SwitchEditorState(EditorState editor_state);
 
