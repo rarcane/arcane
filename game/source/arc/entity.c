@@ -28,7 +28,7 @@ internal Entity *NewEntity()
 
 internal void DeleteEntity(Entity *entity)
 {
-	// TODO(randy):
+	MemorySet(entity, 0, sizeof(Entity));
 }
 
 internal b32

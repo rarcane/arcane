@@ -724,109 +724,109 @@ internal void DrawGameUI()
 		
 		case EDITOR_STATE_collision:
 		{ /*
-																																																																																																								for (i32 i = 0; i < core->run_data->entity_count; i++)
-																																																																																																								{
-																																																																																																									Entity *seg_entity = &core->run_data->entities[i];
-																																																																																																									if ((entity->flags & ENTITY_FLAGS_sprite) == 0)
-																																																																																																									{
-																																																																																																										continue;
-																																																																																																									}
-																																																																																																									
-																																																																																																									if (seg_entity->generalised_type == GENERALISED_ENTITY_TYPE_ground)
-																																																																																																									{
-																																																																																																										PhysicsBodyComponent *seg_body = GetPhysicsBodyComponentFromEntityID(seg_entity->entity_id);
-																																																																																																										PositionComponent *seg_pos = GetPositionComponentFromEntityID(seg_entity->entity_id);
-																																																																																																										
-																																																																																																										StaticSpriteData *circle_sprite = &global_static_sprite_data[STATIC_SPRITE_circle_icon];
-																																																																																																										f32 circle_size = 4.0f;
-																																																																																																										
-																																																																																																										v4 p1_tint = {0.9f, 0.9f, 0.9f, 1.0f};
-																																																																																																										v2 p1 = V2AddV2(seg_pos->position, seg_body->shape.line.p1);
-																																																																																																										v2 p2 = V2AddV2(seg_pos->position, seg_body->shape.line.p2);
-																																																																																																										
-																																																																																																										if (core->run_data->collision_editor.is_seg_grabbed)
-																																																																																																										{
-																																																																																																											if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p1, 1.0f))
-																																																																																																											{
-																																																																																																												p1 = GetMousePositionInWorldSpace();
-																																																																																																												seg_body->shape.line.p1 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
-																																																																																																											}
-																																																																																																											else if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p2, 1.0f))
-																																																																																																											{
-																																																																																																												p2 = GetMousePositionInWorldSpace();
-																																																																																																												seg_body->shape.line.p2 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
-																																																																																																											}
-																																																																																																										}
-																																																																																																										
-																																																																																																										c2Shape p1_box;
-																																																																																																										p1_box.aabb.min = c2V(p1.x - circle_size / 2.0f, p1.y - circle_size / 2.0f);
-																																																																																																										p1_box.aabb.max = c2V(p1.x + circle_size / 2.0f, p1.y + circle_size / 2.0f);
-																																																																																																										if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), p1_box, C2_SHAPE_TYPE_aabb))
-																																																																																																										{
-																																																																																																											p1_tint = v4u(1.0f);
-																																																																																																											
-																																																																																																											if (platform->left_mouse_pressed)
-																																																																																																											{
-																																																																																																												if (platform->key_down[KEY_alt])
-																																																																																																												{
-																																																																																																													v2 mid_point = V2DivideF32(V2SubtractV2(p2, p1), 2.0f);
-																																																																																																													seg_body->shape.line.p2 = V2AddV2(mid_point, seg_body->shape.line.p1);
-																																																																																																													
-																																																																																																													Entity *new_segment = NewEntity("Ground Seg", GENERALISED_ENTITY_TYPE_ground);
-																																																																																																													AddPositionComponent(new_segment);
-																																																																																																													AddPhysicsBodyComponent(new_segment);
-																																																																																																													GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape_type = C2_SHAPE_TYPE_line;
-																																																																																																													GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->mass_data = seg_body->mass_data;
-																																																																																																													GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->material = seg_body->material;
-																																																																																																													GetPositionComponentFromEntityID(new_segment->entity_id)->position = V2AddV2(V2AddV2(mid_point, seg_body->shape.line.p1), seg_pos->position);
-																																																																																																													GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape.line.p2 = V2SubtractV2(p2, GetPositionComponentFromEntityID(new_segment->entity_id)->position);
-																																																																																																												}
-																																																																																																												else
-																																																																																																												{
-																																																																																																													core->run_data->collision_editor.grabbed_seg_pos = p1;
-																																																																																																													core->run_data->collision_editor.is_seg_grabbed = 1;
-																																																																																																													TsPlatformCaptureMouseButtons();
-																																																																																																												}
-																																																																																																											}
-																																																																																																											else if (platform->key_pressed[KEY_delete])
-																																																																																																											{
-																																																																																																												DeleteEntity(seg_entity);
-																																																																																																												for (int j = 0; j < core->run_data->entity_count; j++)
-																																																																																																												{
-																																																																																																													Entity *seg_entity_2 = &core->run_data->entities[j];
-																																																																																																													if (seg_entity_2->entity_id && seg_entity_2->generalised_type == GENERALISED_ENTITY_TYPE_ground)
-																																																																																																													{
-																																																																																																														PhysicsBodyComponent *seg_body_2 = GetPhysicsBodyComponentFromEntityID(seg_entity_2->entity_id);
-																																																																																																														PositionComponent *seg_pos_2 = GetPositionComponentFromEntityID(seg_entity_2->entity_id);
-																																																																																																														
-																																																																																																														v2 p2_2 = V2AddV2(seg_body_2->shape.line.p2, seg_pos_2->position);
-																																																																																																														if (EqualV2(p2_2, p1, 1.0f))
-																																																																																																														{
-																																																																																																															seg_body_2->shape.line.p2 = V2SubtractV2(p2, seg_pos_2->position);
-																																																																																																															break;
-																																																																																																					 }
-																																																																																																													}
-																																																																																																												}
-																																																																																																												
-																																																																																																												if (core->run_data->collision_editor.selected_ground_seg == seg_entity)
-																																																																																																													core->run_data->collision_editor.selected_ground_seg = 0;
-																																																																																																											}
-																																																																																																										}
-																																																																																																										
-																																																																																																										v2 p1_render = v2view(V2SubtractF32(p1, circle_size / 2.0f));
-																																																																																																										Ts2dPushTintedTexture(circle_sprite->texture_atlas, circle_sprite->source, v4(p1_render.x, p1_render.y, circle_size * core->camera_zoom, circle_size * core->camera_zoom), p1_tint);
-																																																																																																									}
-																																																																																																								}
-																																																																																																								
-																																																																																																								if (core->left_mouse_released)
-																																																																																																								{
-																																																																																																									core->run_data->collision_editor.grabbed_seg_pos = v2(0.0f, 0.0f);
-																																																																																																									core->run_data->collision_editor.is_seg_grabbed = 0;
-																																																																																																								}
-																																																																																																								else if (platform->left_mouse_down)
-																																																																																																								{
-																																																																																																									core->run_data->collision_editor.grabbed_seg_pos = GetMousePositionInWorldSpace();
-																																																																																																								}*/
+																																																																																																																																																																																							for (i32 i = 0; i < core->run_data->entity_count; i++)
+																																																																																																																																																																																							{
+																																																																																																																																																																																								Entity *seg_entity = &core->run_data->entities[i];
+																																																																																																																																																																																								if ((entity->flags & ENTITY_FLAGS_sprite) == 0)
+																																																																																																																																																																																								{
+																																																																																																																																																																																									continue;
+																																																																																																																																																																																								}
+																																																																																																																																																																																								
+																																																																																																																																																																																								if (seg_entity->generalised_type == GENERALISED_ENTITY_TYPE_ground)
+																																																																																																																																																																																								{
+																																																																																																																																																																																									PhysicsBodyComponent *seg_body = GetPhysicsBodyComponentFromEntityID(seg_entity->entity_id);
+																																																																																																																																																																																									PositionComponent *seg_pos = GetPositionComponentFromEntityID(seg_entity->entity_id);
+																																																																																																																																																																																									
+																																																																																																																																																																																									StaticSpriteData *circle_sprite = &global_static_sprite_data[STATIC_SPRITE_circle_icon];
+																																																																																																																																																																																									f32 circle_size = 4.0f;
+																																																																																																																																																																																									
+																																																																																																																																																																																									v4 p1_tint = {0.9f, 0.9f, 0.9f, 1.0f};
+																																																																																																																																																																																									v2 p1 = V2AddV2(seg_pos->position, seg_body->shape.line.p1);
+																																																																																																																																																																																									v2 p2 = V2AddV2(seg_pos->position, seg_body->shape.line.p2);
+																																																																																																																																																																																									
+																																																																																																																																																																																									if (core->run_data->collision_editor.is_seg_grabbed)
+																																																																																																																																																																																									{
+																																																																																																																																																																																										if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p1, 1.0f))
+																																																																																																																																																																																										{
+																																																																																																																																																																																											p1 = GetMousePositionInWorldSpace();
+																																																																																																																																																																																											seg_body->shape.line.p1 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
+																																																																																																																																																																																										}
+																																																																																																																																																																																										else if (EqualV2(core->run_data->collision_editor.grabbed_seg_pos, p2, 1.0f))
+																																																																																																																																																																																										{
+																																																																																																																																																																																											p2 = GetMousePositionInWorldSpace();
+																																																																																																																																																																																											seg_body->shape.line.p2 = V2SubtractV2(GetMousePositionInWorldSpace(), seg_pos->position);
+																																																																																																																																																																																										}
+																																																																																																																																																																																									}
+																																																																																																																																																																																									
+																																																																																																																																																																																									c2Shape p1_box;
+																																																																																																																																																																																									p1_box.aabb.min = c2V(p1.x - circle_size / 2.0f, p1.y - circle_size / 2.0f);
+																																																																																																																																																																																									p1_box.aabb.max = c2V(p1.x + circle_size / 2.0f, p1.y + circle_size / 2.0f);
+																																																																																																																																																																																									if (IsMouseOverlappingShape(GetMousePositionInWorldSpace(), p1_box, C2_SHAPE_TYPE_aabb))
+																																																																																																																																																																																									{
+																																																																																																																																																																																										p1_tint = v4u(1.0f);
+																																																																																																																																																																																										
+																																																																																																																																																																																										if (platform->left_mouse_pressed)
+																																																																																																																																																																																										{
+																																																																																																																																																																																											if (platform->key_down[KEY_alt])
+																																																																																																																																																																																											{
+																																																																																																																																																																																												v2 mid_point = V2DivideF32(V2SubtractV2(p2, p1), 2.0f);
+																																																																																																																																																																																												seg_body->shape.line.p2 = V2AddV2(mid_point, seg_body->shape.line.p1);
+																																																																																																																																																																																												
+																																																																																																																																																																																												Entity *new_segment = NewEntity("Ground Seg", GENERALISED_ENTITY_TYPE_ground);
+																																																																																																																																																																																												AddPositionComponent(new_segment);
+																																																																																																																																																																																												AddPhysicsBodyComponent(new_segment);
+																																																																																																																																																																																												GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape_type = C2_SHAPE_TYPE_line;
+																																																																																																																																																																																												GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->mass_data = seg_body->mass_data;
+																																																																																																																																																																																												GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->material = seg_body->material;
+																																																																																																																																																																																												GetPositionComponentFromEntityID(new_segment->entity_id)->position = V2AddV2(V2AddV2(mid_point, seg_body->shape.line.p1), seg_pos->position);
+																																																																																																																																																																																												GetPhysicsBodyComponentFromEntityID(new_segment->entity_id)->shape.line.p2 = V2SubtractV2(p2, GetPositionComponentFromEntityID(new_segment->entity_id)->position);
+																																																																																																																																																																																											}
+																																																																																																																																																																																											else
+																																																																																																																																																																																											{
+																																																																																																																																																																																												core->run_data->collision_editor.grabbed_seg_pos = p1;
+																																																																																																																																																																																												core->run_data->collision_editor.is_seg_grabbed = 1;
+																																																																																																																																																																																												TsPlatformCaptureMouseButtons();
+																																																																																																																																																																																											}
+																																																																																																																																																																																										}
+																																																																																																																																																																																										else if (platform->key_pressed[KEY_delete])
+																																																																																																																																																																																										{
+																																																																																																																																																																																											DeleteEntity(seg_entity);
+																																																																																																																																																																																											for (int j = 0; j < core->run_data->entity_count; j++)
+																																																																																																																																																																																											{
+																																																																																																																																																																																												Entity *seg_entity_2 = &core->run_data->entities[j];
+																																																																																																																																																																																												if (seg_entity_2->entity_id && seg_entity_2->generalised_type == GENERALISED_ENTITY_TYPE_ground)
+																																																																																																																																																																																												{
+																																																																																																																																																																																													PhysicsBodyComponent *seg_body_2 = GetPhysicsBodyComponentFromEntityID(seg_entity_2->entity_id);
+																																																																																																																																																																																													PositionComponent *seg_pos_2 = GetPositionComponentFromEntityID(seg_entity_2->entity_id);
+																																																																																																																																																																																													
+																																																																																																																																																																																													v2 p2_2 = V2AddV2(seg_body_2->shape.line.p2, seg_pos_2->position);
+																																																																																																																																																																																													if (EqualV2(p2_2, p1, 1.0f))
+																																																																																																																																																																																													{
+																																																																																																																																																																																														seg_body_2->shape.line.p2 = V2SubtractV2(p2, seg_pos_2->position);
+																																																																																																																																																																																														break;
+																																																																																																																																																																																				 }
+																																																																																																																																																																																												}
+																																																																																																																																																																																											}
+																																																																																																																																																																																											
+																																																																																																																																																																																											if (core->run_data->collision_editor.selected_ground_seg == seg_entity)
+																																																																																																																																																																																												core->run_data->collision_editor.selected_ground_seg = 0;
+																																																																																																																																																																																										}
+																																																																																																																																																																																									}
+																																																																																																																																																																																									
+																																																																																																																																																																																									v2 p1_render = v2view(V2SubtractF32(p1, circle_size / 2.0f));
+																																																																																																																																																																																									Ts2dPushTintedTexture(circle_sprite->texture_atlas, circle_sprite->source, v4(p1_render.x, p1_render.y, circle_size * core->camera_zoom, circle_size * core->camera_zoom), p1_tint);
+																																																																																																																																																																																								}
+																																																																																																																																																																																							}
+																																																																																																																																																																																							
+																																																																																																																																																																																							if (core->left_mouse_released)
+																																																																																																																																																																																							{
+																																																																																																																																																																																								core->run_data->collision_editor.grabbed_seg_pos = v2(0.0f, 0.0f);
+																																																																																																																																																																																								core->run_data->collision_editor.is_seg_grabbed = 0;
+																																																																																																																																																																																							}
+																																																																																																																																																																																							else if (platform->left_mouse_down)
+																																																																																																																																																																																							{
+																																																																																																																																																																																								core->run_data->collision_editor.grabbed_seg_pos = GetMousePositionInWorldSpace();
+																																																																																																																																																																																							}*/
 			
 			break;
 		}
@@ -1534,21 +1534,18 @@ RemoveCellDynamism(cell);
 
 internal void DrawCraftingUI()
 {
-	local_persist CraftingRecipeType selected_recipe = CRAFTING_RECIPE_TYPE_none;
-	local_persist i32 selected_recipe_index = -1;
-	
 	if (!(core->run_data->character_state & CHARACTER_STATE_arcane_mode))
 		return;
 	
 	// NOTE(randy): Get items in range
 	Entity *overlapping_entities[MAX_OVERLAPPING_COLLIDERS];
 	c2Shape shape = {
-		.aabb = { .min = c2V(-100.0f, -100.0f), .max = c2V(100.0f, 100.0f) },
+		.aabb = { .min = c2V(-50.0f, -50.0f), .max = c2V(50.0f, 50.0f) },
 	};
 	shape.aabb = v2AddAABB(GetCharacterEntity()->position, shape.aabb);
 	i32 overlap_count = GetOverlappingBodiesWithShape(overlapping_entities, shape, C2_SHAPE_TYPE_aabb);
 	
-	Item item_pool[32];
+	Item item_pool[32] = {0};
 	i32 item_pool_count = 0;
 	
 	v2 item_position = {0};
@@ -1565,13 +1562,14 @@ internal void DrawCraftingUI()
 	}
 	
 	// NOTE(randy): Get craftable recipes from those items
-	CraftingRecipeType craftable_recipes[CRAFTING_RECIPE_TYPE_MAX];
+	CraftingRecipeType craftable_recipes[CRAFTING_RECIPE_TYPE_MAX] = {0};
 	i32 craftable_recipe_count = 0;
+	local_persist i32 selected_recipe_index = -1;
 	for (i32 i = 1;
 		 i < CRAFTING_RECIPE_TYPE_MAX;
 		 i++)
 	{
-		if (IsRecipeCraftable(i, item_pool, 32))
+		if (IsRecipeCraftable(i, item_pool, item_pool_count))
 		{
 			craftable_recipes[craftable_recipe_count++] = i;
 		}
@@ -1583,66 +1581,35 @@ internal void DrawCraftingUI()
 		return;
 	}
 	
-	if (platform->key_pressed[KEY_e])
+	if (!(core->run_data->character_state & CHARACTER_STATE_is_crafting) &&
+		platform->key_pressed[KEY_e])
 	{
 		core->run_data->character_state |= CHARACTER_STATE_is_crafting;
-	}
-	
-	if (core->run_data->character_state & CHARACTER_STATE_is_crafting)
-	{
-		// TODO(randy): Crafting ui impl
-	}
-	else
-	{
-		// NOTE(randy): Display crafting prompt
-		v2 render_pos = v2view(V2AddV2(item_position, v2(-2.0f, -30.0f)));
-		ArcPushText(Ts2dGetDefaultFont(),
-					0,
-					v4u(1.0f),
-					render_pos,
-					0.5f,
-					"E",
-					LAYER_HUD);
+		TsPlatformCaptureKeyboard();
 	}
 	
 	// NOTE(randy): No crafting recipe has been selected prior, so just select the highest craftable one.
 	if (selected_recipe_index == -1)
 	{
-		selected_recipe_index = craftable_recipes[craftable_recipe_count - 1];
+		selected_recipe_index = craftable_recipe_count - 1;
 	}
 	
-	// NOTE(randy): Left or right recipe checks
-	/*
-		if (platform->key_pressed[KEY_a] )
-		{
-			crafting_station_data->current_recipe = craftable_recipes[existing_recipe_index - 1];
-		}
-		if (platform->key_pressed[KEY_d])
-		{
-			
-		}
-		
-		
+	if (core->run_data->character_state & CHARACTER_STATE_is_crafting)
+	{
+		// NOTE(randy): Navigate LR through recipes
 		if (selected_recipe_index - 1 >= 0)
 		{
-			if (platform->key_pressed[KEY_a] )
+			if (platform->key_pressed[KEY_a])
 			{
-				crafting_station_data->current_recipe = craftable_recipes[existing_recipe_index - 1];
+				selected_recipe_index = selected_recipe_index - 1;
+				TsPlatformCaptureKeyboard();
 			}
 			
-			v4 tint = v4u(1.0f);
-			if (platform->key_down[KEY_a])
-			{
-				tint = v4u(0.75f);
-			}
-			
-			// NOTE(randy): Render left arrow
 			StaticSpriteData *arrow_sprite = &global_static_sprite_data[STATIC_SPRITE_side_arrow];
-			v2 render_pos = v2view(v2(engaged_station->position.x - 20.0f,
-									  engaged_station->position.y - 40.0f));
+			v2 render_pos = v2view(v2(item_position.x - 20.0f,
+									  item_position.y - 40.0f));
 			v2 render_size = v2zoom(v2(arrow_sprite->source.width,
 									   arrow_sprite->source.height));
-			
 			ArcPushTexture(arrow_sprite->texture_atlas,
 						   0,
 						   arrow_sprite->source,
@@ -1650,26 +1617,22 @@ internal void DrawCraftingUI()
 							  render_pos.y,
 							  render_size.x,
 							  render_size.y),
-						   tint,
+						   v4u(1.0f),
 						   LAYER_HUD);
 		}
-		if (existing_recipe_index + 1 < craftable_recipe_count)
+		
+		
+		if (selected_recipe_index + 1 < craftable_recipe_count)
 		{
 			if (platform->key_pressed[KEY_d])
 			{
-				crafting_station_data->current_recipe = craftable_recipes[existing_recipe_index + 1];
+				selected_recipe_index = selected_recipe_index + 1;
+				TsPlatformCaptureKeyboard();
 			}
 			
-			v4 tint = v4u(1.0f);
-			if (platform->key_down[KEY_d])
-			{
-				tint = v4u(0.75f);
-			}
-			
-			// NOTE(randy): Render left arrow
 			StaticSpriteData *arrow_sprite = &global_static_sprite_data[STATIC_SPRITE_side_arrow];
-			v2 render_pos = v2view(v2(core->run_data->engaged_station_entity->position.x + 20.0f,
-									  core->run_data->engaged_station_entity->position.y - 40.0f));
+			v2 render_pos = v2view(v2(item_position.x + 20.0f,
+									  item_position.y - 40.0f));
 			v2 render_size = v2zoom(v2(arrow_sprite->source.width,
 									   arrow_sprite->source.height));
 			ArcPushTexture(arrow_sprite->texture_atlas,
@@ -1679,21 +1642,18 @@ internal void DrawCraftingUI()
 							  render_pos.y,
 							  -render_size.x,
 							  render_size.y),
-						   tint,
+						   v4u(1.0f),
 						   LAYER_HUD);
 		}
 		
-		// NOTE(randy): Render the craftable sprite.
-		Assert(crafting_station_data->current_recipe);
-		CraftingRecipeTypeData *recipe = &global_crafting_recipe_type_data[crafting_station_data->current_recipe];
+		// NOTE(randy): Render the craftable sprite
+		CraftingRecipeTypeData *recipe = &global_crafting_recipe_type_data[craftable_recipes[selected_recipe_index]];
 		
 		StaticSpriteData *recipe_output_sprite = &global_static_sprite_data[global_item_type_data[recipe->output.type].icon_sprite];
-		
-		v2 render_pos = v2view(v2(engaged_station->position.x - 7.0f,
-								  engaged_station->position.y - 43.0f));
+		v2 render_pos = v2view(v2(item_position.x - 7.0f,
+								  item_position.y - 43.0f));
 		v2 render_size = v2zoom(v2(recipe_output_sprite->source.width,
 								   recipe_output_sprite->source.height));
-		
 		ArcPushTexture(recipe_output_sprite->texture_atlas,
 					   0,
 					   recipe_output_sprite->source,
@@ -1714,18 +1674,38 @@ internal void DrawCraftingUI()
 					break;
 				
 				RemoveItemFromContainer(*recipe_item,
-										character->inventory,
-										character->inventory_size);
+										item_pool,
+										item_pool_count);
 			}
 			
-			core->run_data->engaged_station_entity = 0;
-			core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;
-			
-			Entity *entity = NewGroundItemEntity(v2(engaged_station->position.x,
-													engaged_station->position.y - 43.0f),
+			Entity *entity = NewGroundItemEntity(v2(item_position.x,
+													item_position.y - 43.0f),
 												 recipe->output);
+			entity->interactable.priority = 10.0f;
+			
+			core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;
+			core->run_data->character_state &= ~CHARACTER_STATE_arcane_mode;
+			TsPlatformCaptureKeyboard();
 		}
-	 */
+		
+		if (platform->key_pressed[KEY_esc])
+		{
+			core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;
+			TsPlatformCaptureKeyboard();
+		}
+	}
+	else
+	{
+		// NOTE(randy): Display crafting prompt
+		v2 render_pos = v2view(V2AddV2(item_position, v2(-2.0f, -30.0f)));
+		ArcPushText(Ts2dGetDefaultFont(),
+					0,
+					v4u(1.0f),
+					render_pos,
+					0.5f,
+					"E",
+					LAYER_HUD);
+	}
 }
 
 internal void SwitchEditorState(EditorState editor_state)

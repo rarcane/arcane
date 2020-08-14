@@ -48,7 +48,10 @@ internal void WorldUpdate()
 		if (core->run_data->character_state & CHARACTER_STATE_arcane_mode)
 			core->run_data->character_entity->sprite_data.tint = v4(1.0f, 0.0f, 0.0f, 0.5f);
 		else
+		{
 			core->run_data->character_entity->sprite_data.tint = v4u(1.0f);
+			core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;
+		}
 	}
 	
 #ifdef DEVELOPER_TOOLS
