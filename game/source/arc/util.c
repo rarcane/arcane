@@ -30,7 +30,15 @@ internal void v2Realise(v2 *v)
 
 internal f32 PythagSolve(f32 a, f32 b)
 {
-	return SquareRoot(a * a + b * b);
+	f32 x = a * a + b * b;
+	//Based on Quake's fast inverse square root
+	u32 i = *(u32*)&x;//Making bits an int-type, so that we can bit hack
+	i = 0x1fc00000 + (i >> 1);//Little sus, but it works
+	f32 y = *(f32*)&i;//Back to float
+	
+	y = (y * y + x) / (2 * y);//Runs a couple iterations of the Newton-Raphson method
+	y = (y * y + x) / (2 * y);//Keep adding more to increase accuracy
+	return y;
 }
 
 internal f32 Square(f32 a)
