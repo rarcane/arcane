@@ -60,12 +60,6 @@ typedef uint32 PixelFlags;
 #define DEBUG_FLAGS_manual_step (1<<4)
 typedef uint32 DebugFlags;
 
-#define ITEM_FLAGS_resource (1<<0)
-#define ITEM_FLAGS_sword (1<<1)
-#define ITEM_FLAGS_bouncy (1<<2)
-typedef uint32 ItemFlags;
-
-#define ITEM_FLAGS_HOTBARABLE (ITEM_FLAGS_sword)
 typedef struct StaticSpriteData
 {
 char texture_path[50];
@@ -131,11 +125,12 @@ STATIC_SPRITE_x_axis_arrow_icon,
 STATIC_SPRITE_circle_icon,
 STATIC_SPRITE_side_arrow,
 STATIC_SPRITE_crafting_stump,
-STATIC_SPRITE_crafting_tool,
 STATIC_SPRITE_flint_sword_icon,
 STATIC_SPRITE_flint_sword_ground,
+STATIC_SPRITE_flint_axe,
 STATIC_SPRITE_flint,
 STATIC_SPRITE_twig,
+STATIC_SPRITE_crafting_tool,
 STATIC_SPRITE_shia,
 STATIC_SPRITE_shia2,
 STATIC_SPRITE_MAX,
@@ -194,11 +189,12 @@ global StaticSpriteData global_static_sprite_data[STATIC_SPRITE_MAX] = {
     { "icon/axis_icons", {33.0f, 0.0f, 7.0f, 7.0f}, {0.0f, 0.0f}, },
     { "icon/side_arrow", {0.0f, 0.0f, 5.0f, 9.0f}, {0.0f, 0.0f}, },
     { "structures/crafting_stump", {0.0f, 0.0f, 32.0f, 32.0f}, {0.0f, 0.0f}, },
-    { "structures/crafting_tool", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
     { "item/flint_sword", {0.0f, 0.0f, 16.0f, 16.0f}, {6.0f, 2.0f}, },
     { "item/flint_sword_ground", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, },
+    { "item/flint_axe", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, },
     { "item/flint", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
     { "item/twig", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
+    { "item/crafting_tool", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
     { "item/shia", {0.0f, 0.0f, 800.0f, 1200.0f}, {0.0f, 0.0f}, },
     { "item/shia2", {0.0f, 0.0f, 590.0f, 631.0f}, {0.0f, 0.0f}, },
 };
@@ -282,6 +278,13 @@ global ArcEntityTypeData global_arc_entity_type_data[ARC_ENTITY_TYPE_MAX] = {
 
 static char *GetArcEntityTypeName(ArcEntityType type);
 
+#define ITEM_FLAGS_resource (1<<0)
+#define ITEM_FLAGS_sword (1<<1)
+#define ITEM_FLAGS_lumber_axe (1<<2)
+#define ITEM_FLAGS_bouncy (1<<3)
+typedef uint32 ItemFlags;
+
+#define ITEM_FLAGS_HOTBARABLE (ITEM_FLAGS_sword)
 typedef struct ItemTypeData
 {
 char print_name[20];
@@ -296,6 +299,7 @@ enum ItemType
 {
 ITEM_TYPE_none,
 ITEM_TYPE_flint_sword,
+ITEM_TYPE_flint_axe,
 ITEM_TYPE_flint,
 ITEM_TYPE_twig,
 ITEM_TYPE_crafting_tool,
@@ -304,6 +308,7 @@ ITEM_TYPE_MAX,
 global ItemTypeData global_item_type_data[ITEM_TYPE_MAX] = {
     { "none", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, 0, 0, },
     { "Flint Sword", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_FLAGS_sword, },
+    { "Flint Axe", STATIC_SPRITE_flint_axe, STATIC_SPRITE_flint_axe, 1, ITEM_FLAGS_lumber_axe, },
     { "Flint", STATIC_SPRITE_flint, STATIC_SPRITE_flint, 8, 0, },
     { "Twig", STATIC_SPRITE_twig, STATIC_SPRITE_twig, 8, 0, },
     { "Crafting Tool", STATIC_SPRITE_crafting_tool, STATIC_SPRITE_crafting_tool, 1, 0, },
@@ -377,16 +382,14 @@ typedef enum CraftingRecipeType CraftingRecipeType;
 enum CraftingRecipeType
 {
 CRAFTING_RECIPE_TYPE_none,
+CRAFTING_RECIPE_TYPE_flint_axe,
 CRAFTING_RECIPE_TYPE_flint_sword,
-CRAFTING_RECIPE_TYPE_flint,
-CRAFTING_RECIPE_TYPE_twig,
 CRAFTING_RECIPE_TYPE_MAX,
 };
 global CraftingRecipeTypeData global_crafting_recipe_type_data[CRAFTING_RECIPE_TYPE_MAX] = {
     { {0}, {0}, },
+    { {ITEM_TYPE_flint_axe, 1}, {{ITEM_TYPE_flint, 1}, {ITEM_TYPE_twig, 1}}, },
     { {ITEM_TYPE_flint_sword, 1}, {{ITEM_TYPE_flint, 3}, {ITEM_TYPE_twig, 2}}, },
-    { {ITEM_TYPE_flint, 2}, {{ITEM_TYPE_flint, 1}}, },
-    { {ITEM_TYPE_twig, 2}, {{ITEM_TYPE_twig, 1}}, },
 };
 
 static char *GetCraftingRecipeTypeName(CraftingRecipeType type);
@@ -496,6 +499,8 @@ ENTITY_PROPERTY_is_character,
 ENTITY_PROPERTY_no_delete,
 ENTITY_PROPERTY_force_floating,
 ENTITY_PROPERTY_interactable,
+ENTITY_PROPERTY_interactable_e,
+ENTITY_PROPERTY_interactable_left_click,
 ENTITY_PROPERTY_sprite,
 ENTITY_PROPERTY_flipbook,
 ENTITY_PROPERTY_parallaxable,
@@ -544,6 +549,7 @@ StructureType structure_type;
 Item remaining_items_in_blueprint[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
 StationData station_data;
 StationType station_type;
+f32 durability;
 } Entity;
 
 #define MINIMUM_AIR_PRESSURE (1.0f)
@@ -769,7 +775,8 @@ i32 queued_dynamic_cell_count;
 b8 is_paused;
 Entity *character_entity;
 CharacterState character_state;
-Entity *current_interactable;
+Entity *current_e_interactable;
+Entity *current_left_click_interactable;
 Entity *engaged_station_entity;
 SortRenderable queued_renderables[MAX_QUEUED_RENDERABLES];
 i32 queued_renderable_count;

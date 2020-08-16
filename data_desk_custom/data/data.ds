@@ -73,13 +73,6 @@ DebugFlags :: flags
 	manual_step,
 }
 
-ItemFlags :: flags
-{
-	resource,
-	sword,
-	bouncy,
-}
-ITEM_FLAGS_HOTBARABLE :: (ITEM_FLAGS_sword)
 
 /* --- X-Macros --- */
 
@@ -223,18 +216,21 @@ StaticSprite :: enum
 	// NOTE(randy): Structures
 	@Data("'structures/crafting_stump'", "{0.0f, 0.0f, 32.0f, 32.0f}", "{0.0f, 0.0f}")
 		crafting_stump,
-	@Data("'structures/crafting_tool'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{0.0f, 0.0f}")
-		crafting_tool,
 	
 	// NOTE(randy): Items
 	@Data("'item/flint_sword'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{6.0f, 2.0f}")
 		flint_sword_icon,
 	@Data("'item/flint_sword_ground'", "{0.0f, 0.0f, 24.0f, 24.0f}", "{0.0f, 0.0f}")
 		flint_sword_ground,
+	@Data("'item/flint_axe'", "{0.0f, 0.0f, 24.0f, 24.0f}", "{0.0f, 0.0f}")
+		flint_axe,
 	@Data("'item/flint'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{0.0f, 0.0f}")
 		flint,
 	@Data("'item/twig'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{0.0f, 0.0f}")
 		twig,
+	@Data("'item/crafting_tool'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{0.0f, 0.0f}")
+		crafting_tool,
+	
 	
 	@Data("'item/shia'", "{0.0f, 0.0f, 800.0f, 1200.0f}", "{0.0f, 0.0f}")
 		shia,
@@ -308,6 +304,15 @@ ArcEntityType :: enum
 		player,
 }
 
+ItemFlags :: flags
+{
+	resource,
+	sword,
+	lumber_axe,
+	bouncy,
+}
+ITEM_FLAGS_HOTBARABLE :: (ITEM_FLAGS_sword)
+
 @XMacro
 ItemTypeData :: struct
 {
@@ -324,6 +329,8 @@ ItemType :: enum
 		none,
 	@Data("'Flint Sword'", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_FLAGS_sword)
 		flint_sword,
+	@Data("'Flint Axe'", STATIC_SPRITE_flint_axe, STATIC_SPRITE_flint_axe, 1, ITEM_FLAGS_lumber_axe)
+		flint_axe,
 	@Data("'Flint'", STATIC_SPRITE_flint, STATIC_SPRITE_flint, 8, 0)
 		flint,
 	@Data("'Twig'", STATIC_SPRITE_twig, STATIC_SPRITE_twig, 8, 0)
@@ -403,12 +410,10 @@ CraftingRecipeType :: enum
 {
 	@Data("{0}", "{0}")
 		none,
+	@Data("{ITEM_TYPE_flint_axe, 1}", "{{ITEM_TYPE_flint, 1}, {ITEM_TYPE_twig, 1}}")
+		flint_axe,
 	@Data("{ITEM_TYPE_flint_sword, 1}", "{{ITEM_TYPE_flint, 3}, {ITEM_TYPE_twig, 2}}")
 		flint_sword,
-	@Data("{ITEM_TYPE_flint, 2}", "{{ITEM_TYPE_flint, 1}}")
-		flint,
-	@Data("{ITEM_TYPE_twig, 2}", "{{ITEM_TYPE_twig, 1}}")
-		twig,
 }
 
 // NOTE(randy): $Stations
@@ -506,6 +511,8 @@ EntityProperty :: enum
 	no_delete,
 	force_floating,
 	interactable,
+	interactable_e,
+	interactable_left_click,
 	sprite,
 	flipbook,
 	parallaxable,
@@ -586,6 +593,8 @@ Entity :: struct
 	// NOTE(randy): station comp
 	station_data : StationData;
 	station_type : StationType;
+	
+	durability : f32;
 }
 
 /* ----------------------------------------- */
@@ -851,7 +860,8 @@ RunData :: struct // Game data used for run-time operations
 	character_state : CharacterState;
 	// interaction_state : InteractionState; ??
 	
-	current_interactable : *Entity;
+	current_e_interactable : *Entity;
+	current_left_click_interactable : *Entity;
 	
 	engaged_station_entity : *Entity;
 	

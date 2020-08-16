@@ -2,14 +2,17 @@ internal void InteractableUpdate()
 {
 	if (!CanPlayerInteract())
 	{
-		core->run_data->current_interactable = 0;
+		core->run_data->current_e_interactable = 0;
+		core->run_data->current_left_click_interactable = 0;
 		return;
 	}
 	
 	Entity *character = core->run_data->character_entity;
 	PhysicsBodyData *player_physics = &core->run_data->character_entity->physics;
 	
-	Entity *highest_priority_entity = 0;
+	Entity *highest_priority_e_entity = 0;
+	Entity *highest_priority_left_click_entity = 0;
+	// Entity *highest_priority_right_mouse_entity = 0;
 	
 	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_interactable);)
 	{
@@ -42,10 +45,21 @@ internal void InteractableUpdate()
 			}
 			
 			// NOTE(randy): Player is within interaction bounds.
-			if (!highest_priority_entity ||
-				inter->priority > highest_priority_entity->interactable.priority)
+			if (EntityHasProperty(entity, ENTITY_PROPERTY_interactable_e))
 			{
-				highest_priority_entity = entity;
+				if (!highest_priority_e_entity ||
+					inter->priority > highest_priority_e_entity->interactable.priority)
+				{
+					highest_priority_e_entity = entity;
+				}
+			}
+			else if (EntityHasProperty(entity, ENTITY_PROPERTY_interactable_left_click))
+			{
+				if (!highest_priority_left_click_entity ||
+					inter->priority > highest_priority_left_click_entity->interactable.priority)
+				{
+					highest_priority_left_click_entity = entity;
+				}
 			}
 		}
 		else
@@ -63,14 +77,25 @@ internal void InteractableUpdate()
 	}
 	
 	// NOTE(randy): Interaction dispatch
-	core->run_data->current_interactable = highest_priority_entity;
-	if (highest_priority_entity && platform->key_pressed[KEY_e])
+	core->run_data->current_e_interactable = highest_priority_e_entity;
+	if (highest_priority_e_entity && platform->key_pressed[KEY_e])
 	{
 		platform->key_pressed[KEY_e] = 0;
 		
-		if (highest_priority_entity->interactable.interact_callback)
+		if (highest_priority_e_entity->interactable.interact_callback)
 		{
-			highest_priority_entity->interactable.interact_callback(highest_priority_entity);
+			highest_priority_e_entity->interactable.interact_callback(highest_priority_e_entity);
+		}
+	}
+	
+	core->run_data->current_left_click_interactable = highest_priority_left_click_entity;
+	if (highest_priority_left_click_entity && platform->left_mouse_pressed)
+	{
+		platform->left_mouse_pressed = 0;
+		
+		if (highest_priority_left_click_entity->interactable.interact_callback)
+		{
+			highest_priority_left_click_entity->interactable.interact_callback(highest_priority_left_click_entity);
 		}
 	}
 }
@@ -227,6 +252,7 @@ internal void BlueprintUpdate()
 		CanPlayerInteract())
 	{
 		core->run_data->character_state |= CHARACTER_STATE_is_blueprinting;
+		core->run_data->character_state |= CHARACTER_STATE_arcane_mode;
 		platform->left_mouse_pressed = 0;
 	}
 	
@@ -428,7 +454,7 @@ internal void BlueprintUpdate()
 	}
 	
 	// NOTE(randy): $Remaining Items UI
-	Entity *current_blueprint = core->run_data->current_interactable;
+	Entity *current_blueprint = core->run_data->current_e_interactable;
 	if (current_blueprint &&
 		current_blueprint->structure_type)
 	{

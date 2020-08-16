@@ -24,6 +24,7 @@ internal Entity *NewGroundItemEntity(v2 position, Item item_data)
 {
 	Entity *entity = NewEntity();
 	EntitySetProperty(entity, ENTITY_PROPERTY_interactable);
+	EntitySetProperty(entity, ENTITY_PROPERTY_interactable_e);
 	EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
 	EntitySetProperty(entity, ENTITY_PROPERTY_physical);
 	

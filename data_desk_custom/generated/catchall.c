@@ -229,20 +229,23 @@ break;
 case STATIC_SPRITE_crafting_stump:
 return "Crafting Stump";
 break;
-case STATIC_SPRITE_crafting_tool:
-return "Crafting Tool";
-break;
 case STATIC_SPRITE_flint_sword_icon:
 return "Flint Sword Icon";
 break;
 case STATIC_SPRITE_flint_sword_ground:
 return "Flint Sword Ground";
 break;
+case STATIC_SPRITE_flint_axe:
+return "Flint Axe";
+break;
 case STATIC_SPRITE_flint:
 return "Flint";
 break;
 case STATIC_SPRITE_twig:
 return "Twig";
+break;
+case STATIC_SPRITE_crafting_tool:
+return "Crafting Tool";
 break;
 case STATIC_SPRITE_shia:
 return "Shia";
@@ -332,6 +335,9 @@ break;
 case ITEM_TYPE_flint_sword:
 return "Flint Sword";
 break;
+case ITEM_TYPE_flint_axe:
+return "Flint Axe";
+break;
 case ITEM_TYPE_flint:
 return "Flint";
 break;
@@ -379,14 +385,11 @@ switch(type)
 case CRAFTING_RECIPE_TYPE_none:
 return "None";
 break;
+case CRAFTING_RECIPE_TYPE_flint_axe:
+return "Flint Axe";
+break;
 case CRAFTING_RECIPE_TYPE_flint_sword:
 return "Flint Sword";
-break;
-case CRAFTING_RECIPE_TYPE_flint:
-return "Flint";
-break;
-case CRAFTING_RECIPE_TYPE_twig:
-return "Twig";
 break;
 default:
 return "INVALID";
@@ -475,6 +478,12 @@ return "Force Floating";
 break;
 case ENTITY_PROPERTY_interactable:
 return "Interactable";
+break;
+case ENTITY_PROPERTY_interactable_e:
+return "Interactable E";
+break;
+case ENTITY_PROPERTY_interactable_left_click:
+return "Interactable Left Click";
 break;
 case ENTITY_PROPERTY_sprite:
 return "Sprite";
@@ -635,6 +644,8 @@ static void WriteEntityToFile(FILE *file, Entity *data)
 
     WriteToFile(file, &data->station_type, sizeof(data->station_type));
 
+    WriteToFile(file, &data->durability, sizeof(data->durability));
+
 }
 
 static void ReadEntityFromFile(FILE *file, Entity *data)
@@ -717,6 +728,8 @@ static void ReadEntityFromFile(FILE *file, Entity *data)
     ReadFromFile(file, &data->station_data, sizeof(data->station_data));
 
     ReadFromFile(file, &data->station_type, sizeof(data->station_type));
+
+    ReadFromFile(file, &data->durability, sizeof(data->durability));
 
 }
 
