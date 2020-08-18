@@ -325,6 +325,28 @@ break;
 }
 }
 
+static char *GetItemCategoryName(ItemCategory type)
+{
+switch(type)
+{
+case ITEM_CATEGORY_none:
+return "None";
+break;
+case ITEM_CATEGORY_resource:
+return "Resource";
+break;
+case ITEM_CATEGORY_lumber_axe:
+return "Lumber Axe";
+break;
+case ITEM_CATEGORY_sword:
+return "Sword";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
 static char *GetItemTypeName(ItemType type)
 {
 switch(type)
@@ -485,6 +507,12 @@ break;
 case ENTITY_PROPERTY_interactable_left_click:
 return "Interactable Left Click";
 break;
+case ENTITY_PROPERTY_lumber_axable:
+return "Lumber Axable";
+break;
+case ENTITY_PROPERTY_enemy:
+return "Enemy";
+break;
 case ENTITY_PROPERTY_sprite:
 return "Sprite";
 break;
@@ -499,6 +527,9 @@ return "Physical";
 break;
 case ENTITY_PROPERTY_blueprint:
 return "Blueprint";
+break;
+case ENTITY_PROPERTY_queryable:
+return "Queryable";
 break;
 default:
 return "INVALID";
@@ -631,7 +662,9 @@ static void WriteEntityToFile(FILE *file, Entity *data)
 
     WriteToFile(file, &data->grabbed_item_offset, sizeof(data->grabbed_item_offset));
 
-    WriteToFile(file, &data->interactable, sizeof(data->interactable));
+    WriteToFile(file, &data->priority, sizeof(data->priority));
+
+    WriteToFile(file, &data->interact_callback, sizeof(data->interact_callback));
 
     WriteToFile(file, &data->structure_type, sizeof(data->structure_type));
 
@@ -716,7 +749,9 @@ static void ReadEntityFromFile(FILE *file, Entity *data)
 
     ReadFromFile(file, &data->grabbed_item_offset, sizeof(data->grabbed_item_offset));
 
-    ReadFromFile(file, &data->interactable, sizeof(data->interactable));
+    ReadFromFile(file, &data->priority, sizeof(data->priority));
+
+    ReadFromFile(file, &data->interact_callback, sizeof(data->interact_callback));
 
     ReadFromFile(file, &data->structure_type, sizeof(data->structure_type));
 

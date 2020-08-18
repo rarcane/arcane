@@ -50,11 +50,8 @@ internal Entity *NewGroundItemEntity(v2 position, Item item_data)
 	entity->physics.type |= PHYSICS_BODY_TYPE_FLAGS_item;
 	entity->physics.collide_against |= PHYSICS_BODY_TYPE_FLAGS_ground | PHYSICS_BODY_TYPE_FLAGS_station;
 	
-	entity->interactable.bounds.aabb.min = c2V(-20.0f, -20.0f);
-	entity->interactable.bounds.aabb.max = c2V(20.0f, 20.0f);
-	entity->interactable.bounds_type = C2_SHAPE_TYPE_aabb;
-	entity->interactable.priority = 2.0f;
-	entity->interactable.interact_callback = GroundItemInteractCallback;
+	entity->priority = 2.0f;
+	entity->interact_callback = GroundItemInteractCallback;
 	
 	return entity;
 }

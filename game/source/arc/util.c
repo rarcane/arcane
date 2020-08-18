@@ -142,6 +142,55 @@ internal c2AABB v2AddAABB(v2 a, c2AABB aabb)
 	return new_aabb;
 }
 
+internal void AddPositionOffsetToShape(c2Shape *shape, c2ShapeType shape_type, v2 position)
+{
+	switch (shape_type)
+	{
+		case C2_SHAPE_TYPE_aabb :
+		{
+			shape->aabb.min.x += position.x;
+			shape->aabb.min.y += position.y;
+			shape->aabb.max.x += position.x;
+			shape->aabb.max.y += position.y;
+		} break;
+		
+		case C2_SHAPE_TYPE_capsule :
+		{
+			shape->capsule.a.x += position.x;
+			shape->capsule.a.y += position.y;
+			shape->capsule.b.x += position.x;
+			shape->capsule.b.y += position.y;
+		} break;
+		
+		case C2_SHAPE_TYPE_poly :
+		{
+			// TODO(randy): Test this out to ensure it's working.
+			for (int i = 0; i < shape->poly.count; i++)
+			{
+				shape->poly.verts[i].x += position.x;
+				shape->poly.verts[i].y += position.y;
+			}
+			c2MakePoly(&shape->poly);
+		} break;
+		
+		case C2_SHAPE_TYPE_line :
+		{
+			shape->line.p1 = V2AddV2(shape->line.p1, position);
+			shape->line.p2 = V2AddV2(shape->line.p2, position);
+		} break;
+		
+		case C2_SHAPE_TYPE_circle :
+		{
+			shape->circle.p.x += position.x;
+			shape->circle.p.y += position.y;
+		} break;
+		
+		default :
+		Assert(0);
+		break;
+	}
+}
+
 internal void CapsuleToWorldSpace(c2Capsule *capsule, v2 world_space)
 {
 	capsule->a.x += world_space.x;

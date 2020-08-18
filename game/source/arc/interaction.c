@@ -1,104 +1,182 @@
 internal void InteractableUpdate()
 {
+	core->run_data->current_e_interactable = 0;
+	core->run_data->current_left_click_interactable = 0;
+	
 	if (!CanPlayerInteract())
 	{
-		core->run_data->current_e_interactable = 0;
-		core->run_data->current_left_click_interactable = 0;
 		return;
 	}
 	
 	Entity *character = core->run_data->character_entity;
 	PhysicsBodyData *player_physics = &core->run_data->character_entity->physics;
 	
-	Entity *highest_priority_e_entity = 0;
-	Entity *highest_priority_left_click_entity = 0;
-	// Entity *highest_priority_right_mouse_entity = 0;
-	
-	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_interactable);)
+	// NOTE(randy): E interaction
 	{
-		InteractableData *inter = &entity->interactable;
+		// TODO(randy): Change shape with player dir
+		c2Shape e_interaction_shape = {
+			.aabb = { .min = c2V(-20.0f, -20.0f), .max = c2V(20.0f, 20.0f) },
+		};
+		AddPositionOffsetToShape(&e_interaction_shape, C2_SHAPE_TYPE_aabb, character->position);
 		
-		c2Shape inter_shape = inter->bounds;
-		AddPositionOffsetToShape(&inter_shape,
-								 inter->bounds_type,
-								 entity->position);
-		
-		c2Shape character_shape = character->interactable.bounds;
-		AddPositionOffsetToShape(&character_shape,
-								 character->interactable.bounds_type,
-								 character->position);
-		
-		c2Manifold manifold = {0};
-		GenerateCollisionManifold(inter_shape, inter->bounds_type,
-								  character_shape, character->interactable.bounds_type,
-								  &manifold);
-		if (manifold.count > 0 && fabsf(manifold.depths[0]) != 0.0f)
+		Entity *overlapping_entities[MAX_OVERLAPPING_COLLIDERS] = {0};
+		i32 overlapping_count = GetOverlappingBodiesWithShape(overlapping_entities,
+															  e_interaction_shape,
+															  C2_SHAPE_TYPE_aabb);
+		for (i32 i = 0; i < overlapping_count; i++)
 		{
-			// NOTE(randy): Enter testing
-			if (!inter->is_overlapping_player)
-			{
-				inter->is_overlapping_player = 1;
-				if (inter->enter_interactable_callback)
-				{
-					inter->enter_interactable_callback(character);
-				}
-			}
+			Entity *entity = overlapping_entities[i];
 			
-			// NOTE(randy): Player is within interaction bounds.
 			if (EntityHasProperty(entity, ENTITY_PROPERTY_interactable_e))
 			{
-				if (!highest_priority_e_entity ||
-					inter->priority > highest_priority_e_entity->interactable.priority)
+				if (core->run_data->current_e_interactable &&
+					entity->priority > core->run_data->current_e_interactable->priority ||
+					!core->run_data->current_e_interactable)
 				{
-					highest_priority_e_entity = entity;
-				}
-			}
-			else if (EntityHasProperty(entity, ENTITY_PROPERTY_interactable_left_click))
-			{
-				if (!highest_priority_left_click_entity ||
-					inter->priority > highest_priority_left_click_entity->interactable.priority)
-				{
-					highest_priority_left_click_entity = entity;
+					core->run_data->current_e_interactable = entity;
 				}
 			}
 		}
-		else
+		
+		if (core->run_data->current_e_interactable && platform->key_pressed[KEY_e])
 		{
-			// NOTE(randy): Exit testing
-			if (inter->is_overlapping_player)
+			platform->key_pressed[KEY_e] = 0;
+			
+			if (core->run_data->current_e_interactable->interact_callback)
 			{
-				inter->is_overlapping_player = 0;
-				if (inter->exit_interactable_callback)
-				{
-					inter->exit_interactable_callback(character);
-				}
+				core->run_data->current_e_interactable->interact_callback(core->run_data->current_e_interactable);
 			}
 		}
 	}
 	
-	// NOTE(randy): Interaction dispatch
-	core->run_data->current_e_interactable = highest_priority_e_entity;
-	if (highest_priority_e_entity && platform->key_pressed[KEY_e])
+	// NOTE(randy): Left click interaction
+	if (platform->left_mouse_pressed &&
+		GetItemInHand() &&
+		global_item_type_data[GetItemInHand()->type].flags & ITEM_FLAGS_usable)
 	{
-		platform->key_pressed[KEY_e] = 0;
+		ItemTypeData *item_type_data = &global_item_type_data[GetItemInHand()->type];
+		ItemCategory held_item_cat = item_type_data->category;
 		
-		if (highest_priority_e_entity->interactable.interact_callback)
+		// NOTE(randy): Determine shape of the interaction
+		c2Shape interaction_shape = {0};
+		switch (held_item_cat)
 		{
-			highest_priority_e_entity->interactable.interact_callback(highest_priority_e_entity);
+			case ITEM_CATEGORY_lumber_axe :
+			{
+				interaction_shape.aabb.min = c2V(-20.0f, -20.0f);
+				interaction_shape.aabb.max = c2V(20.0f, 20.0f);
+				AddPositionOffsetToShape(&interaction_shape, C2_SHAPE_TYPE_aabb, character->position);
+			} break;
+			
+			case ITEM_CATEGORY_sword :
+			{
+				interaction_shape.aabb.min = c2V(-20.0f, -20.0f);
+				interaction_shape.aabb.max = c2V(30.0f, 20.0f);
+				AddPositionOffsetToShape(&interaction_shape, C2_SHAPE_TYPE_aabb, character->position);
+			} break;
+			
+			default :
+			return;
+			break;
 		}
-	}
-	
-	core->run_data->current_left_click_interactable = highest_priority_left_click_entity;
-	if (highest_priority_left_click_entity && platform->left_mouse_pressed)
-	{
-		platform->left_mouse_pressed = 0;
 		
-		if (highest_priority_left_click_entity->interactable.interact_callback)
+		// NOTE(randy): Find highest priority entity
+		Entity *overlapping_entities[MAX_OVERLAPPING_COLLIDERS] = {0};
+		i32 overlapping_count = GetOverlappingBodiesWithShape(overlapping_entities,
+															  interaction_shape,
+															  C2_SHAPE_TYPE_aabb);
+		Entity *priority_entity = 0;
+		f32 priority_mag = 0.0f;
+		for (i32 i = 0; i < overlapping_count; i++)
 		{
-			highest_priority_left_click_entity->interactable.interact_callback(highest_priority_left_click_entity);
+			Entity *entity = overlapping_entities[i];
+			
+			if (!EntityHasProperty(entity, ENTITY_PROPERTY_interactable_left_click))
+			{
+				continue;
+			}
+			
+			switch (held_item_cat)
+			{
+				case ITEM_CATEGORY_sword :
+				{
+					if (!EntityHasProperty(entity, ENTITY_PROPERTY_enemy))
+					{
+						continue;
+					}
+				} break;
+				case ITEM_CATEGORY_lumber_axe :
+				{
+					if (!EntityHasProperty(entity, ENTITY_PROPERTY_lumber_axable))
+					{
+						continue;
+					}
+				} break;
+				
+				default :
+				{
+					continue;
+				} break;
+			}
+			
+			if (priority_entity)
+			{
+				v2 diff = V2SubtractV2(entity->position, character->position);
+				f32 entity_mag = PythagSolve(diff.x, diff.y);
+				if (entity_mag <  priority_mag)
+				{
+					priority_entity = entity;
+					priority_mag = entity_mag;
+				}
+			}
+			else
+			{
+				priority_entity = entity;
+			}
+		}
+		
+		if (priority_entity)
+		{
+			switch (held_item_cat)
+			{
+				case ITEM_CATEGORY_lumber_axe :
+				{
+					// NOTE(randy): $Lumber Axe Use
+					Log("axe go chop chop");
+				} break;
+				
+				case ITEM_CATEGORY_sword :
+				{
+					// NOTE(randy): $Sword Use
+					Log("sword go swing swing");
+				} break;
+				
+				default :
+				Assert(0);
+				break;
+			}
 		}
 	}
 }
+
+/*
+internal void TreeInteractCallback(Entity *entity)
+{
+	ItemTypeData *item_type_data = &global_item_type_data[GetItemInHand()->type];
+	if (item_type_data->flags & ITEM_FLAGS_lumber_axe)
+	{
+		entity->durability -= 10.0f;
+		if (entity->durability <= 0.0f)
+		{
+			Item twigs = { ITEM_TYPE_twig, 6 };
+			NewGroundItemEntity(V2AddV2(entity->position, v2(0.0f, -30.0f)), twigs);
+			
+			DeleteEntity(entity);
+			core->run_data->current_left_click_interactable = 0;
+		}
+	}
+}
+ */
 
 internal void OnCraftingTableInteract(Entity *entity)
 {
@@ -188,9 +266,7 @@ internal void OnCraftingStumpBuild(Entity *entity)
 	EntityUnsetProperty(entity, ENTITY_PROPERTY_blueprint);
 	EntitySetProperty(entity, ENTITY_PROPERTY_physical);
 	entity->sprite_data.tint = v4u(1.0f);
-	entity->interactable.interact_callback = OnCraftingTableInteract;
-	entity->interactable.enter_interactable_callback = 0;
-	entity->interactable.exit_interactable_callback = 0;
+	entity->interact_callback = OnCraftingTableInteract;
 	entity->station_type = STATION_TYPE_crafting;
 	c2AABB aabb = {
 		.min = c2V(-15.0f, -25.0f),
@@ -430,13 +506,8 @@ internal void BlueprintUpdate()
 				new_structure->structure_type = structures[selected_structure_index].type;
 				StructureTypeData *structure_data = &global_structure_type_data[new_structure->structure_type];
 				
-				new_structure->interactable.bounds.aabb.min = c2V(-30.0f, -30.0f);
-				new_structure->interactable.bounds.aabb.max = c2V(30.0f, 30.0f);
-				new_structure->interactable.bounds_type = C2_SHAPE_TYPE_aabb;
-				new_structure->interactable.priority = 5.0f;
-				new_structure->interactable.interact_callback = OnBlueprintInteract;
-				new_structure->interactable.enter_interactable_callback = OnBlueprintEnter;
-				new_structure->interactable.exit_interactable_callback = OnBlueprintExit;
+				new_structure->priority = 5.0f;
+				new_structure->interact_callback = OnBlueprintInteract;
 				
 				MemoryCopy(new_structure->remaining_items_in_blueprint,
 						   structure_data->recipe,

@@ -278,19 +278,29 @@ global ArcEntityTypeData global_arc_entity_type_data[ARC_ENTITY_TYPE_MAX] = {
 
 static char *GetArcEntityTypeName(ArcEntityType type);
 
-#define ITEM_FLAGS_resource (1<<0)
-#define ITEM_FLAGS_sword (1<<1)
-#define ITEM_FLAGS_lumber_axe (1<<2)
-#define ITEM_FLAGS_bouncy (1<<3)
+typedef enum ItemCategory ItemCategory;
+enum ItemCategory
+{
+ITEM_CATEGORY_none,
+ITEM_CATEGORY_resource,
+ITEM_CATEGORY_lumber_axe,
+ITEM_CATEGORY_sword,
+ITEM_CATEGORY_MAX,
+};
+static char *GetItemCategoryName(ItemCategory type);
+
+#define ITEM_FLAGS_bouncy (1<<0)
+#define ITEM_FLAGS_hotbarable (1<<1)
+#define ITEM_FLAGS_usable (1<<2)
 typedef uint32 ItemFlags;
 
-#define ITEM_FLAGS_HOTBARABLE (ITEM_FLAGS_sword)
 typedef struct ItemTypeData
 {
 char print_name[20];
 StaticSprite icon_sprite;
 StaticSprite ground_sprite;
 i32 max_stack_size;
+ItemCategory category;
 ItemFlags flags;
 } ItemTypeData;
 
@@ -306,12 +316,12 @@ ITEM_TYPE_crafting_tool,
 ITEM_TYPE_MAX,
 };
 global ItemTypeData global_item_type_data[ITEM_TYPE_MAX] = {
-    { "none", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, 0, 0, },
-    { "Flint Sword", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_FLAGS_sword, },
-    { "Flint Axe", STATIC_SPRITE_flint_axe, STATIC_SPRITE_flint_axe, 1, ITEM_FLAGS_lumber_axe, },
-    { "Flint", STATIC_SPRITE_flint, STATIC_SPRITE_flint, 8, 0, },
-    { "Twig", STATIC_SPRITE_twig, STATIC_SPRITE_twig, 8, 0, },
-    { "Crafting Tool", STATIC_SPRITE_crafting_tool, STATIC_SPRITE_crafting_tool, 1, 0, },
+    { "none", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, 0, 0, 0, },
+    { "Flint Sword", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_CATEGORY_sword, ITEM_FLAGS_hotbarable | ITEM_FLAGS_usable, },
+    { "Flint Axe", STATIC_SPRITE_flint_axe, STATIC_SPRITE_flint_axe, 1, ITEM_CATEGORY_lumber_axe, ITEM_FLAGS_hotbarable | ITEM_FLAGS_usable, },
+    { "Flint", STATIC_SPRITE_flint, STATIC_SPRITE_flint, 8, 0, 0, },
+    { "Twig", STATIC_SPRITE_twig, STATIC_SPRITE_twig, 8, 0, 0, },
+    { "Crafting Tool", STATIC_SPRITE_crafting_tool, STATIC_SPRITE_crafting_tool, 1, 0, ITEM_FLAGS_hotbarable, },
 };
 
 static char *GetItemTypeName(ItemType type);
@@ -480,17 +490,6 @@ PhysicsBodyTypeFlags type;
 PhysicsBodyTypeFlags collide_against;
 } PhysicsBodyData;
 
-typedef struct InteractableData
-{
-c2Shape bounds;
-c2ShapeType bounds_type;
-f32 priority;
-InteractCallback interact_callback;
-EnterInteractableCallback enter_interactable_callback;
-ExitInteractableCallback exit_interactable_callback;
-b8 is_overlapping_player;
-} InteractableData;
-
 typedef enum EntityProperty EntityProperty;
 enum EntityProperty
 {
@@ -501,11 +500,14 @@ ENTITY_PROPERTY_force_floating,
 ENTITY_PROPERTY_interactable,
 ENTITY_PROPERTY_interactable_e,
 ENTITY_PROPERTY_interactable_left_click,
+ENTITY_PROPERTY_lumber_axable,
+ENTITY_PROPERTY_enemy,
 ENTITY_PROPERTY_sprite,
 ENTITY_PROPERTY_flipbook,
 ENTITY_PROPERTY_parallaxable,
 ENTITY_PROPERTY_physical,
 ENTITY_PROPERTY_blueprint,
+ENTITY_PROPERTY_queryable,
 ENTITY_PROPERTY_MAX,
 };
 static char *GetEntityPropertyName(EntityProperty type);
@@ -544,7 +546,8 @@ Item grabbed_item;
 v2 grabbed_item_offset;
 // @DoNotSerialise 
 Item *grabbed_item_origin_slot;
-InteractableData interactable;
+f32 priority;
+InteractCallback interact_callback;
 StructureType structure_type;
 Item remaining_items_in_blueprint[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
 StationData station_data;

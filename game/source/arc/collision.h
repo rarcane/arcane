@@ -26,5 +26,6 @@ internal void GenerateCollisionPairs(CollisionPair pairs[], i32 *count);
 internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_type,
 										c2Shape b_shape, c2ShapeType b_shape_type,
 										c2Manifold *manifold);
-// NOTE(randy): Applies the provided v2 to the shape
-internal void AddPositionOffsetToShape(c2Shape *shape, c2ShapeType shape_type, v2 position);
+internal i32 GetOverlappingBodiesWithShape(Entity **overlapping_entities,
+										   c2Shape shape,
+										   c2ShapeType shape_type);

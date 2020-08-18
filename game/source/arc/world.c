@@ -161,23 +161,6 @@ internal void UpdateParallax()
 	}
 }
 
-internal void TreeInteractCallback(Entity *entity)
-{
-	ItemTypeData *item_type_data = &global_item_type_data[GetItemInHand()->type];
-	if (item_type_data->flags & ITEM_FLAGS_lumber_axe)
-	{
-		entity->durability -= 10.0f;
-		if (entity->durability <= 0.0f)
-		{
-			Item twigs = { ITEM_TYPE_twig, 6 };
-			NewGroundItemEntity(V2AddV2(entity->position, v2(0.0f, -30.0f)), twigs);
-			
-			DeleteEntity(entity);
-			core->run_data->current_left_click_interactable = 0;
-		}
-	}
-}
-
 internal void GenerateTestPlatform()
 {
 	i32 width = 2000;
@@ -317,18 +300,20 @@ internal void GenerateTestPlatform()
 				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
 				EntitySetProperty(entity, ENTITY_PROPERTY_interactable);
 				EntitySetProperty(entity, ENTITY_PROPERTY_interactable_left_click);
+				EntitySetProperty(entity, ENTITY_PROPERTY_queryable);
+				EntitySetProperty(entity, ENTITY_PROPERTY_lumber_axable);
 				
 				entity->position = v2((f32)x_pos, (f32)height + 1);
 				entity->sprite_data.static_sprite = STATIC_SPRITE_pine_tree_v1;
 				entity->sprite_data.render_layer = 0.5f;
 				
-				entity->interactable.bounds.aabb.min = c2V(-20.0f, -20.0f);
-				entity->interactable.bounds.aabb.max = c2V(20.0f, 20.0f);
-				entity->interactable.bounds_type = C2_SHAPE_TYPE_aabb;
-				entity->interactable.priority = 2.0f;
-				entity->interactable.interact_callback = TreeInteractCallback;
+				entity->priority = 2.0f;
 				
 				entity->durability = 30.0f;
+				
+				entity->physics.shape.aabb.min = c2V(-3.0f, 0.0f);
+				entity->physics.shape.aabb.max = c2V(3.0f, 50.0f);
+				entity->physics.shape_type = C2_SHAPE_TYPE_aabb;
 			}
 		}
 		

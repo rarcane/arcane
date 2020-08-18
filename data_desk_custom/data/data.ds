@@ -304,14 +304,19 @@ ArcEntityType :: enum
 		player,
 }
 
+ItemCategory :: enum
+{
+	none,
+	resource,
+	lumber_axe,
+	sword,
+}
 ItemFlags :: flags
 {
-	resource,
-	sword,
-	lumber_axe,
 	bouncy,
+	hotbarable,
+	usable,
 }
-ITEM_FLAGS_HOTBARABLE :: (ITEM_FLAGS_sword)
 
 @XMacro
 ItemTypeData :: struct
@@ -320,22 +325,23 @@ ItemTypeData :: struct
 	icon_sprite : StaticSprite;
 	ground_sprite : StaticSprite;
 	max_stack_size : i32;
+	category : ItemCategory;
 	flags : ItemFlags;
 }
 @XMacro
 ItemType :: enum
 {
-	@Data("'none'", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, 0, 0)
+	@Data("'none'", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, 0, 0, 0)
 		none,
-	@Data("'Flint Sword'", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_FLAGS_sword)
+	@Data("'Flint Sword'", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_CATEGORY_sword, "ITEM_FLAGS_hotbarable | ITEM_FLAGS_usable")
 		flint_sword,
-	@Data("'Flint Axe'", STATIC_SPRITE_flint_axe, STATIC_SPRITE_flint_axe, 1, ITEM_FLAGS_lumber_axe)
+	@Data("'Flint Axe'", STATIC_SPRITE_flint_axe, STATIC_SPRITE_flint_axe, 1, ITEM_CATEGORY_lumber_axe, "ITEM_FLAGS_hotbarable | ITEM_FLAGS_usable")
 		flint_axe,
-	@Data("'Flint'", STATIC_SPRITE_flint, STATIC_SPRITE_flint, 8, 0)
+	@Data("'Flint'", STATIC_SPRITE_flint, STATIC_SPRITE_flint, 8, 0, 0)
 		flint,
-	@Data("'Twig'", STATIC_SPRITE_twig, STATIC_SPRITE_twig, 8, 0)
+	@Data("'Twig'", STATIC_SPRITE_twig, STATIC_SPRITE_twig, 8, 0, 0)
 		twig,
-	@Data("'Crafting Tool'", STATIC_SPRITE_crafting_tool, STATIC_SPRITE_crafting_tool, 1, 0)
+	@Data("'Crafting Tool'", STATIC_SPRITE_crafting_tool, STATIC_SPRITE_crafting_tool, 1, 0, ITEM_FLAGS_hotbarable)
 		crafting_tool,
 }
 
@@ -493,31 +499,26 @@ PhysicsBodyData :: struct
 	collide_against : PhysicsBodyTypeFlags;
 }
 
-InteractableData :: struct
-{
-	bounds : c2Shape;
-	bounds_type : c2ShapeType;
-	priority : f32;
-	interact_callback : InteractCallback;
-	enter_interactable_callback : EnterInteractableCallback;
-	exit_interactable_callback : ExitInteractableCallback;
-	is_overlapping_player : b8;
-}
-
 EntityProperty :: enum
 {
 	is_allocated,
 	is_character,
 	no_delete,
 	force_floating,
+	
 	interactable,
 	interactable_e,
 	interactable_left_click,
+	
+	lumber_axable,
+	enemy,
+	
 	sprite,
 	flipbook,
 	parallaxable,
 	physical,
 	blueprint,
+	queryable,
 }
 
 ENTITY_PROPERTY_SIZE :: (ENTITY_PROPERTY_MAX / 64 + 1)
@@ -584,7 +585,9 @@ Entity :: struct
 		grabbed_item_origin_slot : *Item; // TODO(randy): serialisation issues?
 	
 	// NOTE(randy): interactable
-	interactable : InteractableData;
+	priority : f32;
+	interact_callback : InteractCallback;
+	// is_overlapping_player : b8;
 	
 	// NOTE(randy): blueprint
 	structure_type : StructureType;

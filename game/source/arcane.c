@@ -14,7 +14,7 @@
 #include "arcane.h"
 #include "core.h"
 // NOTE(randy): Game Header Code
-#include "arc/interactable.h"
+#include "arc/interaction.h"
 #include "arc/render.h"
 #include "arc/particle.h"
 #include "generated/catchall.h"
@@ -34,7 +34,7 @@
 // NOTE(randy): Game Implementation Code
 #include "arc/util.c"
 #include "tsarcane/terminalcommands.c"
-#include "arc/interactable.c"
+#include "arc/interaction.c"
 #include "arc/render.c"
 #include "arc/arc_entity.c"
 #include "arc/particle.c"
