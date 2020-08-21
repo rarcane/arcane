@@ -236,6 +236,8 @@ StaticSprite :: enum
 		shia,
 	@Data("'item/shia2'", "{0.0f, 0.0f, 590.0f, 631.0f}", "{0.0f, 0.0f}")
 		shia2,
+	@Data("'entity/ron'", "{0.0f, 0.0f, 512.0f, 512.0f}", "{0.0f, 0.0f}")
+		dummy,
 }
 
 @XMacro
@@ -315,7 +317,9 @@ ItemFlags :: flags
 {
 	bouncy,
 	hotbarable,
-	usable,
+	primary_usable,
+	secondary_usable,
+	tertiary_usable,
 }
 
 @XMacro
@@ -333,9 +337,9 @@ ItemType :: enum
 {
 	@Data("'none'", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, 0, 0, 0)
 		none,
-	@Data("'Flint Sword'", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_CATEGORY_sword, "ITEM_FLAGS_hotbarable | ITEM_FLAGS_usable")
+	@Data("'Flint Sword'", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_CATEGORY_sword, "ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable")
 		flint_sword,
-	@Data("'Flint Axe'", STATIC_SPRITE_flint_axe, STATIC_SPRITE_flint_axe, 1, ITEM_CATEGORY_lumber_axe, "ITEM_FLAGS_hotbarable | ITEM_FLAGS_usable")
+	@Data("'Flint Axe'", STATIC_SPRITE_flint_axe, STATIC_SPRITE_flint_axe, 1, ITEM_CATEGORY_lumber_axe, "ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable")
 		flint_axe,
 	@Data("'Flint'", STATIC_SPRITE_flint, STATIC_SPRITE_flint, 8, 0, 0)
 		flint,
@@ -794,6 +798,27 @@ CharacterState :: flags
 	is_backpack_open,
 	is_blueprinting,
 	arcane_mode,
+	
+	is_charging,
+	in_action,
+}
+
+CharacterCombatState :: enum
+{
+	none,
+	light_charge,
+	heavy_charge,
+	light_attack,
+	heavy_attack,
+}
+
+MAX_ACTIVE_TIMERS :: 64
+Timer :: struct
+{
+	is_allocated : b8;
+	start_time : f32;
+	duration : f32;
+	complete_callback : TimerCompleteCallback;
 }
 
 MAX_POSITIONAL_ENTITIES :: 2048
@@ -801,6 +826,9 @@ MAX_FLOATING_ENTITIES :: 2048
 ENTITY_TABLE_SIZE :: (MAX_POSITIONAL_ENTITIES + MAX_FLOATING_ENTITIES)
 RunData :: struct // Game data used for run-time operations
 {
+	// TODO(randy): Not really serialisable
+	timers : Timer[MAX_ACTIVE_TIMERS];
+	
 	active_chunks : Chunk[MAX_WORLD_CHUNKS];
 	active_chunk_count : i32;
 	
@@ -861,7 +889,9 @@ RunData :: struct // Game data used for run-time operations
 	
 	character_entity : *Entity;
 	character_state : CharacterState;
-	// interaction_state : InteractionState; ??
+	
+	character_combat_state : CharacterCombatState;
+	cooldown_timer : f32;
 	
 	current_e_interactable : *Entity;
 	current_left_click_interactable : *Entity;

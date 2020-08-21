@@ -133,6 +133,7 @@ STATIC_SPRITE_twig,
 STATIC_SPRITE_crafting_tool,
 STATIC_SPRITE_shia,
 STATIC_SPRITE_shia2,
+STATIC_SPRITE_dummy,
 STATIC_SPRITE_MAX,
 };
 global StaticSpriteData global_static_sprite_data[STATIC_SPRITE_MAX] = {
@@ -197,6 +198,7 @@ global StaticSpriteData global_static_sprite_data[STATIC_SPRITE_MAX] = {
     { "item/crafting_tool", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
     { "item/shia", {0.0f, 0.0f, 800.0f, 1200.0f}, {0.0f, 0.0f}, },
     { "item/shia2", {0.0f, 0.0f, 590.0f, 631.0f}, {0.0f, 0.0f}, },
+    { "entity/ron", {0.0f, 0.0f, 512.0f, 512.0f}, {0.0f, 0.0f}, },
 };
 
 static char *GetStaticSpriteName(StaticSprite type);
@@ -291,7 +293,9 @@ static char *GetItemCategoryName(ItemCategory type);
 
 #define ITEM_FLAGS_bouncy (1<<0)
 #define ITEM_FLAGS_hotbarable (1<<1)
-#define ITEM_FLAGS_usable (1<<2)
+#define ITEM_FLAGS_primary_usable (1<<2)
+#define ITEM_FLAGS_secondary_usable (1<<3)
+#define ITEM_FLAGS_tertiary_usable (1<<4)
 typedef uint32 ItemFlags;
 
 typedef struct ItemTypeData
@@ -317,8 +321,8 @@ ITEM_TYPE_MAX,
 };
 global ItemTypeData global_item_type_data[ITEM_TYPE_MAX] = {
     { "none", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, 0, 0, 0, },
-    { "Flint Sword", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_CATEGORY_sword, ITEM_FLAGS_hotbarable | ITEM_FLAGS_usable, },
-    { "Flint Axe", STATIC_SPRITE_flint_axe, STATIC_SPRITE_flint_axe, 1, ITEM_CATEGORY_lumber_axe, ITEM_FLAGS_hotbarable | ITEM_FLAGS_usable, },
+    { "Flint Sword", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_CATEGORY_sword, ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable, },
+    { "Flint Axe", STATIC_SPRITE_flint_axe, STATIC_SPRITE_flint_axe, 1, ITEM_CATEGORY_lumber_axe, ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable, },
     { "Flint", STATIC_SPRITE_flint, STATIC_SPRITE_flint, 8, 0, 0, },
     { "Twig", STATIC_SPRITE_twig, STATIC_SPRITE_twig, 8, 0, 0, },
     { "Crafting Tool", STATIC_SPRITE_crafting_tool, STATIC_SPRITE_crafting_tool, 1, 0, ITEM_FLAGS_hotbarable, },
@@ -753,13 +757,37 @@ f32 layer;
 #define CHARACTER_STATE_is_backpack_open (1<<1)
 #define CHARACTER_STATE_is_blueprinting (1<<2)
 #define CHARACTER_STATE_arcane_mode (1<<3)
+#define CHARACTER_STATE_is_charging (1<<4)
+#define CHARACTER_STATE_in_action (1<<5)
 typedef uint32 CharacterState;
+
+typedef enum CharacterCombatState CharacterCombatState;
+enum CharacterCombatState
+{
+CHARACTER_COMBAT_STATE_none,
+CHARACTER_COMBAT_STATE_light_charge,
+CHARACTER_COMBAT_STATE_heavy_charge,
+CHARACTER_COMBAT_STATE_light_attack,
+CHARACTER_COMBAT_STATE_heavy_attack,
+CHARACTER_COMBAT_STATE_MAX,
+};
+static char *GetCharacterCombatStateName(CharacterCombatState type);
+
+#define MAX_ACTIVE_TIMERS (64)
+typedef struct Timer
+{
+b8 is_allocated;
+f32 start_time;
+f32 duration;
+TimerCompleteCallback complete_callback;
+} Timer;
 
 #define MAX_POSITIONAL_ENTITIES (2048)
 #define MAX_FLOATING_ENTITIES (2048)
 #define ENTITY_TABLE_SIZE ((MAX_POSITIONAL_ENTITIES+MAX_FLOATING_ENTITIES))
 typedef struct RunData
 {
+Timer timers[MAX_ACTIVE_TIMERS];
 Chunk active_chunks[MAX_WORLD_CHUNKS];
 i32 active_chunk_count;
 Entity entities[ENTITY_TABLE_SIZE];
@@ -778,6 +806,8 @@ i32 queued_dynamic_cell_count;
 b8 is_paused;
 Entity *character_entity;
 CharacterState character_state;
+CharacterCombatState character_combat_state;
+f32 cooldown_timer;
 Entity *current_e_interactable;
 Entity *current_left_click_interactable;
 Entity *engaged_station_entity;

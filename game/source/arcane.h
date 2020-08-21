@@ -13,6 +13,7 @@ typedef void (*InteractCallback)(Entity *);
 typedef void (*EnterInteractableCallback)(Entity *);
 typedef void (*ExitInteractableCallback)(Entity *);
 typedef void (*StructureBuildCallback)(Entity *);
+typedef void (*TimerCompleteCallback)();
 
 internal void InitialiseRunData();
 internal void FreeRunData();

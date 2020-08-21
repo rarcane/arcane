@@ -253,6 +253,9 @@ break;
 case STATIC_SPRITE_shia2:
 return "Shia2";
 break;
+case STATIC_SPRITE_dummy:
+return "Dummy";
+break;
 default:
 return "INVALID";
 break;
@@ -587,6 +590,31 @@ return "Texture";
 break;
 case RENDERABLE_TYPE_text:
 return "Text";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
+static char *GetCharacterCombatStateName(CharacterCombatState type)
+{
+switch(type)
+{
+case CHARACTER_COMBAT_STATE_none:
+return "None";
+break;
+case CHARACTER_COMBAT_STATE_light_charge:
+return "Light Charge";
+break;
+case CHARACTER_COMBAT_STATE_heavy_charge:
+return "Heavy Charge";
+break;
+case CHARACTER_COMBAT_STATE_light_attack:
+return "Light Attack";
+break;
+case CHARACTER_COMBAT_STATE_heavy_attack:
+return "Heavy Attack";
 break;
 default:
 return "INVALID";

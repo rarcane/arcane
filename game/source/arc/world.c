@@ -1,5 +1,6 @@
 internal void WorldUpdate()
 {
+	TickTimers();
 	
 #ifdef DEVELOPER_TOOLS
 	DrawEditorUI();
@@ -43,14 +44,16 @@ internal void WorldUpdate()
 	// NOTE(randy): Temp Arcane mode testing
 	{
 		if (platform->key_pressed[KEY_x])
-			core->run_data->character_state ^= CHARACTER_STATE_arcane_mode;
-		
-		if (core->run_data->character_state & CHARACTER_STATE_arcane_mode)
-			core->run_data->character_entity->sprite_data.tint = v4(1.0f, 0.0f, 0.0f, 0.5f);
-		else
 		{
-			core->run_data->character_entity->sprite_data.tint = v4u(1.0f);
-			core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;
+			core->run_data->character_state ^= CHARACTER_STATE_arcane_mode;
+			
+			if (core->run_data->character_state & CHARACTER_STATE_arcane_mode)
+				core->run_data->character_entity->sprite_data.tint = v4(1.0f, 0.0f, 0.0f, 0.5f);
+			else
+			{
+				core->run_data->character_entity->sprite_data.tint = v4u(1.0f);
+				core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;
+			}
 		}
 	}
 	
@@ -284,6 +287,29 @@ internal void GenerateTestPlatform()
 			
 			previous_ground_entity = entity;
 		}
+	}
+	
+	// NOTE(randy): Test dummy
+	{
+		Entity *entity = NewEntity();
+		EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+		EntitySetProperty(entity, ENTITY_PROPERTY_interactable);
+		EntitySetProperty(entity, ENTITY_PROPERTY_interactable_left_click);
+		EntitySetProperty(entity, ENTITY_PROPERTY_queryable);
+		EntitySetProperty(entity, ENTITY_PROPERTY_enemy);
+		
+		entity->position = v2(-100.0f, -5.0f);
+		entity->sprite_data.static_sprite = STATIC_SPRITE_dummy;
+		entity->sprite_data.render_layer = 0.5f;
+		entity->sprite_data.scale = v2(0.1f, 0.1f);
+		
+		entity->priority = 2.0f;
+		
+		entity->durability = 30.0f;
+		
+		entity->physics.shape.aabb.min = c2V(-10.0f, 0.0f);
+		entity->physics.shape.aabb.max = c2V(10.0f, 40.0f);
+		entity->physics.shape_type = C2_SHAPE_TYPE_aabb;
 	}
 	
 	// NOTE(randy): $Generate background stuff
@@ -1289,4 +1315,38 @@ internal void DeleteChunk(Chunk *chunk)
     
 	Ts2dTextureCleanUp(&chunk->texture);
 	MemorySet(chunk, 0, sizeof(Chunk));
+}
+
+internal void TickTimers()
+{
+	for (i32 i = 0; i < MAX_ACTIVE_TIMERS; i++)
+	{
+		Timer *timer = &core->run_data->timers[i];
+		if (timer->is_allocated &&
+			platform->GetTime() >= timer->start_time + timer->duration)
+		{
+			Assert(timer->complete_callback);
+			timer->complete_callback();
+			MemorySet(timer, 0, sizeof(Timer));
+		}
+	}
+}
+
+internal Timer *NewTimer(f32 duration, TimerCompleteCallback complete_callback)
+{
+	for (i32 i = 0; i < MAX_ACTIVE_TIMERS; i++)
+	{
+		Timer *timer = &core->run_data->timers[i];
+		if (!timer->is_allocated)
+		{
+			timer->is_allocated = 1;
+			timer->start_time = platform->GetTime();
+			timer->duration = duration;
+			timer->complete_callback = complete_callback;
+			return timer;
+		}
+	}
+	
+	Assert(0);
+	return 0;
 }
