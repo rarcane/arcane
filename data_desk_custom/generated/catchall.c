@@ -485,6 +485,66 @@ break;
 }
 }
 
+static char *GetMagicTypeName(MagicType type)
+{
+switch(type)
+{
+case MAGIC_TYPE_conscientiousness:
+return "Conscientiousness";
+break;
+case MAGIC_TYPE_elemental:
+return "Elemental";
+break;
+case MAGIC_TYPE_big_spook:
+return "Big Spook";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
+static char *GetElementalAffinityName(ElementalAffinity type)
+{
+switch(type)
+{
+case ELEMENTAL_AFFINITY_earth:
+return "Earth";
+break;
+case ELEMENTAL_AFFINITY_fire:
+return "Fire";
+break;
+case ELEMENTAL_AFFINITY_water:
+return "Water";
+break;
+case ELEMENTAL_AFFINITY_air:
+return "Air";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
+static char *GetSpellTypeName(SpellType type)
+{
+switch(type)
+{
+case SPELL_TYPE_none:
+return "None";
+break;
+case SPELL_TYPE_fireball:
+return "Fireball";
+break;
+case SPELL_TYPE_yeet:
+return "Yeet";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
 static char *GetEntityPropertyName(EntityProperty type)
 {
 switch(type)
@@ -690,6 +750,13 @@ static void WriteEntityToFile(FILE *file, Entity *data)
 
     WriteToFile(file, &data->grabbed_item_offset, sizeof(data->grabbed_item_offset));
 
+    for (i32 i = 0; i < MAX_SPELL_SLOTS; i++)
+    {
+        WriteToFile(file, &data->freehand_spell_slots[i], sizeof(Spell));
+    }
+
+    WriteToFile(file, &data->freehand_spell_count, sizeof(data->freehand_spell_count));
+
     WriteToFile(file, &data->priority, sizeof(data->priority));
 
     WriteToFile(file, &data->interact_callback, sizeof(data->interact_callback));
@@ -776,6 +843,13 @@ static void ReadEntityFromFile(FILE *file, Entity *data)
     ReadFromFile(file, &data->grabbed_item, sizeof(data->grabbed_item));
 
     ReadFromFile(file, &data->grabbed_item_offset, sizeof(data->grabbed_item_offset));
+
+    for (i32 i = 0; i < MAX_SPELL_SLOTS; i++)
+    {
+        ReadFromFile(file, &data->freehand_spell_slots[i], sizeof(Spell));
+    }
+
+    ReadFromFile(file, &data->freehand_spell_count, sizeof(data->freehand_spell_count));
 
     ReadFromFile(file, &data->priority, sizeof(data->priority));
 

@@ -475,6 +475,57 @@ global StructureTypeData global_structure_type_data[STRUCTURE_TYPE_MAX] = {
 
 static char *GetStructureTypeName(StructureType type);
 
+typedef enum MagicType MagicType;
+enum MagicType
+{
+MAGIC_TYPE_conscientiousness,
+MAGIC_TYPE_elemental,
+MAGIC_TYPE_big_spook,
+MAGIC_TYPE_MAX,
+};
+static char *GetMagicTypeName(MagicType type);
+
+typedef enum ElementalAffinity ElementalAffinity;
+enum ElementalAffinity
+{
+ELEMENTAL_AFFINITY_earth,
+ELEMENTAL_AFFINITY_fire,
+ELEMENTAL_AFFINITY_water,
+ELEMENTAL_AFFINITY_air,
+ELEMENTAL_AFFINITY_MAX,
+};
+static char *GetElementalAffinityName(ElementalAffinity type);
+
+typedef struct SpellTypeData
+{
+char print_name[20];
+MagicType magic_type;
+f32 mana_cost;
+SpellCastCallback cast_callback;
+} SpellTypeData;
+
+typedef enum SpellType SpellType;
+enum SpellType
+{
+SPELL_TYPE_none,
+SPELL_TYPE_fireball,
+SPELL_TYPE_yeet,
+SPELL_TYPE_MAX,
+};
+global SpellTypeData global_spell_type_data[SPELL_TYPE_MAX] = {
+    { "none", MAGIC_TYPE_big_spook, 0.0f, 0, },
+    { "yeetus maximus", MAGIC_TYPE_elemental, 10.0f, Fireball, },
+    { "yeetus maximus", MAGIC_TYPE_elemental, 10.0f, Yeet, },
+};
+
+static char *GetSpellTypeName(SpellType type);
+
+typedef struct Spell
+{
+SpellType type;
+f32 last_used;
+} Spell;
+
 typedef struct Chunk Chunk;
 
 // @GenerateComponentCode 
@@ -517,6 +568,7 @@ ENTITY_PROPERTY_MAX,
 static char *GetEntityPropertyName(EntityProperty type);
 
 #define ENTITY_PROPERTY_SIZE (((ENTITY_PROPERTY_MAX/64)+1))
+#define MAX_SPELL_SLOTS (8)
 typedef struct Entity
 {
 u64 properties[ENTITY_PROPERTY_SIZE];
@@ -550,6 +602,8 @@ Item grabbed_item;
 v2 grabbed_item_offset;
 // @DoNotSerialise 
 Item *grabbed_item_origin_slot;
+Spell freehand_spell_slots[MAX_SPELL_SLOTS];
+i32 freehand_spell_count;
 f32 priority;
 InteractCallback interact_callback;
 StructureType structure_type;

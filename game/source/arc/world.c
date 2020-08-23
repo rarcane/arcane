@@ -41,22 +41,6 @@ internal void WorldUpdate()
     
 	BlueprintUpdate();
 	
-	// NOTE(randy): Temp Arcane mode testing
-	{
-		if (platform->key_pressed[KEY_x])
-		{
-			core->run_data->character_state ^= CHARACTER_STATE_arcane_mode;
-			
-			if (core->run_data->character_state & CHARACTER_STATE_arcane_mode)
-				core->run_data->character_entity->sprite_data.tint = v4(1.0f, 0.0f, 0.0f, 0.5f);
-			else
-			{
-				core->run_data->character_entity->sprite_data.tint = v4u(1.0f);
-				core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;
-			}
-		}
-	}
-	
 #ifdef DEVELOPER_TOOLS
 	RenderColliders();
 #endif
@@ -861,6 +845,10 @@ internal b8 CreateWorld(char *world_name)
 		
 		character->inventory_size = 9;
 		character->hotbar_size = 2;
+		
+		character->freehand_spell_count = 2;
+		character->freehand_spell_slots[0].type = SPELL_TYPE_fireball;
+		character->freehand_spell_slots[1].type = SPELL_TYPE_yeet;
 	}
 	
 	// FillChunkEntities();

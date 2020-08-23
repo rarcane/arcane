@@ -481,6 +481,47 @@ StructureType :: enum
 		base,
 }
 
+// NOTE(randy): $Spells
+MagicType :: enum
+{
+	conscientiousness,
+	elemental,
+	big_spook,
+}
+
+ElementalAffinity :: enum
+{
+	earth,
+	fire,
+	water,
+	air,
+}
+
+@XMacro
+SpellTypeData :: struct
+{
+	print_name : char[20];
+	magic_type : MagicType;
+	mana_cost : f32;
+	cast_callback : SpellCastCallback;
+}
+@XMacro
+SpellType :: enum
+{
+	@Data("'none'", MAGIC_TYPE_big_spook, 0.0f, 0)
+		none,
+	@Data("'yeetus maximus'", MAGIC_TYPE_elemental, 10.0f, Fireball)
+		fireball,
+	@Data("'yeetus maximus'", MAGIC_TYPE_elemental, 10.0f, Yeet)
+		yeet,
+}
+
+Spell :: struct
+{
+	type : SpellType;
+	last_used : f32;
+}
+
 @ForwardDeclare(Chunk)
 ForwardChunk :: _;
 
@@ -526,6 +567,7 @@ EntityProperty :: enum
 }
 
 ENTITY_PROPERTY_SIZE :: (ENTITY_PROPERTY_MAX / 64 + 1)
+MAX_SPELL_SLOTS :: 8
 
 @SerialisableStruct
 Entity :: struct
@@ -587,6 +629,9 @@ Entity :: struct
 	grabbed_item_offset : v2;
 	@DoNotSerialise
 		grabbed_item_origin_slot : *Item; // TODO(randy): serialisation issues?
+	
+	freehand_spell_slots : Spell[MAX_SPELL_SLOTS];
+	freehand_spell_count : i32;
 	
 	// NOTE(randy): interactable
 	priority : f32;

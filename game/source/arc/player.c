@@ -95,6 +95,98 @@ internal void PreMoveUpdatePlayer()
 	{
 		character->active_hotbar_slot = 1;
 	}
+	
+	// NOTE(randy): Arcane mode
+	if (platform->key_pressed[KEY_x])
+	{
+		core->run_data->character_state ^= CHARACTER_STATE_arcane_mode;
+		
+		if (core->run_data->character_state & CHARACTER_STATE_arcane_mode)
+			core->run_data->character_entity->sprite_data.tint = v4(1.0f, 0.0f, 0.0f, 0.5f);
+		else
+		{
+			core->run_data->character_entity->sprite_data.tint = v4u(1.0f);
+			core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;
+		}
+	}
+	
+	// NOTE(randy): Spell casting
+	if (character->freehand_spell_count)
+	{
+		local_persist b8 was_down = 0;
+		local_persist Spell *selected_spell = 0;
+		if (platform->key_down[KEY_q])
+		{
+			core->world_delta_mult = 0.5f;
+			
+			// NOTE(randy): Draw Spell UI
+			/*
+						for (i32 i = 0; i < character->freehand_spell_count; i++)
+						{
+							Spell *spell = &character->freehand_spell_slots[i];
+							
+							
+						}
+						 */
+			
+			{
+				Spell *spell = &character->freehand_spell_slots[0];
+				
+				v2 render_pos = v2screen(v2(0.2f, 0.5f));
+				v2 render_size = v2GUI(v2(0.1f, 0.1f));
+				
+				render_pos = V2SubtractV2(render_pos, V2MultiplyF32(render_size, 0.5f));
+				
+				StaticSpriteData *sprite = &global_static_sprite_data[STATIC_SPRITE_shia];
+				ArcPushTexture(sprite->texture_atlas,
+							   0,
+							   sprite->source,
+							   v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
+							   v4u(1.0f),
+							   LAYER_FRONT_UI);
+				
+				if (platform->mouse_x < core->render_w / 2.0f)
+					selected_spell = spell;
+			}
+			
+			{
+				Spell *spell = &character->freehand_spell_slots[1];
+				
+				v2 render_pos = v2screen(v2(0.8f, 0.5f));
+				v2 render_size = v2GUI(v2(0.1f, 0.1f));
+				
+				render_pos = V2SubtractV2(render_pos, V2MultiplyF32(render_size, 0.5f));
+				
+				StaticSpriteData *sprite = &global_static_sprite_data[STATIC_SPRITE_shia2];
+				ArcPushTexture(sprite->texture_atlas,
+							   0,
+							   sprite->source,
+							   v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
+							   v4u(1.0f),
+							   LAYER_FRONT_UI);
+				
+				if (platform->mouse_x >= core->render_w / 2.0f)
+					selected_spell = spell;
+			}
+			
+			was_down = 1;
+		}
+		else if (was_down)
+		{
+			core->world_delta_mult = 1.0f;
+			
+			if (selected_spell)
+			{
+				SpellTypeData *spell = &global_spell_type_data[selected_spell->type];
+				if (spell)
+				{
+					spell->cast_callback();
+				}
+			}
+			
+			was_down = 0;
+		}
+	}
 }
 
 internal void PostMoveUpdatePlayer()

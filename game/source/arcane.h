@@ -14,6 +14,17 @@ typedef void (*EnterInteractableCallback)(Entity *);
 typedef void (*ExitInteractableCallback)(Entity *);
 typedef void (*StructureBuildCallback)(Entity *);
 typedef void (*TimerCompleteCallback)();
+typedef void (*SpellCastCallback)();
 
 internal void InitialiseRunData();
 internal void FreeRunData();
+
+internal void Fireball()
+{
+	Log("fire");
+}
+
+internal void Yeet()
+{
+	Log("yeet");
+}
