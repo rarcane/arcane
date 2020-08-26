@@ -37,8 +37,6 @@ internal void WorldUpdate()
 	DrawWorld();
 	RenderCells();
 	
-	StationUpdate(); // TODO(randy): Ordered renderer. This is out of place.
-    
 	BlueprintUpdate();
 	
 #ifdef DEVELOPER_TOOLS
@@ -273,7 +271,7 @@ internal void GenerateTestPlatform()
 		}
 	}
 	
-	// NOTE(randy): Test dummy
+	// NOTE(randy): $Ron
 	{
 		Entity *entity = NewEntity();
 		EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
@@ -282,7 +280,7 @@ internal void GenerateTestPlatform()
 		EntitySetProperty(entity, ENTITY_PROPERTY_queryable);
 		EntitySetProperty(entity, ENTITY_PROPERTY_enemy);
 		
-		entity->position = v2(-100.0f, -5.0f);
+		entity->position = v2(-120.0f, -5.0f);
 		entity->sprite_data.static_sprite = STATIC_SPRITE_dummy;
 		entity->sprite_data.render_layer = 0.5f;
 		entity->sprite_data.scale = v2(0.1f, 0.1f);
@@ -293,6 +291,26 @@ internal void GenerateTestPlatform()
 		
 		entity->physics.shape.aabb.min = c2V(-10.0f, 0.0f);
 		entity->physics.shape.aabb.max = c2V(10.0f, 40.0f);
+		entity->physics.shape_type = C2_SHAPE_TYPE_aabb;
+	}
+	
+	// NOTE(randy): runic enchanter
+	{
+		Entity *entity = NewEntity();
+		EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+		EntitySetProperty(entity, ENTITY_PROPERTY_interactable);
+		EntitySetProperty(entity, ENTITY_PROPERTY_interactable_e);
+		EntitySetProperty(entity, ENTITY_PROPERTY_queryable);
+		
+		entity->position = v2(-70.0f, -5.0f);
+		entity->sprite_data.static_sprite = STATIC_SPRITE_runic_enchanter;
+		entity->sprite_data.render_layer = 0.5f;
+		
+		entity->priority = 2.0f;
+		entity->interact_callback = OnEnchanterInteract;
+		
+		entity->physics.shape.aabb.min = c2V(-10.0f, 0.0f);
+		entity->physics.shape.aabb.max = c2V(10.0f, 20.0f);
 		entity->physics.shape_type = C2_SHAPE_TYPE_aabb;
 	}
 	
@@ -315,7 +333,7 @@ internal void GenerateTestPlatform()
 				
 				entity->position = v2((f32)x_pos, (f32)height + 1);
 				entity->sprite_data.static_sprite = STATIC_SPRITE_pine_tree_v1;
-				entity->sprite_data.render_layer = 0.5f;
+				entity->sprite_data.render_layer = LAYER_TREE;
 				
 				entity->priority = 2.0f;
 				
@@ -340,7 +358,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_1_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v2;
-			entity->sprite_data.render_layer = 1.0f;
+			entity->sprite_data.render_layer = LAYER_HILL_1;
 		}
 		{
 			Entity *entity = NewEntity("Hills", GENERALISED_ENTITY_TYPE_scenic);
@@ -354,7 +372,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_1_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v1;
-			entity->sprite_data.render_layer = 1.0f;
+			entity->sprite_data.render_layer = LAYER_HILL_1;
 		}
 		{
 			Entity *entity = NewEntity();
@@ -368,7 +386,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_1_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v2;
-			entity->sprite_data.render_layer = 1.0f;
+			entity->sprite_data.render_layer = LAYER_HILL_1;
 		}
 		{
 			Entity *entity = NewEntity();
@@ -382,7 +400,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_1_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v1;
-			entity->sprite_data.render_layer = 1.0f;
+			entity->sprite_data.render_layer = LAYER_HILL_1;
 		}
 		{
 			Entity *entity = NewEntity();
@@ -396,7 +414,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_1_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v2;
-			entity->sprite_data.render_layer = 1.0f;
+			entity->sprite_data.render_layer = LAYER_HILL_1;
 		}
 		{
 			Entity *entity = NewEntity();
@@ -410,7 +428,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_1_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v1;
-			entity->sprite_data.render_layer = 1.0f;
+			entity->sprite_data.render_layer = LAYER_HILL_1;
 		}
 		
 		// NOTE(randy): $bg trees 1
@@ -427,7 +445,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = BG_TREE_1_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg1_pine_tree_v1 + RandomI32(0, 1);
-			entity->sprite_data.render_layer = 2.0f;
+			entity->sprite_data.render_layer = LAYER_BG_TREE_1;
 			entity->is_flipped = RandomI32(0, 1);
 		}
 		
@@ -445,7 +463,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = BG_SHRUB_1_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg1_shrub_v1 + RandomI32(0, 2);
-			entity->sprite_data.render_layer = 1.5f;
+			entity->sprite_data.render_layer = LAYER_BG_SHRUBS_1;
 			entity->is_flipped = RandomI32(0, 1);
 		}
 		
@@ -463,7 +481,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = BG_SAPLING_1_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg1_sapling_v1 + RandomI32(0, 2);
-			entity->sprite_data.render_layer = 1.75f;
+			entity->sprite_data.render_layer = LAYER_BG_SAPLINGS_1;
 			entity->is_flipped = RandomI32(0, 1);
 		}
 		
@@ -480,7 +498,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_2_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
-			entity->sprite_data.render_layer = 3.0f;
+			entity->sprite_data.render_layer = LAYER_HILL_2;
 		}
 		{
 			Entity *entity = NewEntity();
@@ -494,7 +512,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_2_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
-			entity->sprite_data.render_layer = 3.0f;
+			entity->sprite_data.render_layer = LAYER_HILL_2;
 		}
 		{
 			Entity *entity = NewEntity();
@@ -508,7 +526,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_2_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
-			entity->sprite_data.render_layer = 3.0f;
+			entity->sprite_data.render_layer = LAYER_HILL_2;
 		}
 		{
 			Entity *entity = NewEntity();
@@ -522,7 +540,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_2_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
-			entity->sprite_data.render_layer = 3.0f;
+			entity->sprite_data.render_layer = LAYER_HILL_2;
 		}
 		{
 			Entity *entity = NewEntity();
@@ -536,7 +554,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_2_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
-			entity->sprite_data.render_layer = 3.0f;
+			entity->sprite_data.render_layer = LAYER_HILL_2;
 		}
 		{
 			Entity *entity = NewEntity();
@@ -550,7 +568,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_2_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
-			entity->sprite_data.render_layer = 3.0f;
+			entity->sprite_data.render_layer = LAYER_HILL_2;
 		}
 		
 		// NOTE(randy): $bg trees 2
@@ -567,7 +585,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = BG_TREE_2_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_pine_tree_v1 + RandomI32(0, 1);
-			entity->sprite_data.render_layer = 4.0f;
+			entity->sprite_data.render_layer = LAYER_BG_TREES_2;
 			entity->is_flipped = RandomI32(0, 1);
 		}
 		
@@ -585,7 +603,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = BG_SHRUB_2_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_shrub_v1 + RandomI32(0, 2);
-			entity->sprite_data.render_layer = 3.5f;
+			entity->sprite_data.render_layer = LAYER_BG_SHRUBS_2;
 			entity->is_flipped = RandomI32(0, 1);
 		}
 		
@@ -602,7 +620,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_3_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
-			entity->sprite_data.render_layer = 5.0f;
+			entity->sprite_data.render_layer = LAYER_HILLS_3;
 		}
 		{
 			Entity *entity = NewEntity();
@@ -616,7 +634,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_3_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
-			entity->sprite_data.render_layer = 5.0f;
+			entity->sprite_data.render_layer = LAYER_HILLS_3;
 		}
 		{
 			Entity *entity = NewEntity();
@@ -630,7 +648,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_3_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
-			entity->sprite_data.render_layer = 5.0f;
+			entity->sprite_data.render_layer = LAYER_HILLS_3;
 		}
 		{
 			Entity *entity = NewEntity();
@@ -644,7 +662,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_3_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
-			entity->sprite_data.render_layer = 5.0f;
+			entity->sprite_data.render_layer = LAYER_HILLS_3;
 		}
 		{
 			Entity *entity = NewEntity();
@@ -658,7 +676,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_3_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
-			entity->sprite_data.render_layer = 5.0f;
+			entity->sprite_data.render_layer = LAYER_HILLS_3;
 		}
 		{
 			Entity *entity = NewEntity();
@@ -672,7 +690,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = HILLS_3_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
-			entity->sprite_data.render_layer = 5.0f;
+			entity->sprite_data.render_layer = LAYER_HILLS_3;
 		}
 		
 		// NOTE(randy): $bg trees 3
@@ -689,7 +707,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = BG_TREE_3_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_pine_tree_v1 + RandomI32(0, 7);
-			entity->sprite_data.render_layer = 6.0f;
+			entity->sprite_data.render_layer = LAYER_BG_TREES_3;
 			entity->is_flipped = RandomI32(0, 1);
 		}
 		
@@ -707,7 +725,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = BG_SHRUB_3_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_shrub_v1 + RandomI32(0, 3);
-			entity->sprite_data.render_layer = 5.5f;
+			entity->sprite_data.render_layer = LAYER_BG_SHRUBS_3;
 			entity->is_flipped = RandomI32(0, 1);
 		}
 		
@@ -725,7 +743,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = MID_MOUNTAINS_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_mid_mountains;
-			entity->sprite_data.render_layer = 7.0f;
+			entity->sprite_data.render_layer = LAYER_MID_MOUNTAINS;
 		}
 		
 		// NOTE(randy): $far mountains
@@ -741,7 +759,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = FAR_MOUNTAINS_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_far_mountains;
-			entity->sprite_data.render_layer = 8.0f;
+			entity->sprite_data.render_layer = LAYER_FAR_MOUNTAINS;
 		}
 		{
 			Entity *entity = NewEntity();
@@ -755,7 +773,7 @@ internal void GenerateTestPlatform()
 			entity->parallax_amount = FAR_MOUNTAINS_PARALLAX;
 			
 			entity->sprite_data.static_sprite = STATIC_SPRITE_far_mountains;
-			entity->sprite_data.render_layer = 8.0f;
+			entity->sprite_data.render_layer = LAYER_FAR_MOUNTAINS;
 		}
 	}
 }

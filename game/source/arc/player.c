@@ -99,15 +99,7 @@ internal void PreMoveUpdatePlayer()
 	// NOTE(randy): Arcane mode
 	if (platform->key_pressed[KEY_x])
 	{
-		core->run_data->character_state ^= CHARACTER_STATE_arcane_mode;
-		
-		if (core->run_data->character_state & CHARACTER_STATE_arcane_mode)
-			core->run_data->character_entity->sprite_data.tint = v4(1.0f, 0.0f, 0.0f, 0.5f);
-		else
-		{
-			core->run_data->character_entity->sprite_data.tint = v4u(1.0f);
-			core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;
-		}
+		SetArcaneMode(!(core->run_data->character_state & CHARACTER_STATE_arcane_mode));
 	}
 	
 	// NOTE(randy): Spell casting
@@ -196,5 +188,24 @@ internal void PostMoveUpdatePlayer()
 internal b8 CanPlayerMove()
 {
 	return !(core->run_data->character_state & CHARACTER_STATE_is_crafting) &&
-		!(core->run_data->character_state & CHARACTER_STATE_is_blueprinting);
+		!(core->run_data->character_state & CHARACTER_STATE_is_blueprinting) &&
+		!(core->run_data->character_state & CHARACTER_STATE_is_enchanting);
+}
+
+internal void SetArcaneMode(i32 on)
+{
+	if (on)
+	{
+		core->run_data->character_state |= CHARACTER_STATE_arcane_mode;
+		core->run_data->character_entity->sprite_data.tint = v4(1.0f, 0.0f, 0.0f, 0.5f);
+	}
+	else
+	{
+		core->run_data->character_state &= ~CHARACTER_STATE_arcane_mode;
+		core->run_data->character_entity->sprite_data.tint = v4u(1.0f);
+		
+		// NOTE(randy): just force disable other modes?
+		core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;
+		core->run_data->character_state &= ~CHARACTER_STATE_is_enchanting;
+	}
 }

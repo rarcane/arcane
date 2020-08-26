@@ -216,6 +216,8 @@ StaticSprite :: enum
 	// NOTE(randy): Structures
 	@Data("'structures/crafting_stump'", "{0.0f, 0.0f, 32.0f, 32.0f}", "{0.0f, 0.0f}")
 		crafting_stump,
+	@Data("'structures/runic_enchanter'", "{0.0f, 0.0f, 32.0f, 32.0f}", "{0.0f, 0.0f}")
+		runic_enchanter,
 	
 	// NOTE(randy): Items
 	@Data("'item/flint_sword'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{6.0f, 2.0f}")
@@ -320,6 +322,7 @@ ItemFlags :: flags
 	primary_usable,
 	secondary_usable,
 	tertiary_usable,
+	enchantable,
 }
 
 @XMacro
@@ -337,9 +340,9 @@ ItemType :: enum
 {
 	@Data("'none'", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, 0, 0, 0)
 		none,
-	@Data("'Flint Sword'", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_CATEGORY_sword, "ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable")
+	@Data("'Flint Sword'", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_CATEGORY_sword, "ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable | ITEM_FLAGS_enchantable")
 		flint_sword,
-	@Data("'Flint Axe'", STATIC_SPRITE_flint_axe, STATIC_SPRITE_flint_axe, 1, ITEM_CATEGORY_lumber_axe, "ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable")
+	@Data("'Flint Axe'", STATIC_SPRITE_flint_axe, STATIC_SPRITE_flint_axe, 1, ITEM_CATEGORY_lumber_axe, "ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable | ITEM_FLAGS_enchantable")
 		flint_axe,
 	@Data("'Flint'", STATIC_SPRITE_flint, STATIC_SPRITE_flint, 8, 0, 0)
 		flint,
@@ -354,7 +357,7 @@ ItemType :: enum
 
 @ForwardDeclare(Entity)
 ForwardEntity :: _;
-
+e
 Line :: struct
 {
 	p1 : v2;
@@ -426,26 +429,9 @@ CraftingRecipeType :: enum
 		flint_sword,
 }
 
-// NOTE(randy): $Stations
-CraftingStation :: struct
-{
-	current_recipe : CraftingRecipeType;
-}
-SmeltingStation :: struct
-{
-	temp : i32;
-}
-StationData :: union
-{
-	crafting : CraftingStation;
-	smelting : SmeltingStation;
-}
-StationType :: enum
-{
-	crafting,
-	smelting,
-}
 
+
+// NOTE(randy): $Strucutres
 StructureCategory :: enum
 {
 	none,
@@ -455,7 +441,6 @@ StructureCategory :: enum
 }
 
 MAX_ITEMS_IN_BLUEPRINT_RECIPE :: 10
-// NOTE(randy): $Strucutres
 @XMacro
 StructureTypeData :: struct
 {
@@ -520,6 +505,27 @@ Spell :: struct
 {
 	type : SpellType;
 	last_used : f32;
+}
+
+@XMacro
+EnchantmentTypeData :: struct
+{
+	print_name : char[20];
+}
+@XMacro
+EnchantmentType :: enum
+{
+	@Data("'none'")
+		none,
+	@Data("'enchantus prime'")
+		test,
+}
+
+MAX_ENCHANTMENTS :: 8
+Enchantment :: struct
+{
+	type : EnchantmentType;
+	// ...
 }
 
 @ForwardDeclare(Chunk)
@@ -601,7 +607,9 @@ Entity :: struct
 		current_general_state : *char;
 	current_animation_state : ArcEntityAnimationState;
 	
+	// NOTE(randy): Item shit
 	item : Item;
+	enchamtnets : Enchantment[MAX_ENCHANTMENTS];
 	
 	// NOTE(randy): Parallax
 	parallax_amount : v2;
@@ -641,10 +649,6 @@ Entity :: struct
 	// NOTE(randy): blueprint
 	structure_type : StructureType;
 	remaining_items_in_blueprint : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
-	
-	// NOTE(randy): station comp
-	station_data : StationData;
-	station_type : StationType;
 	
 	durability : f32;
 }
@@ -842,6 +846,7 @@ CharacterState :: flags
 	is_crafting,
 	is_backpack_open,
 	is_blueprinting,
+	is_enchanting,
 	arcane_mode,
 	
 	is_charging,

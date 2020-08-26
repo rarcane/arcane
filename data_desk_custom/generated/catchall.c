@@ -229,6 +229,9 @@ break;
 case STATIC_SPRITE_crafting_stump:
 return "Crafting Stump";
 break;
+case STATIC_SPRITE_runic_enchanter:
+return "Runic Enchanter";
+break;
 case STATIC_SPRITE_flint_sword_icon:
 return "Flint Sword Icon";
 break;
@@ -422,22 +425,6 @@ break;
 }
 }
 
-static char *GetStationTypeName(StationType type)
-{
-switch(type)
-{
-case STATION_TYPE_crafting:
-return "Crafting";
-break;
-case STATION_TYPE_smelting:
-return "Smelting";
-break;
-default:
-return "INVALID";
-break;
-}
-}
-
 static char *GetStructureCategoryName(StructureCategory type)
 {
 switch(type)
@@ -538,6 +525,22 @@ return "Fireball";
 break;
 case SPELL_TYPE_yeet:
 return "Yeet";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
+static char *GetEnchantmentTypeName(EnchantmentType type)
+{
+switch(type)
+{
+case ENCHANTMENT_TYPE_none:
+return "None";
+break;
+case ENCHANTMENT_TYPE_test:
+return "Test";
 break;
 default:
 return "INVALID";
@@ -726,6 +729,11 @@ static void WriteEntityToFile(FILE *file, Entity *data)
 
     WriteToFile(file, &data->item, sizeof(data->item));
 
+    for (i32 i = 0; i < MAX_ENCHANTMENTS; i++)
+    {
+        WriteToFile(file, &data->enchamtnets[i], sizeof(Enchantment));
+    }
+
     WriteToFile(file, &data->parallax_amount, sizeof(data->parallax_amount));
 
     WriteToFile(file, &data->desired_position, sizeof(data->desired_position));
@@ -767,10 +775,6 @@ static void WriteEntityToFile(FILE *file, Entity *data)
     {
         WriteToFile(file, &data->remaining_items_in_blueprint[i], sizeof(Item));
     }
-
-    WriteToFile(file, &data->station_data, sizeof(data->station_data));
-
-    WriteToFile(file, &data->station_type, sizeof(data->station_type));
 
     WriteToFile(file, &data->durability, sizeof(data->durability));
 
@@ -820,6 +824,11 @@ static void ReadEntityFromFile(FILE *file, Entity *data)
 
     ReadFromFile(file, &data->item, sizeof(data->item));
 
+    for (i32 i = 0; i < MAX_ENCHANTMENTS; i++)
+    {
+        ReadFromFile(file, &data->enchamtnets[i], sizeof(Enchantment));
+    }
+
     ReadFromFile(file, &data->parallax_amount, sizeof(data->parallax_amount));
 
     ReadFromFile(file, &data->desired_position, sizeof(data->desired_position));
@@ -861,10 +870,6 @@ static void ReadEntityFromFile(FILE *file, Entity *data)
     {
         ReadFromFile(file, &data->remaining_items_in_blueprint[i], sizeof(Item));
     }
-
-    ReadFromFile(file, &data->station_data, sizeof(data->station_data));
-
-    ReadFromFile(file, &data->station_type, sizeof(data->station_type));
 
     ReadFromFile(file, &data->durability, sizeof(data->durability));
 

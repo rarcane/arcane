@@ -125,6 +125,7 @@ STATIC_SPRITE_x_axis_arrow_icon,
 STATIC_SPRITE_circle_icon,
 STATIC_SPRITE_side_arrow,
 STATIC_SPRITE_crafting_stump,
+STATIC_SPRITE_runic_enchanter,
 STATIC_SPRITE_flint_sword_icon,
 STATIC_SPRITE_flint_sword_ground,
 STATIC_SPRITE_flint_axe,
@@ -190,6 +191,7 @@ global StaticSpriteData global_static_sprite_data[STATIC_SPRITE_MAX] = {
     { "icon/axis_icons", {33.0f, 0.0f, 7.0f, 7.0f}, {0.0f, 0.0f}, },
     { "icon/side_arrow", {0.0f, 0.0f, 5.0f, 9.0f}, {0.0f, 0.0f}, },
     { "structures/crafting_stump", {0.0f, 0.0f, 32.0f, 32.0f}, {0.0f, 0.0f}, },
+    { "structures/runic_enchanter", {0.0f, 0.0f, 32.0f, 32.0f}, {0.0f, 0.0f}, },
     { "item/flint_sword", {0.0f, 0.0f, 16.0f, 16.0f}, {6.0f, 2.0f}, },
     { "item/flint_sword_ground", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, },
     { "item/flint_axe", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, },
@@ -296,6 +298,7 @@ static char *GetItemCategoryName(ItemCategory type);
 #define ITEM_FLAGS_primary_usable (1<<2)
 #define ITEM_FLAGS_secondary_usable (1<<3)
 #define ITEM_FLAGS_tertiary_usable (1<<4)
+#define ITEM_FLAGS_enchantable (1<<5)
 typedef uint32 ItemFlags;
 
 typedef struct ItemTypeData
@@ -321,8 +324,8 @@ ITEM_TYPE_MAX,
 };
 global ItemTypeData global_item_type_data[ITEM_TYPE_MAX] = {
     { "none", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, 0, 0, 0, },
-    { "Flint Sword", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_CATEGORY_sword, ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable, },
-    { "Flint Axe", STATIC_SPRITE_flint_axe, STATIC_SPRITE_flint_axe, 1, ITEM_CATEGORY_lumber_axe, ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable, },
+    { "Flint Sword", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_CATEGORY_sword, ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable | ITEM_FLAGS_enchantable, },
+    { "Flint Axe", STATIC_SPRITE_flint_axe, STATIC_SPRITE_flint_axe, 1, ITEM_CATEGORY_lumber_axe, ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable | ITEM_FLAGS_enchantable, },
     { "Flint", STATIC_SPRITE_flint, STATIC_SPRITE_flint, 8, 0, 0, },
     { "Twig", STATIC_SPRITE_twig, STATIC_SPRITE_twig, 8, 0, 0, },
     { "Crafting Tool", STATIC_SPRITE_crafting_tool, STATIC_SPRITE_crafting_tool, 1, 0, ITEM_FLAGS_hotbarable, },
@@ -407,31 +410,6 @@ global CraftingRecipeTypeData global_crafting_recipe_type_data[CRAFTING_RECIPE_T
 };
 
 static char *GetCraftingRecipeTypeName(CraftingRecipeType type);
-
-typedef struct CraftingStation
-{
-CraftingRecipeType current_recipe;
-} CraftingStation;
-
-typedef struct SmeltingStation
-{
-i32 temp;
-} SmeltingStation;
-
-typedef union StationData
-{
-CraftingStation crafting;
-SmeltingStation smelting;
-} StationData;
-
-typedef enum StationType StationType;
-enum StationType
-{
-STATION_TYPE_crafting,
-STATION_TYPE_smelting,
-STATION_TYPE_MAX,
-};
-static char *GetStationTypeName(StationType type);
 
 typedef enum StructureCategory StructureCategory;
 enum StructureCategory
@@ -526,6 +504,31 @@ SpellType type;
 f32 last_used;
 } Spell;
 
+typedef struct EnchantmentTypeData
+{
+char print_name[20];
+} EnchantmentTypeData;
+
+typedef enum EnchantmentType EnchantmentType;
+enum EnchantmentType
+{
+ENCHANTMENT_TYPE_none,
+ENCHANTMENT_TYPE_test,
+ENCHANTMENT_TYPE_MAX,
+};
+global EnchantmentTypeData global_enchantment_type_data[ENCHANTMENT_TYPE_MAX] = {
+    { "none", },
+    { "enchantus prime", },
+};
+
+static char *GetEnchantmentTypeName(EnchantmentType type);
+
+#define MAX_ENCHANTMENTS (8)
+typedef struct Enchantment
+{
+EnchantmentType type;
+} Enchantment;
+
 typedef struct Chunk Chunk;
 
 // @GenerateComponentCode 
@@ -591,6 +594,7 @@ ArcEntityType entity_type;
 char *current_general_state;
 ArcEntityAnimationState current_animation_state;
 Item item;
+Enchantment enchamtnets[MAX_ENCHANTMENTS];
 v2 parallax_amount;
 v2 desired_position;
 Item inventory[MAX_INVENTORY_SLOTS];
@@ -608,8 +612,6 @@ f32 priority;
 InteractCallback interact_callback;
 StructureType structure_type;
 Item remaining_items_in_blueprint[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
-StationData station_data;
-StationType station_type;
 f32 durability;
 } Entity;
 
@@ -810,9 +812,10 @@ f32 layer;
 #define CHARACTER_STATE_is_crafting (1<<0)
 #define CHARACTER_STATE_is_backpack_open (1<<1)
 #define CHARACTER_STATE_is_blueprinting (1<<2)
-#define CHARACTER_STATE_arcane_mode (1<<3)
-#define CHARACTER_STATE_is_charging (1<<4)
-#define CHARACTER_STATE_in_action (1<<5)
+#define CHARACTER_STATE_is_enchanting (1<<3)
+#define CHARACTER_STATE_arcane_mode (1<<4)
+#define CHARACTER_STATE_is_charging (1<<5)
+#define CHARACTER_STATE_in_action (1<<6)
 typedef uint32 CharacterState;
 
 typedef enum CharacterCombatState CharacterCombatState;

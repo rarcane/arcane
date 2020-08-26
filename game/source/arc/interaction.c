@@ -275,8 +275,7 @@ internal i32 HitQueryEntitiesFromHeldItem(Entity **entities)
 
 internal void OnCraftingTableInteract(Entity *entity)
 {
-	Assert(!core->run_data->engaged_station_entity &&
-		   entity->station_type == STATION_TYPE_crafting);
+	Assert(!core->run_data->engaged_station_entity);
 	
 	core->run_data->engaged_station_entity = entity;
 	core->run_data->character_state |= CHARACTER_STATE_is_crafting;;
@@ -324,6 +323,7 @@ internal b8 IsRecipeCraftable(CraftingRecipeType recipe, Item *item_pool, i32 it
 	return 1;
 }
 
+/*
 internal void StationUpdate()
 {
 	Entity *character = core->run_data->character_entity;
@@ -355,6 +355,17 @@ internal void StationUpdate()
 		}
 	}
 }
+ */
+
+internal void OnEnchanterInteract(Entity *entity)
+{
+	Entity *character = GetCharacterEntity();
+	
+	SetArcaneMode(1);
+	core->run_data->character_state |= CHARACTER_STATE_is_enchanting;
+	
+	core->run_data->engaged_station_entity = entity;
+}
 
 internal void OnCraftingStumpBuild(Entity *entity)
 {
@@ -362,7 +373,6 @@ internal void OnCraftingStumpBuild(Entity *entity)
 	EntitySetProperty(entity, ENTITY_PROPERTY_physical);
 	entity->sprite_data.tint = v4u(1.0f);
 	entity->interact_callback = OnCraftingTableInteract;
-	entity->station_type = STATION_TYPE_crafting;
 	c2AABB aabb = {
 		.min = c2V(-15.0f, -25.0f),
 		.max = c2V(15.0f, 0.0f),
