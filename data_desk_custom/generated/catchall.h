@@ -282,6 +282,35 @@ global ArcEntityTypeData global_arc_entity_type_data[ARC_ENTITY_TYPE_MAX] = {
 
 static char *GetArcEntityTypeName(ArcEntityType type);
 
+typedef struct EnchantmentTypeData
+{
+char print_name[20];
+} EnchantmentTypeData;
+
+typedef enum EnchantmentType EnchantmentType;
+enum EnchantmentType
+{
+ENCHANTMENT_TYPE_none,
+ENCHANTMENT_TYPE_test,
+ENCHANTMENT_TYPE_yeet,
+ENCHANTMENT_TYPE_uhhhh,
+ENCHANTMENT_TYPE_MAX,
+};
+global EnchantmentTypeData global_enchantment_type_data[ENCHANTMENT_TYPE_MAX] = {
+    { "none", },
+    { "enchantus prime", },
+    { "yeeeet", },
+    { "uuhhhhh", },
+};
+
+static char *GetEnchantmentTypeName(EnchantmentType type);
+
+#define MAX_ENCHANTMENTS (8)
+typedef struct Enchantment
+{
+EnchantmentType type;
+} Enchantment;
+
 typedef enum ItemCategory ItemCategory;
 enum ItemCategory
 {
@@ -333,6 +362,13 @@ global ItemTypeData global_item_type_data[ITEM_TYPE_MAX] = {
 
 static char *GetItemTypeName(ItemType type);
 
+typedef struct Item
+{
+ItemType type;
+i32 stack_size;
+Enchantment enchantments[ENCHANTMENT_TYPE_MAX];
+} Item;
+
 typedef struct Entity Entity;
 
 typedef struct Line
@@ -381,12 +417,6 @@ f32 inv_mass;
 #define PHYSICS_BODY_TYPE_FLAGS_character (1<<2)
 #define PHYSICS_BODY_TYPE_FLAGS_station (1<<3)
 typedef uint32 PhysicsBodyTypeFlags;
-
-typedef struct Item
-{
-ItemType type;
-i32 stack_size;
-} Item;
 
 #define MAX_ITEMS_IN_CRAFTING_RECIPE (10)
 typedef struct CraftingRecipeTypeData
@@ -503,31 +533,6 @@ typedef struct Spell
 SpellType type;
 f32 last_used;
 } Spell;
-
-typedef struct EnchantmentTypeData
-{
-char print_name[20];
-} EnchantmentTypeData;
-
-typedef enum EnchantmentType EnchantmentType;
-enum EnchantmentType
-{
-ENCHANTMENT_TYPE_none,
-ENCHANTMENT_TYPE_test,
-ENCHANTMENT_TYPE_MAX,
-};
-global EnchantmentTypeData global_enchantment_type_data[ENCHANTMENT_TYPE_MAX] = {
-    { "none", },
-    { "enchantus prime", },
-};
-
-static char *GetEnchantmentTypeName(EnchantmentType type);
-
-#define MAX_ENCHANTMENTS (8)
-typedef struct Enchantment
-{
-EnchantmentType type;
-} Enchantment;
 
 typedef struct Chunk Chunk;
 

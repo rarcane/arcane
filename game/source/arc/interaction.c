@@ -357,16 +357,6 @@ internal void StationUpdate()
 }
  */
 
-internal void OnEnchanterInteract(Entity *entity)
-{
-	Entity *character = GetCharacterEntity();
-	
-	SetArcaneMode(1);
-	core->run_data->character_state |= CHARACTER_STATE_is_enchanting;
-	
-	core->run_data->engaged_station_entity = entity;
-}
-
 internal void OnCraftingStumpBuild(Entity *entity)
 {
 	EntityUnsetProperty(entity, ENTITY_PROPERTY_blueprint);

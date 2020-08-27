@@ -308,6 +308,31 @@ ArcEntityType :: enum
 		player,
 }
 
+@XMacro
+EnchantmentTypeData :: struct
+{
+	print_name : char[20];
+}
+@XMacro
+EnchantmentType :: enum
+{
+	@Data("'none'")
+		none,
+	@Data("'enchantus prime'")
+		test,
+	@Data("'yeeeet'")
+		yeet,
+	@Data("'uuhhhhh'")
+		uhhhh,
+}
+
+MAX_ENCHANTMENTS :: 8
+Enchantment :: struct
+{
+	type : EnchantmentType;
+	// ...
+}
+
 ItemCategory :: enum
 {
 	none,
@@ -352,12 +377,18 @@ ItemType :: enum
 		crafting_tool,
 }
 
+Item :: struct
+{
+	type : ItemType;
+	stack_size : i32;
+	enchantments : Enchantment[ENCHANTMENT_TYPE_MAX];
+}
 
 /* --- COMPONENTS --- */
 
 @ForwardDeclare(Entity)
 ForwardEntity :: _;
-e
+
 Line :: struct
 {
 	p1 : v2;
@@ -404,11 +435,7 @@ PhysicsBodyTypeFlags :: flags
 	station,
 }
 
-Item :: struct
-{
-	type : ItemType;
-	stack_size : i32;
-}
+
 
 // NOTE(randy): $Crafting recipes
 MAX_ITEMS_IN_CRAFTING_RECIPE :: 10
@@ -505,27 +532,6 @@ Spell :: struct
 {
 	type : SpellType;
 	last_used : f32;
-}
-
-@XMacro
-EnchantmentTypeData :: struct
-{
-	print_name : char[20];
-}
-@XMacro
-EnchantmentType :: enum
-{
-	@Data("'none'")
-		none,
-	@Data("'enchantus prime'")
-		test,
-}
-
-MAX_ENCHANTMENTS :: 8
-Enchantment :: struct
-{
-	type : EnchantmentType;
-	// ...
 }
 
 @ForwardDeclare(Chunk)

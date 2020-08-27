@@ -331,6 +331,28 @@ break;
 }
 }
 
+static char *GetEnchantmentTypeName(EnchantmentType type)
+{
+switch(type)
+{
+case ENCHANTMENT_TYPE_none:
+return "None";
+break;
+case ENCHANTMENT_TYPE_test:
+return "Test";
+break;
+case ENCHANTMENT_TYPE_yeet:
+return "Yeet";
+break;
+case ENCHANTMENT_TYPE_uhhhh:
+return "Uhhhh";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
 static char *GetItemCategoryName(ItemCategory type)
 {
 switch(type)
@@ -525,22 +547,6 @@ return "Fireball";
 break;
 case SPELL_TYPE_yeet:
 return "Yeet";
-break;
-default:
-return "INVALID";
-break;
-}
-}
-
-static char *GetEnchantmentTypeName(EnchantmentType type)
-{
-switch(type)
-{
-case ENCHANTMENT_TYPE_none:
-return "None";
-break;
-case ENCHANTMENT_TYPE_test:
-return "Test";
 break;
 default:
 return "INVALID";
