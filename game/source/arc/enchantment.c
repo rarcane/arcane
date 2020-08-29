@@ -108,6 +108,25 @@ internal void DrawEnchantingUI()
 						enchant_name,
 						LAYER_HUD);
 		}
+		
+		if (platform->key_pressed[KEY_e])
+		{
+			EnchantmentType enchantment_type = enchantments[selected_enchantment_index];
+			item->enchantments[enchantment_type].type = enchantment_type;
+			
+			SetArcaneMode(0);
+			TsPlatformCaptureKeyboard();
+			selected_enchantment_index = -1;
+			selected_item_index = -1;
+			has_item_been_selected = 0;
+		}
+		
+		if (platform->key_pressed[KEY_esc])
+		{
+			has_item_been_selected = 0;
+			selected_enchantment_index = -1;
+			TsPlatformCaptureKeyboard();
+		}
 	}
 	else
 	{
@@ -157,6 +176,14 @@ internal void DrawEnchantingUI()
 							  render_size.x, render_size.y),
 						   item == enchantable_items[selected_item_index] ? v4(1.0f, 0.5f, 0.5f, 1.0f) : v4u(1.0f),
 						   LAYER_HUD);
+		}
+		
+		if (platform->key_pressed[KEY_esc])
+		{
+			SetArcaneMode(0);
+			has_item_been_selected = 0;
+			selected_item_index = -1;
+			TsPlatformCaptureKeyboard();
 		}
 	}
 }
