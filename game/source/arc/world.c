@@ -37,8 +37,6 @@ internal void WorldUpdate()
 	DrawWorld();
 	RenderCells();
 	
-	BlueprintUpdate();
-	
 #ifdef DEVELOPER_TOOLS
 	RenderColliders();
 #endif
@@ -863,6 +861,9 @@ internal b8 CreateWorld(char *world_name)
 		
 		character->inventory_size = 9;
 		character->hotbar_size = 2;
+		
+		Item chest = { .type = ITEM_TYPE_test_chestpiece, .stack_size = 1 };
+		character->equipment_slots[1] = chest;
 		
 		character->freehand_spell_count = 2;
 		character->freehand_spell_slots[0].type = SPELL_TYPE_fireball;

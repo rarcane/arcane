@@ -250,6 +250,9 @@ break;
 case STATIC_SPRITE_crafting_tool:
 return "Crafting Tool";
 break;
+case STATIC_SPRITE_test_chestpiece:
+return "Test Chestpiece";
+break;
 case STATIC_SPRITE_shia:
 return "Shia";
 break;
@@ -369,6 +372,24 @@ break;
 case ITEM_CATEGORY_sword:
 return "Sword";
 break;
+case ITEM_CATEGORY_helmet:
+return "Helmet";
+break;
+case ITEM_CATEGORY_chestpiece:
+return "Chestpiece";
+break;
+case ITEM_CATEGORY_gauntlet:
+return "Gauntlet";
+break;
+case ITEM_CATEGORY_leggings:
+return "Leggings";
+break;
+case ITEM_CATEGORY_boots:
+return "Boots";
+break;
+case ITEM_CATEGORY_cloak:
+return "Cloak";
+break;
 default:
 return "INVALID";
 break;
@@ -396,6 +417,9 @@ return "Twig";
 break;
 case ITEM_TYPE_crafting_tool:
 return "Crafting Tool";
+break;
+case ITEM_TYPE_test_chestpiece:
+return "Test Chestpiece";
 break;
 default:
 return "INVALID";
@@ -771,6 +795,11 @@ static void WriteEntityToFile(FILE *file, Entity *data)
 
     WriteToFile(file, &data->freehand_spell_count, sizeof(data->freehand_spell_count));
 
+    for (i32 i = 0; i < MAX_EQUIPMENT_SLOTS; i++)
+    {
+        WriteToFile(file, &data->equipment_slots[i], sizeof(Item));
+    }
+
     WriteToFile(file, &data->priority, sizeof(data->priority));
 
     WriteToFile(file, &data->interact_callback, sizeof(data->interact_callback));
@@ -865,6 +894,11 @@ static void ReadEntityFromFile(FILE *file, Entity *data)
     }
 
     ReadFromFile(file, &data->freehand_spell_count, sizeof(data->freehand_spell_count));
+
+    for (i32 i = 0; i < MAX_EQUIPMENT_SLOTS; i++)
+    {
+        ReadFromFile(file, &data->equipment_slots[i], sizeof(Item));
+    }
 
     ReadFromFile(file, &data->priority, sizeof(data->priority));
 

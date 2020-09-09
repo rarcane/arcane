@@ -232,7 +232,8 @@ StaticSprite :: enum
 		twig,
 	@Data("'item/crafting_tool'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{0.0f, 0.0f}")
 		crafting_tool,
-	
+	@Data("'item/test_chestpiece'", "{0.0f, 0.0f, 24.0f, 24.0f}", "{0.0f, 0.0f}")
+		test_chestpiece,
 	
 	@Data("'item/shia'", "{0.0f, 0.0f, 800.0f, 1200.0f}", "{0.0f, 0.0f}")
 		shia,
@@ -339,6 +340,13 @@ ItemCategory :: enum
 	resource,
 	lumber_axe,
 	sword,
+	
+	helmet,
+	chestpiece,
+	gauntlet,
+	leggings,
+	boots,
+	cloak,
 }
 ItemFlags :: flags
 {
@@ -375,6 +383,8 @@ ItemType :: enum
 		twig,
 	@Data("'Crafting Tool'", STATIC_SPRITE_crafting_tool, STATIC_SPRITE_crafting_tool, 1, 0, ITEM_FLAGS_hotbarable)
 		crafting_tool,
+	@Data("'Test Chestpiece'", STATIC_SPRITE_test_chestpiece, STATIC_SPRITE_test_chestpiece, 1, ITEM_CATEGORY_chestpiece, 0)
+		test_chestpiece,
 }
 
 Item :: struct
@@ -485,7 +495,7 @@ StructureType :: enum
 		none,
 	@Data("'Shia'", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia, STATIC_SPRITE_shia, "{0}", 0)
 		shia,
-	@Data("'Crafting Stump'", STRUCTURE_CATEGORY_crafting, STATIC_SPRITE_crafting_stump, STATIC_SPRITE_crafting_stump, "{ {ITEM_TYPE_twig, 5}, {ITEM_TYPE_flint, 2} }", OnCraftingStumpBuild)
+	@Data("'Crafting Stump'", STRUCTURE_CATEGORY_crafting, STATIC_SPRITE_crafting_stump, STATIC_SPRITE_crafting_stump, "{ {ITEM_TYPE_twig, 5}, {ITEM_TYPE_flint, 2} }", 0)
 		crafting_stump,
 	@Data("'Shia 2'", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, "{0}", 0)
 		shia2,
@@ -580,6 +590,7 @@ EntityProperty :: enum
 
 ENTITY_PROPERTY_SIZE :: (ENTITY_PROPERTY_MAX / 64 + 1)
 MAX_SPELL_SLOTS :: 8
+MAX_EQUIPMENT_SLOTS :: 6
 
 @SerialisableStruct
 Entity :: struct
@@ -646,6 +657,8 @@ Entity :: struct
 	
 	freehand_spell_slots : Spell[MAX_SPELL_SLOTS];
 	freehand_spell_count : i32;
+	
+	equipment_slots : Item[MAX_EQUIPMENT_SLOTS];
 	
 	// NOTE(randy): interactable
 	priority : f32;
@@ -953,6 +966,7 @@ RunData :: struct // Game data used for run-time operations
 	current_left_click_interactable : *Entity;
 	
 	engaged_station_entity : *Entity;
+	current_blueprint_structure : *Entity;
 	
 	queued_renderables : SortRenderable[MAX_QUEUED_RENDERABLES];
 	queued_renderable_count : i32;

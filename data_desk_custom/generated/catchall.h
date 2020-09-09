@@ -132,6 +132,7 @@ STATIC_SPRITE_flint_axe,
 STATIC_SPRITE_flint,
 STATIC_SPRITE_twig,
 STATIC_SPRITE_crafting_tool,
+STATIC_SPRITE_test_chestpiece,
 STATIC_SPRITE_shia,
 STATIC_SPRITE_shia2,
 STATIC_SPRITE_dummy,
@@ -198,6 +199,7 @@ global StaticSpriteData global_static_sprite_data[STATIC_SPRITE_MAX] = {
     { "item/flint", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
     { "item/twig", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
     { "item/crafting_tool", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
+    { "item/test_chestpiece", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, },
     { "item/shia", {0.0f, 0.0f, 800.0f, 1200.0f}, {0.0f, 0.0f}, },
     { "item/shia2", {0.0f, 0.0f, 590.0f, 631.0f}, {0.0f, 0.0f}, },
     { "entity/ron", {0.0f, 0.0f, 512.0f, 512.0f}, {0.0f, 0.0f}, },
@@ -318,6 +320,12 @@ ITEM_CATEGORY_none,
 ITEM_CATEGORY_resource,
 ITEM_CATEGORY_lumber_axe,
 ITEM_CATEGORY_sword,
+ITEM_CATEGORY_helmet,
+ITEM_CATEGORY_chestpiece,
+ITEM_CATEGORY_gauntlet,
+ITEM_CATEGORY_leggings,
+ITEM_CATEGORY_boots,
+ITEM_CATEGORY_cloak,
 ITEM_CATEGORY_MAX,
 };
 static char *GetItemCategoryName(ItemCategory type);
@@ -349,6 +357,7 @@ ITEM_TYPE_flint_axe,
 ITEM_TYPE_flint,
 ITEM_TYPE_twig,
 ITEM_TYPE_crafting_tool,
+ITEM_TYPE_test_chestpiece,
 ITEM_TYPE_MAX,
 };
 global ItemTypeData global_item_type_data[ITEM_TYPE_MAX] = {
@@ -358,6 +367,7 @@ global ItemTypeData global_item_type_data[ITEM_TYPE_MAX] = {
     { "Flint", STATIC_SPRITE_flint, STATIC_SPRITE_flint, 8, 0, 0, },
     { "Twig", STATIC_SPRITE_twig, STATIC_SPRITE_twig, 8, 0, 0, },
     { "Crafting Tool", STATIC_SPRITE_crafting_tool, STATIC_SPRITE_crafting_tool, 1, 0, ITEM_FLAGS_hotbarable, },
+    { "Test Chestpiece", STATIC_SPRITE_test_chestpiece, STATIC_SPRITE_test_chestpiece, 1, ITEM_CATEGORY_chestpiece, 0, },
 };
 
 static char *GetItemTypeName(ItemType type);
@@ -476,7 +486,7 @@ STRUCTURE_TYPE_MAX,
 global StructureTypeData global_structure_type_data[STRUCTURE_TYPE_MAX] = {
     { "none", STRUCTURE_CATEGORY_none, STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, {0}, 0, },
     { "Shia", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia, STATIC_SPRITE_shia, {0}, 0, },
-    { "Crafting Stump", STRUCTURE_CATEGORY_crafting, STATIC_SPRITE_crafting_stump, STATIC_SPRITE_crafting_stump, { {ITEM_TYPE_twig, 5}, {ITEM_TYPE_flint, 2} }, OnCraftingStumpBuild, },
+    { "Crafting Stump", STRUCTURE_CATEGORY_crafting, STATIC_SPRITE_crafting_stump, STATIC_SPRITE_crafting_stump, { {ITEM_TYPE_twig, 5}, {ITEM_TYPE_flint, 2} }, 0, },
     { "Shia 2", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, {0}, 0, },
     { "Base", STRUCTURE_CATEGORY_base, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, {0}, 0, },
 };
@@ -577,6 +587,7 @@ static char *GetEntityPropertyName(EntityProperty type);
 
 #define ENTITY_PROPERTY_SIZE (((ENTITY_PROPERTY_MAX/64)+1))
 #define MAX_SPELL_SLOTS (8)
+#define MAX_EQUIPMENT_SLOTS (6)
 typedef struct Entity
 {
 u64 properties[ENTITY_PROPERTY_SIZE];
@@ -613,6 +624,7 @@ v2 grabbed_item_offset;
 Item *grabbed_item_origin_slot;
 Spell freehand_spell_slots[MAX_SPELL_SLOTS];
 i32 freehand_spell_count;
+Item equipment_slots[MAX_EQUIPMENT_SLOTS];
 f32 priority;
 InteractCallback interact_callback;
 StructureType structure_type;
@@ -873,6 +885,7 @@ f32 cooldown_timer;
 Entity *current_e_interactable;
 Entity *current_left_click_interactable;
 Entity *engaged_station_entity;
+Entity *current_blueprint_structure;
 SortRenderable queued_renderables[MAX_QUEUED_RENDERABLES];
 i32 queued_renderable_count;
 EditorState editor_state;

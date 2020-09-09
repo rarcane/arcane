@@ -437,6 +437,36 @@ internal void GetSkeletonChunksInRegion(SkeletonChunk *chunks, i32 *chunk_count,
 	}
 }
 
+internal Entity *GetClosestEntityWithProperty(EntityProperty property, f32 max_distance_from_player)
+{
+	// NOTE(randy): This will eventually prioritise player direction and whatnot to fine tune selection
+	Entity *character = GetCharacterEntity();
+	
+	Entity *closest_entity = 0;
+	f32 closest_mag = 0.0f;
+	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, property);)
+	{
+		if (closest_entity)
+		{
+			f32 entity_mag = fabsf(PythagSolve(character->position.x - entity->position.x,
+											   character->position.y - entity->position.y));
+			if (entity_mag < closest_mag)
+			{
+				closest_entity = entity;
+				closest_mag = entity_mag;
+			}
+		}
+		else
+		{
+			closest_entity = entity;
+			closest_mag = fabsf(PythagSolve(character->position.x - entity->position.x,
+											character->position.y - entity->position.y));
+		}
+	}
+	
+	return (closest_mag <= max_distance_from_player ? closest_entity : 0);
+}
+
 internal void WriteToFile(FILE *file, void *data, size_t size_bytes)
 {
 	if (fwrite(data, size_bytes, 1, file) != 1)
