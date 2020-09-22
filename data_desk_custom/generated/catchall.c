@@ -747,6 +747,8 @@ static void WriteEntityToFile(FILE *file, Entity *data)
 
     WriteToFile(file, &data->physics, sizeof(data->physics));
 
+    WriteToFile(file, &data->smooth_velocity, sizeof(data->smooth_velocity));
+
     WriteToFile(file, &data->axis_x, sizeof(data->axis_x));
 
     WriteToFile(file, &data->move_speed, sizeof(data->move_speed));
@@ -846,6 +848,8 @@ static void ReadEntityFromFile(FILE *file, Entity *data)
     ReadFromFile(file, &data->frame_start_time, sizeof(data->frame_start_time));
 
     ReadFromFile(file, &data->physics, sizeof(data->physics));
+
+    ReadFromFile(file, &data->smooth_velocity, sizeof(data->smooth_velocity));
 
     ReadFromFile(file, &data->axis_x, sizeof(data->axis_x));
 

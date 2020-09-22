@@ -21,6 +21,7 @@
 #include "arc/blueprint.h"
 #include "arc/crafting.h"
 #include "arc/enchantment.h"
+#include "arc/skilltree.h"
 #include "arc/entity.h"
 #include "arc/item.h"
 #include "arc/cell.h"
@@ -45,6 +46,7 @@
 #include "arc/blueprint.c"
 #include "arc/crafting.c"
 #include "arc/enchantment.c"
+#include "arc/skilltree.c"
 #include "arc/entity.c"
 #include "arc/item.c"
 #include "arc/cell.c"
@@ -131,7 +133,7 @@ GameInit(void)
 			ShufflePerlinNoise();
             
 			core->camera_zoom = DEFAULT_CAMERA_ZOOM;
-            
+			
 			core->delta_mult = 1.0f;
 			core->world_delta_mult = 1.0f;
             

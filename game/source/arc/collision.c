@@ -52,10 +52,16 @@ internal void UpdatePhysics()
 		if (entity->physics.gravity_multiplier != 0.0f && entity->physics.mass_data.mass != 0.0f)
 			entity->physics.force.y += (WORLD_GRAVITY * entity->physics.gravity_multiplier) / entity->physics.mass_data.inv_mass;
 		
+		v2 previous_pos = entity->position;
+		
 		// Integrate next position
 		v2 acceleration = V2MultiplyF32(entity->physics.force, entity->physics.mass_data.inv_mass);
 		entity->physics.velocity = V2AddV2(entity->physics.velocity, V2MultiplyF32(acceleration, core->world_delta_t));
 		entity->position = V2AddV2(entity->position, V2MultiplyF32(entity->physics.velocity, core->world_delta_t));
+		
+		// NOTE(randy): Scuffed true velocity
+		v2 pos_diff = V2SubtractV2(entity->position, previous_pos);
+		entity->smooth_velocity = V2DivideF32(pos_diff, core->world_delta_t);
 		
 		entity->physics.force = v2(0.0f, 0.0f);
 	}

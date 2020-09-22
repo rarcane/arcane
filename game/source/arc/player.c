@@ -51,7 +51,7 @@ internal void PreMoveUpdatePlayer()
 	if (CanPlayerMove() &&
 		platform->key_pressed[KEY_space])
 	{
-		character->physics.force.y = -10000.0f / character->physics.mass_data.inv_mass;
+		character->physics.force.y = -30000.0f / character->physics.mass_data.inv_mass;
 	}
 	
 	// NOTE(randy): Update animation state
@@ -189,7 +189,8 @@ internal b8 CanPlayerMove()
 {
 	return !(core->run_data->character_state & CHARACTER_STATE_is_crafting) &&
 		!(core->run_data->character_state & CHARACTER_STATE_is_blueprinting) &&
-		!(core->run_data->character_state & CHARACTER_STATE_is_enchanting);
+		!(core->run_data->character_state & CHARACTER_STATE_is_enchanting) &&
+		!(core->run_data->character_state & CHARACTER_STATE_is_in_elemental_skill_tree);
 }
 
 internal void SetArcaneMode(i32 on)
@@ -207,5 +208,6 @@ internal void SetArcaneMode(i32 on)
 		// NOTE(randy): just force disable other modes?
 		core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;
 		core->run_data->character_state &= ~CHARACTER_STATE_is_enchanting;
+		core->run_data->character_state &= ~CHARACTER_STATE_is_in_elemental_skill_tree;
 	}
 }

@@ -612,6 +612,7 @@ Entity :: struct
 	
 	// NOTE(randy): physics body
 	physics : PhysicsBodyData;
+	smooth_velocity : v2;
 	
 	// NOTE(randy): movement
 	axis_x : f32;
@@ -866,6 +867,7 @@ CharacterState :: flags
 	is_backpack_open,
 	is_blueprinting,
 	is_enchanting,
+	is_in_elemental_skill_tree,
 	arcane_mode,
 	
 	is_charging,
@@ -890,9 +892,21 @@ Timer :: struct
 	complete_callback : TimerCompleteCallback;
 }
 
+CameraCue :: struct
+{
+	position : v2;
+	
+	weight : f32;
+	
+	zoom : f32;
+}
+
 MAX_POSITIONAL_ENTITIES :: 2048
 MAX_FLOATING_ENTITIES :: 2048
 ENTITY_TABLE_SIZE :: (MAX_POSITIONAL_ENTITIES + MAX_FLOATING_ENTITIES)
+
+MAX_CAMERA_CUES :: 32
+
 RunData :: struct // Game data used for run-time operations
 {
 	// TODO(randy): Not really serialisable
@@ -970,6 +984,12 @@ RunData :: struct // Game data used for run-time operations
 	
 	queued_renderables : SortRenderable[MAX_QUEUED_RENDERABLES];
 	queued_renderable_count : i32;
+	
+	// $Camera System
+	camera_cues : CameraCue[MAX_CAMERA_CUES];
+	camera_cue_count : i32;
+	//camera_actions : CameraAction[MAX_CAMERA_ACTIONS];
+	//camera_action_count : i32;
 	
 	/* ~ Editor ~ */
 	editor_state : EditorState;

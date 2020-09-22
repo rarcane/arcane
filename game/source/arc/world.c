@@ -2,6 +2,29 @@ internal void WorldUpdate()
 {
 	TickTimers();
 	
+	// NOTE(randy): Testing
+	{
+		/*
+				if (platform->key_down[KEY_p])
+				{
+					CameraCue camera = {0};
+					camera.position = v2(0.0f, -200.0f);
+					camera.weight = 1.0f;
+					
+					core->run_data->camera_cues[core->run_data->camera_cue_count++] = camera;
+				}
+				
+				if (platform->key_down[KEY_o])
+				{
+					CameraCue camera = {0};
+					camera.position = v2(0.0f, 200.0f);
+					camera.weight = 1.0f;
+					
+					core->run_data->camera_cues[core->run_data->camera_cue_count++] = camera;
+				}
+		 */
+	}
+	
 #ifdef DEVELOPER_TOOLS
 	DrawEditorUI();
 	if (core->run_data->editor_state)
@@ -136,8 +159,8 @@ internal void UpdateParallax()
 	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_parallaxable);)
 	{
 		// TODO: Need to find a way to centralise the desired_position of the parallax, whilst still maintaining spatial consistency across sprites
-		entity->position.x = entity->desired_position.x + -core->camera_position.x * entity->parallax_amount.x;
-		entity->position.y = entity->desired_position.y + (-core->camera_position.y + DEFAULT_CAMERA_OFFSET_Y) * entity->parallax_amount.y;
+		entity->position.x = entity->desired_position.x + core->camera_position.x * entity->parallax_amount.x;
+		entity->position.y = entity->desired_position.y + (core->camera_position.y) * entity->parallax_amount.y;
 		
 		// position_comp->position.x = parallax_comp->desired_position.x - (parallax_comp->desired_position.x - player_pos->position.x + core->camera_offset.x) * parallax_comp->parallax_amount.x;
 		// position_comp->position.y = parallax_comp->desired_position.y - (parallax_comp->desired_position.y - player_pos->position.y + core->camera_offset.y) * parallax_comp->parallax_amount.y;
@@ -306,6 +329,27 @@ internal void GenerateTestPlatform()
 		
 		entity->priority = 2.0f;
 		entity->interact_callback = OnEnchanterInteract;
+		
+		entity->physics.shape.aabb.min = c2V(-10.0f, 0.0f);
+		entity->physics.shape.aabb.max = c2V(10.0f, 20.0f);
+		entity->physics.shape_type = C2_SHAPE_TYPE_aabb;
+	}
+	
+	// NOTE(randy): elemental skill tree
+	{
+		Entity *entity = NewEntity();
+		EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+		EntitySetProperty(entity, ENTITY_PROPERTY_interactable);
+		EntitySetProperty(entity, ENTITY_PROPERTY_interactable_e);
+		EntitySetProperty(entity, ENTITY_PROPERTY_queryable);
+		
+		entity->position = v2(-20.0f, -5.0f);
+		entity->sprite_data.static_sprite = STATIC_SPRITE_runic_enchanter;
+		entity->sprite_data.tint = v4(1.0f, 0.0f, 0.0f, 1.0f);
+		entity->sprite_data.render_layer = 0.5f;
+		
+		entity->priority = 2.0f;
+		entity->interact_callback = OnElementalSkillTreeInteract;
 		
 		entity->physics.shape.aabb.min = c2V(-10.0f, 0.0f);
 		entity->physics.shape.aabb.max = c2V(10.0f, 20.0f);

@@ -1,0 +1,1 @@
+internal void OnSkillTreeInteract(Entity *entity);

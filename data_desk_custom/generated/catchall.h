@@ -602,6 +602,7 @@ i32 current_frame;
 f32 interval_mult;
 f32 frame_start_time;
 PhysicsBodyData physics;
+v2 smooth_velocity;
 f32 axis_x;
 f32 move_speed;
 f32 move_speed_mult;
@@ -830,9 +831,10 @@ f32 layer;
 #define CHARACTER_STATE_is_backpack_open (1<<1)
 #define CHARACTER_STATE_is_blueprinting (1<<2)
 #define CHARACTER_STATE_is_enchanting (1<<3)
-#define CHARACTER_STATE_arcane_mode (1<<4)
-#define CHARACTER_STATE_is_charging (1<<5)
-#define CHARACTER_STATE_in_action (1<<6)
+#define CHARACTER_STATE_is_in_elemental_skill_tree (1<<4)
+#define CHARACTER_STATE_arcane_mode (1<<5)
+#define CHARACTER_STATE_is_charging (1<<6)
+#define CHARACTER_STATE_in_action (1<<7)
 typedef uint32 CharacterState;
 
 typedef enum CharacterCombatState CharacterCombatState;
@@ -856,9 +858,17 @@ f32 duration;
 TimerCompleteCallback complete_callback;
 } Timer;
 
+typedef struct CameraCue
+{
+v2 position;
+f32 weight;
+f32 zoom;
+} CameraCue;
+
 #define MAX_POSITIONAL_ENTITIES (2048)
 #define MAX_FLOATING_ENTITIES (2048)
 #define ENTITY_TABLE_SIZE ((MAX_POSITIONAL_ENTITIES+MAX_FLOATING_ENTITIES))
+#define MAX_CAMERA_CUES (32)
 typedef struct RunData
 {
 Timer timers[MAX_ACTIVE_TIMERS];
@@ -888,6 +898,8 @@ Entity *engaged_station_entity;
 Entity *current_blueprint_structure;
 SortRenderable queued_renderables[MAX_QUEUED_RENDERABLES];
 i32 queued_renderable_count;
+CameraCue camera_cues[MAX_CAMERA_CUES];
+i32 camera_cue_count;
 EditorState editor_state;
 DebugFlags saved_debug_flags;
 DebugFlags debug_flags;
