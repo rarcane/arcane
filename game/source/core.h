@@ -27,17 +27,18 @@ struct Core
 {
 	MemoryArena *permanent_arena;
 	MemoryArena *frame_arena;
-
+	
 	char *res_path;
-
+	
 	v2 camera_position;
-	float camera_zoom;
 	v2 camera_offset;
-
+	f32 camera_zoom;
+	f32 camera_zoom_mult;
+	
 	// Temp entity stores
 	//Entity *backpack;
 	//Entity *sword;
-
+	
 	// Grabbed inventory item.
 	//ItemComponent *grabbed_inv_item_comp;
 	//i32 grabbed_inv_item_origin_slot;
@@ -47,16 +48,16 @@ struct Core
 	//Entity *held_item;
 	//Entity *hotbar;
 	//i32 active_hotbar_slot;
-
+	
 	// Temp
 	b32 is_ingame;
-
+	
 	v2 random_field[PERLIN_NOISE_LENGTH][PERLIN_NOISE_LENGTH];
-
+	
 	// Data stores
 	RunData *run_data;
 	ClientData *client_data;
-
+	
 	// NOTE(rjf): Render size data.
 	union {
 		struct
@@ -71,14 +72,14 @@ struct Core
 		};
 		v2 render_size;
 	};
-
+	
 	// Input stuff.
 	b8 is_mid_left_click;
 	b8 left_mouse_released;
 	b8 is_mid_right_click;
 	b8 right_mouse_released;
 	b8 capture_release_key;
-
+	
 	// Application time data.
 	f32 raw_delta_t;
 	f32 delta_mult;
@@ -86,7 +87,7 @@ struct Core
 	// World time data.
 	f32 world_delta_mult;
 	f32 world_delta_t;
-
+	
 	// Perfomance profiling.
 	BlockTimer performance_timers[20];
 	i32 performance_timer_count;

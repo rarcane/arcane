@@ -14,5 +14,6 @@ static inline v2 GetZeroWorldPosition()
 	return v2(core->render_w / 2.0f / core->camera_zoom, core->render_h / 2.0f / core->camera_zoom);
 }
 
-static void TransformEditorCamera();
-static void TransformInGameCamera();
+internal void TransformEditorCamera();
+internal void TransformInGameCamera();
+internal void MoveCameraToLocation(v2 location, f32 zoom, f32 time);

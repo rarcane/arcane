@@ -988,6 +988,16 @@ RunData :: struct // Game data used for run-time operations
 	// $Camera System
 	camera_cues : CameraCue[MAX_CAMERA_CUES];
 	camera_cue_count : i32;
+	
+	lock_camera : b8;
+	
+	initial_camera_pos : v2;
+	inital_zoom : f32;
+	move_to_location : v2;
+	move_to_zoom : f32;
+	move_to_time : f32;
+	move_to_start_time : f32;
+	
 	//camera_actions : CameraAction[MAX_CAMERA_ACTIONS];
 	//camera_action_count : i32;
 	

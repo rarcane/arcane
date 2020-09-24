@@ -25,4 +25,6 @@ internal void OnElementalSkillTreeInteract(Entity *entity)
 	core->run_data->character_state |= CHARACTER_STATE_is_in_elemental_skill_tree;
 	
 	core->run_data->engaged_station_entity = entity;
+	
+	MoveCameraToLocation(entity->position, 2.0f, 2.0f);
 }

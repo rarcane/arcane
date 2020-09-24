@@ -132,7 +132,7 @@ GameInit(void)
 			InitialiseSpriteData();
 			ShufflePerlinNoise();
             
-			core->camera_zoom = DEFAULT_CAMERA_ZOOM;
+			core->camera_zoom_mult = 1.0f;
 			
 			core->delta_mult = 1.0f;
 			core->world_delta_mult = 1.0f;
@@ -392,11 +392,12 @@ internal void InitialiseRunData()
 {
 	core->run_data->debug_flags |= DEBUG_FLAGS_draw_world;
 	core->run_data->free_dynamic_cell_id = 1;
+	
 	/*
-		core->run_data->save_job_index = -1;
-		core->run_data->load_job_index = -1;
-		core->run_data->free_entity_id = 1;
-	 */
+				core->run_data->save_job_index = -1;
+				core->run_data->load_job_index = -1;
+				core->run_data->free_entity_id = 1;
+			 */
 	
 #ifdef DEVELOPER_ENVIRONMENT
 	core->run_data->debug_flags |= DEBUG_FLAGS_draw_collision;
