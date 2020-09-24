@@ -69,44 +69,71 @@ static void TransformInGameCamera()
 		}
 	 */
 	
-	local_persist f32 alpha = 0.0f;
-	
-	f32 buffer = 0.0f;
+	// local_persist f32 alpha = 0.0f;
 	f32 length = 50.0f;
+	f32 alpha = fabsf(core->camera_offset.x) / length;
+	local_persist f32 idle_end_buffer = 0.0f;
+	local_persist f32 start_buffer = 0.0f;
+	local_persist f32 last_axis = 0.0f;
 	
-	if (fabsf(alpha) < 1.0f &&
-		fabsf(alpha + character->axis_x * core->world_delta_t) > 1.0f)
+	if (character->axis_x == 0.0f)
 	{
-		alpha = (1.0f + buffer) * GetSign(alpha);
+		idle_end_buffer += core->delta_t;
+		
+		if (idle_end_buffer >= 1.0f)
+		{
+			start_buffer = 0.0f;
+			
+			i32 sign = GetSign(core->camera_offset.x);
+			if (sign != 0.0f)
+			{
+				core->camera_offset.x = fabsf(core->camera_offset.x);
+				
+				// f32 fade = -powf((alpha - 0.5f), 2.0f) * 4.0f + 1.0f;
+				// f32 fade = powf(alpha, 3.0f) * (-powf((alpha - 0.5f), 2.0f) * 4.0f + 1.0f) * 3.0f;
+				
+				f32 fade = 16.0f * powf(powf(alpha, 2.0f) - alpha, 2.0f);
+				
+				f32 x_velocity = LerpF32(fade, 3.0f, 50.0f);
+				
+				core->camera_offset.x -= core->world_delta_t * x_velocity;
+				core->camera_offset.x = ClampF32(core->camera_offset.x, 0.0f, length);
+				
+				core->camera_offset.x *= sign;
+			}
+		}
 	}
 	else
 	{
-		alpha += character->axis_x * core->world_delta_t;
+		idle_end_buffer = 0.0f;
+		
+		start_buffer += core->delta_t;
+		
+		if (start_buffer >= 1.0f)
+		{
+			// f32 fade = powf(alpha, 2.0f) * (-powf((alpha - 0.5f), 2.0f) * 4.0f + 1.0f) * 2.35f;
+			// f32 fade = 1 - (1 - alpha) * (1 - alpha);
+			f32 fade = powf(alpha, 3.0f);
+			// f32 fade = powf((2 * alpha) / (powf(alpha, 2.0f) + 1), 3.0f);
+			
+			f32 x_velocity = LerpF32(fade, 30.0f, 3.0f) * GetSign(character->axis_x);
+			
+			core->camera_offset.x += core->world_delta_t * x_velocity;
+			core->camera_offset.x = ClampF32(core->camera_offset.x, -length, length);
+		}
+		else
+		{
+			if (GetSign(last_axis) != GetSign(character->axis_x))
+			{
+				start_buffer = 0.0f;
+			}
+		}
 	}
 	
-	if (fabsf(alpha) > (1.0f + buffer))
-	{
-		alpha = (1.0f + buffer) * GetSign(alpha);
-	}
-	
-	if (alpha >= 0.0f)
-	{
-		core->camera_offset.x = LerpF32(EaseOut(Clamp(0.0f, 1.0f, alpha)), 0.0f, length);
-	}
-	else
-	{
-		core->camera_offset.x = LerpF32(EaseOut(Clamp(0.0f, 1.0f, -alpha)) * -1.0f, 0.0f, length);
-	}
-	
-	
-	//core->camera_offset.x =
-	
-	//f32 desired_camera_offset = character->axis_x * 100.0f;
-	
-	//4core->camera_offset.x = character->velocity.x;
+	last_axis = character->axis_x;
 	
 	core->camera_zoom = core->render_h / (1080.0f / DEFAULT_CAMERA_ZOOM);
-	core->camera_position = V2AddV2(v2(core->camera_offset.x, core->camera_offset.y), idle_camera_pos);
+	core->camera_position = V2AddV2(v2(core->camera_offset.x, core->camera_offset.y - DEFAULT_CAMERA_OFFSET_Y), idle_camera_pos);
 	
 	core->run_data->disable_chunk_loaded_based_off_view = 0;
 	
@@ -120,17 +147,15 @@ static void TransformInGameCamera()
 		
 		{
 			char lbl[100];
-			sprintf(lbl, "velocity: %f", character->smooth_velocity.x);
+			sprintf(lbl, "camera: %f", core->camera_offset.x);
 			TsUILabel(lbl);
 		}
 		
-		/*
-				{
-					char lbl[100];
-					sprintf(lbl, "test: %f", total_weighted_positions.y);
-					TsUILabel(lbl);
-				}
-		 */
+		{
+			char lbl[100];
+			sprintf(lbl, "alpha: %f", alpha);
+			TsUILabel(lbl);
+		}
 		
 		TsUIPopColumn();
 	}

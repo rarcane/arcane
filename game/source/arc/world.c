@@ -160,7 +160,7 @@ internal void UpdateParallax()
 	{
 		// TODO: Need to find a way to centralise the desired_position of the parallax, whilst still maintaining spatial consistency across sprites
 		entity->position.x = entity->desired_position.x + core->camera_position.x * entity->parallax_amount.x;
-		entity->position.y = entity->desired_position.y + (core->camera_position.y) * entity->parallax_amount.y;
+		entity->position.y = entity->desired_position.y + (core->camera_position.y + DEFAULT_CAMERA_OFFSET_Y) * entity->parallax_amount.y;
 		
 		// position_comp->position.x = parallax_comp->desired_position.x - (parallax_comp->desired_position.x - player_pos->position.x + core->camera_offset.x) * parallax_comp->parallax_amount.x;
 		// position_comp->position.y = parallax_comp->desired_position.y - (parallax_comp->desired_position.y - player_pos->position.y + core->camera_offset.y) * parallax_comp->parallax_amount.y;

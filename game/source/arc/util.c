@@ -9,20 +9,6 @@ f32 EaseOut(f32 x)
 	return 1 - (1 - x) * (1 - x);
 }
 
-f32 Clamp(f32 min, f32 max, f32 value)
-{
-	if (value < min)
-	{
-		value = min;
-	}
-	else if (value > max)
-	{
-		value = max;
-	}
-	
-	return value;
-}
-
 // Smooths a linear 0.0 -> 1.0
 internal f32 Fade(f32 alpha)
 {
