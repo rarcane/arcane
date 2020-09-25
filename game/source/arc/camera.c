@@ -74,34 +74,12 @@ static void TransformInGameCamera()
 		f32 alpha = 1.0f - (core->run_data->move_to_start_time + core->run_data->move_to_time - platform->GetTime()) / core->run_data->move_to_time;
 		alpha = ClampF32(alpha, 0.0f, 1.0f);
 		
-		v2 diff = V2SubtractV2(core->run_data->initial_camera_pos, core->run_data->move_to_location);
+		// v2 diff = V2SubtractV2(core->run_data->initial_camera_pos, core->run_data->move_to_location);
 		
-		core->camera_position.x = LerpF32(alpha, core->run_data->initial_camera_pos.x, diff.x);
-		core->camera_position.y = LerpF32(alpha, core->run_data->initial_camera_pos.y, diff.y);
+		core->camera_position.x = LerpF32(alpha, core->run_data->initial_camera_pos.x, core->run_data->move_to_location.x);
+		core->camera_position.y = LerpF32(alpha, core->run_data->initial_camera_pos.y, core->run_data->move_to_location.y);
 		
 		core->camera_zoom_mult = LerpF32(alpha, core->run_data->inital_zoom, core->run_data->move_to_zoom);
-		
-		TsUIWindowBegin("window", v4(0.0f, 0.0f, 200.0f, 300.0f), 0, 0);
-		{
-			TsUIPushColumn(v2(0.0f, 0.0f), v2(100.0f, 20.0f));
-			
-			{
-				char lbl[100];
-				sprintf(lbl, "alpha: %f", alpha);
-				TsUILabel(lbl);
-			}
-			
-			/*
-					{
-						char lbl[100];
-						sprintf(lbl, "alpha: %f", alpha);
-						TsUILabel(lbl);
-					}
-			 */
-			
-			TsUIPopColumn();
-		}
-		TsUIWindowEnd();
 	}
 	else
 	{
@@ -175,6 +153,28 @@ static void TransformInGameCamera()
 	core->camera_zoom = (core->render_h / (1080.0f / DEFAULT_CAMERA_ZOOM)) * core->camera_zoom_mult;
 	
 	core->run_data->disable_chunk_loaded_based_off_view = 0;
+	
+	TsUIWindowBegin("window", v4(0.0f, 0.0f, 300.0f, 300.0f), 0, 0);
+	{
+		TsUIPushColumn(v2(0.0f, 0.0f), v2(100.0f, 20.0f));
+		
+		{
+			char lbl[100];
+			sprintf(lbl, "camera pos: %f, %f", core->camera_position.x, core->camera_position.y);
+			TsUILabel(lbl);
+		}
+		
+		/*
+				{
+					char lbl[100];
+					sprintf(lbl, "alpha: %f", alpha);
+					TsUILabel(lbl);
+				}
+		 */
+		
+		TsUIPopColumn();
+	}
+	TsUIWindowEnd();
 	
 	// NOTE(randy): Clear camera cue buffer
 	//MemorySet(core->run_data->camera_cues, 0, sizeof(core->run_data->camera_cues));

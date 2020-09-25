@@ -26,5 +26,5 @@ internal void OnElementalSkillTreeInteract(Entity *entity)
 	
 	core->run_data->engaged_station_entity = entity;
 	
-	MoveCameraToLocation(entity->position, 2.0f, 2.0f);
+	MoveCameraToLocation(V2AddV2(entity->position, v2(0.0f, -20.0f)), 2.0f, 2.0f);
 }
