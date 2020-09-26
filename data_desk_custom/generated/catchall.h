@@ -825,6 +825,7 @@ typedef struct SortRenderable
 Renderable data;
 RenderableType type;
 f32 layer;
+v4 clip;
 } SortRenderable;
 
 #define CHARACTER_STATE_is_crafting (1<<0)

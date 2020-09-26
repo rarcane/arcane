@@ -858,6 +858,7 @@ SortRenderable :: struct
 	data : Renderable;
 	type : RenderableType;
 	layer : f32;
+	clip : v4;
 }
 
 CharacterState :: flags

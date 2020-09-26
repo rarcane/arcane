@@ -76,10 +76,10 @@ static void TransformInGameCamera()
 		
 		// v2 diff = V2SubtractV2(core->run_data->initial_camera_pos, core->run_data->move_to_location);
 		
-		core->camera_position.x = LerpF32(alpha, core->run_data->initial_camera_pos.x, core->run_data->move_to_location.x);
-		core->camera_position.y = LerpF32(alpha, core->run_data->initial_camera_pos.y, core->run_data->move_to_location.y);
+		core->camera_position.x = LerpF32(Fade(alpha), core->run_data->initial_camera_pos.x, core->run_data->move_to_location.x);
+		core->camera_position.y = LerpF32(Fade(alpha), core->run_data->initial_camera_pos.y, core->run_data->move_to_location.y);
 		
-		core->camera_zoom_mult = LerpF32(alpha, core->run_data->inital_zoom, core->run_data->move_to_zoom);
+		core->camera_zoom_mult = LerpF32(Fade(alpha), core->run_data->inital_zoom, core->run_data->move_to_zoom);
 	}
 	else
 	{

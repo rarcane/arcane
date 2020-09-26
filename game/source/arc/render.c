@@ -141,21 +141,45 @@ internal void RenderSprites()
 		{
 			case RENDERABLE_TYPE_texture :
 			{
+				if (queued_renderable->clip.z != 0.0f &&
+					queued_renderable->clip.w != 0.0f)
+				{
+					Ts2dPushClip(queued_renderable->clip);
+				}
+				
 				Ts2dPushTintedTextureWithFlags(queued_renderable->data.texture.texture,
 											   queued_renderable->data.texture.flags,
 											   queued_renderable->data.texture.source,
 											   queued_renderable->data.texture.destination,
 											   queued_renderable->data.texture.tint);
+				
+				if (queued_renderable->clip.z != 0.0f &&
+					queued_renderable->clip.w != 0.0f)
+				{
+					Ts2dPopClip();
+				}
 			} break;
 			
 			case RENDERABLE_TYPE_text :
 			{
+				if (queued_renderable->clip.z != 0.0f &&
+					queued_renderable->clip.w != 0.0f)
+				{
+					Ts2dPushClip(queued_renderable->clip);
+				}
+				
 				Ts2dPushText(queued_renderable->data.text.font,
 							 queued_renderable->data.text.flags,
 							 queued_renderable->data.text.colour,
 							 queued_renderable->data.text.pos,
 							 queued_renderable->data.text.font_scale,
 							 queued_renderable->data.text.text);
+				
+				if (queued_renderable->clip.z != 0.0f &&
+					queued_renderable->clip.w != 0.0f)
+				{
+					Ts2dPopClip();
+				}
 			} break;
 			
 			default :
@@ -186,6 +210,26 @@ internal void ArcPushText(Ts2dFont *font, i32 flags, v4 colour, v2 pos, f32 font
 	core->run_data->queued_renderables[core->run_data->queued_renderable_count++] = new_text;
 }
 
+internal void ArcPushTextWithClip(Ts2dFont *font, i32 flags, v4 colour, v2 pos, f32 font_scale, char *text, f32 layer, v4 clip)
+{
+	SortRenderable new_text = {
+		.data = {
+			.text = {
+				.font = font,
+				.flags = flags,
+				.colour = colour,
+				.pos = pos,
+				.font_scale = font_scale,
+			},
+		},
+		.type = RENDERABLE_TYPE_text,
+		.layer = layer,
+		.clip = clip,
+	};
+	strcpy(new_text.data.text.text, text);
+	core->run_data->queued_renderables[core->run_data->queued_renderable_count++] = new_text;
+}
+
 internal void ArcPushTexture(Ts2dTexture *texture, i32 flags, v4 source, v4 destination, v4 tint, f32 layer)
 {
 	SortRenderable new_texture = {
@@ -200,6 +244,25 @@ internal void ArcPushTexture(Ts2dTexture *texture, i32 flags, v4 source, v4 dest
 		},
 		.type = RENDERABLE_TYPE_texture,
 		.layer = layer,
+	};
+	core->run_data->queued_renderables[core->run_data->queued_renderable_count++] = new_texture;
+}
+
+internal void ArcPushTextureWithClip(Ts2dTexture *texture, i32 flags, v4 source, v4 destination, v4 tint, f32 layer, v4 clip)
+{
+	SortRenderable new_texture = {
+		.data = {
+			.texture = {
+				.texture = texture,
+				.flags = flags,
+				.source = source,
+				.destination = destination,
+				.tint = tint,
+			},
+		},
+		.type = RENDERABLE_TYPE_texture,
+		.layer = layer,
+		.clip = clip,
 	};
 	core->run_data->queued_renderables[core->run_data->queued_renderable_count++] = new_texture;
 }

@@ -293,5 +293,6 @@ internal b8 CanPlayerInteract()
 	return !(core->run_data->character_state & CHARACTER_STATE_is_crafting) &&
 		!(core->run_data->character_state & CHARACTER_STATE_is_backpack_open) &&
 		!(core->run_data->character_state & CHARACTER_STATE_is_blueprinting) &&
+		!(core->run_data->character_state & CHARACTER_STATE_is_in_elemental_skill_tree) &&
 		!core->run_data->is_paused;
 }
