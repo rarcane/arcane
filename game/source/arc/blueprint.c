@@ -23,8 +23,9 @@ internal void OnCraftingStumpBuild(Entity *entity)
 internal void DrawBlueprintUI()
 {
 	Entity *character = core->run_data->character_entity;
+	CharacterData *character_data = &core->run_data->character_data;
 	
-	if (character->hotbar[character->active_hotbar_slot].type == ITEM_TYPE_crafting_tool &&
+	if (character_data->hotbar[character_data->active_hotbar_slot].type == ITEM_TYPE_crafting_tool &&
 		platform->left_mouse_pressed &&
 		CanPlayerInteract())
 	{
@@ -289,8 +290,8 @@ internal void DrawBlueprintUI()
 					continue;
 				
 				i32 removed_amount = RemoveItemFromContainer(current_blueprint->remaining_items_in_blueprint[i],
-															 character->inventory,
-															 character->inventory_size);
+															 character_data->inventory,
+															 character_data->inventory_size);
 				current_blueprint->remaining_items_in_blueprint[i].stack_size -= removed_amount;
 				
 				if (current_blueprint->remaining_items_in_blueprint[i].stack_size)

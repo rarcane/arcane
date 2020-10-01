@@ -10,7 +10,7 @@ inline internal Entity *GetCharacterEntity()
 
 inline internal Item *GetItemInHand()
 {
-	Item *item = &core->run_data->character_entity->hotbar[core->run_data->character_entity->active_hotbar_slot];
+	Item *item = &core->run_data->character_data.hotbar[core->run_data->character_data.active_hotbar_slot];
 	if (item->type)
 		return item;
 	else

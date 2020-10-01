@@ -334,6 +334,7 @@ Enchantment :: struct
 	// ...
 }
 
+//~ Items
 ItemCategory :: enum
 {
 	none,
@@ -394,7 +395,30 @@ Item :: struct
 	enchantments : Enchantment[ENCHANTMENT_TYPE_MAX];
 }
 
-/* --- COMPONENTS --- */
+//~ Skill Tree
+MAX_CHILD_SKILLS :: 4
+
+@ForwardDeclareEnum(ElementalSkillType)
+ForwardElementalSkillType :: _;
+
+@XMacro
+ElementalSkillTypeData :: struct
+{
+	print_name : char[20];
+	child_skills : ElementalSkillType[MAX_CHILD_SKILLS];
+}
+@XMacro
+ElementalSkillType :: enum
+{
+	@Data("'none'", 0)
+		none,
+	@Data("'Hand Flame'", "{ ELEMENTAL_SKILL_TYPE_hand_flame_2, ELEMENTAL_SKILL_TYPE_hand_flame_3 }")
+		hand_flame,
+	@Data("'Hand Flame 2'", 0)
+		hand_flame_2,
+	@Data("'Hand Flame 3'", 0)
+		hand_flame_3,
+}
 
 @ForwardDeclare(Entity)
 ForwardEntity :: _;
@@ -550,9 +574,7 @@ ForwardChunk :: _;
 @GenerateComponentCode
 Dummy2 :: _;
 
-MAX_HOTBAR_SLOTS :: 9;
-MAX_INVENTORY_SLOTS :: 9;
-
+//~ $Entity
 PhysicsBodyData :: struct
 {
 	shape : c2Shape;
@@ -589,6 +611,8 @@ EntityProperty :: enum
 }
 
 ENTITY_PROPERTY_SIZE :: (ENTITY_PROPERTY_MAX / 64 + 1)
+MAX_HOTBAR_SLOTS :: 9;
+MAX_INVENTORY_SLOTS :: 9;
 MAX_SPELL_SLOTS :: 8
 MAX_EQUIPMENT_SLOTS :: 6
 
@@ -645,7 +669,21 @@ Entity :: struct
 		finish_callback : EmitterFinishCallback;
 	*/
 	
-	// NOTE(randy): Player data
+	
+	// NOTE(randy): interactable
+	priority : f32;
+	interact_callback : InteractCallback;
+	// is_overlapping_player : b8;
+	
+	// NOTE(randy): blueprint
+	structure_type : StructureType;
+	remaining_items_in_blueprint : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
+	
+	durability : f32;
+}
+
+CharacterData :: struct
+{
 	inventory : Item[MAX_INVENTORY_SLOTS];
 	inventory_size : i32;
 	hotbar : Item[MAX_HOTBAR_SLOTS];
@@ -661,16 +699,7 @@ Entity :: struct
 	
 	equipment_slots : Item[MAX_EQUIPMENT_SLOTS];
 	
-	// NOTE(randy): interactable
-	priority : f32;
-	interact_callback : InteractCallback;
-	// is_overlapping_player : b8;
-	
-	// NOTE(randy): blueprint
-	structure_type : StructureType;
-	remaining_items_in_blueprint : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
-	
-	durability : f32;
+	unlocked_elemental_skills : ElementalSkillType[ELEMENTAL_SKILL_TYPE_MAX];
 }
 
 /* ----------------------------------------- */
@@ -941,6 +970,8 @@ RunData :: struct // Game data used for run-time operations
 	*/
 	
 	entities : Entity[ENTITY_TABLE_SIZE];
+	
+	character_data : CharacterData;
 	
 	/*
 		free_entity_id : i32;

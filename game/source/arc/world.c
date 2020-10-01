@@ -889,29 +889,32 @@ internal b8 CreateWorld(char *world_name)
 		character->current_animation_state = ARC_ENTITY_ANIMATION_STATE_player_idle;
 		character->sprite_data.dynamic_sprite = DYNAMIC_SPRITE_player_idle;
 		
+		
+		CharacterData *character_data = &core->run_data->character_data;
+		
 		Item flint_sword = { .type = ITEM_TYPE_flint_sword, .stack_size = 1 };
-		character->inventory[0] = flint_sword;
+		character_data->inventory[0] = flint_sword;
 		Item flint_axe = { .type = ITEM_TYPE_flint_axe, .stack_size = 1 };
-		character->inventory[3] = flint_axe;
+		character_data->inventory[3] = flint_axe;
 		
 		Item flint = { .type = ITEM_TYPE_flint, .stack_size = 7 };
-		character->inventory[1] = flint;
+		character_data->inventory[1] = flint;
 		
 		Item twig = { .type = ITEM_TYPE_twig, .stack_size = 14 };
-		character->inventory[2] = twig;
+		character_data->inventory[2] = twig;
 		
 		Item tool = { .type = ITEM_TYPE_crafting_tool, .stack_size = 1 };
-		character->hotbar[0] = tool;
+		character_data->hotbar[0] = tool;
 		
-		character->inventory_size = 9;
-		character->hotbar_size = 2;
+		character_data->inventory_size = 9;
+		character_data->hotbar_size = 2;
 		
 		Item chest = { .type = ITEM_TYPE_test_chestpiece, .stack_size = 1 };
-		character->equipment_slots[1] = chest;
+		character_data->equipment_slots[1] = chest;
 		
-		character->freehand_spell_count = 2;
-		character->freehand_spell_slots[0].type = SPELL_TYPE_fireball;
-		character->freehand_spell_slots[1].type = SPELL_TYPE_yeet;
+		character_data->freehand_spell_count = 2;
+		character_data->freehand_spell_slots[0].type = SPELL_TYPE_fireball;
+		character_data->freehand_spell_slots[1].type = SPELL_TYPE_yeet;
 	}
 	
 	// FillChunkEntities();

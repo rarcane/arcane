@@ -28,6 +28,11 @@ internal void DrawElementalSkillTreeUI()
 	v2 canvas_pos = v2view(V2AddV2(skilltree->position, v2(-50.0f, -100.0f)));
 	v2 canvas_size = v2zoom(v2(100.0f, 100.0f));
 	
+	for (i32 i = 1; i < ELEMENTAL_SKILL_TYPE_MAX; i++)
+	{
+		
+	}
+	
 	ArcPushTextWithClip(Ts2dGetDefaultFont(),
 						0,
 						v4u(1.0f),

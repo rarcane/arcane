@@ -379,6 +379,33 @@ i32 stack_size;
 Enchantment enchantments[ENCHANTMENT_TYPE_MAX];
 } Item;
 
+#define MAX_CHILD_SKILLS (4)
+typedef enum ElementalSkillType ElementalSkillType;
+
+typedef struct ElementalSkillTypeData
+{
+char print_name[20];
+ElementalSkillType child_skills[MAX_CHILD_SKILLS];
+} ElementalSkillTypeData;
+
+typedef enum ElementalSkillType ElementalSkillType;
+enum ElementalSkillType
+{
+ELEMENTAL_SKILL_TYPE_none,
+ELEMENTAL_SKILL_TYPE_hand_flame,
+ELEMENTAL_SKILL_TYPE_hand_flame_2,
+ELEMENTAL_SKILL_TYPE_hand_flame_3,
+ELEMENTAL_SKILL_TYPE_MAX,
+};
+global ElementalSkillTypeData global_elemental_skill_type_data[ELEMENTAL_SKILL_TYPE_MAX] = {
+    { "none", 0, },
+    { "Hand Flame", { ELEMENTAL_SKILL_TYPE_hand_flame_2, ELEMENTAL_SKILL_TYPE_hand_flame_3 }, },
+    { "Hand Flame 2", 0, },
+    { "Hand Flame 3", 0, },
+};
+
+static char *GetElementalSkillTypeName(ElementalSkillType type);
+
 typedef struct Entity Entity;
 
 typedef struct Line
@@ -548,8 +575,6 @@ typedef struct Chunk Chunk;
 
 // @GenerateComponentCode 
 #define Dummy2 (_)
-#define MAX_HOTBAR_SLOTS (9)
-#define MAX_INVENTORY_SLOTS (9)
 typedef struct PhysicsBodyData
 {
 c2Shape shape;
@@ -586,6 +611,8 @@ ENTITY_PROPERTY_MAX,
 static char *GetEntityPropertyName(EntityProperty type);
 
 #define ENTITY_PROPERTY_SIZE (((ENTITY_PROPERTY_MAX/64)+1))
+#define MAX_HOTBAR_SLOTS (9)
+#define MAX_INVENTORY_SLOTS (9)
 #define MAX_SPELL_SLOTS (8)
 #define MAX_EQUIPMENT_SLOTS (6)
 typedef struct Entity
@@ -614,6 +641,15 @@ Item item;
 Enchantment enchamtnets[MAX_ENCHANTMENTS];
 v2 parallax_amount;
 v2 desired_position;
+f32 priority;
+InteractCallback interact_callback;
+StructureType structure_type;
+Item remaining_items_in_blueprint[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
+f32 durability;
+} Entity;
+
+typedef struct CharacterData
+{
 Item inventory[MAX_INVENTORY_SLOTS];
 i32 inventory_size;
 Item hotbar[MAX_HOTBAR_SLOTS];
@@ -626,12 +662,8 @@ Item *grabbed_item_origin_slot;
 Spell freehand_spell_slots[MAX_SPELL_SLOTS];
 i32 freehand_spell_count;
 Item equipment_slots[MAX_EQUIPMENT_SLOTS];
-f32 priority;
-InteractCallback interact_callback;
-StructureType structure_type;
-Item remaining_items_in_blueprint[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
-f32 durability;
-} Entity;
+ElementalSkillType unlocked_elemental_skills[ELEMENTAL_SKILL_TYPE_MAX];
+} CharacterData;
 
 #define MINIMUM_AIR_PRESSURE (1.0f)
 #define LIQUID_RESOLUTION (0.2f)
@@ -876,6 +908,7 @@ Timer timers[MAX_ACTIVE_TIMERS];
 Chunk active_chunks[MAX_WORLD_CHUNKS];
 i32 active_chunk_count;
 Entity entities[ENTITY_TABLE_SIZE];
+CharacterData character_data;
 char world_name[50];
 char world_path[300];
 char world_chunks_path[300];

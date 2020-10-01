@@ -5,6 +5,7 @@ internal void DrawEnchantingUI()
 		return;
 	
 	Entity *character = GetCharacterEntity();
+	CharacterData *character_data = &core->run_data->character_data;
 	Entity *enchanter = core->run_data->engaged_station_entity;
 	Assert(enchanter);
 	
@@ -12,9 +13,9 @@ internal void DrawEnchantingUI()
 	i32 enchantable_items_count = 0;
 	
 	// NOTE(randy): Search player for enchantable items
-	for (i32 i = 0; i < character->inventory_size; i++)
+	for (i32 i = 0; i < character_data->inventory_size; i++)
 	{
-		Item *item = &character->inventory[i];
+		Item *item = &character_data->inventory[i];
 		ItemTypeData *item_data = &global_item_type_data[item->type];
 		
 		if (item_data->flags & ITEM_FLAGS_enchantable)
@@ -22,9 +23,9 @@ internal void DrawEnchantingUI()
 			enchantable_items[enchantable_items_count++] = item;
 		}
 	}
-	for (i32 i = 0; i < character->hotbar_size; i++)
+	for (i32 i = 0; i < character_data->hotbar_size; i++)
 	{
-		Item *item = &character->hotbar[i];
+		Item *item = &character_data->hotbar[i];
 		ItemTypeData *item_data = &global_item_type_data[item->type];
 		
 		if (item_data->flags & ITEM_FLAGS_enchantable)

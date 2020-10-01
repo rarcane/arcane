@@ -84,16 +84,18 @@ internal void PreMoveUpdatePlayer()
 	
 	// Acceleration calculations?
 	
+	CharacterData *character_data = &core->run_data->character_data;
+	
 	// NOTE(randy): Player keybind stuff
 	if (CanPlayerMove() &&
 		platform->key_pressed[KEY_1])
 	{
-		character->active_hotbar_slot = 0;
+		character_data->active_hotbar_slot = 0;
 	}
 	else if (CanPlayerMove() &&
 			 platform->key_pressed[KEY_2])
 	{
-		character->active_hotbar_slot = 1;
+		character_data->active_hotbar_slot = 1;
 	}
 	
 	// NOTE(randy): Arcane mode
@@ -103,7 +105,7 @@ internal void PreMoveUpdatePlayer()
 	}
 	
 	// NOTE(randy): Spell casting
-	if (character->freehand_spell_count)
+	if (character_data->freehand_spell_count)
 	{
 		local_persist b8 was_down = 0;
 		local_persist Spell *selected_spell = 0;
@@ -122,7 +124,7 @@ internal void PreMoveUpdatePlayer()
 						 */
 			
 			{
-				Spell *spell = &character->freehand_spell_slots[0];
+				Spell *spell = &character_data->freehand_spell_slots[0];
 				
 				v2 render_pos = v2screen(v2(0.2f, 0.5f));
 				v2 render_size = v2GUI(v2(0.1f, 0.1f));
@@ -142,7 +144,7 @@ internal void PreMoveUpdatePlayer()
 			}
 			
 			{
-				Spell *spell = &character->freehand_spell_slots[1];
+				Spell *spell = &character_data->freehand_spell_slots[1];
 				
 				v2 render_pos = v2screen(v2(0.8f, 0.5f));
 				v2 render_size = v2GUI(v2(0.1f, 0.1f));

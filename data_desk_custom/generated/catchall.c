@@ -427,6 +427,28 @@ break;
 }
 }
 
+static char *GetElementalSkillTypeName(ElementalSkillType type)
+{
+switch(type)
+{
+case ELEMENTAL_SKILL_TYPE_none:
+return "None";
+break;
+case ELEMENTAL_SKILL_TYPE_hand_flame:
+return "Hand Flame";
+break;
+case ELEMENTAL_SKILL_TYPE_hand_flame_2:
+return "Hand Flame 2";
+break;
+case ELEMENTAL_SKILL_TYPE_hand_flame_3:
+return "Hand Flame 3";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
 static char *Getc2ShapeTypeName(c2ShapeType type)
 {
 switch(type)
@@ -770,38 +792,6 @@ static void WriteEntityToFile(FILE *file, Entity *data)
 
     WriteToFile(file, &data->desired_position, sizeof(data->desired_position));
 
-    for (i32 i = 0; i < MAX_INVENTORY_SLOTS; i++)
-    {
-        WriteToFile(file, &data->inventory[i], sizeof(Item));
-    }
-
-    WriteToFile(file, &data->inventory_size, sizeof(data->inventory_size));
-
-    for (i32 i = 0; i < MAX_HOTBAR_SLOTS; i++)
-    {
-        WriteToFile(file, &data->hotbar[i], sizeof(Item));
-    }
-
-    WriteToFile(file, &data->hotbar_size, sizeof(data->hotbar_size));
-
-    WriteToFile(file, &data->active_hotbar_slot, sizeof(data->active_hotbar_slot));
-
-    WriteToFile(file, &data->grabbed_item, sizeof(data->grabbed_item));
-
-    WriteToFile(file, &data->grabbed_item_offset, sizeof(data->grabbed_item_offset));
-
-    for (i32 i = 0; i < MAX_SPELL_SLOTS; i++)
-    {
-        WriteToFile(file, &data->freehand_spell_slots[i], sizeof(Spell));
-    }
-
-    WriteToFile(file, &data->freehand_spell_count, sizeof(data->freehand_spell_count));
-
-    for (i32 i = 0; i < MAX_EQUIPMENT_SLOTS; i++)
-    {
-        WriteToFile(file, &data->equipment_slots[i], sizeof(Item));
-    }
-
     WriteToFile(file, &data->priority, sizeof(data->priority));
 
     WriteToFile(file, &data->interact_callback, sizeof(data->interact_callback));
@@ -871,38 +861,6 @@ static void ReadEntityFromFile(FILE *file, Entity *data)
     ReadFromFile(file, &data->parallax_amount, sizeof(data->parallax_amount));
 
     ReadFromFile(file, &data->desired_position, sizeof(data->desired_position));
-
-    for (i32 i = 0; i < MAX_INVENTORY_SLOTS; i++)
-    {
-        ReadFromFile(file, &data->inventory[i], sizeof(Item));
-    }
-
-    ReadFromFile(file, &data->inventory_size, sizeof(data->inventory_size));
-
-    for (i32 i = 0; i < MAX_HOTBAR_SLOTS; i++)
-    {
-        ReadFromFile(file, &data->hotbar[i], sizeof(Item));
-    }
-
-    ReadFromFile(file, &data->hotbar_size, sizeof(data->hotbar_size));
-
-    ReadFromFile(file, &data->active_hotbar_slot, sizeof(data->active_hotbar_slot));
-
-    ReadFromFile(file, &data->grabbed_item, sizeof(data->grabbed_item));
-
-    ReadFromFile(file, &data->grabbed_item_offset, sizeof(data->grabbed_item_offset));
-
-    for (i32 i = 0; i < MAX_SPELL_SLOTS; i++)
-    {
-        ReadFromFile(file, &data->freehand_spell_slots[i], sizeof(Spell));
-    }
-
-    ReadFromFile(file, &data->freehand_spell_count, sizeof(data->freehand_spell_count));
-
-    for (i32 i = 0; i < MAX_EQUIPMENT_SLOTS; i++)
-    {
-        ReadFromFile(file, &data->equipment_slots[i], sizeof(Item));
-    }
 
     ReadFromFile(file, &data->priority, sizeof(data->priority));
 

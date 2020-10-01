@@ -1,11 +1,12 @@
 internal void GroundItemInteractCallback(Entity *entity)
 {
 	Entity *character = GetCharacterEntity();
+	CharacterData *character_data = &core->run_data->character_data;
 	
 	i32 free_inventory_slot = -1;
-	for (i32 i = 0; i < character->inventory_size; i++)
+	for (i32 i = 0; i < character_data->inventory_size; i++)
 	{
-		Item *item = &character->inventory[i];
+		Item *item = &character_data->inventory[i];
 		if (item->type == ITEM_TYPE_none)
 		{
 			free_inventory_slot = i;
@@ -15,7 +16,7 @@ internal void GroundItemInteractCallback(Entity *entity)
 	
 	if (free_inventory_slot != -1)
 	{
-		character->inventory[free_inventory_slot] = entity->item;
+		character_data->inventory[free_inventory_slot] = entity->item;
 		DeleteEntity(entity);
 	}
 }
