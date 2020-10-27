@@ -877,6 +877,88 @@ static void ReadEntityFromFile(FILE *file, Entity *data)
 
 }
 
+static void WriteCharacterDataToFile(FILE *file, CharacterData *data)
+{
+    for (i32 i = 0; i < MAX_INVENTORY_SLOTS; i++)
+    {
+        WriteToFile(file, &data->inventory[i], sizeof(Item));
+    }
+
+    WriteToFile(file, &data->inventory_size, sizeof(data->inventory_size));
+
+    for (i32 i = 0; i < MAX_HOTBAR_SLOTS; i++)
+    {
+        WriteToFile(file, &data->hotbar[i], sizeof(Item));
+    }
+
+    WriteToFile(file, &data->hotbar_size, sizeof(data->hotbar_size));
+
+    WriteToFile(file, &data->active_hotbar_slot, sizeof(data->active_hotbar_slot));
+
+    WriteToFile(file, &data->grabbed_item, sizeof(data->grabbed_item));
+
+    WriteToFile(file, &data->grabbed_item_offset, sizeof(data->grabbed_item_offset));
+
+    for (i32 i = 0; i < MAX_SPELL_SLOTS; i++)
+    {
+        WriteToFile(file, &data->freehand_spell_slots[i], sizeof(Spell));
+    }
+
+    WriteToFile(file, &data->freehand_spell_count, sizeof(data->freehand_spell_count));
+
+    for (i32 i = 0; i < MAX_EQUIPMENT_SLOTS; i++)
+    {
+        WriteToFile(file, &data->equipment_slots[i], sizeof(Item));
+    }
+
+    for (i32 i = 0; i < ELEMENTAL_SKILL_TYPE_MAX; i++)
+    {
+        WriteToFile(file, &data->unlocked_elemental_skills[i], sizeof(ElementalSkillType));
+    }
+
+}
+
+static void ReadCharacterDataFromFile(FILE *file, CharacterData *data)
+{
+    for (i32 i = 0; i < MAX_INVENTORY_SLOTS; i++)
+    {
+        ReadFromFile(file, &data->inventory[i], sizeof(Item));
+    }
+
+    ReadFromFile(file, &data->inventory_size, sizeof(data->inventory_size));
+
+    for (i32 i = 0; i < MAX_HOTBAR_SLOTS; i++)
+    {
+        ReadFromFile(file, &data->hotbar[i], sizeof(Item));
+    }
+
+    ReadFromFile(file, &data->hotbar_size, sizeof(data->hotbar_size));
+
+    ReadFromFile(file, &data->active_hotbar_slot, sizeof(data->active_hotbar_slot));
+
+    ReadFromFile(file, &data->grabbed_item, sizeof(data->grabbed_item));
+
+    ReadFromFile(file, &data->grabbed_item_offset, sizeof(data->grabbed_item_offset));
+
+    for (i32 i = 0; i < MAX_SPELL_SLOTS; i++)
+    {
+        ReadFromFile(file, &data->freehand_spell_slots[i], sizeof(Spell));
+    }
+
+    ReadFromFile(file, &data->freehand_spell_count, sizeof(data->freehand_spell_count));
+
+    for (i32 i = 0; i < MAX_EQUIPMENT_SLOTS; i++)
+    {
+        ReadFromFile(file, &data->equipment_slots[i], sizeof(Item));
+    }
+
+    for (i32 i = 0; i < ELEMENTAL_SKILL_TYPE_MAX; i++)
+    {
+        ReadFromFile(file, &data->unlocked_elemental_skills[i], sizeof(ElementalSkillType));
+    }
+
+}
+
 static void WriteWorldSaveDataToFile(FILE *file, WorldSaveData *data)
 {
     WriteToFile(file, &data->elapsed_world_time, sizeof(data->elapsed_world_time));

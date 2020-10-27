@@ -958,6 +958,8 @@ internal b8 LoadWorld(char *world_name)
 		
 		ReadWorldSaveDataFromFile(file, &core->run_data->world);
 		
+		ReadCharacterDataFromFile(file, &core->run_data->character_data);
+		
 		for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
 		{
 			Entity *entity = NewEntity();
@@ -1164,6 +1166,8 @@ internal void SaveWorld()
 	Assert(file);
 	
 	WriteWorldSaveDataToFile(file, &core->run_data->world);
+	
+	WriteCharacterDataToFile(file, &core->run_data->character_data);
 	
 	for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
 	{

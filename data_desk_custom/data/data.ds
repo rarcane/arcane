@@ -682,6 +682,7 @@ Entity :: struct
 	durability : f32;
 }
 
+@SerialisableStruct
 CharacterData :: struct
 {
 	inventory : Item[MAX_INVENTORY_SLOTS];

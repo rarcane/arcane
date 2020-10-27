@@ -959,6 +959,10 @@ static void WriteEntityToFile(FILE *file, Entity *data);
 
 static void ReadEntityFromFile(FILE *file, Entity *data);
 
+static void WriteCharacterDataToFile(FILE *file, CharacterData *data);
+
+static void ReadCharacterDataFromFile(FILE *file, CharacterData *data);
+
 static void WriteWorldSaveDataToFile(FILE *file, WorldSaveData *data);
 
 static void ReadWorldSaveDataFromFile(FILE *file, WorldSaveData *data);
