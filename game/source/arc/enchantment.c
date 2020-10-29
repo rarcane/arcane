@@ -189,16 +189,6 @@ internal void DrawEnchantingUI()
 	}
 }
 
-internal void OnEnchanterInteract(Entity *entity)
-{
-	Entity *character = GetCharacterEntity();
-	
-	SetArcaneMode(1);
-	core->run_data->character_state |= CHARACTER_STATE_is_enchanting;
-	
-	core->run_data->engaged_station_entity = entity;
-}
-
 internal b8 IsEnchantmentApplicable(EnchantmentType enchantment, ItemType item)
 {
 	ItemTypeData *item_type_data = &global_item_type_data[item];

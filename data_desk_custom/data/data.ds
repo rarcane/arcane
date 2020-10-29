@@ -73,7 +73,6 @@ DebugFlags :: flags
 	manual_step,
 }
 
-
 /* --- X-Macros --- */
 
 @XMacro
@@ -595,12 +594,16 @@ EntityProperty :: enum
 	no_delete,
 	force_floating,
 	
+	// TODO(randy): yeet this ugly shit
 	interactable,
-	interactable_e,
 	interactable_left_click,
 	
 	lumber_axable,
 	enemy,
+	
+	enchanter,
+	elemental_skill_tree,
+	item,
 	
 	sprite,
 	flipbook,
@@ -672,7 +675,6 @@ Entity :: struct
 	
 	// NOTE(randy): interactable
 	priority : f32;
-	interact_callback : InteractCallback;
 	// is_overlapping_player : b8;
 	
 	// NOTE(randy): blueprint

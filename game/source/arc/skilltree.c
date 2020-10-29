@@ -51,15 +51,3 @@ internal void DrawElementalSkillTreeUI()
 		core->run_data->lock_camera = 0;
 	}
 }
-
-internal void OnElementalSkillTreeInteract(Entity *entity)
-{
-	Entity *character = GetCharacterEntity();
-	
-	SetArcaneMode(1);
-	core->run_data->character_state |= CHARACTER_STATE_is_in_elemental_skill_tree;
-	
-	core->run_data->engaged_station_entity = entity;
-	
-	MoveCameraToLocation(V2AddV2(entity->position, v2(0.0f, -50.0f)), 2.0f, 2.0f);
-}

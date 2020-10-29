@@ -619,9 +619,6 @@ break;
 case ENTITY_PROPERTY_interactable:
 return "Interactable";
 break;
-case ENTITY_PROPERTY_interactable_e:
-return "Interactable E";
-break;
 case ENTITY_PROPERTY_interactable_left_click:
 return "Interactable Left Click";
 break;
@@ -630,6 +627,15 @@ return "Lumber Axable";
 break;
 case ENTITY_PROPERTY_enemy:
 return "Enemy";
+break;
+case ENTITY_PROPERTY_enchanter:
+return "Enchanter";
+break;
+case ENTITY_PROPERTY_elemental_skill_tree:
+return "Elemental Skill Tree";
+break;
+case ENTITY_PROPERTY_item:
+return "Item";
 break;
 case ENTITY_PROPERTY_sprite:
 return "Sprite";
@@ -794,8 +800,6 @@ static void WriteEntityToFile(FILE *file, Entity *data)
 
     WriteToFile(file, &data->priority, sizeof(data->priority));
 
-    WriteToFile(file, &data->interact_callback, sizeof(data->interact_callback));
-
     WriteToFile(file, &data->structure_type, sizeof(data->structure_type));
 
     for (i32 i = 0; i < MAX_ITEMS_IN_BLUEPRINT_RECIPE; i++)
@@ -863,8 +867,6 @@ static void ReadEntityFromFile(FILE *file, Entity *data)
     ReadFromFile(file, &data->desired_position, sizeof(data->desired_position));
 
     ReadFromFile(file, &data->priority, sizeof(data->priority));
-
-    ReadFromFile(file, &data->interact_callback, sizeof(data->interact_callback));
 
     ReadFromFile(file, &data->structure_type, sizeof(data->structure_type));
 

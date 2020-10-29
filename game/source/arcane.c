@@ -399,6 +399,8 @@ internal void InitialiseRunData()
 				core->run_data->free_entity_id = 1;
 			 */
 	
+	// NOTE(randy): Fill out function callback array
+	
 #ifdef DEVELOPER_ENVIRONMENT
 	core->run_data->debug_flags |= DEBUG_FLAGS_draw_collision;
 #endif

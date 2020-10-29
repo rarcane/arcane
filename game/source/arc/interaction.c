@@ -27,7 +27,9 @@ internal void InteractableUpdate()
 		{
 			Entity *entity = overlapping_entities[i];
 			
-			if (EntityHasProperty(entity, ENTITY_PROPERTY_interactable_e))
+			if (EntityHasProperty(entity, ENTITY_PROPERTY_enchanter) ||
+				EntityHasProperty(entity, ENTITY_PROPERTY_elemental_skill_tree) ||
+				EntityHasProperty(entity, ENTITY_PROPERTY_item))
 			{
 				if (core->run_data->current_e_interactable &&
 					entity->priority > core->run_data->current_e_interactable->priority ||
@@ -39,12 +41,46 @@ internal void InteractableUpdate()
 		}
 		
 		if (core->run_data->current_e_interactable && platform->key_pressed[KEY_e])
-		{\
+		{
 			platform->key_pressed[KEY_e] = 0;
 			
-			if (core->run_data->current_e_interactable->interact_callback)
+			// NOTE(randy): Interaction event
+			if (EntityHasProperty(core->run_data->current_e_interactable, ENTITY_PROPERTY_enchanter))
 			{
-				core->run_data->current_e_interactable->interact_callback(core->run_data->current_e_interactable);
+				SetArcaneMode(1);
+				core->run_data->character_state |= CHARACTER_STATE_is_enchanting;
+				
+				core->run_data->engaged_station_entity = core->run_data->current_e_interactable;
+			}
+			else if (EntityHasProperty(core->run_data->current_e_interactable, ENTITY_PROPERTY_elemental_skill_tree))
+			{
+				SetArcaneMode(1);
+				core->run_data->character_state |= CHARACTER_STATE_is_in_elemental_skill_tree;
+				
+				core->run_data->engaged_station_entity = core->run_data->current_e_interactable;
+				
+				MoveCameraToLocation(V2AddV2(core->run_data->current_e_interactable->position, v2(0.0f, -50.0f)), 2.0f, 2.0f);
+			}
+			else if (EntityHasProperty(core->run_data->current_e_interactable, ENTITY_PROPERTY_item))
+			{
+				CharacterData *character_data = &core->run_data->character_data;
+				
+				i32 free_inventory_slot = -1;
+				for (i32 i = 0; i < character_data->inventory_size; i++)
+				{
+					Item *item = &character_data->inventory[i];
+					if (item->type == ITEM_TYPE_none)
+					{
+						free_inventory_slot = i;
+						break;
+					}
+				}
+				
+				if (free_inventory_slot != -1)
+				{
+					character_data->inventory[free_inventory_slot] = core->run_data->current_e_interactable->item;
+					DeleteEntity(core->run_data->current_e_interactable);
+				}
 			}
 		}
 	}

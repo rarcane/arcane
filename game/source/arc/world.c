@@ -319,16 +319,14 @@ internal void GenerateTestPlatform()
 	{
 		Entity *entity = NewEntity();
 		EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-		EntitySetProperty(entity, ENTITY_PROPERTY_interactable);
-		EntitySetProperty(entity, ENTITY_PROPERTY_interactable_e);
 		EntitySetProperty(entity, ENTITY_PROPERTY_queryable);
+		EntitySetProperty(entity, ENTITY_PROPERTY_enchanter);
 		
 		entity->position = v2(-70.0f, -5.0f);
 		entity->sprite_data.static_sprite = STATIC_SPRITE_runic_enchanter;
 		entity->sprite_data.render_layer = 0.5f;
 		
 		entity->priority = 2.0f;
-		entity->interact_callback = OnEnchanterInteract;
 		
 		entity->physics.shape.aabb.min = c2V(-10.0f, 0.0f);
 		entity->physics.shape.aabb.max = c2V(10.0f, 20.0f);
@@ -339,9 +337,8 @@ internal void GenerateTestPlatform()
 	{
 		Entity *entity = NewEntity();
 		EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-		EntitySetProperty(entity, ENTITY_PROPERTY_interactable);
-		EntitySetProperty(entity, ENTITY_PROPERTY_interactable_e);
 		EntitySetProperty(entity, ENTITY_PROPERTY_queryable);
+		EntitySetProperty(entity, ENTITY_PROPERTY_elemental_skill_tree);
 		
 		entity->position = v2(-20.0f, -5.0f);
 		entity->sprite_data.static_sprite = STATIC_SPRITE_runic_enchanter;
@@ -349,7 +346,6 @@ internal void GenerateTestPlatform()
 		entity->sprite_data.render_layer = 0.5f;
 		
 		entity->priority = 2.0f;
-		entity->interact_callback = OnElementalSkillTreeInteract;
 		
 		entity->physics.shape.aabb.min = c2V(-10.0f, 0.0f);
 		entity->physics.shape.aabb.max = c2V(10.0f, 20.0f);

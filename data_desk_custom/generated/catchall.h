@@ -596,10 +596,12 @@ ENTITY_PROPERTY_is_character,
 ENTITY_PROPERTY_no_delete,
 ENTITY_PROPERTY_force_floating,
 ENTITY_PROPERTY_interactable,
-ENTITY_PROPERTY_interactable_e,
 ENTITY_PROPERTY_interactable_left_click,
 ENTITY_PROPERTY_lumber_axable,
 ENTITY_PROPERTY_enemy,
+ENTITY_PROPERTY_enchanter,
+ENTITY_PROPERTY_elemental_skill_tree,
+ENTITY_PROPERTY_item,
 ENTITY_PROPERTY_sprite,
 ENTITY_PROPERTY_flipbook,
 ENTITY_PROPERTY_parallaxable,
@@ -642,7 +644,6 @@ Enchantment enchamtnets[MAX_ENCHANTMENTS];
 v2 parallax_amount;
 v2 desired_position;
 f32 priority;
-InteractCallback interact_callback;
 StructureType structure_type;
 Item remaining_items_in_blueprint[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
 f32 durability;

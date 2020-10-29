@@ -1,33 +1,9 @@
-internal void GroundItemInteractCallback(Entity *entity)
-{
-	Entity *character = GetCharacterEntity();
-	CharacterData *character_data = &core->run_data->character_data;
-	
-	i32 free_inventory_slot = -1;
-	for (i32 i = 0; i < character_data->inventory_size; i++)
-	{
-		Item *item = &character_data->inventory[i];
-		if (item->type == ITEM_TYPE_none)
-		{
-			free_inventory_slot = i;
-			break;
-		}
-	}
-	
-	if (free_inventory_slot != -1)
-	{
-		character_data->inventory[free_inventory_slot] = entity->item;
-		DeleteEntity(entity);
-	}
-}
-
 internal Entity *NewGroundItemEntity(v2 position, Item item_data)
 {
 	Entity *entity = NewEntity();
-	EntitySetProperty(entity, ENTITY_PROPERTY_interactable);
-	EntitySetProperty(entity, ENTITY_PROPERTY_interactable_e);
 	EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
 	EntitySetProperty(entity, ENTITY_PROPERTY_physical);
+	EntitySetProperty(entity, ENTITY_PROPERTY_item);
 	
 	entity->position = position;
 	entity->item = item_data;
@@ -52,7 +28,6 @@ internal Entity *NewGroundItemEntity(v2 position, Item item_data)
 	entity->physics.collide_against |= PHYSICS_BODY_TYPE_FLAGS_ground | PHYSICS_BODY_TYPE_FLAGS_station;
 	
 	entity->priority = 2.0f;
-	entity->interact_callback = GroundItemInteractCallback;
 	
 	return entity;
 }
