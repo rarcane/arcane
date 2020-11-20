@@ -823,6 +823,7 @@ enum RenderableType
 {
 RENDERABLE_TYPE_texture,
 RENDERABLE_TYPE_text,
+RENDERABLE_TYPE_filled_rect,
 RENDERABLE_TYPE_MAX,
 };
 static char *GetRenderableTypeName(RenderableType type);
@@ -846,11 +847,18 @@ f32 font_scale;
 char text[512];
 } Text;
 
+typedef struct FilledRect
+{
+v4 colour;
+v4 rect;
+} FilledRect;
+
 #define MAX_QUEUED_RENDERABLES (1024)
 typedef union Renderable
 {
 Texture texture;
 Text text;
+FilledRect filled_rect;
 } Renderable;
 
 typedef struct SortRenderable

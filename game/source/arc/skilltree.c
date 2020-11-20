@@ -1,3 +1,29 @@
+internal void RenderElementalSkillNode(ElementalSkillType skill, i32 depth, i32 x_offset, v2 centre_pos, v4 clip)
+{
+	Assert(skill);
+	ElementalSkillTypeData *skill_data = &global_elemental_skill_type_data[skill];
+	
+	// NOTE(randy): Render Skill
+	v2 render_pos = v2view(v2(centre_pos.x + x_offset * 30.0f, centre_pos.y - depth * 30.0f));
+	v2 render_size = v2zoom(v2(10.0f, 10.0f));
+	ArcPushFilledRectWithClip(v4u(1.0f),
+							  v4(render_pos.x, render_pos.y,
+								 render_size.x, render_size.y),
+							  LAYER_HUD,
+							  clip);
+	
+	// TODO(randy): Interaction and shit
+	
+	// NOTE(randy): Loop over children
+	for (i32 i = 0; i < MAX_CHILD_SKILLS; i++)
+	{
+		if (skill_data->child_skills[i])
+		{
+			RenderElementalSkillNode(skill_data->child_skills[i], depth + 1, x_offset + i, centre_pos, clip);
+		}
+	}
+}
+
 internal void DrawElementalSkillTreeUI()
 {
 	if (!(core->run_data->character_state & CHARACTER_STATE_arcane_mode) ||
@@ -9,6 +35,9 @@ internal void DrawElementalSkillTreeUI()
 	Assert(skilltree);
 	
 	local_persist v2 offset = {0};
+	v2 skill_tree_size = { 90.0f, 90.0f };
+	v2 skill_tree_pos = V2AddV2(skilltree->position,
+								v2(skill_tree_size.x / -2.0f, -120.0f));
 	
 	if (platform->left_mouse_down)
 	{
@@ -25,13 +54,11 @@ internal void DrawElementalSkillTreeUI()
 	
 	v2 centre_pos = V2AddV2(skilltree->position, v2(offset.x, -50.0f + offset.y));
 	
-	v2 canvas_pos = v2view(V2AddV2(skilltree->position, v2(-50.0f, -100.0f)));
-	v2 canvas_size = v2zoom(v2(100.0f, 100.0f));
+	v2 render_pos = v2view(skill_tree_pos);
+	v2 render_size = v2zoom(skill_tree_size);
 	
-	for (i32 i = 1; i < ELEMENTAL_SKILL_TYPE_MAX; i++)
-	{
-		
-	}
+	RenderElementalSkillNode(ELEMENTAL_SKILL_TYPE_hand_flame, 0, 0, centre_pos, v4(render_pos.x, render_pos.y,
+																				   render_size.x, render_size.y));
 	
 	ArcPushTextWithClip(Ts2dGetDefaultFont(),
 						0,
@@ -40,7 +67,11 @@ internal void DrawElementalSkillTreeUI()
 						0.1f * core->camera_zoom,
 						"YEET",
 						LAYER_HUD,
-						v4(canvas_pos.x, canvas_pos.y, canvas_size.x, canvas_size.y));
+						v4(render_pos.x, render_pos.y, render_size.x, render_size.y));
+	
+	ArcPushFilledRect(v4(214.0f / 255.0f, 134.0f / 255.0f, 118.0f / 255.0f, 0.5f),
+					  v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
+					  LAYER_HUD + 0.01f);
 	
 	if (platform->key_pressed[KEY_esc])
 	{

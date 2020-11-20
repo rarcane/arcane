@@ -548,7 +548,7 @@ SpellTypeData :: struct
 	print_name : char[20];
 	magic_type : MagicType;
 	mana_cost : f32;
-	cast_callback : SpellCastCallback;
+	cast_callback : SpellCastCallback; // TODO(randy): NOI CALLBACKS CUNT
 }
 @XMacro
 SpellType :: enum
@@ -857,6 +857,7 @@ RenderableType :: enum
 {
 	texture,
 	text,
+	filled_rect,
 }
 
 Texture :: struct
@@ -878,11 +879,18 @@ Text :: struct
 	text : char[512];
 }
 
+FilledRect :: struct
+{
+	colour : v4;
+	rect : v4;
+}
+
 MAX_QUEUED_RENDERABLES :: 1024
 Renderable :: union
 {
 	texture : Texture;
 	text : Text;
+	filled_rect : FilledRect;
 }
 
 SortRenderable :: struct

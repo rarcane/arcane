@@ -182,6 +182,24 @@ internal void RenderSprites()
 				}
 			} break;
 			
+			case RENDERABLE_TYPE_filled_rect :
+			{
+				if (queued_renderable->clip.z != 0.0f &&
+					queued_renderable->clip.w != 0.0f)
+				{
+					Ts2dPushClip(queued_renderable->clip);
+				}
+				
+				Ts2dPushFilledRect(queued_renderable->data.filled_rect.colour,
+								   queued_renderable->data.filled_rect.rect);
+				
+				if (queued_renderable->clip.z != 0.0f &&
+					queued_renderable->clip.w != 0.0f)
+				{
+					Ts2dPopClip();
+				}
+			} break;
+			
 			default :
 			Assert(0);
 			break;
@@ -265,4 +283,35 @@ internal void ArcPushTextureWithClip(Ts2dTexture *texture, i32 flags, v4 source,
 		.clip = clip,
 	};
 	core->run_data->queued_renderables[core->run_data->queued_renderable_count++] = new_texture;
+}
+
+internal void ArcPushFilledRect(v4 colour, v4 rect, f32 layer)
+{
+	SortRenderable new_renderable = {
+		.data = {
+			.filled_rect = {
+				.colour = colour,
+				.rect = rect,
+			},
+		},
+		.type = RENDERABLE_TYPE_filled_rect,
+		.layer = layer,
+	};
+	core->run_data->queued_renderables[core->run_data->queued_renderable_count++] = new_renderable;
+}
+
+internal void ArcPushFilledRectWithClip(v4 colour, v4 rect, f32 layer, v4 clip)
+{
+	SortRenderable new_renderable = {
+		.data = {
+			.filled_rect = {
+				.colour = colour,
+				.rect = rect,
+			},
+		},
+		.type = RENDERABLE_TYPE_filled_rect,
+		.layer = layer,
+		.clip = clip,
+	};
+	core->run_data->queued_renderables[core->run_data->queued_renderable_count++] = new_renderable;
 }

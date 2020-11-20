@@ -712,6 +712,9 @@ break;
 case RENDERABLE_TYPE_text:
 return "Text";
 break;
+case RENDERABLE_TYPE_filled_rect:
+return "Filled Rect";
+break;
 default:
 return "INVALID";
 break;
