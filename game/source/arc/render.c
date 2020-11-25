@@ -266,12 +266,12 @@ internal void ArcPushTexture(Ts2dTexture *texture, i32 flags, v4 source, v4 dest
 	core->run_data->queued_renderables[core->run_data->queued_renderable_count++] = new_texture;
 }
 
-internal void ArcPushTextureWithClip(Ts2dTexture *texture, i32 flags, v4 source, v4 destination, v4 tint, f32 layer, v4 clip)
+internal void ArcPushTextureWithClip(Ts2dTexture *texture_atlas, i32 flags, v4 source, v4 destination, v4 tint, f32 layer, v4 clip)
 {
 	SortRenderable new_texture = {
 		.data = {
 			.texture = {
-				.texture = texture,
+				.texture = texture_atlas,
 				.flags = flags,
 				.source = source,
 				.destination = destination,

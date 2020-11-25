@@ -226,6 +226,9 @@ break;
 case STATIC_SPRITE_side_arrow:
 return "Side Arrow";
 break;
+case STATIC_SPRITE_test_icon:
+return "Test Icon";
+break;
 case STATIC_SPRITE_crafting_stump:
 return "Crafting Stump";
 break;

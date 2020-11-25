@@ -124,6 +124,7 @@ STATIC_SPRITE_y_axis_arrow_icon,
 STATIC_SPRITE_x_axis_arrow_icon,
 STATIC_SPRITE_circle_icon,
 STATIC_SPRITE_side_arrow,
+STATIC_SPRITE_test_icon,
 STATIC_SPRITE_crafting_stump,
 STATIC_SPRITE_runic_enchanter,
 STATIC_SPRITE_flint_sword_icon,
@@ -191,6 +192,7 @@ global StaticSpriteData global_static_sprite_data[STATIC_SPRITE_MAX] = {
     { "icon/axis_icons", {0.0f, 33.0f, 40.0f, 7.0f}, {0.0f, 0.0f}, },
     { "icon/axis_icons", {33.0f, 0.0f, 7.0f, 7.0f}, {0.0f, 0.0f}, },
     { "icon/side_arrow", {0.0f, 0.0f, 5.0f, 9.0f}, {0.0f, 0.0f}, },
+    { "icon/test_icon", {0.0f, 0.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, },
     { "structures/crafting_stump", {0.0f, 0.0f, 32.0f, 32.0f}, {0.0f, 0.0f}, },
     { "structures/runic_enchanter", {0.0f, 0.0f, 32.0f, 32.0f}, {0.0f, 0.0f}, },
     { "item/flint_sword", {0.0f, 0.0f, 16.0f, 16.0f}, {6.0f, 2.0f}, },
@@ -386,6 +388,7 @@ typedef struct ElementalSkillTypeData
 {
 char print_name[20];
 ElementalSkillType child_skills[MAX_CHILD_SKILLS];
+StaticSprite skill_image;
 } ElementalSkillTypeData;
 
 typedef enum ElementalSkillType ElementalSkillType;
@@ -398,10 +401,10 @@ ELEMENTAL_SKILL_TYPE_hand_flame_3,
 ELEMENTAL_SKILL_TYPE_MAX,
 };
 global ElementalSkillTypeData global_elemental_skill_type_data[ELEMENTAL_SKILL_TYPE_MAX] = {
-    { "none", 0, },
-    { "Hand Flame", { ELEMENTAL_SKILL_TYPE_hand_flame_2, ELEMENTAL_SKILL_TYPE_hand_flame_3 }, },
-    { "Hand Flame 2", 0, },
-    { "Hand Flame 3", 0, },
+    { "none", 0, 0, },
+    { "Hand Flame", { ELEMENTAL_SKILL_TYPE_hand_flame_2, ELEMENTAL_SKILL_TYPE_hand_flame_3}, STATIC_SPRITE_test_icon, },
+    { "Hand Flame 2", 0, 0, },
+    { "Hand Flame 3", 0, 0, },
 };
 
 static char *GetElementalSkillTypeName(ElementalSkillType type);

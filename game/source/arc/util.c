@@ -15,6 +15,13 @@ internal f32 Fade(f32 alpha)
 	return 6 * powf(alpha, 5) - 15 * powf(alpha, 4) + 10 * powf(alpha, 3);
 }
 
+internal b8 IsPositionInBounds(v2 position, v4 bounds)
+{
+	return position.x > bounds.x && position.x < bounds.x + bounds.z &&
+		platform->mouse_y > bounds.y &&
+		platform->mouse_y < bounds.y + bounds.w;
+}
+
 internal f32 LerpF32(f32 alpha, f32 a, f32 b)
 {
 	return a + (b - a) * alpha;

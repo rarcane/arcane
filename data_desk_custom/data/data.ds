@@ -75,6 +75,8 @@ DebugFlags :: flags
 
 /* --- X-Macros --- */
 
+//~
+
 @XMacro
 StaticSpriteData :: struct
 {
@@ -211,6 +213,8 @@ StaticSprite :: enum
 		circle_icon,
 	@Data("'icon/side_arrow'", "{0.0f, 0.0f, 5.0f, 9.0f}", "{0.0f, 0.0f}")
 		side_arrow,
+	@Data("'icon/test_icon'", "{0.0f, 0.0f, 64.0f, 64.0f}", "{0.0f, 0.0f}")
+		test_icon,
 	
 	// NOTE(randy): Structures
 	@Data("'structures/crafting_stump'", "{0.0f, 0.0f, 32.0f, 32.0f}", "{0.0f, 0.0f}")
@@ -405,18 +409,23 @@ ElementalSkillTypeData :: struct
 {
 	print_name : char[20];
 	child_skills : ElementalSkillType[MAX_CHILD_SKILLS];
+	skill_image : StaticSprite;
 }
 @XMacro
 ElementalSkillType :: enum
 {
-	@Data("'none'", 0)
+	@Data("'none'", 0, 0)
 		none,
-	@Data("'Hand Flame'", "{ ELEMENTAL_SKILL_TYPE_hand_flame_2, ELEMENTAL_SKILL_TYPE_hand_flame_3 }")
+	@Data("'Hand Flame'", "{ ELEMENTAL_SKILL_TYPE_hand_flame_2, ELEMENTAL_SKILL_TYPE_hand_flame_3}", STATIC_SPRITE_test_icon)
 		hand_flame,
-	@Data("'Hand Flame 2'", 0)
+	@Data("'Hand Flame 2'", 0, 0)
 		hand_flame_2,
-	@Data("'Hand Flame 3'", 0)
+	@Data("'Hand Flame 3'", 0, 0)
 		hand_flame_3,
+	/*
+		@Data("'Hand Flame 4'", 0)
+			hand_flame_4,
+	 */
 }
 
 @ForwardDeclare(Entity)

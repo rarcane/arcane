@@ -6,13 +6,35 @@ internal void RenderElementalSkillNode(ElementalSkillType skill, i32 depth, i32 
 	// NOTE(randy): Render Skill
 	v2 render_pos = v2view(v2(centre_pos.x + x_offset * 30.0f, centre_pos.y - depth * 30.0f));
 	v2 render_size = v2zoom(v2(10.0f, 10.0f));
-	ArcPushFilledRectWithClip(v4u(1.0f),
-							  v4(render_pos.x, render_pos.y,
-								 render_size.x, render_size.y),
-							  LAYER_HUD,
-							  clip);
 	
-	// TODO(randy): Interaction and shit
+	v3 hsl_colour = RGBToHSV(v3(1.0f, 1.0f, 1.0f));
+	b8 is_hovered = IsPositionInBounds(v2(platform->mouse_x, platform->mouse_y), v4(render_pos.x, render_pos.y, render_size.x, render_size.y));
+	
+	if (is_hovered)
+	{
+		hsl_colour = v3(0.0f, 0.0f, 0.8f);
+	}
+	v3 rgb_colour = HSVToRGB(hsl_colour);
+	
+	if (is_hovered && platform->left_mouse_pressed)
+	{
+		platform->left_mouse_pressed = 0;
+		
+		// TODO(randy): Left click functionality
+	}
+	
+	StaticSpriteData *sprite = &global_static_sprite_data[skill_data->skill_image];
+	
+	ArcPushTextureWithClip(sprite->texture_atlas,
+						   0,
+						   sprite->source,
+						   v4(render_pos.x, render_pos.y,
+							  render_size.x, render_size.y),
+						   v4(rgb_colour.x, rgb_colour.y, rgb_colour.z, 1.0f),
+						   LAYER_HUD,
+						   clip);
+	
+	// werewolfdev is a fucking CHAMPION that likes to get shit done.
 	
 	// NOTE(randy): Loop over children
 	for (i32 i = 0; i < MAX_CHILD_SKILLS; i++)
@@ -60,14 +82,16 @@ internal void DrawElementalSkillTreeUI()
 	RenderElementalSkillNode(ELEMENTAL_SKILL_TYPE_hand_flame, 0, 0, centre_pos, v4(render_pos.x, render_pos.y,
 																				   render_size.x, render_size.y));
 	
-	ArcPushTextWithClip(Ts2dGetDefaultFont(),
-						0,
-						v4u(1.0f),
-						v2view(centre_pos),
-						0.1f * core->camera_zoom,
-						"YEET",
-						LAYER_HUD,
-						v4(render_pos.x, render_pos.y, render_size.x, render_size.y));
+	/*
+		ArcPushTextWithClip(Ts2dGetDefaultFont(),
+							0,
+							v4u(1.0f),
+							v2view(centre_pos),
+							0.1f * core->camera_zoom,
+							"YEET",
+							LAYER_HUD,
+							v4(render_pos.x, render_pos.y, render_size.x, render_size.y));
+	 */
 	
 	ArcPushFilledRect(v4(214.0f / 255.0f, 134.0f / 255.0f, 118.0f / 255.0f, 0.5f),
 					  v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
