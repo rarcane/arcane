@@ -1,4 +1,4 @@
-internal void RenderElementalSkillNode(ElementalSkillType skill, i32 depth, i32 x_offset, v2 centre_pos, v4 clip)
+internal void ElementalSkillNodeRender(ElementalSkillType skill, i32 depth, i32 x_offset, v2 centre_pos, v4 clip)
 {
 	Assert(skill);
 	ElementalSkillTypeData *skill_data = &global_elemental_skill_type_data[skill];
@@ -41,12 +41,12 @@ internal void RenderElementalSkillNode(ElementalSkillType skill, i32 depth, i32 
 	{
 		if (skill_data->child_skills[i])
 		{
-			RenderElementalSkillNode(skill_data->child_skills[i], depth + 1, x_offset + i, centre_pos, clip);
+			ElementalSkillNodeRender(skill_data->child_skills[i], depth + 1, x_offset + i, centre_pos, clip);
 		}
 	}
 }
 
-internal void DrawElementalSkillTreeUI()
+internal void ElementalSkillTreeUIDraw()
 {
 	if (!(core->run_data->character_state & CHARACTER_STATE_arcane_mode) ||
 		!(core->run_data->character_state & CHARACTER_STATE_is_in_elemental_skill_tree))
@@ -79,7 +79,7 @@ internal void DrawElementalSkillTreeUI()
 	v2 render_pos = v2view(skill_tree_pos);
 	v2 render_size = v2zoom(skill_tree_size);
 	
-	RenderElementalSkillNode(ELEMENTAL_SKILL_TYPE_hand_flame, 0, 0, centre_pos, v4(render_pos.x, render_pos.y,
+	ElementalSkillNodeRender(ELEMENTAL_SKILL_TYPE_hand_flame, 0, 0, centre_pos, v4(render_pos.x, render_pos.y,
 																				   render_size.x, render_size.y));
 	
 	/*
@@ -104,5 +104,17 @@ internal void DrawElementalSkillTreeUI()
 		
 		core->camera_zoom_mult = 1.0f;
 		core->run_data->lock_camera = 0;
+	}
+}
+
+internal ElementalSkillTreeUpdate()
+{
+	// NOTE(randy): All elemental skills that require some sort of update and tick functionality will be put here in this big chungus motherfucker of a function
+	
+	// TODO(randy): x-macro shit in .ds Skill Tree
+	
+	if (1) // NOTE(randy): Some condition is met that would unlock a skill
+	{
+		// unlocked_elemental_skills[ELEMENTAL_SKILL_hand_flame];
 	}
 }

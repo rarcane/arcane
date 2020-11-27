@@ -398,11 +398,14 @@ Item :: struct
 	enchantments : Enchantment[ENCHANTMENT_TYPE_MAX];
 }
 
-//~ Skill Tree
+//~Skill Tree
 MAX_CHILD_SKILLS :: 4
 
 @ForwardDeclareEnum(ElementalSkillType)
 ForwardElementalSkillType :: _;
+
+// TODO(randy): Turn x-macros into global data that gets auto-serialised
+// NOTE(randy): Would that be overcomplicating x-macros? I think it would be fine because it is for the data oriented principal of having good data localisation, as in everything is in the one spot.
 
 @XMacro
 ElementalSkillTypeData :: struct
@@ -416,7 +419,7 @@ ElementalSkillType :: enum
 {
 	@Data("'none'", 0, 0)
 		none,
-	@Data("'Hand Flame'", "{ ELEMENTAL_SKILL_TYPE_hand_flame_2, ELEMENTAL_SKILL_TYPE_hand_flame_3}", STATIC_SPRITE_test_icon)
+	@Data("'Hand Flame'", "{ ELEMENTAL_SKILL_TYPE_hand_flame_2, ELEMENTAL_SKILL_TYPE_hand_flame_3 }", STATIC_SPRITE_test_icon)
 		hand_flame,
 	@Data("'Hand Flame 2'", 0, 0)
 		hand_flame_2,
@@ -693,6 +696,8 @@ Entity :: struct
 	durability : f32;
 }
 
+//~CharacterData
+
 @SerialisableStruct
 CharacterData :: struct
 {
@@ -711,7 +716,9 @@ CharacterData :: struct
 	
 	equipment_slots : Item[MAX_EQUIPMENT_SLOTS];
 	
-	unlocked_elemental_skills : ElementalSkillType[ELEMENTAL_SKILL_TYPE_MAX];
+	unlocked_elemental_skills : ElementalSkillTypeData[ELEMENTAL_SKILL_TYPE_MAX];
+	purchased_elemental_skills : ElementalSkillType[ELEMENTAL_SKILL_TYPE_MAX];
+	elemental_skill_points : i32;
 }
 
 /* ----------------------------------------- */

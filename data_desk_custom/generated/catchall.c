@@ -921,8 +921,15 @@ static void WriteCharacterDataToFile(FILE *file, CharacterData *data)
 
     for (i32 i = 0; i < ELEMENTAL_SKILL_TYPE_MAX; i++)
     {
-        WriteToFile(file, &data->unlocked_elemental_skills[i], sizeof(ElementalSkillType));
+        WriteToFile(file, &data->unlocked_elemental_skills[i], sizeof(ElementalSkillTypeData));
     }
+
+    for (i32 i = 0; i < ELEMENTAL_SKILL_TYPE_MAX; i++)
+    {
+        WriteToFile(file, &data->purchased_elemental_skills[i], sizeof(ElementalSkillType));
+    }
+
+    WriteToFile(file, &data->elemental_skill_points, sizeof(data->elemental_skill_points));
 
 }
 
@@ -962,8 +969,15 @@ static void ReadCharacterDataFromFile(FILE *file, CharacterData *data)
 
     for (i32 i = 0; i < ELEMENTAL_SKILL_TYPE_MAX; i++)
     {
-        ReadFromFile(file, &data->unlocked_elemental_skills[i], sizeof(ElementalSkillType));
+        ReadFromFile(file, &data->unlocked_elemental_skills[i], sizeof(ElementalSkillTypeData));
     }
+
+    for (i32 i = 0; i < ELEMENTAL_SKILL_TYPE_MAX; i++)
+    {
+        ReadFromFile(file, &data->purchased_elemental_skills[i], sizeof(ElementalSkillType));
+    }
+
+    ReadFromFile(file, &data->elemental_skill_points, sizeof(data->elemental_skill_points));
 
 }
 
