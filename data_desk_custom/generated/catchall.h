@@ -387,6 +387,7 @@ typedef enum ElementalSkillType ElementalSkillType;
 typedef struct ElementalSkillTypeData
 {
 char print_name[20];
+i32 cost;
 ElementalSkillType child_skills[MAX_CHILD_SKILLS];
 StaticSprite skill_image;
 } ElementalSkillTypeData;
@@ -401,10 +402,10 @@ ELEMENTAL_SKILL_TYPE_hand_flame_3,
 ELEMENTAL_SKILL_TYPE_MAX,
 };
 global ElementalSkillTypeData global_elemental_skill_type_data[ELEMENTAL_SKILL_TYPE_MAX] = {
-    { "none", 0, 0, },
-    { "Hand Flame", { ELEMENTAL_SKILL_TYPE_hand_flame_2, ELEMENTAL_SKILL_TYPE_hand_flame_3 }, STATIC_SPRITE_test_icon, },
-    { "Hand Flame 2", 0, 0, },
-    { "Hand Flame 3", 0, 0, },
+    { "none", 0, 0, 0, },
+    { "Hand Flame", 3, { ELEMENTAL_SKILL_TYPE_hand_flame_2, ELEMENTAL_SKILL_TYPE_hand_flame_3 }, STATIC_SPRITE_test_icon, },
+    { "Hand Flame 2", 4, 0, 0, },
+    { "Hand Flame 3", 5, 0, 0, },
 };
 
 static char *GetElementalSkillTypeName(ElementalSkillType type);
@@ -666,7 +667,7 @@ Item *grabbed_item_origin_slot;
 Spell freehand_spell_slots[MAX_SPELL_SLOTS];
 i32 freehand_spell_count;
 Item equipment_slots[MAX_EQUIPMENT_SLOTS];
-ElementalSkillTypeData unlocked_elemental_skills[ELEMENTAL_SKILL_TYPE_MAX];
+b8 unlocked_elemental_skills[ELEMENTAL_SKILL_TYPE_MAX];
 ElementalSkillType purchased_elemental_skills[ELEMENTAL_SKILL_TYPE_MAX];
 i32 elemental_skill_points;
 } CharacterData;

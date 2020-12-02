@@ -393,6 +393,8 @@ internal void InitialiseRunData()
 	core->run_data->debug_flags |= DEBUG_FLAGS_draw_world;
 	core->run_data->free_dynamic_cell_id = 1;
 	
+	GetCharacterData()->elemental_skill_points = 3;
+	
 	/*
 				core->run_data->save_job_index = -1;
 				core->run_data->load_job_index = -1;

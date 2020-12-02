@@ -404,26 +404,24 @@ MAX_CHILD_SKILLS :: 4
 @ForwardDeclareEnum(ElementalSkillType)
 ForwardElementalSkillType :: _;
 
-// TODO(randy): Turn x-macros into global data that gets auto-serialised
-// NOTE(randy): Would that be overcomplicating x-macros? I think it would be fine because it is for the data oriented principal of having good data localisation, as in everything is in the one spot.
-
 @XMacro
 ElementalSkillTypeData :: struct
 {
 	print_name : char[20];
+	cost : i32;
 	child_skills : ElementalSkillType[MAX_CHILD_SKILLS];
 	skill_image : StaticSprite;
 }
 @XMacro
 ElementalSkillType :: enum
 {
-	@Data("'none'", 0, 0)
+	@Data("'none'", 0, 0, 0)
 		none,
-	@Data("'Hand Flame'", "{ ELEMENTAL_SKILL_TYPE_hand_flame_2, ELEMENTAL_SKILL_TYPE_hand_flame_3 }", STATIC_SPRITE_test_icon)
+	@Data("'Hand Flame'", 3, "{ ELEMENTAL_SKILL_TYPE_hand_flame_2, ELEMENTAL_SKILL_TYPE_hand_flame_3 }", STATIC_SPRITE_test_icon)
 		hand_flame,
-	@Data("'Hand Flame 2'", 0, 0)
+	@Data("'Hand Flame 2'", 4, 0, 0)
 		hand_flame_2,
-	@Data("'Hand Flame 3'", 0, 0)
+	@Data("'Hand Flame 3'", 5, 0, 0)
 		hand_flame_3,
 	/*
 		@Data("'Hand Flame 4'", 0)
@@ -631,6 +629,8 @@ MAX_INVENTORY_SLOTS :: 9;
 MAX_SPELL_SLOTS :: 8
 MAX_EQUIPMENT_SLOTS :: 6
 
+//~Entity
+
 @SerialisableStruct
 Entity :: struct
 {
@@ -716,7 +716,7 @@ CharacterData :: struct
 	
 	equipment_slots : Item[MAX_EQUIPMENT_SLOTS];
 	
-	unlocked_elemental_skills : ElementalSkillTypeData[ELEMENTAL_SKILL_TYPE_MAX];
+	unlocked_elemental_skills : b8[ELEMENTAL_SKILL_TYPE_MAX];
 	purchased_elemental_skills : ElementalSkillType[ELEMENTAL_SKILL_TYPE_MAX];
 	elemental_skill_points : i32;
 }

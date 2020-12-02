@@ -107,14 +107,47 @@ internal void ElementalSkillTreeUIDraw()
 	}
 }
 
+internal b8 IsElementalSkillUnlocked(ElementalSkillType skill_type)
+{
+	return GetCharacterData()->unlocked_elemental_skills[skill_type];
+}
+
+internal void SetElementalSkillUnlocked(ElementalSkillType skill_type)
+{
+	GetCharacterData()->unlocked_elemental_skills[skill_type] = 1;
+}
+
+internal b8 IsElementalSkillPurchased(ElementalSkillType skill_type)
+{
+	return GetCharacterData()->purchased_elemental_skills[skill_type];
+}
+
+internal b8 PurchaseElementalSkill(ElementalSkillType skill_type)
+{
+	ElementalSkillTypeData *skill_data = &global_elemental_skill_type_data[skill_type];
+	
+	if (GetCharacterData()->elemental_skill_points - skill_data->cost >= 0)
+	{
+		GetCharacterData()->purchased_elemental_skills[skill_type] = 1;
+		return 1;
+	}
+	
+	return 0;
+}
+
 internal ElementalSkillTreeUpdate()
 {
 	// NOTE(randy): All elemental skills that require some sort of update and tick functionality will be put here in this big chungus motherfucker of a function
 	
-	// TODO(randy): x-macro shit in .ds Skill Tree
-	
 	if (1) // NOTE(randy): Some condition is met that would unlock a skill
 	{
-		// unlocked_elemental_skills[ELEMENTAL_SKILL_hand_flame];
+		SetElementalSkillUnlocked(ELEMENTAL_SKILL_TYPE_hand_flame);
+		
+		PurchaseElementalSkill(ELEMENTAL_SKILL_TYPE_hand_flame);
+	}
+	
+	if (IsElementalSkillPurchased(ELEMENTAL_SKILL_TYPE_hand_flame) && platform->key_pressed[KEY_u])
+	{
+		GetCharacterEntity()->sprite_data.tint = v4u(0.5f);
 	}
 }

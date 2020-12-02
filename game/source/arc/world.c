@@ -37,6 +37,8 @@ internal void WorldUpdate()
 	
 	if ((core->world_delta_t == 0.0f ? (core->run_data->debug_flags & DEBUG_FLAGS_manual_step) : 1))
 	{
+		ElementalSkillTreeUpdate();
+		
 		UpdateCells();
 		
 		PreMoveUpdatePlayer();

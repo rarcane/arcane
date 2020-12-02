@@ -502,3 +502,8 @@ internal void ReadFromFile(FILE *file, void *data, size_t size_bytes)
 		Assert(ferror(file) == 0);
 	}
 }
+
+internal CharacterData *GetCharacterData()
+{
+	return &core->run_data->character_data;
+}
