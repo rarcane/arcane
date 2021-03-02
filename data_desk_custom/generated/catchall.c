@@ -751,17 +751,11 @@ break;
 
 static void WriteEntityToFile(FILE *file, Entity *data)
 {
-    for (i32 i = 0; i < ENTITY_PROPERTY_SIZE; i++)
-    {
-        WriteToFile(file, &data->properties[i], sizeof(u64));
-    }
+    WriteElementsToFile(file, &data->properties[0], sizeof(u64), ENTITY_PROPERTY_SIZE);
 
     WriteToFile(file, &data->testint, sizeof(data->testint));
 
-    for (i32 i = 0; i < 100; i++)
-    {
-        WriteToFile(file, &data->debug_name[i], sizeof(char));
-    }
+    WriteElementsToFile(file, &data->debug_name[0], sizeof(char), 100);
 
     WriteToFile(file, &data->position, sizeof(data->position));
 
@@ -795,10 +789,7 @@ static void WriteEntityToFile(FILE *file, Entity *data)
 
     WriteToFile(file, &data->item, sizeof(data->item));
 
-    for (i32 i = 0; i < MAX_ENCHANTMENTS; i++)
-    {
-        WriteToFile(file, &data->enchamtnets[i], sizeof(Enchantment));
-    }
+    WriteElementsToFile(file, &data->enchamtnets[0], sizeof(Enchantment), MAX_ENCHANTMENTS);
 
     WriteToFile(file, &data->parallax_amount, sizeof(data->parallax_amount));
 
@@ -808,10 +799,7 @@ static void WriteEntityToFile(FILE *file, Entity *data)
 
     WriteToFile(file, &data->structure_type, sizeof(data->structure_type));
 
-    for (i32 i = 0; i < MAX_ITEMS_IN_BLUEPRINT_RECIPE; i++)
-    {
-        WriteToFile(file, &data->remaining_items_in_blueprint[i], sizeof(Item));
-    }
+    WriteElementsToFile(file, &data->remaining_items_in_blueprint[0], sizeof(Item), MAX_ITEMS_IN_BLUEPRINT_RECIPE);
 
     WriteToFile(file, &data->durability, sizeof(data->durability));
 
@@ -819,17 +807,11 @@ static void WriteEntityToFile(FILE *file, Entity *data)
 
 static void ReadEntityFromFile(FILE *file, Entity *data)
 {
-    for (i32 i = 0; i < ENTITY_PROPERTY_SIZE; i++)
-    {
-        ReadFromFile(file, &data->properties[i], sizeof(u64));
-    }
+    ReadElementsFromFile(file, &data->properties[0], sizeof(u64), ENTITY_PROPERTY_SIZE);
 
     ReadFromFile(file, &data->testint, sizeof(data->testint));
 
-    for (i32 i = 0; i < 100; i++)
-    {
-        ReadFromFile(file, &data->debug_name[i], sizeof(char));
-    }
+    ReadElementsFromFile(file, &data->debug_name[0], sizeof(char), 100);
 
     ReadFromFile(file, &data->position, sizeof(data->position));
 
@@ -863,10 +845,7 @@ static void ReadEntityFromFile(FILE *file, Entity *data)
 
     ReadFromFile(file, &data->item, sizeof(data->item));
 
-    for (i32 i = 0; i < MAX_ENCHANTMENTS; i++)
-    {
-        ReadFromFile(file, &data->enchamtnets[i], sizeof(Enchantment));
-    }
+    ReadElementsFromFile(file, &data->enchamtnets[0], sizeof(Enchantment), MAX_ENCHANTMENTS);
 
     ReadFromFile(file, &data->parallax_amount, sizeof(data->parallax_amount));
 
@@ -876,10 +855,7 @@ static void ReadEntityFromFile(FILE *file, Entity *data)
 
     ReadFromFile(file, &data->structure_type, sizeof(data->structure_type));
 
-    for (i32 i = 0; i < MAX_ITEMS_IN_BLUEPRINT_RECIPE; i++)
-    {
-        ReadFromFile(file, &data->remaining_items_in_blueprint[i], sizeof(Item));
-    }
+    ReadElementsFromFile(file, &data->remaining_items_in_blueprint[0], sizeof(Item), MAX_ITEMS_IN_BLUEPRINT_RECIPE);
 
     ReadFromFile(file, &data->durability, sizeof(data->durability));
 
@@ -887,17 +863,11 @@ static void ReadEntityFromFile(FILE *file, Entity *data)
 
 static void WriteCharacterDataToFile(FILE *file, CharacterData *data)
 {
-    for (i32 i = 0; i < MAX_INVENTORY_SLOTS; i++)
-    {
-        WriteToFile(file, &data->inventory[i], sizeof(Item));
-    }
+    WriteElementsToFile(file, &data->inventory[0], sizeof(Item), MAX_INVENTORY_SLOTS);
 
     WriteToFile(file, &data->inventory_size, sizeof(data->inventory_size));
 
-    for (i32 i = 0; i < MAX_HOTBAR_SLOTS; i++)
-    {
-        WriteToFile(file, &data->hotbar[i], sizeof(Item));
-    }
+    WriteElementsToFile(file, &data->hotbar[0], sizeof(Item), MAX_HOTBAR_SLOTS);
 
     WriteToFile(file, &data->hotbar_size, sizeof(data->hotbar_size));
 
@@ -907,27 +877,15 @@ static void WriteCharacterDataToFile(FILE *file, CharacterData *data)
 
     WriteToFile(file, &data->grabbed_item_offset, sizeof(data->grabbed_item_offset));
 
-    for (i32 i = 0; i < MAX_SPELL_SLOTS; i++)
-    {
-        WriteToFile(file, &data->freehand_spell_slots[i], sizeof(Spell));
-    }
+    WriteElementsToFile(file, &data->freehand_spell_slots[0], sizeof(Spell), MAX_SPELL_SLOTS);
 
     WriteToFile(file, &data->freehand_spell_count, sizeof(data->freehand_spell_count));
 
-    for (i32 i = 0; i < MAX_EQUIPMENT_SLOTS; i++)
-    {
-        WriteToFile(file, &data->equipment_slots[i], sizeof(Item));
-    }
+    WriteElementsToFile(file, &data->equipment_slots[0], sizeof(Item), MAX_EQUIPMENT_SLOTS);
 
-    for (i32 i = 0; i < ELEMENTAL_SKILL_TYPE_MAX; i++)
-    {
-        WriteToFile(file, &data->unlocked_elemental_skills[i], sizeof(b8));
-    }
+    WriteElementsToFile(file, &data->unlocked_elemental_skills[0], sizeof(b8), ELEMENTAL_SKILL_TYPE_MAX);
 
-    for (i32 i = 0; i < ELEMENTAL_SKILL_TYPE_MAX; i++)
-    {
-        WriteToFile(file, &data->purchased_elemental_skills[i], sizeof(ElementalSkillType));
-    }
+    WriteElementsToFile(file, &data->purchased_elemental_skills[0], sizeof(ElementalSkillType), ELEMENTAL_SKILL_TYPE_MAX);
 
     WriteToFile(file, &data->elemental_skill_points, sizeof(data->elemental_skill_points));
 
@@ -935,17 +893,11 @@ static void WriteCharacterDataToFile(FILE *file, CharacterData *data)
 
 static void ReadCharacterDataFromFile(FILE *file, CharacterData *data)
 {
-    for (i32 i = 0; i < MAX_INVENTORY_SLOTS; i++)
-    {
-        ReadFromFile(file, &data->inventory[i], sizeof(Item));
-    }
+    ReadElementsFromFile(file, &data->inventory[0], sizeof(Item), MAX_INVENTORY_SLOTS);
 
     ReadFromFile(file, &data->inventory_size, sizeof(data->inventory_size));
 
-    for (i32 i = 0; i < MAX_HOTBAR_SLOTS; i++)
-    {
-        ReadFromFile(file, &data->hotbar[i], sizeof(Item));
-    }
+    ReadElementsFromFile(file, &data->hotbar[0], sizeof(Item), MAX_HOTBAR_SLOTS);
 
     ReadFromFile(file, &data->hotbar_size, sizeof(data->hotbar_size));
 
@@ -955,27 +907,15 @@ static void ReadCharacterDataFromFile(FILE *file, CharacterData *data)
 
     ReadFromFile(file, &data->grabbed_item_offset, sizeof(data->grabbed_item_offset));
 
-    for (i32 i = 0; i < MAX_SPELL_SLOTS; i++)
-    {
-        ReadFromFile(file, &data->freehand_spell_slots[i], sizeof(Spell));
-    }
+    ReadElementsFromFile(file, &data->freehand_spell_slots[0], sizeof(Spell), MAX_SPELL_SLOTS);
 
     ReadFromFile(file, &data->freehand_spell_count, sizeof(data->freehand_spell_count));
 
-    for (i32 i = 0; i < MAX_EQUIPMENT_SLOTS; i++)
-    {
-        ReadFromFile(file, &data->equipment_slots[i], sizeof(Item));
-    }
+    ReadElementsFromFile(file, &data->equipment_slots[0], sizeof(Item), MAX_EQUIPMENT_SLOTS);
 
-    for (i32 i = 0; i < ELEMENTAL_SKILL_TYPE_MAX; i++)
-    {
-        ReadFromFile(file, &data->unlocked_elemental_skills[i], sizeof(b8));
-    }
+    ReadElementsFromFile(file, &data->unlocked_elemental_skills[0], sizeof(b8), ELEMENTAL_SKILL_TYPE_MAX);
 
-    for (i32 i = 0; i < ELEMENTAL_SKILL_TYPE_MAX; i++)
-    {
-        ReadFromFile(file, &data->purchased_elemental_skills[i], sizeof(ElementalSkillType));
-    }
+    ReadElementsFromFile(file, &data->purchased_elemental_skills[0], sizeof(ElementalSkillType), ELEMENTAL_SKILL_TYPE_MAX);
 
     ReadFromFile(file, &data->elemental_skill_points, sizeof(data->elemental_skill_points));
 
