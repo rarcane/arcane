@@ -756,12 +756,12 @@ static void WriteEntityToFile(FILE *file, Entity *data)
     WriteToFile(file, &data->testint, sizeof(data->testint));
 
     //WriteElementsToFile(file, &data->debug_name[0], sizeof(char), 100); <--If below code shits the bed
-    //If you change this, make sure to change it in WriteEntityToFile as well
+    //If you change this, make sure to change it in ReadEntityFromFile as well
     //Note(to randy): Reads the debug_name until a null character (string end)
     i32 i = 0;
     do
     {
-        ReadFromFile(file, &data->debug_name[i], sizeof(char));
+        WriteToFile(file, &data->debug_name[i], sizeof(char));
     } while(&data->debug_name[i] && ++i < 100);
 
     WriteToFile(file, &data->position, sizeof(data->position));
