@@ -294,30 +294,6 @@ internal void GenerateTestPlatform()
 		}
 	}
 	
-	// NOTE(randy): $Ron
-	{
-		Entity *entity = NewEntity();
-		EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-		EntitySetProperty(entity, ENTITY_PROPERTY_interactable);
-		EntitySetProperty(entity, ENTITY_PROPERTY_interactable_left_click);
-		EntitySetProperty(entity, ENTITY_PROPERTY_queryable);
-		EntitySetProperty(entity, ENTITY_PROPERTY_enemy);
-		
-		entity->position = v2(-120.0f, -5.0f);
-		entity->sprite_data.static_sprite = STATIC_SPRITE_dummy;
-		entity->sprite_data.render_layer = 0.5f;
-		entity->sprite_data.scale = v2(0.1f, 0.1f);
-		
-		entity->priority = 2.0f;
-		
-		entity->durability = 30.0f;
-		
-		entity->physics.shape.aabb.min = c2V(-10.0f, 0.0f);
-		entity->physics.shape.aabb.max = c2V(10.0f, 40.0f);
-		entity->physics.shape_type = C2_SHAPE_TYPE_aabb;
-	}
-	
-	// NOTE(randy): runic enchanter
 	{
 		Entity *entity = NewEntity();
 		EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
@@ -332,6 +308,31 @@ internal void GenerateTestPlatform()
 		
 		entity->physics.shape.aabb.min = c2V(-10.0f, 0.0f);
 		entity->physics.shape.aabb.max = c2V(10.0f, 20.0f);
+		entity->physics.shape_type = C2_SHAPE_TYPE_aabb;
+	}
+	
+	{
+		Entity *entity = NewEntity();
+		EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+		EntitySetProperty(entity, ENTITY_PROPERTY_interactable);
+		EntitySetProperty(entity, ENTITY_PROPERTY_interactable_left_click);
+		EntitySetProperty(entity, ENTITY_PROPERTY_queryable);
+		EntitySetProperty(entity, ENTITY_PROPERTY_enemy);
+		
+		char nm[100] = "big ron";
+		strncpy(entity->debug_name, nm, sizeof(nm));
+		
+		entity->position = v2(-120.0f, -5.0f);
+		entity->sprite_data.static_sprite = STATIC_SPRITE_dummy;
+		entity->sprite_data.render_layer = 0.5f;
+		entity->sprite_data.scale = v2(0.1f, 0.1f);
+		
+		entity->priority = 2.0f;
+		
+		entity->durability = 30.0f;
+		
+		entity->physics.shape.aabb.min = c2V(-10.0f, 0.0f);
+		entity->physics.shape.aabb.max = c2V(10.0f, -40.0f);
 		entity->physics.shape_type = C2_SHAPE_TYPE_aabb;
 	}
 	
@@ -354,468 +355,480 @@ internal void GenerateTestPlatform()
 		entity->physics.shape_type = C2_SHAPE_TYPE_aabb;
 	}
 	
+	
 	// NOTE(randy): $Generate background stuff
-	{
-		// NOTE(randy): $Trees
-		for (i32 i = 10; i < 200; i += 10)
+	/*
 		{
-			if (RandomI32(0, 3))
+			// NOTE(randy): $Trees
+			
+			for (i32 i = 10; i < 200; i += 10)
 			{
-				i32 height = height_map[i];
-				i32 x_pos = i * 10 - width / 2 + 10;
-				
+				if (RandomI32(0, 3))
+				{
+					i32 height = height_map[i];
+					i32 x_pos = i * 10 - width / 2 + 10;
+					
+					Entity *entity = NewEntity();
+					EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+					EntitySetProperty(entity, ENTITY_PROPERTY_interactable);
+					EntitySetProperty(entity, ENTITY_PROPERTY_interactable_left_click);
+					EntitySetProperty(entity, ENTITY_PROPERTY_queryable);
+					EntitySetProperty(entity, ENTITY_PROPERTY_lumber_axable);
+					
+					entity->position = v2((f32)x_pos, (f32)height + 1);
+					entity->sprite_data.static_sprite = STATIC_SPRITE_pine_tree_v1;
+					entity->sprite_data.render_layer = LAYER_TREE;
+					
+					entity->priority = 2.0f;
+					
+					entity->durability = 30.0f;
+					
+					entity->physics.shape.aabb.min = c2V(-3.0f, 0.0f);
+					entity->physics.shape.aabb.max = c2V(3.0f, 50.0f);
+					entity->physics.shape_type = C2_SHAPE_TYPE_aabb;
+				}
+			}
+			
+			
+			// NOTE(randy): $Hill layer 1
+			
+			{
 				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
 				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-				EntitySetProperty(entity, ENTITY_PROPERTY_interactable);
-				EntitySetProperty(entity, ENTITY_PROPERTY_interactable_left_click);
-				EntitySetProperty(entity, ENTITY_PROPERTY_queryable);
-				EntitySetProperty(entity, ENTITY_PROPERTY_lumber_axable);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 				
-				entity->position = v2((f32)x_pos, (f32)height + 1);
-				entity->sprite_data.static_sprite = STATIC_SPRITE_pine_tree_v1;
-				entity->sprite_data.render_layer = LAYER_TREE;
+				entity->position = v2(0, 0);
 				
-				entity->priority = 2.0f;
+				entity->desired_position = v2(-458.0f, 0.0f);
+				entity->parallax_amount = HILLS_1_PARALLAX;
 				
-				entity->durability = 30.0f;
+				entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v2;
+				entity->sprite_data.render_layer = LAYER_HILL_1;
+			}
+			{
+				Entity *entity = NewEntity("Hills", GENERALISED_ENTITY_TYPE_scenic);
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
 				
-				entity->physics.shape.aabb.min = c2V(-3.0f, 0.0f);
-				entity->physics.shape.aabb.max = c2V(3.0f, 50.0f);
-				entity->physics.shape_type = C2_SHAPE_TYPE_aabb;
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(-272.0f, 0.0f);
+				entity->parallax_amount = HILLS_1_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v1;
+				entity->sprite_data.render_layer = LAYER_HILL_1;
+			}
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(-93.0f, 0.0f);
+				entity->parallax_amount = HILLS_1_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v2;
+				entity->sprite_data.render_layer = LAYER_HILL_1;
+			}
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(93.0f, 0.0f);
+				entity->parallax_amount = HILLS_1_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v1;
+				entity->sprite_data.render_layer = LAYER_HILL_1;
+			}
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(272.0f, 0.0f);
+				entity->parallax_amount = HILLS_1_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v2;
+				entity->sprite_data.render_layer = LAYER_HILL_1;
+			}
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(458.0f, 0.0f);
+				entity->parallax_amount = HILLS_1_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v1;
+				entity->sprite_data.render_layer = LAYER_HILL_1;
+			}
+			
+			
+			// NOTE(randy): $bg trees 1
+			
+			for (i32 x = width / -2 + 500; x < width / 2 - 500; x += RandomI32(80, 150))
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2((f32)x, 0.0f);
+				entity->parallax_amount = BG_TREE_1_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg1_pine_tree_v1 + RandomI32(0, 1);
+				entity->sprite_data.render_layer = LAYER_BG_TREE_1;
+				entity->is_flipped = RandomI32(0, 1);
+			}
+			
+			// NOTE(randy): $bg shrubs 1
+			for (i32 x = width / -2 + 500; x < width / 2 - 500; x += RandomI32(40, 120))
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2((f32)x, 0.0f);
+				entity->parallax_amount = BG_SHRUB_1_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg1_shrub_v1 + RandomI32(0, 2);
+				entity->sprite_data.render_layer = LAYER_BG_SHRUBS_1;
+				entity->is_flipped = RandomI32(0, 1);
+			}
+			
+			// NOTE(randy): $bg saplings 1
+			for (i32 x = width / -2 + 500; x < width / 2 - 500; x += RandomI32(30, 90))
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2((f32)x, 0.0f);
+				entity->parallax_amount = BG_SAPLING_1_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg1_sapling_v1 + RandomI32(0, 2);
+				entity->sprite_data.render_layer = LAYER_BG_SAPLINGS_1;
+				entity->is_flipped = RandomI32(0, 1);
+			}
+			
+			
+			// NOTE(randy): $Hill layer 2
+			
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(-500, 0.0f);
+				entity->parallax_amount = HILLS_2_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
+				entity->sprite_data.render_layer = LAYER_HILL_2;
+			}
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(-300.0f, 0.0f);
+				entity->parallax_amount = HILLS_2_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
+				entity->sprite_data.render_layer = LAYER_HILL_2;
+			}
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(-100, 0.0f);
+				entity->parallax_amount = HILLS_2_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
+				entity->sprite_data.render_layer = LAYER_HILL_2;
+			}
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(100, 0.0f);
+				entity->parallax_amount = HILLS_2_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
+				entity->sprite_data.render_layer = LAYER_HILL_2;
+			}
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(300, 0);
+				entity->parallax_amount = HILLS_2_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
+				entity->sprite_data.render_layer = LAYER_HILL_2;
+			}
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(500, 0.0f);
+				entity->parallax_amount = HILLS_2_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
+				entity->sprite_data.render_layer = LAYER_HILL_2;
+			}
+			
+			
+			// NOTE(randy): $bg trees 2
+			
+			for (i32 x = width / -2 + 450; x < width / 2 - 450; x += RandomI32(80, 150))
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2((f32)x, 0.0f);
+				entity->parallax_amount = BG_TREE_2_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_pine_tree_v1 + RandomI32(0, 1);
+				entity->sprite_data.render_layer = LAYER_BG_TREES_2;
+				entity->is_flipped = RandomI32(0, 1);
+			}
+			
+			// NOTE(randy): $bg shrubs 2
+			for (i32 x = width / -2 + 450; x < width / 2 - 450; x += RandomI32(40, 120))
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2((f32)x, 0.0f);
+				entity->parallax_amount = BG_SHRUB_2_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_shrub_v1 + RandomI32(0, 2);
+				entity->sprite_data.render_layer = LAYER_BG_SHRUBS_2;
+				entity->is_flipped = RandomI32(0, 1);
+			}
+			
+			// NOTE(randy): $Hill layer 3
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(-500.0f, 0.0f);
+				entity->parallax_amount = HILLS_3_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
+				entity->sprite_data.render_layer = LAYER_HILLS_3;
+			}
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(-300.0f, 0.0f);
+				entity->parallax_amount = HILLS_3_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
+				entity->sprite_data.render_layer = LAYER_HILLS_3;
+			}
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(-100, 0.0f);
+				entity->parallax_amount = HILLS_3_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
+				entity->sprite_data.render_layer = LAYER_HILLS_3;
+			}
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(100, 0.0f);
+				entity->parallax_amount = HILLS_3_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
+				entity->sprite_data.render_layer = LAYER_HILLS_3;
+			}
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(300, 0);
+				entity->parallax_amount = HILLS_3_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
+				entity->sprite_data.render_layer = LAYER_HILLS_3;
+			}
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(-500.0f, 0.0f);
+				entity->parallax_amount = HILLS_3_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
+				entity->sprite_data.render_layer = LAYER_HILLS_3;
+			}
+			
+			// NOTE(randy): $bg trees 3
+			for (i32 x = width / -2 + 500; x < width / 2 - 650; x += RandomI32(30, 50))
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2((f32)x, 0.0f);
+				entity->parallax_amount = BG_TREE_3_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_pine_tree_v1 + RandomI32(0, 7);
+				entity->sprite_data.render_layer = LAYER_BG_TREES_3;
+				entity->is_flipped = RandomI32(0, 1);
+			}
+			
+			// NOTE(randy): $bg shrubs 3
+			for (i32 x = width / -2 + 500; x < width / 2 - 650; x += RandomI32(40, 120))
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2((f32)x, 0.0f);
+				entity->parallax_amount = BG_SHRUB_3_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_shrub_v1 + RandomI32(0, 3);
+				entity->sprite_data.render_layer = LAYER_BG_SHRUBS_3;
+				entity->is_flipped = RandomI32(0, 1);
+			}
+			
+			// NOTE(randy): $mid mountains
+			for (i32 x = -1; x < 2; x++)
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2((f32)x * 500, 0.0f);
+				entity->parallax_amount = MID_MOUNTAINS_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_mid_mountains;
+				entity->sprite_data.render_layer = LAYER_MID_MOUNTAINS;
+			}
+			
+			// NOTE(randy): $far mountains
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(-300, 0.0f);
+				entity->parallax_amount = FAR_MOUNTAINS_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_far_mountains;
+				entity->sprite_data.render_layer = LAYER_FAR_MOUNTAINS;
+			}
+			{
+				Entity *entity = NewEntity();
+				EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
+				EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+				EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+				
+				entity->position = v2(0, 0);
+				
+				entity->desired_position = v2(300, 0.0f);
+				entity->parallax_amount = FAR_MOUNTAINS_PARALLAX;
+				
+				entity->sprite_data.static_sprite = STATIC_SPRITE_far_mountains;
+				entity->sprite_data.render_layer = LAYER_FAR_MOUNTAINS;
 			}
 		}
-		
-		// NOTE(randy): $Hill layer 1
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(-458.0f, 0.0f);
-			entity->parallax_amount = HILLS_1_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v2;
-			entity->sprite_data.render_layer = LAYER_HILL_1;
-		}
-		{
-			Entity *entity = NewEntity("Hills", GENERALISED_ENTITY_TYPE_scenic);
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(-272.0f, 0.0f);
-			entity->parallax_amount = HILLS_1_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v1;
-			entity->sprite_data.render_layer = LAYER_HILL_1;
-		}
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(-93.0f, 0.0f);
-			entity->parallax_amount = HILLS_1_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v2;
-			entity->sprite_data.render_layer = LAYER_HILL_1;
-		}
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(93.0f, 0.0f);
-			entity->parallax_amount = HILLS_1_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v1;
-			entity->sprite_data.render_layer = LAYER_HILL_1;
-		}
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(272.0f, 0.0f);
-			entity->parallax_amount = HILLS_1_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v2;
-			entity->sprite_data.render_layer = LAYER_HILL_1;
-		}
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(458.0f, 0.0f);
-			entity->parallax_amount = HILLS_1_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_hills_1_v1;
-			entity->sprite_data.render_layer = LAYER_HILL_1;
-		}
-		
-		// NOTE(randy): $bg trees 1
-		for (i32 x = width / -2 + 500; x < width / 2 - 500; x += RandomI32(80, 150))
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2((f32)x, 0.0f);
-			entity->parallax_amount = BG_TREE_1_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg1_pine_tree_v1 + RandomI32(0, 1);
-			entity->sprite_data.render_layer = LAYER_BG_TREE_1;
-			entity->is_flipped = RandomI32(0, 1);
-		}
-		
-		// NOTE(randy): $bg shrubs 1
-		for (i32 x = width / -2 + 500; x < width / 2 - 500; x += RandomI32(40, 120))
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2((f32)x, 0.0f);
-			entity->parallax_amount = BG_SHRUB_1_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg1_shrub_v1 + RandomI32(0, 2);
-			entity->sprite_data.render_layer = LAYER_BG_SHRUBS_1;
-			entity->is_flipped = RandomI32(0, 1);
-		}
-		
-		// NOTE(randy): $bg saplings 1
-		for (i32 x = width / -2 + 500; x < width / 2 - 500; x += RandomI32(30, 90))
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2((f32)x, 0.0f);
-			entity->parallax_amount = BG_SAPLING_1_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg1_sapling_v1 + RandomI32(0, 2);
-			entity->sprite_data.render_layer = LAYER_BG_SAPLINGS_1;
-			entity->is_flipped = RandomI32(0, 1);
-		}
-		
-		// NOTE(randy): $Hill layer 2
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(-500, 0.0f);
-			entity->parallax_amount = HILLS_2_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
-			entity->sprite_data.render_layer = LAYER_HILL_2;
-		}
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(-300.0f, 0.0f);
-			entity->parallax_amount = HILLS_2_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
-			entity->sprite_data.render_layer = LAYER_HILL_2;
-		}
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(-100, 0.0f);
-			entity->parallax_amount = HILLS_2_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
-			entity->sprite_data.render_layer = LAYER_HILL_2;
-		}
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(100, 0.0f);
-			entity->parallax_amount = HILLS_2_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
-			entity->sprite_data.render_layer = LAYER_HILL_2;
-		}
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(300, 0);
-			entity->parallax_amount = HILLS_2_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
-			entity->sprite_data.render_layer = LAYER_HILL_2;
-		}
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(500, 0.0f);
-			entity->parallax_amount = HILLS_2_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_hills_v1;
-			entity->sprite_data.render_layer = LAYER_HILL_2;
-		}
-		
-		// NOTE(randy): $bg trees 2
-		for (i32 x = width / -2 + 450; x < width / 2 - 450; x += RandomI32(80, 150))
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2((f32)x, 0.0f);
-			entity->parallax_amount = BG_TREE_2_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_pine_tree_v1 + RandomI32(0, 1);
-			entity->sprite_data.render_layer = LAYER_BG_TREES_2;
-			entity->is_flipped = RandomI32(0, 1);
-		}
-		
-		// NOTE(randy): $bg shrubs 2
-		for (i32 x = width / -2 + 450; x < width / 2 - 450; x += RandomI32(40, 120))
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2((f32)x, 0.0f);
-			entity->parallax_amount = BG_SHRUB_2_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg2_shrub_v1 + RandomI32(0, 2);
-			entity->sprite_data.render_layer = LAYER_BG_SHRUBS_2;
-			entity->is_flipped = RandomI32(0, 1);
-		}
-		
-		// NOTE(randy): $Hill layer 3
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(-500.0f, 0.0f);
-			entity->parallax_amount = HILLS_3_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
-			entity->sprite_data.render_layer = LAYER_HILLS_3;
-		}
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(-300.0f, 0.0f);
-			entity->parallax_amount = HILLS_3_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
-			entity->sprite_data.render_layer = LAYER_HILLS_3;
-		}
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(-100, 0.0f);
-			entity->parallax_amount = HILLS_3_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
-			entity->sprite_data.render_layer = LAYER_HILLS_3;
-		}
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(100, 0.0f);
-			entity->parallax_amount = HILLS_3_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
-			entity->sprite_data.render_layer = LAYER_HILLS_3;
-		}
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(300, 0);
-			entity->parallax_amount = HILLS_3_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
-			entity->sprite_data.render_layer = LAYER_HILLS_3;
-		}
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(-500.0f, 0.0f);
-			entity->parallax_amount = HILLS_3_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_hills_v1;
-			entity->sprite_data.render_layer = LAYER_HILLS_3;
-		}
-		
-		// NOTE(randy): $bg trees 3
-		for (i32 x = width / -2 + 500; x < width / 2 - 650; x += RandomI32(30, 50))
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2((f32)x, 0.0f);
-			entity->parallax_amount = BG_TREE_3_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_pine_tree_v1 + RandomI32(0, 7);
-			entity->sprite_data.render_layer = LAYER_BG_TREES_3;
-			entity->is_flipped = RandomI32(0, 1);
-		}
-		
-		// NOTE(randy): $bg shrubs 3
-		for (i32 x = width / -2 + 500; x < width / 2 - 650; x += RandomI32(40, 120))
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2((f32)x, 0.0f);
-			entity->parallax_amount = BG_SHRUB_3_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_bg3_shrub_v1 + RandomI32(0, 3);
-			entity->sprite_data.render_layer = LAYER_BG_SHRUBS_3;
-			entity->is_flipped = RandomI32(0, 1);
-		}
-		
-		// NOTE(randy): $mid mountains
-		for (i32 x = -1; x < 2; x++)
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2((f32)x * 500, 0.0f);
-			entity->parallax_amount = MID_MOUNTAINS_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_mid_mountains;
-			entity->sprite_data.render_layer = LAYER_MID_MOUNTAINS;
-		}
-		
-		// NOTE(randy): $far mountains
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(-300, 0.0f);
-			entity->parallax_amount = FAR_MOUNTAINS_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_far_mountains;
-			entity->sprite_data.render_layer = LAYER_FAR_MOUNTAINS;
-		}
-		{
-			Entity *entity = NewEntity();
-			EntitySetProperty(entity, ENTITY_PROPERTY_force_floating);
-			EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
-			EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
-			
-			entity->position = v2(0, 0);
-			
-			entity->desired_position = v2(300, 0.0f);
-			entity->parallax_amount = FAR_MOUNTAINS_PARALLAX;
-			
-			entity->sprite_data.static_sprite = STATIC_SPRITE_far_mountains;
-			entity->sprite_data.render_layer = LAYER_FAR_MOUNTAINS;
-		}
-	}
+	 */
 }
 
 internal b8 CreateWorld(char *world_name)
@@ -845,8 +858,6 @@ internal b8 CreateWorld(char *world_name)
 		strcpy(core->run_data->world_chunks_path, chunks_path);
 		InitialiseRunData();
 	}
-	
-	GenerateTestPlatform();
 	
 	// NOTE(randy): Initialise the player
 	{
@@ -914,6 +925,8 @@ internal b8 CreateWorld(char *world_name)
 		character_data->freehand_spell_slots[0].type = SPELL_TYPE_fireball;
 		character_data->freehand_spell_slots[1].type = SPELL_TYPE_yeet;
 	}
+	
+	// GenerateTestPlatform();
 	
 	// FillChunkEntities();
 	

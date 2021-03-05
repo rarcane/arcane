@@ -1,6 +1,8 @@
 internal Entity *NewEntity();
 internal void DeleteEntity(Entity *entity);
 
+
+
 internal b32 EntityHasProperty(Entity *entity, EntityProperty property);
 internal void EntitySetProperty(Entity *entity, EntityProperty property);
 internal void EntityUnsetProperty(Entity *entity, EntityProperty property);

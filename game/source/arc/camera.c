@@ -13,19 +13,19 @@ static void TransformEditorCamera()
 	
 	if (platform->key_down[KEY_a])
 	{
-		core->camera_position.x += 600.0f * transform_mult / core->camera_zoom * core->delta_t;
+		core->camera_position.x -= 600.0f * transform_mult / core->camera_zoom * core->delta_t;
 	}
 	else if (platform->key_down[KEY_d])
 	{
-		core->camera_position.x -= 600.0f * transform_mult / core->camera_zoom * core->delta_t;
+		core->camera_position.x += 600.0f * transform_mult / core->camera_zoom * core->delta_t;
 	}
 	if (platform->key_down[KEY_w])
 	{
-		core->camera_position.y += 600.0f * transform_mult / core->camera_zoom * core->delta_t;
+		core->camera_position.y -= 600.0f * transform_mult / core->camera_zoom * core->delta_t;
 	}
 	else if (platform->key_down[KEY_s])
 	{
-		core->camera_position.y -= 600.0f * transform_mult / core->camera_zoom * core->delta_t;
+		core->camera_position.y += 600.0f * transform_mult / core->camera_zoom * core->delta_t;
 	}
 }
 

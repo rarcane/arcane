@@ -92,7 +92,7 @@ internal void RenderSprites()
 						   0,
 						   v4(source_pos.x, source_pos.y, dynamic_sprite->source.z - 0.5f, dynamic_sprite->source.w - 0.5f),
 						   v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-						   (core->run_data->editor_state && entity == core->run_data->entity_editor.selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), entity->sprite_data.tint) : entity->sprite_data.tint),
+						   (core->run_data->editor_state && entity == core->run_data->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), entity->sprite_data.tint) : entity->sprite_data.tint),
 						   entity->sprite_data.render_layer);
 		}
 		else if (entity->sprite_data.static_sprite)

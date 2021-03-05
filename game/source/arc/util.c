@@ -209,6 +209,13 @@ internal void AddPositionOffsetToShape(c2Shape *shape, c2ShapeType shape_type, v
 	}
 }
 
+internal c2Shape GetEntityShapeInWorldspace(Entity *entity)
+{
+	c2Shape shape = entity->physics.shape;
+	AddPositionOffsetToShape(&shape, entity->physics.shape_type, entity->position);
+	return shape;
+}
+
 internal void CapsuleToWorldSpace(c2Capsule *capsule, v2 world_space)
 {
 	capsule->a.x += world_space.x;
@@ -402,27 +409,11 @@ internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v3 co
 		} break;
 	}
 }
-
-/* internal void PushDebugShapeForDuration(Shape shape, v2 position, v3 colour, f32 lifetime)
-{
-	for (int i = 0; i < shape.vertex_count; i++)
-	{
-		int secondPoint = (i == shape.vertex_count - 1 ? 0 : i + 1);
-
-		v2 p1 = V2AddV2(position, v2(shape.vertices[i].x, shape.vertices[i].y));
-		v2 p2 = V2AddV2(position, v2(shape.vertices[secondPoint].x, shape.vertices[secondPoint].y));
-
-		PushDebugLineForDuration(p1,
-								 p2,
-								 colour,
-								 lifetime);
-	}
-} */
 #endif
 
 internal v2 GetMousePositionInWorldSpace()
 {
-	return v2(platform->mouse_x / core->camera_zoom - core->camera_position.x - GetZeroWorldPosition().x, platform->mouse_y / core->camera_zoom - core->camera_position.y - GetZeroWorldPosition().y);
+	return v2(platform->mouse_x / core->camera_zoom + core->camera_position.x - GetZeroWorldPosition().x, platform->mouse_y / core->camera_zoom + core->camera_position.y - GetZeroWorldPosition().y);
 }
 
 internal v4 GetCameraRegionRect()

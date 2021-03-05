@@ -6,15 +6,27 @@ internal void RenderColliders()
 	
 	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_physical);)
 	{
+		if (platform->left_mouse_pressed &&
+			IsV2OverlappingShape(GetMousePositionInWorldSpace(), GetEntityShapeInWorldspace(entity), entity->physics.shape_type))
+		{
+			core->run_data->selected_entity = entity;
+			platform->left_mouse_pressed = 0;
+		}
+		
 		v3 col = {1.0f, 1.0f, 1.0f};
-		if (core->run_data->collision_editor.selected_ground_seg &&
-			entity == core->run_data->collision_editor.selected_ground_seg)
+		if (core->run_data->selected_entity &&
+			entity == core->run_data->selected_entity)
 			col = v3(1.0f, 0.0f, 0.0f);
 		
 		PushDebugShape(entity->physics.shape,
 					   entity->physics.shape_type,
 					   entity->position,
 					   col);
+	}
+	
+	if (platform->left_mouse_pressed)
+	{
+		core->run_data->selected_entity = 0;
 	}
 	
 	if (core->run_data->debug_flags & DEBUG_FLAGS_draw_chunk_grid)
@@ -24,8 +36,10 @@ internal void RenderColliders()
 		if (chunk->is_valid)
 		{
 			v3 colour = v3(1.0f, 1.0f, 1.0f);
-			if (core->run_data->chunk_editor.is_chunk_selected && chunk->x_index == core->run_data->chunk_editor.selected_chunk.x_index && chunk->y_index == core->run_data->chunk_editor.selected_chunk.y_index)
-				colour = v3(1.0f, 0.0f, 0.0f);
+			/*
+						if (core->run_data->chunk_editor.is_chunk_selected && chunk->x_index == core->run_data->chunk_editor.selected_chunk.x_index && chunk->y_index == core->run_data->chunk_editor.selected_chunk.y_index)
+							colour = v3(1.0f, 0.0f, 0.0f);
+			 */
 			
 			PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index),
 						  v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
@@ -504,22 +518,26 @@ internal i32 GetOverlappingBodiesWithShape(Entity **overlapping_entities,
 	return overlap_count;
 }
 
-internal b32 IsMouseOverlappingShape(v2 mouse_pos, c2Shape shape, c2ShapeType shape_type)
+internal b8 IsV2OverlappingShape(v2 pos, c2Shape shape, c2ShapeType shape_type)
 {
 	switch (shape_type)
 	{
 		case C2_SHAPE_TYPE_aabb:
 		{
-			if (mouse_pos.x >= shape.aabb.min.x && mouse_pos.x < shape.aabb.max.x &&
-				mouse_pos.y >= shape.aabb.min.y && mouse_pos.y < shape.aabb.max.y)
-				return 1;
-			else
-				return 0;
+			return (pos.x >= shape.aabb.min.x && pos.x < shape.aabb.max.x &&
+					pos.y >= shape.aabb.min.y && pos.y < shape.aabb.max.y);
+		} break;
+		
+		case C2_SHAPE_TYPE_line:
+		{
+			f32 thicc = 1.0f;
 			
-			break;
-		}
+			return (pos.x >= shape.line.p1.x && pos.x <= shape.line.p2.x &&
+					pos.y >= (shape.line.p1.y + shape.line.p2.y) / 2.0f - thicc && pos.y <= (shape.line.p1.y + shape.line.p2.y) / 2.0f + thicc);
+		} break;
+		
 		default:
-		Assert(0);
+		return 0;
 		break;
 	}
 	

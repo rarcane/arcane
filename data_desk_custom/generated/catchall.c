@@ -48,14 +48,8 @@ switch(type)
 case EDITOR_STATE_none:
 return "None";
 break;
-case EDITOR_STATE_entity:
-return "Entity";
-break;
-case EDITOR_STATE_terrain:
-return "Terrain";
-break;
-case EDITOR_STATE_collision:
-return "Collision";
+case EDITOR_STATE_map:
+return "Map";
 break;
 case EDITOR_STATE_chunk:
 return "Chunk";
@@ -657,6 +651,25 @@ return "Blueprint";
 break;
 case ENTITY_PROPERTY_queryable:
 return "Queryable";
+break;
+case ENTITY_PROPERTY_ground_segment:
+return "Ground Segment";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
+static char *GetEntityPresetTypeName(EntityPresetType type)
+{
+switch(type)
+{
+case ENTITY_PRESET_TYPE_none:
+return "None";
+break;
+case ENTITY_PRESET_TYPE_ground_segment:
+return "Ground Segment";
 break;
 default:
 return "INVALID";

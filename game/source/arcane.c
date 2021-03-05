@@ -14,10 +14,12 @@
 #include "arcane.h"
 #include "core.h"
 // NOTE(randy): Game Header Code
+#include "arc/entity_presets.h"
 #include "arc/interaction.h"
 #include "arc/render.h"
 #include "arc/particle.h"
 #include "generated/catchall.h"
+#include "arc/editor.h"
 #include "arc/blueprint.h"
 #include "arc/crafting.h"
 #include "arc/enchantment.h"
@@ -36,6 +38,7 @@
 #include "tsarcane/assets.c"
 #include "tsarcane/arcane_tsui_callbacks.c"
 // NOTE(randy): Game Implementation Code
+#include "arc/entity_presets.c"
 #include "arc/util.c"
 #include "tsarcane/terminalcommands.c"
 #include "arc/interaction.c"
@@ -43,6 +46,7 @@
 #include "arc/arc_entity.c"
 #include "arc/particle.c"
 #include "generated/catchall.c"
+#include "arc/editor.c"
 #include "arc/blueprint.c"
 #include "arc/crafting.c"
 #include "arc/enchantment.c"
@@ -179,51 +183,13 @@ GameUpdate(void)
 		// NOTE(randy): Enter editor mode
 		if (platform->key_pressed[KEY_f1])
 		{
-			
-			if (core->run_data->editor_state == EDITOR_STATE_entity)
-			{
-				SwitchEditorState(EDITOR_STATE_none);
-			}
-			else
-			{
-				SwitchEditorState(EDITOR_STATE_entity);
-			}
+			SwitchEditorState(core->run_data->editor_state == EDITOR_STATE_map ? EDITOR_STATE_none : EDITOR_STATE_map);
 		}
 		else if (platform->key_pressed[KEY_f2])
 		{
-			if (core->run_data->editor_state == EDITOR_STATE_terrain)
-			{
-				SwitchEditorState(EDITOR_STATE_none);
-			}
-			else
-			{
-				SwitchEditorState(EDITOR_STATE_terrain);
-			}
-		}
-		else if (platform->key_pressed[KEY_f3])
-		{
-			if (core->run_data->editor_state == EDITOR_STATE_collision)
-			{
-				SwitchEditorState(EDITOR_STATE_none);
-			}
-			else
-			{
-				SwitchEditorState(EDITOR_STATE_collision);
-			}
-		}
-		else if (platform->key_pressed[KEY_f4])
-		{
-			if (core->run_data->editor_state == EDITOR_STATE_chunk)
-			{
-				SwitchEditorState(EDITOR_STATE_none);
-			}
-			else
-			{
-				SwitchEditorState(EDITOR_STATE_chunk);
-			}
+			SwitchEditorState(core->run_data->editor_state == EDITOR_STATE_chunk ? EDITOR_STATE_none : EDITOR_STATE_chunk);
 		}
 #endif
-        
 		{
 			local_persist b8 initiated_click = 0;
 			local_persist b8 has_released = 0;

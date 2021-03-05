@@ -59,6 +59,13 @@ IncrementEntity(Entity **entity_ptr)
 	if (!entity)
 	{
 		entity = first_entity;
+		
+		if(EntityHasProperty(entity, ENTITY_PROPERTY_is_allocated))
+		{
+			*entity_ptr = entity;
+			result = !!entity;
+			return result;
+		}
 	}
 	
 	Entity *next_entity = 0;
@@ -90,6 +97,14 @@ IncrementEntityWithProperty(Entity **entity_ptr, EntityProperty property)
 	if (!entity)
 	{
 		entity = first_entity;
+		
+		if(EntityHasProperty(entity, ENTITY_PROPERTY_is_allocated) &&
+		   EntityHasProperty(entity, property))
+		{
+			*entity_ptr = entity;
+			result = !!entity;
+			return result;
+		}
 	}
 	
 	Entity *next_entity = 0;

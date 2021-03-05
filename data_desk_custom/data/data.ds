@@ -29,9 +29,7 @@ GeneralisedEntityType :: enum
 EditorState :: enum
 {
 	none,
-	entity,
-	terrain,
-	collision,
+	map,
 	chunk,
 }
 
@@ -621,6 +619,8 @@ EntityProperty :: enum
 	physical,
 	blueprint,
 	queryable,
+	
+	ground_segment,
 }
 
 ENTITY_PROPERTY_SIZE :: (ENTITY_PROPERTY_MAX / 64 + 1)
@@ -696,6 +696,20 @@ Entity :: struct
 	durability : f32;
 }
 
+@XMacro
+EntityPresetTypeData:: struct
+{
+	print_name : char[20];
+	setup_callback : EntityPresetCallback;
+}
+@XMacro
+EntityPresetType:: enum
+{
+	@Data("'none'", 0)
+		none,
+	@Data("'Ground Segment'", GroundSegmentEntityPresetCallback)
+		ground_segment,
+}
 //~CharacterData
 
 @SerialisableStruct
@@ -845,28 +859,6 @@ ChunkSave :: struct
 WorldSaveData :: struct
 {
 	elapsed_world_time : f32;
-}
-
-EntityEditorData :: struct
-{
-	selected_entity : *Entity;
-}
-TerrainEditorData :: struct
-{
-	selected_cell : *Cell;
-	selection_start : v2;
-	selection_end : v2;
-}
-CollisionEditorData :: struct
-{
-	selected_ground_seg : *Entity;
-	is_seg_grabbed : b8;
-	grabbed_seg_pos : v2;
-}
-ChunkEditorData :: struct
-{
-	is_chunk_selected : b8;
-	selected_chunk : SkeletonChunk;
 }
 
 RenderableType :: enum
@@ -1060,14 +1052,12 @@ RunData :: struct // Game data used for run-time operations
 	//camera_actions : CameraAction[MAX_CAMERA_ACTIONS];
 	//camera_action_count : i32;
 	
-	/* ~ Editor ~ */
+	//~Editor
 	editor_state : EditorState;
 	saved_debug_flags : DebugFlags;
 	debug_flags : DebugFlags;
-	entity_editor : EntityEditorData;
-	terrain_editor : TerrainEditorData;
-	collision_editor : CollisionEditorData;
-	chunk_editor : ChunkEditorData;
+	
+	selected_entity : *Entity;
 }
 
 // TODO: serialise client options

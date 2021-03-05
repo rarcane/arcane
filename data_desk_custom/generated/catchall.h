@@ -27,9 +27,7 @@ typedef enum EditorState EditorState;
 enum EditorState
 {
 EDITOR_STATE_none,
-EDITOR_STATE_entity,
-EDITOR_STATE_terrain,
-EDITOR_STATE_collision,
+EDITOR_STATE_map,
 EDITOR_STATE_chunk,
 EDITOR_STATE_MAX,
 };
@@ -612,6 +610,7 @@ ENTITY_PROPERTY_parallaxable,
 ENTITY_PROPERTY_physical,
 ENTITY_PROPERTY_blueprint,
 ENTITY_PROPERTY_queryable,
+ENTITY_PROPERTY_ground_segment,
 ENTITY_PROPERTY_MAX,
 };
 static char *GetEntityPropertyName(EntityProperty type);
@@ -652,6 +651,26 @@ StructureType structure_type;
 Item remaining_items_in_blueprint[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
 f32 durability;
 } Entity;
+
+typedef struct EntityPresetTypeData
+{
+char print_name[20];
+EntityPresetCallback setup_callback;
+} EntityPresetTypeData;
+
+typedef enum EntityPresetType EntityPresetType;
+enum EntityPresetType
+{
+ENTITY_PRESET_TYPE_none,
+ENTITY_PRESET_TYPE_ground_segment,
+ENTITY_PRESET_TYPE_MAX,
+};
+global EntityPresetTypeData global_entity_preset_type_data[ENTITY_PRESET_TYPE_MAX] = {
+    { "none", 0, },
+    { "Ground Segment", GroundSegmentEntityPresetCallback, },
+};
+
+static char *GetEntityPresetTypeName(EntityPresetType type);
 
 typedef struct CharacterData
 {
@@ -799,31 +818,6 @@ typedef struct WorldSaveData
 f32 elapsed_world_time;
 } WorldSaveData;
 
-typedef struct EntityEditorData
-{
-Entity *selected_entity;
-} EntityEditorData;
-
-typedef struct TerrainEditorData
-{
-Cell *selected_cell;
-v2 selection_start;
-v2 selection_end;
-} TerrainEditorData;
-
-typedef struct CollisionEditorData
-{
-Entity *selected_ground_seg;
-b8 is_seg_grabbed;
-v2 grabbed_seg_pos;
-} CollisionEditorData;
-
-typedef struct ChunkEditorData
-{
-b8 is_chunk_selected;
-SkeletonChunk selected_chunk;
-} ChunkEditorData;
-
 typedef enum RenderableType RenderableType;
 enum RenderableType
 {
@@ -959,10 +953,7 @@ f32 move_to_start_time;
 EditorState editor_state;
 DebugFlags saved_debug_flags;
 DebugFlags debug_flags;
-EntityEditorData entity_editor;
-TerrainEditorData terrain_editor;
-CollisionEditorData collision_editor;
-ChunkEditorData chunk_editor;
+Entity *selected_entity;
 } RunData;
 
 typedef struct ClientData

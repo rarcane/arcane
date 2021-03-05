@@ -419,19 +419,6 @@ internal void RenderCells()
 	}
 	
 	core->run_data->chunk_texture_update_queue_count = 0;
-	
-#ifdef DEVELOPER_TOOLS
-	if (core->run_data->editor_state == EDITOR_STATE_terrain)
-	{
-		v2 cell_selection = V2SubtractV2(core->run_data->terrain_editor.selection_end, core->run_data->terrain_editor.selection_start);
-		if (cell_selection.x != 0.0f && cell_selection.y != 0.0f)
-		{
-			v2 pos = v2view(core->run_data->terrain_editor.selection_start);
-			v2 size = v2zoom(cell_selection);
-			Ts2dPushFilledRect(v4(0.5f, 0.0f, 0.0f, 0.5f), v4(pos.x, pos.y, size.x, size.y));
-		}
-	}
-#endif
 }
 
 internal i32 CellPositionToIndex(i32 pos)
