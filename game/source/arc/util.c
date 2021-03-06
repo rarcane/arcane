@@ -485,9 +485,27 @@ internal void WriteToFile(FILE *file, void *data, size_t size_bytes)
 	}
 }
 
+internal void WriteElementsToFile(FILE *file, void *data, size_t size_bytes, size_t size_count)
+{
+	if (fwrite(data, size_bytes, size_count, file) != 1)
+	{
+		Assert(ferror(file) == 0); // NOTE(randy): Ensure this error is caught.
+		Assert(0);
+	}
+}
+
 internal void ReadFromFile(FILE *file, void *data, size_t size_bytes)
 {
 	if (fread(data, size_bytes, 1, file) != 1)
+	{
+		Assert(feof(file) == 0);
+		Assert(ferror(file) == 0);
+	}
+}
+
+internal void ReadElementsFromFile(FILE *file, void *data, size_t size_bytes, size_t size_count)
+{
+	if (fread(data, size_bytes, size_count, file) != 1)
 	{
 		Assert(feof(file) == 0);
 		Assert(ferror(file) == 0);
