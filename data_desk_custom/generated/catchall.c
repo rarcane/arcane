@@ -764,36 +764,234 @@ break;
 
 static void WriteEntityToFile(FILE *file, Entity *data)
 {
-    //Although char* current_general_state is marked @DoNotSerialise, it's just 8 extra bytes
-    //Alternative is to write it in two chunks, one before the pointer, and one after
-    WriteToFile(file, data, sizeof(Entity));
+    for (i32 i = 0; i < ENTITY_PROPERTY_SIZE; i++)
+    {
+        WriteToFile(file, &data->properties[i], sizeof(u64));
+    }
+
+    WriteToFile(file, &data->testint, sizeof(data->testint));
+
+    for (i32 i = 0; i < 100; i++)
+    {
+        WriteToFile(file, &data->debug_name[i], sizeof(char));
+    }
+
+    WriteToFile(file, &data->position, sizeof(data->position));
+
+    WriteToFile(file, &data->sprite_data, sizeof(data->sprite_data));
+
+    WriteToFile(file, &data->is_flipped, sizeof(data->is_flipped));
+
+    WriteToFile(file, &data->is_background_sprite, sizeof(data->is_background_sprite));
+
+    WriteToFile(file, &data->animation_flags, sizeof(data->animation_flags));
+
+    WriteToFile(file, &data->current_frame, sizeof(data->current_frame));
+
+    WriteToFile(file, &data->interval_mult, sizeof(data->interval_mult));
+
+    WriteToFile(file, &data->frame_start_time, sizeof(data->frame_start_time));
+
+    WriteToFile(file, &data->physics, sizeof(data->physics));
+
+    WriteToFile(file, &data->smooth_velocity, sizeof(data->smooth_velocity));
+
+    WriteToFile(file, &data->axis_x, sizeof(data->axis_x));
+
+    WriteToFile(file, &data->move_speed, sizeof(data->move_speed));
+
+    WriteToFile(file, &data->move_speed_mult, sizeof(data->move_speed_mult));
+
+    WriteToFile(file, &data->entity_type, sizeof(data->entity_type));
+
+    WriteToFile(file, &data->current_animation_state, sizeof(data->current_animation_state));
+
+    WriteToFile(file, &data->item, sizeof(data->item));
+
+    for (i32 i = 0; i < MAX_ENCHANTMENTS; i++)
+    {
+        WriteToFile(file, &data->enchamtnets[i], sizeof(Enchantment));
+    }
+
+    WriteToFile(file, &data->parallax_amount, sizeof(data->parallax_amount));
+
+    WriteToFile(file, &data->desired_position, sizeof(data->desired_position));
+
+    WriteToFile(file, &data->priority, sizeof(data->priority));
+
+    WriteToFile(file, &data->structure_type, sizeof(data->structure_type));
+
+    for (i32 i = 0; i < MAX_ITEMS_IN_BLUEPRINT_RECIPE; i++)
+    {
+        WriteToFile(file, &data->remaining_items_in_blueprint[i], sizeof(Item));
+    }
+
+    WriteToFile(file, &data->durability, sizeof(data->durability));
+
 }
 
 static void ReadEntityFromFile(FILE *file, Entity *data)
 {
-    ReadFromFile(file, data, sizeof(Entity));
-    //NOTE(to randy): The only time you set this variable is in entity.c (line 24), and it's set to "Idle"
-    //There's no other references to it, not entirely sure what it's for
-    data->current_general_state = 0;
+    for (i32 i = 0; i < ENTITY_PROPERTY_SIZE; i++)
+    {
+        ReadFromFile(file, &data->properties[i], sizeof(u64));
+    }
+
+    ReadFromFile(file, &data->testint, sizeof(data->testint));
+
+    for (i32 i = 0; i < 100; i++)
+    {
+        ReadFromFile(file, &data->debug_name[i], sizeof(char));
+    }
+
+    ReadFromFile(file, &data->position, sizeof(data->position));
+
+    ReadFromFile(file, &data->sprite_data, sizeof(data->sprite_data));
+
+    ReadFromFile(file, &data->is_flipped, sizeof(data->is_flipped));
+
+    ReadFromFile(file, &data->is_background_sprite, sizeof(data->is_background_sprite));
+
+    ReadFromFile(file, &data->animation_flags, sizeof(data->animation_flags));
+
+    ReadFromFile(file, &data->current_frame, sizeof(data->current_frame));
+
+    ReadFromFile(file, &data->interval_mult, sizeof(data->interval_mult));
+
+    ReadFromFile(file, &data->frame_start_time, sizeof(data->frame_start_time));
+
+    ReadFromFile(file, &data->physics, sizeof(data->physics));
+
+    ReadFromFile(file, &data->smooth_velocity, sizeof(data->smooth_velocity));
+
+    ReadFromFile(file, &data->axis_x, sizeof(data->axis_x));
+
+    ReadFromFile(file, &data->move_speed, sizeof(data->move_speed));
+
+    ReadFromFile(file, &data->move_speed_mult, sizeof(data->move_speed_mult));
+
+    ReadFromFile(file, &data->entity_type, sizeof(data->entity_type));
+
+    ReadFromFile(file, &data->current_animation_state, sizeof(data->current_animation_state));
+
+    ReadFromFile(file, &data->item, sizeof(data->item));
+
+    for (i32 i = 0; i < MAX_ENCHANTMENTS; i++)
+    {
+        ReadFromFile(file, &data->enchamtnets[i], sizeof(Enchantment));
+    }
+
+    ReadFromFile(file, &data->parallax_amount, sizeof(data->parallax_amount));
+
+    ReadFromFile(file, &data->desired_position, sizeof(data->desired_position));
+
+    ReadFromFile(file, &data->priority, sizeof(data->priority));
+
+    ReadFromFile(file, &data->structure_type, sizeof(data->structure_type));
+
+    for (i32 i = 0; i < MAX_ITEMS_IN_BLUEPRINT_RECIPE; i++)
+    {
+        ReadFromFile(file, &data->remaining_items_in_blueprint[i], sizeof(Item));
+    }
+
+    ReadFromFile(file, &data->durability, sizeof(data->durability));
+
 }
 
 static void WriteCharacterDataToFile(FILE *file, CharacterData *data)
 {
-    //NOTE(to randy): This saves the Character data, including the Item* grabbed_item_origin_slot
-    //If you don't want to save that, delete the second line
-    WriteToFile(file, data, sizeof(CharacterData)); //Saves the pointer to the Item data
-    WriteToFile(file, data->grabbed_item_origin_slot, sizeof(Item)); //Saves the item data, but at the end
+    for (i32 i = 0; i < MAX_INVENTORY_SLOTS; i++)
+    {
+        WriteToFile(file, &data->inventory[i], sizeof(Item));
+    }
+
+    WriteToFile(file, &data->inventory_size, sizeof(data->inventory_size));
+
+    for (i32 i = 0; i < MAX_HOTBAR_SLOTS; i++)
+    {
+        WriteToFile(file, &data->hotbar[i], sizeof(Item));
+    }
+
+    WriteToFile(file, &data->hotbar_size, sizeof(data->hotbar_size));
+
+    WriteToFile(file, &data->active_hotbar_slot, sizeof(data->active_hotbar_slot));
+
+    WriteToFile(file, &data->grabbed_item, sizeof(data->grabbed_item));
+
+    WriteToFile(file, &data->grabbed_item_offset, sizeof(data->grabbed_item_offset));
+
+    for (i32 i = 0; i < MAX_SPELL_SLOTS; i++)
+    {
+        WriteToFile(file, &data->freehand_spell_slots[i], sizeof(Spell));
+    }
+
+    WriteToFile(file, &data->freehand_spell_count, sizeof(data->freehand_spell_count));
+
+    for (i32 i = 0; i < MAX_EQUIPMENT_SLOTS; i++)
+    {
+        WriteToFile(file, &data->equipment_slots[i], sizeof(Item));
+    }
+
+    for (i32 i = 0; i < ELEMENTAL_SKILL_TYPE_MAX; i++)
+    {
+        WriteToFile(file, &data->unlocked_elemental_skills[i], sizeof(b8));
+    }
+
+    for (i32 i = 0; i < ELEMENTAL_SKILL_TYPE_MAX; i++)
+    {
+        WriteToFile(file, &data->purchased_elemental_skills[i], sizeof(ElementalSkillType));
+    }
+
+    WriteToFile(file, &data->elemental_skill_points, sizeof(data->elemental_skill_points));
+
 }
 
 static void ReadCharacterDataFromFile(FILE *file, CharacterData *data)
 {
-    //Below code is if you don't store Item* grabbed_item_origin_slot
-    //ReadFromFile(file, data, sizeof(CharacterData));
-    //data->grabbed_item_origin_slot = 0;
-    ReadFromFile(file, data, sizeof(CharacterData));
-    Item* grabbed_item_origin_slot = malloc(sizeof(Item)); //Not sure if this is what you want
-    ReadFromFile(file, grabbed_item_origin_slot, sizeof(Item)); //Get actual item data
-    data->grabbed_item_origin_slot = grabbed_item_origin_slot; //Give the Item* pointer to the CharacterData
+    for (i32 i = 0; i < MAX_INVENTORY_SLOTS; i++)
+    {
+        ReadFromFile(file, &data->inventory[i], sizeof(Item));
+    }
+
+    ReadFromFile(file, &data->inventory_size, sizeof(data->inventory_size));
+
+    for (i32 i = 0; i < MAX_HOTBAR_SLOTS; i++)
+    {
+        ReadFromFile(file, &data->hotbar[i], sizeof(Item));
+    }
+
+    ReadFromFile(file, &data->hotbar_size, sizeof(data->hotbar_size));
+
+    ReadFromFile(file, &data->active_hotbar_slot, sizeof(data->active_hotbar_slot));
+
+    ReadFromFile(file, &data->grabbed_item, sizeof(data->grabbed_item));
+
+    ReadFromFile(file, &data->grabbed_item_offset, sizeof(data->grabbed_item_offset));
+
+    for (i32 i = 0; i < MAX_SPELL_SLOTS; i++)
+    {
+        ReadFromFile(file, &data->freehand_spell_slots[i], sizeof(Spell));
+    }
+
+    ReadFromFile(file, &data->freehand_spell_count, sizeof(data->freehand_spell_count));
+
+    for (i32 i = 0; i < MAX_EQUIPMENT_SLOTS; i++)
+    {
+        ReadFromFile(file, &data->equipment_slots[i], sizeof(Item));
+    }
+
+    for (i32 i = 0; i < ELEMENTAL_SKILL_TYPE_MAX; i++)
+    {
+        ReadFromFile(file, &data->unlocked_elemental_skills[i], sizeof(b8));
+    }
+
+    for (i32 i = 0; i < ELEMENTAL_SKILL_TYPE_MAX; i++)
+    {
+        ReadFromFile(file, &data->purchased_elemental_skills[i], sizeof(ElementalSkillType));
+    }
+
+    ReadFromFile(file, &data->elemental_skill_points, sizeof(data->elemental_skill_points));
+
 }
 
 static void WriteWorldSaveDataToFile(FILE *file, WorldSaveData *data)
@@ -807,3 +1005,4 @@ static void ReadWorldSaveDataFromFile(FILE *file, WorldSaveData *data)
     ReadFromFile(file, &data->elapsed_world_time, sizeof(data->elapsed_world_time));
 
 }
+
