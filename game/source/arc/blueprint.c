@@ -46,6 +46,7 @@ internal void DrawBlueprintUI()
 		if (platform->right_mouse_pressed)
 		{
 			core->run_data->character_state &= ~CHARACTER_STATE_is_blueprinting;
+			SetArcaneMode(0);
 			return;
 		}
 		
@@ -218,6 +219,7 @@ internal void DrawBlueprintUI()
 		if (platform->key_pressed[KEY_esc])
 		{
 			core->run_data->character_state &= ~CHARACTER_STATE_is_blueprinting;
+			SetArcaneMode(0);
 			
 			platform->key_pressed[KEY_esc] = 0;
 			platform->key_down[KEY_esc] = 0;
