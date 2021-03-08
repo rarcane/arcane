@@ -11,17 +11,18 @@ internal void DrawEditorUI()
 	{
 		TsUIPushAutoRow(v2(0, 0), 30);
 		{
-			if (TsUIDropdown("World..."))
+			if (TsUIDropdown("Map..."))
 			{
-				/* if (TsUIButton("Save"))
+				if (TsUIButton("Write Map Data"))
 				{
-					Assert(core->run_data->current_level[0], "No level currently loaded?");
+					WriteInitialMapData();
+					
+					char dest[200] = "";
+					sprintf(dest, "%s..\\..\\res\\initial_map", core->res_path);
+					char source[200] = "";
+					sprintf(source, "%s/initial_map", core->res_path);
+					platform->CopyDirectoryRecursively(dest, source);
 				}
-
-				if (TsUIButton("Reload"))
-				{
-					Assert(core->run_data->current_level[0], "No level currently loaded?");
-				} */
 			}
 			TsUIDropdownEnd();
 			

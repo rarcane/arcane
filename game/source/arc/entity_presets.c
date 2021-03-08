@@ -2,6 +2,7 @@ EntityPresetCallback(GroundSegment)
 {
 	EntitySetProperty(entity, ENTITY_PROPERTY_physical);
 	EntitySetProperty(entity, ENTITY_PROPERTY_ground_segment);
+	EntitySetProperty(entity, ENTITY_PROPERTY_map_entity);
 	char *name = "ground segment";
 	strcpy(entity->debug_name, name);
 	

@@ -113,16 +113,6 @@ internal void PreMoveUpdatePlayer()
 		{
 			core->world_delta_mult = 0.5f;
 			
-			// NOTE(randy): Draw Spell UI
-			/*
-						for (i32 i = 0; i < character->freehand_spell_count; i++)
-						{
-							Spell *spell = &character->freehand_spell_slots[i];
-							
-							
-						}
-						 */
-			
 			{
 				Spell *spell = &character_data->freehand_spell_slots[0];
 				

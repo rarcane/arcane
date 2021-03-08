@@ -40,6 +40,9 @@ internal void FillChunkEntities();
 // NOTE(randy): Loads in chunks that should be visible. Unloads chunks that are no longer active.
 internal void UpdateChunks();
 
+internal void WriteInitialMapData();
+internal void ReadInitialMapData();
+
 // NOTE(randy): Returns chunk at the specified chunk index.
 // If there isn't a chunk loaded at that index, it returns null.
 internal Chunk *GetChunkAtIndex(i32 x, i32 y);

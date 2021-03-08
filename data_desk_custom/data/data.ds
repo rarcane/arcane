@@ -601,6 +601,7 @@ EntityProperty :: enum
 	is_character,
 	no_delete,
 	force_floating,
+	map_entity,
 	
 	// TODO(randy): yeet this ugly shit
 	interactable,
@@ -710,8 +711,8 @@ EntityPresetType:: enum
 	@Data("'Ground Segment'", GroundSegmentEntityPresetCallback)
 		ground_segment,
 }
-//~CharacterData
 
+//~CharacterData
 @SerialisableStruct
 CharacterData :: struct
 {

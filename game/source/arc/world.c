@@ -859,6 +859,8 @@ internal b8 CreateWorld(char *world_name)
 		InitialiseRunData();
 	}
 	
+	ReadInitialMapData();
+	
 	// NOTE(randy): Initialise the player
 	{
 		// TODO(randy): clean up
@@ -926,10 +928,6 @@ internal b8 CreateWorld(char *world_name)
 		character_data->freehand_spell_slots[1].type = SPELL_TYPE_yeet;
 	}
 	
-	// GenerateTestPlatform();
-	
-	// FillChunkEntities();
-	
 	// NOTE(randy): Initial save.
 	SaveWorld();
 	//Assert(core->run_data->save_job_index != -1);
@@ -960,24 +958,35 @@ internal b8 LoadWorld(char *world_name)
 		InitialiseRunData();
 	}
 	
-	// Read in basic data from the world_data.save
+	// NOTE(randy): Read in player & world data
 	{
 		char file_path[200] = "";
-		sprintf(file_path, "%slevel_data.save", path);
+		sprintf(file_path, "%sfloating_data.arc", path);
 		FILE *file = fopen(file_path, "rb");
 		Assert(file);
 		
 		ReadWorldSaveDataFromFile(file, &core->run_data->world);
-		
 		ReadCharacterDataFromFile(file, &core->run_data->character_data);
+		fclose(file);
+		file = 0;
+	}
+	
+	// NOTE(randy): Read in chunk data
+	{
+		char chunk_file_path[200] = "";
+		sprintf(chunk_file_path, "%s\\chunks\\temp_chunk.arc", core->run_data->world_path);
+		FILE *file = fopen(chunk_file_path, "wb");
+		Assert(file);
 		
 		for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
 		{
-			Entity *entity = NewEntity();
-			ReadEntityFromFile(file, entity);
+			Entity entity = {0};
+			ReadEntityFromFile(file, &entity);
 			
-			if (EntityHasProperty(entity, ENTITY_PROPERTY_is_character))
-				core->run_data->character_entity = entity;
+			if (EntityHasProperty(&entity, ENTITY_PROPERTY_is_allocated))
+			{
+				core->run_data->entities[i] = entity;
+			}
 		}
 		
 		fclose(file);
@@ -1170,16 +1179,24 @@ internal void SaveWorld()
 {
 	Assert(core->run_data->world_path[0]);
 	
-	// NOTE(randy): Save global level data
+	// NOTE(randy): Save floating data
 	char file_path[200] = "";
-	sprintf(file_path, "%slevel_data.save", core->run_data->world_path);
+	sprintf(file_path, "%sfloating_data.arc", core->run_data->world_path);
 	FILE *file = fopen(file_path, "wb");
 	Assert(file);
-	
 	WriteWorldSaveDataToFile(file, &core->run_data->world);
-	
 	WriteCharacterDataToFile(file, &core->run_data->character_data);
+	fclose(file);
+	file = 0;
 	
+	// NOTE(randy): Save all entities to chunks
+	// TODO(randy): Actually put them in chunks, not just one big chunk
+	char chunk_file_path[200] = "";
+	sprintf(chunk_file_path, "%s\\chunks\\temp_chunk.arc", core->run_data->world_path);
+	file = fopen(chunk_file_path, "wb");
+	Assert(file);
+	
+	// NOTE(randy): When chunk loading is a thing, need to separate out floating entities from positional ones
 	for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
 	{
 		Entity *entity = &core->run_data->entities[i];
@@ -1189,6 +1206,51 @@ internal void SaveWorld()
 	fclose(file);
 }
 
+internal void WriteInitialMapData()
+{
+	char file_path[200] = "";
+	sprintf(file_path, "%sinitial_map\\", core->res_path);
+	
+	if (!platform->DoesDirectoryExist(file_path))
+		platform->MakeDirectory(file_path);
+	
+	strcat(file_path, "temp_chunk_map_entities.arc");
+	FILE *file = fopen(file_path, "wb");
+	Assert(file);
+	
+	for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
+	{
+		Entity *entity = &core->run_data->entities[i];
+		Entity empty_entity = {0};
+		WriteEntityToFile(file, EntityHasProperty(entity, ENTITY_PROPERTY_map_entity) ? entity : &empty_entity);
+	}
+	
+	fclose(file);
+}
+
+internal void ReadInitialMapData()
+{
+	char file_path[200] = "";
+	sprintf(file_path, "%sinitial_map/temp_chunk_map_entities.arc", core->res_path);
+	FILE *file = fopen(file_path, "rb");
+	if (!file)
+	{
+		return;
+	}
+	
+	for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
+	{
+		Entity entity = {0};
+		ReadEntityFromFile(file, &entity);
+		if (EntityHasProperty(&entity, ENTITY_PROPERTY_is_allocated))
+		{
+			Entity *new_entity = NewEntity();
+			*new_entity = entity;
+		}
+	}
+	
+	fclose(file);
+}
 
 internal void UpdateChunks()
 {
