@@ -80,13 +80,28 @@ internal void DrawWorld()
 	if (!(core->run_data->debug_flags & DEBUG_FLAGS_draw_world))
 		return;
 #endif
-    
 	
 	Ts2dPushBackgroundBegin();
 	{
+		//Nighttime
+		/*v4 top_sky_colour = v4(13.0f / 255.0f, 25.0f / 255.0f, 44.0f / 255.0f, 1.0f);
+		v4 middle_sky_colour = v4(51.0f / 255.0f, 67.0f / 255.0f, 92.0f / 255.0f, 1.0f);
+		v4 bottom_sky_colour = v4(172.0f / 255.0f, 171.0f / 255.0f, 170.0f / 255.0f, 1.0f);*/
+		
+		//Sunrise
+		/*v4 top_sky_colour = v4(176.0f / 255.0f, 208.0f / 255.0f, 223.0f / 255.0f, 1.0f);
+		v4 middle_sky_colour = v4(232.0f / 255.0f, 216.0f / 255.0f, 217.0f / 255.0f, 1.0f);
+		v4 bottom_sky_colour = v4(172.0f / 255.0f, 102.0f / 255.0f, 96.0f / 255.0f, 1.0f);*/
+		
+		//Daytime (original)
 		v4 top_sky_colour = v4(88.0f / 255.0f, 152.0f / 255.0f, 194.0f / 255.0f, 1.0f);
 		v4 middle_sky_colour = v4(203.0f / 255.0f, 232.0f / 255.0f, 238.0f / 255.0f, 1.0f);
 		v4 bottom_sky_colour = v4(130.0f / 255.0f, 81.0f / 255.0f, 77.0f / 255.0f, 1.0f);
+		
+		//Sunset
+		/*v4 top_sky_colour = v4(66.0f / 255.0f, 41.0f / 255.0f, 95.0f / 255.0f, 1.0f);
+		v4 middle_sky_colour = v4(192.0f / 255.0f, 116.0f / 255.0f, 109.0f / 255.0f, 1.0f);
+		v4 bottom_sky_colour = v4(246.0f / 255.0f, 95.0f / 255.0f, 56.0f / 255.0f, 1.0f);*/
         
 		Ts2dPushFilledVertexColoredRect(top_sky_colour,
 										middle_sky_colour,

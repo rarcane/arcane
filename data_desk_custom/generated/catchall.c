@@ -807,4 +807,3 @@ static void ReadWorldSaveDataFromFile(FILE *file, WorldSaveData *data)
     ReadFromFile(file, &data->elapsed_world_time, sizeof(data->elapsed_world_time));
 
 }
-
