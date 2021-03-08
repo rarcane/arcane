@@ -367,12 +367,12 @@ internal void UpdateMapEditor()
 				{
 					selected_entity->physics.shape.line.p1 = V2AddV2(V2SubtractV2(GetMousePositionInWorldSpace(), selected_entity->position), grab_offset);
 				}
-				v2 newPosition = V2AddV2(selected_entity->physics.shape.line.p1, selected_entity->physics.shape.line.p2);
-				newPosition.x *= 0.5f;
-				newPosition.y *= 0.5f;
-				selected_entity->position = V2AddV2(selected_entity->position, newPosition);
-				selected_entity->physics.shape.line.p1 = V2SubtractV2(selected_entity->physics.shape.line.p1, newPosition);
-				selected_entity->physics.shape.line.p2 = V2SubtractV2(selected_entity->physics.shape.line.p2, newPosition);
+				v2 position_offset = V2AddV2(selected_entity->physics.shape.line.p1, selected_entity->physics.shape.line.p2);
+				position_offset.x *= 0.5f;
+				position_offset.y *= 0.5f;
+				selected_entity->position = V2AddV2(selected_entity->position, position_offset);
+				selected_entity->physics.shape.line.p1 = V2SubtractV2(selected_entity->physics.shape.line.p1, position_offset);
+				selected_entity->physics.shape.line.p2 = V2SubtractV2(selected_entity->physics.shape.line.p2, position_offset);
 			}
 			else if(is_holding_v2)
 			{
@@ -417,12 +417,12 @@ internal void UpdateMapEditor()
 				{
 					selected_entity->physics.shape.line.p2 = V2AddV2(V2SubtractV2(GetMousePositionInWorldSpace(), selected_entity->position), grab_offset);
 				}
-				v2 newPosition = V2AddV2(selected_entity->physics.shape.line.p1, selected_entity->physics.shape.line.p2);
-				newPosition.x *= 0.5f;
-				newPosition.y *= 0.5f;
-				selected_entity->position = V2AddV2(selected_entity->position, newPosition);
-				selected_entity->physics.shape.line.p1 = V2SubtractV2(selected_entity->physics.shape.line.p1, newPosition);
-				selected_entity->physics.shape.line.p2 = V2SubtractV2(selected_entity->physics.shape.line.p2, newPosition);
+				v2 position_offset = V2AddV2(selected_entity->physics.shape.line.p1, selected_entity->physics.shape.line.p2);
+				position_offset.x *= 0.5f;
+				position_offset.y *= 0.5f;
+				selected_entity->position = V2AddV2(selected_entity->position, position_offset);
+				selected_entity->physics.shape.line.p1 = V2SubtractV2(selected_entity->physics.shape.line.p1, position_offset);
+				selected_entity->physics.shape.line.p2 = V2SubtractV2(selected_entity->physics.shape.line.p2, position_offset);
 			}
 			
 			if (IsV2OverlappingShape(GetMousePositionInWorldSpace(),
