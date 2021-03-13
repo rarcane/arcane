@@ -37,6 +37,10 @@ global i32 serialisable_struct_count = 0;
 global DataDeskNode *serialisable_structs[128];
 internal void GenerateSerialisationCode();
 
+global i32 version_struct_count = 0;
+global DataDeskNode *version_structs[128];
+internal void GenerateVersionCode();
+
 DATA_DESK_FUNC void
 DataDeskCustomInitCallback(void)
 {
@@ -84,9 +88,15 @@ DataDeskCustomParseCallback(DataDeskNode *root, char *filename)
 					{
 						xmacro_nodes[xmacro_count++] = root;
 					}
-					else if (DataDeskNodeHasTag(root, "SerialisableStruct"))
+					
+					if (DataDeskNodeHasTag(root, "SerialisableStruct"))
 					{
 						serialisable_structs[serialisable_struct_count++] = root;
+					}
+					
+					if (DataDeskNodeHasTag(root, "Version"))
+					{
+						version_structs[version_struct_count++] = root;
 					}
 					
 					break;
@@ -249,6 +259,7 @@ DATA_DESK_FUNC void
 DataDeskCustomCleanUpCallback(void)
 {
 	GenerateSerialisationCode();
+	GenerateVersionCode();
 	
 	fclose(global_catchall_header);
 	fclose(global_catchall_implementation);
@@ -783,6 +794,37 @@ internal void ReadMemberFromFile(FILE *file, DataDeskNode *node, char *access_st
 	}
 }
 
+internal DataDeskNode *FindStructVersion(i32 version, char *struct_name)
+{
+	for (i32 i = 0; i < version_struct_count; i++)
+	{
+		DataDeskNode *candidate_node = version_structs[i];
+		DataDeskNode *candidate_version_param = DataDeskGetTagParameter(DataDeskGetNodeTag(candidate_node, "Version"), 0);
+		i32 candidate_version_number = DataDeskInterpretNumericExpressionAsInteger(candidate_version_param);
+		
+		char candidate_trimmed_name[200] = "";
+		if (DataDeskGetNodeTag(candidate_node, "SerialisableStruct"))
+		{
+			sprintf(candidate_trimmed_name, "%s", candidate_node->name);
+		}
+		else
+		{
+			char *candidate_found = strstr(candidate_node->name, "_Version");
+			if (candidate_found)
+			{
+				strncpy(candidate_trimmed_name, candidate_node->name, candidate_found - candidate_node->name);
+			}
+		}
+		
+		if (strcmp(struct_name, candidate_trimmed_name) == 0 && version == candidate_version_number)
+		{
+			return candidate_node;
+		}
+	}
+	
+	return 0;
+}
+
 internal void GenerateSerialisationCode()
 {
 	FILE *h_file = global_catchall_header;
@@ -793,17 +835,17 @@ internal void GenerateSerialisationCode()
 	for (i32 i = 0; i < serialisable_struct_count; i++)
 	{
 		DataDeskNode *root = serialisable_structs[i];
+		DataDeskNode *version_param = DataDeskGetTagParameter(DataDeskGetNodeTag(root, "SerialisableStruct"), 0);
+		i32 max_version = DataDeskInterpretNumericExpressionAsInteger(version_param);
 		
 		// NOTE(randy): Write to file
 		{
 			fprintf(h_file, "static void Write%sToFile(FILE *file, %s *data);\n\n", root->name, root->name);
 			fprintf(c_file, "static void Write%sToFile(FILE *file, %s *data)\n", root->name, root->name);
 			fprintf(c_file, "{\n");
-			for (DataDeskNode *member = root->struct_declaration.first_member;
-				 member; member = member->next)
-			{
-				WriteMemberToFile(c_file, member, "data->");
-			}
+			fprintf(c_file, "    i32 version = %i;\n", max_version);
+			fprintf(c_file, "    WriteToFile(file, &version, sizeof(i32));\n");
+			fprintf(c_file, "    Write%s_Version%iToFile(file, data);\n", root->name, max_version);
 			fprintf(c_file, "}\n\n");
 		}
 		
@@ -812,11 +854,200 @@ internal void GenerateSerialisationCode()
 			fprintf(h_file, "static void Read%sFromFile(FILE *file, %s *data);\n\n", root->name, root->name);
 			fprintf(c_file, "static void Read%sFromFile(FILE *file, %s *data)\n", root->name, root->name);
 			fprintf(c_file, "{\n");
+			fprintf(c_file, "    i32 actual_version = -1;\n");
+			fprintf(c_file, "    ReadFromFile(file, &actual_version, sizeof(i32));\n");
+			
+			fprintf(c_file, "    if (actual_version == %i)\n", max_version);
+			fprintf(c_file, "    {\n");
+			fprintf(c_file, "        Read%s_Version%iFromFile(file, data);\n", root->name, max_version);
+			fprintf(c_file, "        return;\n");
+			fprintf(c_file, "    }\n\n");
+			
+			fprintf(c_file, "    switch (actual_version)\n");
+			fprintf(c_file, "    {\n");
+			for (i32 start_version = 0; start_version < max_version; start_version++)
+			{
+				char *struct_name = root->name_lowercase_with_underscores;
+				DataDeskNode *start_version_node = FindStructVersion(start_version, root->name);
+				
+				fprintf(c_file, "    case %i:\n", start_version);
+				fprintf(c_file, "    {\n");
+				
+				fprintf(c_file, "        %s %s%i = {0};\n", start_version_node->name, struct_name, start_version);
+				fprintf(c_file, "        Read%sFromFile(file, &%s%i);\n\n", start_version_node->name, struct_name, start_version);
+				
+				for (i32 version = start_version; version < max_version; version++)
+				{
+					DataDeskNode *version_node = FindStructVersion(version, root->name);
+					DataDeskNode *next_version_node = FindStructVersion(version + 1, root->name);
+					
+					fprintf(c_file, "        %s %s%i = {0};\n", next_version_node->name, struct_name, version + 1);
+					fprintf(c_file, "        Map%sTo%s(%s%i, &%s%i);\n\n", version_node->name, next_version_node->name, struct_name, version, struct_name, version + 1);
+				}
+				
+				
+				fprintf(c_file, "        memcpy(data, &%s%i, sizeof(*data));\n", struct_name, max_version);
+				
+				fprintf(c_file, "    } break;\n");
+			}
+			fprintf(c_file, "    }\n");
+			fprintf(c_file, "}\n\n");
+		}
+	}
+}
+
+internal DataDeskNode *GetNextVersion(DataDeskNode *node)
+{
+	DataDeskNode *version_param = DataDeskGetTagParameter(DataDeskGetNodeTag(node, "Version"), 0);
+	i32 version_number = DataDeskInterpretNumericExpressionAsInteger(version_param);
+	
+	char trimmed_name[200] = "";
+	char *found = strstr(node->name, "_Version");
+	if (found)
+	{
+		strncpy(trimmed_name, node->name, found - node->name);
+	}
+	
+	for (i32 i = 0; i < version_struct_count; i++)
+	{
+		DataDeskNode *candidate_root = version_structs[i];
+		if (candidate_root == node)
+			continue;
+		DataDeskNode *candidate_version_param = DataDeskGetTagParameter(DataDeskGetNodeTag(candidate_root, "Version"), 0);
+		i32 candidate_version_number = DataDeskInterpretNumericExpressionAsInteger(candidate_version_param);
+		
+		char candidate_trimmed_name[200] = "";
+		if (DataDeskGetNodeTag(candidate_root, "SerialisableStruct"))
+		{
+			sprintf(candidate_trimmed_name, "%s", candidate_root->name);
+		}
+		else
+		{
+			char *candidate_found = strstr(candidate_root->name, "_Version");
+			if (candidate_found)
+			{
+				strncpy(candidate_trimmed_name, candidate_root->name, candidate_found - candidate_root->name);
+			}
+		}
+		
+		if (strcmp(trimmed_name, candidate_trimmed_name) == 0 && version_number == candidate_version_number - 1)
+		{
+			return candidate_root;
+		}
+	}
+	
+	return 0;
+}
+
+internal DataDeskNode *FindMemberInStruct(DataDeskNode *node, char *member_name)
+{
+	for (DataDeskNode *member = node->struct_declaration.first_member;
+		 member; member = member->next)
+	{
+		if (strcmp(member->name, member_name) == 0)
+		{
+			return member;
+		}
+	}
+	
+	return 0;
+}
+
+internal void GenerateVersionCode()
+{
+	FILE *h_file = global_catchall_header;
+	FILE *c_file = global_catchall_implementation;
+	if (!h_file || !c_file)
+		return;
+	
+	for (i32 i = 0; i < version_struct_count; i++)
+	{
+		DataDeskNode *root = version_structs[i];
+		DataDeskNode *version_param = DataDeskGetTagParameter(DataDeskGetNodeTag(root, "Version"), 0);
+		i32 version_number = DataDeskInterpretNumericExpressionAsInteger(version_param);
+		
+		char struct_name[100] = "";
+		strcpy(struct_name, root->name);
+		
+		if (DataDeskGetNodeTag(root, "SerialisableStruct"))
+		{
+			sprintf(struct_name, "%s_Version%i", struct_name, version_number);
+		}
+		
+		// NOTE(randy): Write to file
+		fprintf(h_file, "static void Write%sToFile(FILE *file, %s *data);\n\n", struct_name, root->name);
+		fprintf(c_file, "static void Write%sToFile(FILE *file, %s *data)\n", struct_name, root->name);
+		fprintf(c_file, "{\n");
+		for (DataDeskNode *member = root->struct_declaration.first_member;
+			 member; member = member->next)
+		{
+			WriteMemberToFile(c_file, member, "data->");
+		}
+		fprintf(c_file, "}\n\n");
+		
+		// NOTE(randy): Read from file
+		{
+			fprintf(h_file, "static void Read%sFromFile(FILE *file, %s *data);\n\n", struct_name, root->name);
+			fprintf(c_file, "static void Read%sFromFile(FILE *file, %s *data)\n", struct_name, root->name);
+			fprintf(c_file, "{\n");
 			for (DataDeskNode *member = root->struct_declaration.first_member;
 				 member; member = member->next)
 			{
 				ReadMemberFromFile(c_file, member, "data->");
 			}
+			fprintf(c_file, "}\n\n");
+		}
+		
+		DataDeskNode *next_version = GetNextVersion(root);
+		if (next_version)
+		{
+			// generate function for version->next_version
+			fprintf(h_file, "static void Map%sTo%s(%s origin, %s *dest);\n\n", struct_name, next_version->name, root->name, next_version->name);
+			fprintf(c_file, "static void Map%sTo%s(%s origin, %s *dest)\n", struct_name, next_version->name, root->name, next_version->name);
+			fprintf(c_file, "{\n");
+			
+			for (DataDeskNode *member = next_version->struct_declaration.first_member;
+				 member; member = member->next)
+			{
+				if (DataDeskGetNodeTag(member, "DoNotSerialise"))
+					continue;
+				
+				DataDeskNode *new_value = DataDeskGetTagParameter(DataDeskGetNodeTag(member, "NewValue"), 0);
+				DataDeskNode *map_from = DataDeskGetTagParameter(DataDeskGetNodeTag(member, "MapFrom"), 0);
+				
+				if (map_from)
+				{
+					if (new_value)
+					{
+						// TODO(randy)
+					}
+					else
+					{
+						fprintf(c_file, "MemoryCopy(&dest->%s, &origin.%s, sizeof(origin.%s));\n", member->name, map_from->name, map_from->name);
+					}
+				}
+				else
+				{
+					if (new_value)
+					{
+						// NOTE(randy): New member
+						fprintf(c_file, "    dest->%s = %s;\n", member->name, new_value->name);
+					}
+					else
+					{
+						// NOTE(randy): Just assume this member hasn't changed
+						if (member->declaration.type->type_usage.first_array_size_expression)
+						{
+							fprintf(c_file, "    MemoryCopy(dest->%s, origin.%s, sizeof(origin.%s));\n", member->name, member->name, member->name);
+						}
+						else
+						{
+							fprintf(c_file, "    MemoryCopy(&dest->%s, &origin.%s, sizeof(origin.%s));\n", member->name, member->name, member->name);
+						}
+					}
+				}
+			}
+			
 			fprintf(c_file, "}\n\n");
 		}
 	}

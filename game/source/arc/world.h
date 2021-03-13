@@ -29,16 +29,6 @@ internal void SaveWorld();
 internal b8 LoadWorld(char *world_name);
 // NOTE(randy): Unloads the current world and returns to main menu.
 internal void UnloadWorld();
-// NOTE(randy): Save all of the queued up chunks to disk with a snapshot of data
-int SaveQueuedChunks(void *job_data);
-// NOTE(randy): Loads a queue of skele chunks either from disk or from generation
-int LoadQueuedChunks(void *job_data);
-// NOTE(randy): Queues the specified chunk for a save by taking a snapshot of data
-internal b8 QueueChunkForSave(Chunk *chunk);
-// NOTE(randy): Puts all positional entities into their appropriate chunks.
-internal void FillChunkEntities();
-// NOTE(randy): Loads in chunks that should be visible. Unloads chunks that are no longer active.
-internal void UpdateChunks();
 
 internal void WriteInitialMapData();
 internal void ReadInitialMapData();

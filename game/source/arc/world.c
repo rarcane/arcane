@@ -55,8 +55,6 @@ internal void WorldUpdate()
     
 	UpdateParallax();
     
-	UpdateChunks();
-    
 	InteractableUpdate();
 	
 	DrawWorld();
@@ -990,7 +988,7 @@ internal b8 LoadWorld(char *world_name)
 	{
 		char chunk_file_path[200] = "";
 		sprintf(chunk_file_path, "%s\\chunks\\temp_chunk.arc", core->run_data->world_path);
-		FILE *file = fopen(chunk_file_path, "wb");
+		FILE *file = fopen(chunk_file_path, "rb");
 		Assert(file);
 		
 		for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
@@ -1001,6 +999,11 @@ internal b8 LoadWorld(char *world_name)
 			if (EntityHasProperty(&entity, ENTITY_PROPERTY_is_allocated))
 			{
 				core->run_data->entities[i] = entity;
+				
+				if (EntityHasProperty(&entity, ENTITY_PROPERTY_is_character))
+				{
+					core->run_data->character_entity = &core->run_data->entities[i];
+				}
 			}
 		}
 		
@@ -1023,171 +1026,6 @@ internal void UnloadWorld()
 	FreeRunData();
 	MemorySet(core->run_data, 0, sizeof(RunData));
 	core->is_ingame = 0;
-}
-
-internal int SaveQueuedChunks(void *job_data)
-{
-	/*
-		if (core->run_data->save_job_index == -1)
-			return 1; // NOTE(randy): Temporary fix, this ideally shouldn't be called
-		//Assert(core->run_data->save_job_index != -1);
-		f32 start_time = platform->GetTime();
-		
-		// NOTE(randy): Could probably move all the snapshot data out of the RunData struct to make this reentrant but ehhhhhhhh cbf
-		
-		for (i32 i = 0; i < core->run_data->chunk_save_count; i++)
-		{
-			ChunkSave *chunk_save = &core->run_data->chunk_saves[i];
-			
-			char chunk_file_path[300];
-			sprintf(chunk_file_path, "%s%i.%i.chunk", core->run_data->world_chunks_path, chunk_save->skele_chunk.x_index, chunk_save->skele_chunk.y_index);
-			FILE *file = fopen(chunk_file_path, "wb");
-			Assert(file);
-			
-			// NOTE(randy): Write cells to file.
-			WriteToFile(file, &chunk_save->cells, sizeof(chunk_save->cells));
-			
-			// NOTE(randy): Write entities into the chunk file. Layout is as follows.
-			// entity count, all entities, component1 count, all component1s, component2 count, all component2s...
-			WriteToFile(file, &chunk_save->entity_count, sizeof(chunk_save->entity_count));
-			for (i32 j = 0; j < chunk_save->entity_count; j++)
-			{
-				Entity *entity = &core->run_data->entities_snapshot[chunk_save->entity_ids[j] - 1];
-				
-				// NOTE(randy): Fill out an EntitySave structure for serialisation
-				EntitySave entity_save = {.flags = entity->flags, .type = entity->generalised_type};
-				MemoryCopy(entity_save.name, entity->name, sizeof(entity_save.name));
-				
-				if (chunk_save->skele_chunk.x_index == 3 && chunk_save->skele_chunk.y_index == -1)
-				{
-					entity_save.flags = (uint32)j + 1;
-				}
-				
-				WriteToFile(file, &entity_save, sizeof(EntitySave));
-			}
-			SerialiseComponentsFromDataSet(file, core->run_data->entities_snapshot, core->run_data->entity_count_snapshot, &core->run_data->entity_components_snapshot, chunk_save->entity_ids, chunk_save->entity_count);
-			
-			fclose(file);
-		}
-		
-		Log("Save job completed in %fms", (platform->GetTime() - start_time) * 1000.0f);
-	 */
-	
-	return 1;
-}
-
-internal int LoadQueuedChunks(void *job_data)
-{
-	/*
-		if (core->run_data->load_job_index == -1)
-			return 1;
-		//Assert(core->run_data->load_job_index != -1);
-		
-		f32 start_time = platform->GetTime();
-		
-		Assert(core->run_data->active_chunk_count + core->run_data->chunk_load_queue_count < MAX_WORLD_CHUNKS);
-		
-		for (i32 i = 0; i < core->run_data->chunk_load_queue_count; i++)
-		{
-			ChunkSave *chunk_save = &core->run_data->chunk_load_queue[i];
-			
-			Assert(!GetChunkAtIndex(chunk_save->skele_chunk.x_index, chunk_save->skele_chunk.y_index)); // NOTE(randy): Chunk is already loaded in.
-			
-			char chunk_file_path[100];
-			sprintf(chunk_file_path, "%s%i.%i.chunk", core->run_data->world_chunks_path, chunk_save->skele_chunk.x_index, chunk_save->skele_chunk.y_index);
-			FILE *file = fopen(chunk_file_path, "rb");
-			if (file)
-			{
-				ReadFromFile(file, &chunk_save->cells, sizeof(chunk_save->cells));
-				
-				// NOTE(randy): Read in entities and their components
-				{
-					ReadFromFile(file, &chunk_save->entity_count, sizeof(i32));
-					
-					chunk_save->entity_ids = &core->run_data->loaded_positional_entity_ids[core->run_data->loaded_positional_entity_id_count];
-					core->run_data->loaded_positional_entity_id_count += chunk_save->entity_count;
-					
-					for (i32 j = 0; j < chunk_save->entity_count; j++)
-					{
-						EntitySave entity_save;
-						ReadFromFile(file, &entity_save, sizeof(EntitySave));
-						core->run_data->loaded_entities[core->run_data->loaded_entity_count++] = entity_save;
-						i32 loaded_entity_id = core->run_data->loaded_entity_count;
-						
-						chunk_save->entity_ids[j] = loaded_entity_id;
-					}
-					
-					DeserialiseComponentsToLoadData(file, &core->run_data->loaded_entity_components,
-													core->run_data->loaded_entities,
-													chunk_save->entity_ids, chunk_save->entity_count);
-				}
-				
-				fclose(file);
-			}
-			else
-			{
-				--
-					// NOTE(randy): Chunk doesn't exist yet. Generate it.
-					//chunk = GenerateNewChunk(chunks[i].x_index, chunks[i].y_index);
-					core->run_data->chunk_generate_queue[core->run_data->chunk_generate_queue_count++] = chunk_save;
-					
-					for (int y = 0; y < CHUNK_SIZE; y++)
-					{
-						for (int x = 0; x < CHUNK_SIZE; x++)
-						{
-							Cell *cell = &chunk_save->cells[y][x];
-							i32 x_pos = chunk_save->skele_chunk.x_index * CHUNK_SIZE + x;
-							i32 y_pos = chunk_save->skele_chunk.y_index * CHUNK_SIZE + y;
-							
-							if (y_pos > GetTerrainHeight((f32)x_pos) && y_pos < 500.0f)
-							{
-								cell->material_type = CELL_MATERIAL_TYPE_dirt;
-							}
-						}
-					}
-		 --
-			}
-		}
-		
-		Log("Load job completed in %fms", (platform->GetTime() - start_time) * 1000.0f);
-	 */
-	
-	return 1;
-}
-
-internal b8 QueueChunkForSave(Chunk *chunk)
-{
-	/*
-		Assert(chunk && chunk->is_valid);
-		
-		// NOTE(randy): Ensure chunk is not already queued up
-		for (i32 i = 0; i < core->run_data->chunk_save_count; i++)
-		{
-			ChunkSave *chunk_save = &core->run_data->chunk_saves[i];
-			if (chunk_save->skele_chunk.x_index == chunk->x_index && chunk_save->skele_chunk.y_index == chunk->y_index)
-			{
-				return 0;
-			}
-		}
-		
-		ChunkSave *chunk_save = &core->run_data->chunk_saves[core->run_data->chunk_save_count++];
-		chunk_save->skele_chunk.x_index = chunk->x_index;
-		chunk_save->skele_chunk.y_index = chunk->y_index;
-		MemoryCopy(&chunk_save->cells, &chunk->cells, sizeof(chunk->cells));
-		chunk_save->entity_count = chunk->entity_count;
-		
-		if (chunk->entity_count)
-		{
-			i64 offset = chunk->entity_ids - core->run_data->positional_entity_ids;
-			chunk_save->entity_ids = core->run_data->positional_entity_ids_snapshot + offset;
-		}
-		else
-		{
-			chunk_save->entity_ids = 0;
-		}
-	 */
-	
-	return 1;
 }
 
 internal void SaveWorld()
@@ -1267,125 +1105,6 @@ internal void ReadInitialMapData()
 	fclose(file);
 }
 
-internal void UpdateChunks()
-{
-	/*
-		FillChunkEntities();
-		
-		// NOTE(randy): Unload any chunks that haven't been marked as 'remain_loaded' by now
-		Chunk *chunks_to_unload[MAX_WORLD_CHUNKS];
-		i32 chunks_to_unload_count = 0;
-		for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
-		{
-			Chunk *chunk = &core->run_data->active_chunks[i];
-			if (chunk->is_valid)
-			{
-				if (!chunk->remain_loaded)
-				{
-					Assert(chunks_to_unload_count + 1 < MAX_WORLD_CHUNKS);
-					chunks_to_unload[chunks_to_unload_count++] = chunk;
-				}
-				else
-				{
-					chunk->remain_loaded = 0;
-				}
-			}
-		}
-		
-		if (chunks_to_unload_count > 0 && core->run_data->save_job_index == -1 && core->run_data->load_job_index == -1)
-		{
-			// TODO(randy): Optimise this. Most of it's coming from each chunks' cell copy in QueueChunkForSave. Might need to try streamline the cells themselves, get it a lot smaller.
-			//BLOCK_TIMER("initial unload copy",
-			// NOTE(randy): Snapshot the current world data
-			MemoryCopy(&core->run_data->entities_snapshot, &core->run_data->entities, sizeof(core->run_data->entities));
-			MemoryCopy(&core->run_data->entity_count_snapshot, &core->run_data->entity_count, sizeof(core->run_data->entity_count));
-			MemoryCopy(&core->run_data->entity_components_snapshot, &core->run_data->entity_components, sizeof(core->run_data->entity_components));
-			MemoryCopy(&core->run_data->positional_entity_ids_snapshot, &core->run_data->positional_entity_ids,
-					   sizeof(core->run_data->positional_entity_ids));
-			MemoryCopy(&core->run_data->positional_entity_id_count_snapshot, &core->run_data->positional_entity_id_count, sizeof(core->run_data->positional_entity_id_count));
-			
-			// NOTE(randy): Queue up all of the chunks that need to get unloaded.
-			for (i32 i = 0; i < chunks_to_unload_count; i++)
-			{
-				Chunk *chunk = chunks_to_unload[i];
-				Assert(QueueChunkForSave(chunk));
-				
-				DeleteChunk(chunk);
-			}
-			
-			core->run_data->save_job_index = platform->QueueJob(0, SaveQueuedChunks, 0);
-			//);
-		}
-		
-		if (!core->run_data->disable_chunk_loaded_based_off_view)
-		{
-			//BLOCK_TIMER_IF("initial load copy",
-			//timer_length > 1,
-			SkeletonChunk view_chunks[MAX_WORLD_CHUNKS];
-			i32 view_chunk_count = 0;
-			GetSkeletonChunksInRegion(view_chunks, &view_chunk_count, GetCameraRegionRect(), 1);
-			
-			// NOTE(randy): Load in any visible chunks
-			if(core->run_data->load_job_index == -1 && core->run_data->save_job_index == -1)
-			{
-				for (i32 i = 0; i < view_chunk_count; i++)
-				{
-					Chunk *chunk = GetChunkAtIndex(view_chunks[i].x_index, view_chunks[i].y_index);
-					if (!chunk)
-					{
-						ChunkSave new_chunk = {.skele_chunk = view_chunks[i]};
-						core->run_data->chunk_load_queue[core->run_data->chunk_load_queue_count++] = new_chunk;
-						
-						--
-						chunk = LoadChunkFromDisk(core->run_data->world_chunks_path, chunks[i].x_index, chunks[i].y_index);
-						if (!chunk)
-						{
-							chunk = GenerateNewChunk(chunks[i].x_index, chunks[i].y_index);
-						}
-		 --
-					}
-				}
-				
-				if (core->run_data->chunk_load_queue_count > 0)
-				{
-					core->run_data->load_job_index = platform->QueueJob(0, LoadQueuedChunks, 0);
-					
-					if (!core->run_data->not_first_time_temp) // lmaoooo
-					{
-						while (!platform->WaitForJob(core->run_data->load_job_index, TS_WAIT_FOREVER));
-						{
-							core->run_data->not_first_time_temp = 1;
-						}
-					}
-				}
-			}
-			
-			// NOTE(randy): Keep the visible chunks loaded
-			for (i32 i = 0; i < view_chunk_count; i++)
-			{
-				Chunk *chunk = GetChunkAtIndex(view_chunks[i].x_index, view_chunks[i].y_index);
-				if (chunk && chunk->is_valid)
-				{
-					chunk->remain_loaded = 1;
-				}
-			}
-			//);
-		}
-		else
-		{
-			// TODO(randy): Cache the player's previous view region or something nd just keep using that or smth. Temporarily force load all chuks for now.
-			for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
-			{
-				Chunk *chunk = &core->run_data->active_chunks[i];
-				if (chunk->is_valid)
-				{
-					chunk->remain_loaded = 1;
-				}
-			}
-		}
-	 */
-}
-
 internal Chunk *GetChunkAtIndex(i32 x, i32 y)
 {
 	for (int i = 0; i < core->run_data->active_chunk_count; i++)
@@ -1399,56 +1118,6 @@ internal Chunk *GetChunkAtIndex(i32 x, i32 y)
     
 	// Chunk isn't loaded.
 	return 0;
-}
-
-/*
-internal f32 GetTerrainHeight(f32 x_pos)
-{
-	f32 world_height = 300.0f;
-	x_pos /= PERLIN_NOISE_LENGTH; // Makes the scale a bit more friendly
-    
-	i32 octaves = 8;
-	f32 frequency = 0.1f;
-	f32 amplitude = 1.0f;
-	
-	f32 max_noise_value = 0.0f;
-	f32 noise_amount = 0.0f;
-	for (int k = 0; k < octaves; k++)
-	{
-		noise_amount += GetPerlinNoise(x_pos * frequency, 0.0f) * amplitude;
-		max_noise_value += amplitude;
-		frequency *= 2.0f;
-		amplitude *= 0.5f;
-	}
-    
-	f32 noise = noise_amount / max_noise_value;
-	
-	return world_height * noise;
-}
- */
-
-internal void GetSurroundingChunks(Chunk **chunks, v2 position)
-{
-	Assert(0); // What's this func for again?
-    
-	chunks[0] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x - CHUNK_SIZE),
-								WorldSpaceToChunkIndex(position.y - CHUNK_SIZE));
-	chunks[1] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x),
-								WorldSpaceToChunkIndex(position.y - CHUNK_SIZE));
-	chunks[2] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x + CHUNK_SIZE),
-								WorldSpaceToChunkIndex(position.y - CHUNK_SIZE));
-	chunks[3] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x - CHUNK_SIZE),
-								WorldSpaceToChunkIndex(position.y));
-	chunks[4] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x),
-								WorldSpaceToChunkIndex(position.y));
-	chunks[5] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x + CHUNK_SIZE),
-								WorldSpaceToChunkIndex(position.y));
-	chunks[6] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x - CHUNK_SIZE),
-								WorldSpaceToChunkIndex(position.y + CHUNK_SIZE));
-	chunks[7] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x),
-								WorldSpaceToChunkIndex(position.y + CHUNK_SIZE));
-	chunks[8] = GetChunkAtIndex(WorldSpaceToChunkIndex(position.x + CHUNK_SIZE),
-								WorldSpaceToChunkIndex(position.y + CHUNK_SIZE));
 }
 
 internal void DeleteChunk(Chunk *chunk)

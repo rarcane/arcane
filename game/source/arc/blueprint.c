@@ -200,7 +200,6 @@ internal void DrawBlueprintUI()
 				EntitySetProperty(new_structure, ENTITY_PROPERTY_sprite);
 				EntitySetProperty(new_structure, ENTITY_PROPERTY_interactable);
 				EntitySetProperty(new_structure, ENTITY_PROPERTY_blueprint);
-				EntitySetProperty(new_structure, ENTITY_PROPERTY_map_entity);
 				
 				new_structure->position = GetMousePositionInWorldSpace();
 				
