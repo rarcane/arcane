@@ -237,7 +237,7 @@ internal void SwitchEditorState(EditorState editor_state)
 		
 		core->run_data->editor_state = editor_state;
 	}
-}	
+}
 
 internal void UpdateMapEditor()
 {
@@ -298,184 +298,106 @@ internal void UpdateMapEditor()
 		}
 		
 		// NOTE(randy): Vertex circles
-		if (EntityHasProperty(selected_entity, ENTITY_PROPERTY_ground_segment))
+		if (selected_entity->physics.shape_type == C2_SHAPE_TYPE_line_segments)
 		{
 			f32 circle_size = 3.0f;
 			c2Shape middle_bounds = {0};
 			middle_bounds.aabb.min = c2V(-circle_size / 2.0f, -circle_size / 2.0f);
 			middle_bounds.aabb.max = c2V(circle_size / 2.0f, circle_size / 2.0f);
-			c2Shape v1_shape = middle_bounds;
-			v2 p1_pos = V2AddV2(selected_entity->position,
-								selected_entity->physics.shape.line.p1);
-			c2Shape v2_shape = middle_bounds;
-			v2 p2_pos = V2AddV2(selected_entity->position,
-								selected_entity->physics.shape.line.p2);
-			AddPositionOffsetToShape(&v1_shape, C2_SHAPE_TYPE_aabb, p1_pos);
-			AddPositionOffsetToShape(&v2_shape, C2_SHAPE_TYPE_aabb, p2_pos);
 			
-			f32 p1_tint = 1.0f;
-			f32 p2_tint = 1.0f;
-			local_persist b8 is_holding_v1 = 0;
-			local_persist b8 is_holding_v2 = 0;
-			local_persist v2 grab_offset = {0.0f, 0.0f};
+			local_persist v2 *selected_seg = 0;
 			
-			if (core->left_mouse_released)
+			for (i32 i = 0; i < selected_entity->physics.shape.line_segments.count; i++)
 			{
-				is_holding_v1 = 0;
-				is_holding_v2 = 0;
-			}
-			
-			if (is_holding_v1)
-			{
-				p1_tint = 0.5f;
+				LineSegments *segs = &selected_entity->physics.shape.line_segments;
 				
-				b8 has_snapped = 0;
-				for (Entity *candidate = 0; IncrementEntityWithProperty(&candidate, ENTITY_PROPERTY_ground_segment);)
+				c2Shape point_shape = middle_bounds;
+				v2 p1_pos = V2AddV2(selected_entity->position,
+									segs->vertices[i]);
+				AddPositionOffsetToShape(&point_shape, C2_SHAPE_TYPE_aabb, p1_pos);
+				
+				f32 p1_tint = 1.0f;
+				local_persist v2 grab_offset = {0.0f, 0.0f};
+				
+				if (IsV2OverlappingShape(GetMousePositionInWorldSpace(),
+										 point_shape,
+										 C2_SHAPE_TYPE_aabb))
 				{
-					if (candidate == selected_entity)
-						continue;
+					p1_tint = 0.75f;
 					
-					f32 snap_amount = 2.0f;
-					
-					v2 pos = GetMousePositionInWorldSpace();
-					v2 candidate_pos_p1 = V2AddV2(candidate->physics.shape.line.p1,
-												  candidate->position);
-					v2 candidate_pos_p2 = V2AddV2(candidate->physics.shape.line.p2,
-												  candidate->position);
-					
-					if (pos.x >= candidate_pos_p1.x - snap_amount &&
-						pos.x <= candidate_pos_p1.x + snap_amount &&
-						pos.y >= candidate_pos_p1.y - snap_amount &&
-						pos.y <= candidate_pos_p1.y + snap_amount)
+					if (platform->left_mouse_pressed)
 					{
-						has_snapped = 1;
-						selected_entity->physics.shape.line.p1 = V2SubtractV2(candidate_pos_p1, selected_entity->position);
-						break;
+						grab_offset = V2SubtractV2(p1_pos, GetMousePositionInWorldSpace());
+						selected_seg = &segs->vertices[i];
+						platform->left_mouse_pressed = 0;
 					}
-					else if (pos.x >= candidate_pos_p2.x - snap_amount &&
-							 pos.x <= candidate_pos_p2.x + snap_amount &&
-							 pos.y >= candidate_pos_p2.y - snap_amount &&
-							 pos.y <= candidate_pos_p2.y + snap_amount)
+				}
+				
+				if (&segs->vertices[i] == selected_seg)
+				{
+					p1_tint = 0.5f;
+					
+					b8 has_snapped = 0;
+					/*
+										for (Entity *candidate = 0; IncrementEntityWithProperty(&candidate, ENTITY_PROPERTY_ground_segment);)
+										{
+											if (candidate == selected_entity)
+												continue;
+											
+											f32 snap_amount = 2.0f;
+											
+											v2 pos = GetMousePositionInWorldSpace();
+											v2 candidate_pos_p1 = V2AddV2(candidate->physics.shape.line.p1,
+																		  candidate->position);
+											v2 candidate_pos_p2 = V2AddV2(candidate->physics.shape.line.p2,
+																		  candidate->position);
+											
+											if (pos.x >= candidate_pos_p1.x - snap_amount &&
+												pos.x <= candidate_pos_p1.x + snap_amount &&
+												pos.y >= candidate_pos_p1.y - snap_amount &&
+												pos.y <= candidate_pos_p1.y + snap_amount)
+											{
+												has_snapped = 1;
+												selected_entity->physics.shape.line.p1 = V2SubtractV2(candidate_pos_p1, selected_entity->position);
+												break;
+											}
+											else if (pos.x >= candidate_pos_p2.x - snap_amount &&
+													 pos.x <= candidate_pos_p2.x + snap_amount &&
+													 pos.y >= candidate_pos_p2.y - snap_amount &&
+													 pos.y <= candidate_pos_p2.y + snap_amount)
+											{
+												has_snapped = 1;
+												selected_entity->physics.shape.line.p1 = V2SubtractV2(candidate_pos_p2, selected_entity->position);
+												break;
+											}
+											
+										}
+					 */
+					
+					if (!has_snapped)
 					{
-						has_snapped = 1;
-						selected_entity->physics.shape.line.p1 = V2SubtractV2(candidate_pos_p2, selected_entity->position);
-						break;
+						segs->vertices[i] = V2AddV2(V2SubtractV2(GetMousePositionInWorldSpace(), selected_entity->position), grab_offset);
 					}
-					
 				}
 				
-				if (!has_snapped)
+				if (core->left_mouse_released)
 				{
-					selected_entity->physics.shape.line.p1 = V2AddV2(V2SubtractV2(GetMousePositionInWorldSpace(), selected_entity->position), grab_offset);
+					selected_seg = 0;
 				}
-				v2 position_offset = V2AddV2(selected_entity->physics.shape.line.p1, selected_entity->physics.shape.line.p2);
-				position_offset.x *= 0.5f;
-				position_offset.y *= 0.5f;
-				selected_entity->position = V2AddV2(selected_entity->position, position_offset);
-				selected_entity->physics.shape.line.p1 = V2SubtractV2(selected_entity->physics.shape.line.p1, position_offset);
-				selected_entity->physics.shape.line.p2 = V2SubtractV2(selected_entity->physics.shape.line.p2, position_offset);
+				
+				v2 p1_pos_view = v2view(v2(p1_pos.x - circle_size / 2.0f,
+										   p1_pos.y - circle_size / 2.0f));
+				v2 middle_size = v2zoom(v2(circle_size, circle_size));
+				
+				StaticSpriteData *circle = &global_static_sprite_data[STATIC_SPRITE_circle_icon];
+				
+				ArcPushTexture(circle->texture_atlas,
+							   0,
+							   circle->source,
+							   v4(p1_pos_view.x, p1_pos_view.y, middle_size.x, middle_size.y),
+							   v4u(p1_tint),
+							   LAYER_HUD);
 			}
-			else if(is_holding_v2)
-			{
-				p2_tint = 0.5f;
-				
-				b8 has_snapped = 0;
-				for (Entity *candidate = 0; IncrementEntityWithProperty(&candidate, ENTITY_PROPERTY_ground_segment);)
-				{
-					if (candidate == selected_entity)
-						continue;
-					
-					f32 snap_amount = 2.0f;
-					
-					v2 pos = GetMousePositionInWorldSpace();
-					v2 candidate_pos_p1 = V2AddV2(candidate->physics.shape.line.p1,
-												  candidate->position);
-					v2 candidate_pos_p2 = V2AddV2(candidate->physics.shape.line.p2,
-												  candidate->position);
-					
-					if (pos.x >= candidate_pos_p1.x - snap_amount &&
-						pos.x <= candidate_pos_p1.x + snap_amount &&
-						pos.y >= candidate_pos_p1.y - snap_amount &&
-						pos.y <= candidate_pos_p1.y + snap_amount)
-					{
-						has_snapped = 1;
-						selected_entity->physics.shape.line.p2 = V2SubtractV2(candidate_pos_p1, selected_entity->position);
-						break;
-					}
-					else if (pos.x >= candidate_pos_p2.x - snap_amount &&
-							 pos.x <= candidate_pos_p2.x + snap_amount &&
-							 pos.y >= candidate_pos_p2.y - snap_amount &&
-							 pos.y <= candidate_pos_p2.y + snap_amount)
-					{
-						has_snapped = 1;
-						selected_entity->physics.shape.line.p2 = V2SubtractV2(candidate_pos_p2, selected_entity->position);
-						break;
-					}
-					
-				}
-				
-				if (!has_snapped)
-				{
-					selected_entity->physics.shape.line.p2 = V2AddV2(V2SubtractV2(GetMousePositionInWorldSpace(), selected_entity->position), grab_offset);
-				}
-				v2 position_offset = V2AddV2(selected_entity->physics.shape.line.p1, selected_entity->physics.shape.line.p2);
-				position_offset.x *= 0.5f;
-				position_offset.y *= 0.5f;
-				selected_entity->position = V2AddV2(selected_entity->position, position_offset);
-				selected_entity->physics.shape.line.p1 = V2SubtractV2(selected_entity->physics.shape.line.p1, position_offset);
-				selected_entity->physics.shape.line.p2 = V2SubtractV2(selected_entity->physics.shape.line.p2, position_offset);
-			}
-			
-			if (IsV2OverlappingShape(GetMousePositionInWorldSpace(),
-									 v1_shape,
-									 C2_SHAPE_TYPE_aabb))
-			{
-				p1_tint = 0.75f;
-				
-				if (platform->left_mouse_pressed)
-				{
-					is_holding_v1 = 1;
-					
-					grab_offset = V2SubtractV2(p1_pos, GetMousePositionInWorldSpace());
-					
-					platform->left_mouse_pressed = 0;
-				}
-			}
-			else if (IsV2OverlappingShape(GetMousePositionInWorldSpace(),
-										  v2_shape,
-										  C2_SHAPE_TYPE_aabb))
-			{
-				p2_tint = 0.75f;
-				
-				if (platform->left_mouse_pressed)
-				{
-					is_holding_v2 = 1;
-					grab_offset = V2SubtractV2(p2_pos, GetMousePositionInWorldSpace());
-					platform->left_mouse_pressed = 0;
-				}
-			}
-			
-			v2 p1_pos_view = v2view(v2(p1_pos.x - circle_size / 2.0f,
-									   p1_pos.y - circle_size / 2.0f));
-			v2 p2_pos_view = v2view(v2(p2_pos.x - circle_size / 2.0f,
-									   p2_pos.y - circle_size / 2.0f));
-			
-			v2 middle_size = v2zoom(v2(circle_size, circle_size));
-			
-			StaticSpriteData *circle = &global_static_sprite_data[STATIC_SPRITE_circle_icon];
-			
-			ArcPushTexture(circle->texture_atlas,
-						   0,
-						   circle->source,
-						   v4(p1_pos_view.x, p1_pos_view.y, middle_size.x, middle_size.y),
-						   v4u(p1_tint),
-						   LAYER_HUD);
-			ArcPushTexture(circle->texture_atlas,
-						   0,
-						   circle->source,
-						   v4(p2_pos_view.x, p2_pos_view.y, middle_size.x, middle_size.y),
-						   v4u(p2_tint),
-						   LAYER_HUD);
 		}
 	}
 	

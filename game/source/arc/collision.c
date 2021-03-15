@@ -606,6 +606,12 @@ internal b8 IsV2OverlappingShape(v2 pos, c2Shape shape, c2ShapeType shape_type)
 					pos.y >= (shape.line.p1.y + shape.line.p2.y) / 2.0f - thicc && pos.y <= (shape.line.p1.y + shape.line.p2.y) / 2.0f + thicc);
 		} break;
 		
+		case C2_SHAPE_TYPE_line_segments :
+		{
+			return (pos.x >= shape.line_segments.vertices[0].x && pos.x < shape.line_segments.vertices[shape.line_segments.count - 1].x &&
+					pos.y >= shape.line_segments.vertices[shape.line_segments.count - 1].y && pos.y < shape.line_segments.vertices[0].y);
+		} break;
+		
 		default:
 		return 0;
 		break;
