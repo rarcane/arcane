@@ -10,11 +10,30 @@ EntityPresetCallback(GroundSegment)
 	entity->position = v2(-camera_region.x - camera_region.z / 2.0f,
 						  -camera_region.y - camera_region.w / 2.0f);
 	
-	Line line = {0};
-	line.p1.x = -10.0f;
-	line.p2.x = 10.0f;
-	entity->physics.shape.line = line;
-	entity->physics.shape_type = C2_SHAPE_TYPE_line;
+	LineSegments lineseg = {0};
+	for (i32 i = 0; i < 16; i++)
+	{
+		i32 octaves = 8;
+		f32 frequency = 5.0f;
+		f32 amplitude = 5.0f;
+		f32 max_noise_value = 0.0f;
+		f32 noise_amount = 0.0f;
+		for (int k = 0; k < octaves; k++)
+		{
+			noise_amount += GetPerlinNoise((f32)i / (f32)PERLIN_NOISE_LENGTH * frequency, 0.0f) * amplitude;
+			max_noise_value += amplitude;
+			frequency *= 2.0f;
+			amplitude *= 0.5f;
+		}
+		f32 height_noise = noise_amount / max_noise_value;
+		
+		f32 height = height_noise * 100.0f;
+		
+		lineseg.vertices[i] = v2(i * 16.0f - 128.0f, height);
+	}
+	lineseg.count = 16;
+	entity->physics.shape.line_segments = lineseg;
+	entity->physics.shape_type = C2_SHAPE_TYPE_line_segments;
 	
 	entity->physics.material.static_friction = 0.7f;
 	entity->physics.material.dynamic_friction = 0.7f;

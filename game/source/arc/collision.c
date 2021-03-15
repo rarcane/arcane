@@ -100,7 +100,6 @@ internal void UpdatePhysics()
 		GenerateCollisionManifold(a_shape, entity_a->physics.shape_type,
 								  b_shape, entity_b->physics.shape_type,
 								  &manifold);
-		//GenerateCollisionManifold(a_body_comp, entity_a->position, b_body_comp, entity_b->position, &manifold);
 		
 		if (manifold.count > 0 && fabsf(manifold.depths[0]) != 0.0f)
 		{
@@ -174,9 +173,9 @@ internal void GenerateCollisionPairs(CollisionPair pairs[], i32 *count)
 				  entity_b->physics.mass_data.mass == 0.0f) &&
 				(entity_a->physics.collide_against & entity_b->physics.type))
 			{
-				CollisionPair new_pair = {entity_a, entity_b};
-				Assert(*count + 1 < MAX_COLLISION_PAIRS)
-					pairs[(*count)++] = new_pair;
+				CollisionPair new_pair = { entity_a, entity_b };
+				Assert(*count + 1 < MAX_COLLISION_PAIRS);
+				pairs[(*count)++] = new_pair;
 			}
 		}
 	}
@@ -224,7 +223,7 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 				} break;
 				
 				default:
-				Assert(0);
+				
 				break;
 			}
 		}
@@ -284,8 +283,43 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 					manifold->n.y *= -1.0f;
 				} break;
 				
+				case C2_SHAPE_TYPE_line_segments :
+				{
+					for (i32 i = 0; i < b_shape.line_segments.count - 1; i++)
+					{
+						v2 p1 = b_shape.line_segments.vertices[i];
+						v2 p2 = b_shape.line_segments.vertices[i + 1];
+						
+						v2 line_vector = V2SubtractV2(p2, p1);
+						v2 capsule_point_a = v2(a_shape.capsule.a.x, a_shape.capsule.a.y);
+						
+						v2 point_a_vector_from_line = V2SubtractV2(capsule_point_a,
+																   p1);
+						f32 dot = point_a_vector_from_line.x * line_vector.x + point_a_vector_from_line.y * line_vector.y;
+						// NOTE(randy): proj a->b = (a dot b / mag^2) * b
+						v2 proj = V2MultiplyF32(line_vector, dot / (line_vector.x * line_vector.x + line_vector.y * line_vector.y));
+						
+						v2 collision_normal = V2SubtractV2(capsule_point_a, V2AddV2(p1, proj));
+						f32 collision_distance = PythagSolve(collision_normal.x, collision_normal.y);
+						v2 normalised_collision_normal = v2(collision_normal.x / collision_distance, collision_normal.y / collision_distance);
+						v2Realise(&normalised_collision_normal);
+						
+						//PushDebugLine(p1, V2AddV2(p1, collision_normal), v3(1.0f, 0.0f, 0.0f));
+						
+						if (collision_distance < a_shape.capsule.r &&
+							capsule_point_a.x >= p1.x &&
+							capsule_point_a.x <= p2.x &&
+							fabsf(manifold->depths[0]) > collision_distance)
+						{
+							manifold->n = c2V(-normalised_collision_normal.x, -normalised_collision_normal.y);
+							manifold->count = 1;
+							manifold->depths[0] = a_shape.capsule.r - collision_distance;
+						}
+					}
+				} break;
+				
 				default:
-				Assert(0);
+				
 				break;
 			}
 		}
@@ -324,7 +358,7 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 				break;
 				
 				default:
-				Assert(0);
+				
 				break;
 			}
 		}
@@ -402,7 +436,7 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 				} break;
 				
 				default:
-				Assert(0);
+				
 				break;
 			}
 		}
@@ -464,13 +498,49 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 				} break;
 				
 				default:
-				Assert(0);
 				break;
 			}
 		} break;
 		
+		case C2_SHAPE_TYPE_line_segments :
+		{
+			switch (b_shape_type)
+			{
+				case C2_SHAPE_TYPE_capsule :
+				{
+					for (i32 i = 0; i < a_shape.line_segments.count - 1; i++)
+					{
+						v2 p1 = a_shape.line_segments.vertices[i];
+						v2 p2 = a_shape.line_segments.vertices[i + 1];
+						
+						v2 line_vector = V2SubtractV2(p2, p1);
+						v2 capsule_point_a = v2(b_shape.capsule.a.x, b_shape.capsule.a.y);
+						
+						v2 point_a_vector_from_line = V2SubtractV2(capsule_point_a,
+																   p1);
+						f32 dot = point_a_vector_from_line.x * line_vector.x + point_a_vector_from_line.y * line_vector.y;
+						v2 proj = V2MultiplyF32(line_vector, dot / (line_vector.x * line_vector.x + line_vector.y * line_vector.y));
+						
+						v2 collision_normal = V2SubtractV2(capsule_point_a, V2AddV2(p1, proj));
+						f32 collision_distance = PythagSolve(collision_normal.x, collision_normal.y);
+						v2 normalised_collision_normal = v2(collision_normal.x / collision_distance, collision_normal.y / collision_distance);
+						v2Realise(&normalised_collision_normal);
+						
+						if (collision_distance < b_shape.capsule.r &&
+							capsule_point_a.x >= p1.x &&
+							capsule_point_a.x <= p2.x &&
+							fabsf(collision_distance) > manifold->depths[0])
+						{
+							manifold->n = c2V(normalised_collision_normal.x, normalised_collision_normal.y);
+							manifold->count = 1;
+							manifold->depths[0] = b_shape.capsule.r - collision_distance;
+						}
+					}
+				} break;
+			}
+		}
+		
 		default:
-		Assert(0);
 		break;
 	}
 }

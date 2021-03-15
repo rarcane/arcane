@@ -203,6 +203,14 @@ internal void AddPositionOffsetToShape(c2Shape *shape, c2ShapeType shape_type, v
 			shape->circle.p.y += position.y;
 		} break;
 		
+		case C2_SHAPE_TYPE_line_segments :
+		{
+			for (i32 i = 0; i < shape->line_segments.count; i++)
+			{
+				shape->line_segments.vertices[i] = V2AddV2(shape->line_segments.vertices[i], position);
+			}
+		} break;
+		
 		default :
 		Assert(0);
 		break;
@@ -406,6 +414,16 @@ internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v3 co
             PushDebugLine(p1, p2, colour);
             PushDebugLine(p2, p3, colour);
             PushDebugLine(p3, p0, colour);
+		} break;
+		
+		case C2_SHAPE_TYPE_line_segments :
+        {
+			for (i32 i = 0; i < shape.line_segments.count - 1; i++)
+			{
+				PushDebugLine(V2AddV2(position, shape.line_segments.vertices[i]),
+							  V2AddV2(position, shape.line_segments.vertices[i + 1]),
+							  colour);
+			}
 		} break;
 	}
 }

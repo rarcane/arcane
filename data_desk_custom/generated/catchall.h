@@ -416,6 +416,13 @@ v2 p1;
 v2 p2;
 } Line;
 
+#define MAX_LINE_SEGMENT_VERTICES (16)
+typedef struct LineSegments
+{
+i32 count;
+v2 vertices[MAX_LINE_SEGMENT_VERTICES];
+} LineSegments;
+
 typedef union c2Shape
 {
 c2AABB aabb;
@@ -423,6 +430,7 @@ c2Capsule capsule;
 c2Circle circle;
 c2Poly poly;
 Line line;
+LineSegments line_segments;
 } c2Shape;
 
 typedef enum c2ShapeType c2ShapeType;
@@ -433,6 +441,7 @@ C2_SHAPE_TYPE_capsule,
 C2_SHAPE_TYPE_circle,
 C2_SHAPE_TYPE_poly,
 C2_SHAPE_TYPE_line,
+C2_SHAPE_TYPE_line_segments,
 C2_SHAPE_TYPE_MAX,
 };
 static char *Getc2ShapeTypeName(c2ShapeType type);
@@ -621,73 +630,6 @@ static char *GetEntityPropertyName(EntityProperty type);
 #define MAX_INVENTORY_SLOTS (9)
 #define MAX_SPELL_SLOTS (8)
 #define MAX_EQUIPMENT_SLOTS (6)
-typedef struct Entity_Version0
-{
-u64 properties[ENTITY_PROPERTY_SIZE];
-i32 testint;
-char debug_name[100];
-v2 position;
-SpriteData sprite_data;
-b8 is_flipped;
-b8 is_background_sprite;
-AnimationFlags animation_flags;
-i32 current_frame;
-f32 interval_mult;
-f32 frame_start_time;
-PhysicsBodyData physics;
-v2 smooth_velocity;
-f32 axis_x;
-f32 move_speed;
-f32 move_speed_mult;
-ArcEntityType entity_type;
-// @DoNotSerialise 
-char *current_general_state;
-ArcEntityAnimationState current_animation_state;
-Item item;
-Enchantment enchamtnets[MAX_ENCHANTMENTS];
-v2 parallax_amount;
-v2 desired_position;
-f32 priority;
-StructureType structure_type;
-Item remaining_items_in_blueprint[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
-f32 durability;
-} Entity_Version0;
-
-typedef struct Entity_Version1
-{
-u64 properties[ENTITY_PROPERTY_SIZE];
-i32 testint;
-char debug_name[100];
-v2 position;
-SpriteData sprite_data;
-b8 is_flipped;
-b8 is_background_sprite;
-AnimationFlags animation_flags;
-i32 current_frame;
-f32 interval_mult;
-f32 frame_start_time;
-PhysicsBodyData physics;
-v2 smooth_velocity;
-f32 axis_x;
-f32 move_speed;
-f32 move_speed_mult;
-ArcEntityType entity_type;
-// @DoNotSerialise 
-char *current_general_state;
-ArcEntityAnimationState current_animation_state;
-Item item;
-Enchantment enchamtnets[MAX_ENCHANTMENTS];
-v2 parallax_amount;
-v2 desired_position;
-f32 priority;
-StructureType structure_type;
-Item remaining_items_in_blueprint[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
-// @MapFrom(durability) 
-f32 durability;
-// @NewValue(20) 
-i64 age;
-} Entity_Version1;
-
 typedef struct Entity
 {
 u64 properties[ENTITY_PROPERTY_SIZE];
@@ -711,7 +653,6 @@ ArcEntityType entity_type;
 char *current_general_state;
 ArcEntityAnimationState current_animation_state;
 Item item;
-// @MapFrom(enchamtnets) 
 Enchantment enchantments[MAX_ENCHANTMENTS];
 v2 parallax_amount;
 v2 desired_position;
@@ -719,9 +660,6 @@ f32 priority;
 StructureType structure_type;
 Item remaining_items_in_blueprint[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
 f32 durability;
-i64 age;
-// @NewValue(0) 
-b8 yeet;
 } Entity;
 
 typedef struct EntityPresetTypeData
@@ -1045,21 +983,9 @@ static void WriteWorldSaveDataToFile(FILE *file, WorldSaveData *data);
 
 static void ReadWorldSaveDataFromFile(FILE *file, WorldSaveData *data);
 
-static void WriteEntity_Version0ToFile(FILE *file, Entity_Version0 *data);
+static void WriteEntity_Version0ToFile(FILE *file, Entity *data);
 
-static void ReadEntity_Version0FromFile(FILE *file, Entity_Version0 *data);
-
-static void MapEntity_Version0ToEntity_Version1(Entity_Version0 origin, Entity_Version1 *dest);
-
-static void WriteEntity_Version1ToFile(FILE *file, Entity_Version1 *data);
-
-static void ReadEntity_Version1FromFile(FILE *file, Entity_Version1 *data);
-
-static void MapEntity_Version1ToEntity(Entity_Version1 origin, Entity *dest);
-
-static void WriteEntity_Version2ToFile(FILE *file, Entity *data);
-
-static void ReadEntity_Version2FromFile(FILE *file, Entity *data);
+static void ReadEntity_Version0FromFile(FILE *file, Entity *data);
 
 static void WriteCharacterData_Version0ToFile(FILE *file, CharacterData *data);
 

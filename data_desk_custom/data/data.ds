@@ -436,6 +436,13 @@ Line :: struct
 	p2 : v2;
 }
 
+MAX_LINE_SEGMENT_VERTICES :: 16
+LineSegments :: struct
+{
+	count : i32;
+	vertices : v2[MAX_LINE_SEGMENT_VERTICES];
+}
+
 c2Shape :: union
 {
 	aabb : c2AABB;
@@ -443,6 +450,7 @@ c2Shape :: union
 	circle : c2Circle;
 	poly : c2Poly;
 	line : Line;
+	line_segments : LineSegments;
 }
 
 c2ShapeType :: enum
@@ -452,6 +460,7 @@ c2ShapeType :: enum
 	circle,
 	poly,
 	line,
+	line_segments,
 }
 
 PhysicsMaterial :: struct
@@ -632,141 +641,7 @@ MAX_EQUIPMENT_SLOTS :: 6
 
 //~Entity
 
-@Version(0)
-Entity_Version0 :: struct
-{
-	properties : u64[ENTITY_PROPERTY_SIZE];
-	testint : i32;
-	debug_name : char[100];
-	
-	position : v2;
-	
-	sprite_data : SpriteData;
-	is_flipped : b8;
-	is_background_sprite : b8; // Temp solution
-	
-	animation_flags : AnimationFlags;
-	current_frame : i32;
-	interval_mult : f32;
-	frame_start_time : f32;
-	
-	// NOTE(randy): physics body
-	physics : PhysicsBodyData;
-	smooth_velocity : v2;
-	
-	// NOTE(randy): movement
-	axis_x : f32;
-	move_speed : f32;
-	move_speed_mult : f32;
-	
-	// NOTE(randy): arcentity
-	entity_type : ArcEntityType;
-	@DoNotSerialise
-		current_general_state : *char;
-	current_animation_state : ArcEntityAnimationState;
-	
-	// NOTE(randy): Item shit
-	item : Item;
-	enchamtnets : Enchantment[MAX_ENCHANTMENTS];
-	
-	// NOTE(randy): Parallax
-	parallax_amount : v2;
-	desired_position : v2;
-	
-	// NOTE(randy): Particle emitter
-	/*
-		life_time : f32;
-		start_time : f32;
-		particle_flags : ParticleEmitterFlags;
-		particles : Particle[MAX_PARTICLE_AMOUNT]; // Need to put this somewhere else?
-		particle_count : i32;
-		free_particle_index : i32;
-		begin_callback : EmitterBeginCallback;
-		finish_callback : EmitterFinishCallback;
-	*/
-	
-	
-	// NOTE(randy): interactable
-	priority : f32;
-	// is_overlapping_player : b8;
-	
-	// NOTE(randy): blueprint
-	structure_type : StructureType;
-	remaining_items_in_blueprint : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
-	
-	durability : f32;
-}
-
-@Version(1)
-Entity_Version1 :: struct
-{
-	properties : u64[ENTITY_PROPERTY_SIZE];
-	testint : i32;
-	debug_name : char[100];
-	
-	position : v2;
-	
-	sprite_data : SpriteData;
-	is_flipped : b8;
-	is_background_sprite : b8; // Temp solution
-	
-	animation_flags : AnimationFlags;
-	current_frame : i32;
-	interval_mult : f32;
-	frame_start_time : f32;
-	
-	// NOTE(randy): physics body
-	physics : PhysicsBodyData;
-	smooth_velocity : v2;
-	
-	// NOTE(randy): movement
-	axis_x : f32;
-	move_speed : f32;
-	move_speed_mult : f32;
-	
-	// NOTE(randy): arcentity
-	entity_type : ArcEntityType;
-	@DoNotSerialise
-		current_general_state : *char;
-	current_animation_state : ArcEntityAnimationState;
-	
-	// NOTE(randy): Item shit
-	item : Item;
-	enchamtnets : Enchantment[MAX_ENCHANTMENTS];
-	
-	// NOTE(randy): Parallax
-	parallax_amount : v2;
-	desired_position : v2;
-	
-	// NOTE(randy): Particle emitter
-	/*
-		life_time : f32;
-		start_time : f32;
-		particle_flags : ParticleEmitterFlags;
-		particles : Particle[MAX_PARTICLE_AMOUNT]; // Need to put this somewhere else?
-		particle_count : i32;
-		free_particle_index : i32;
-		begin_callback : EmitterBeginCallback;
-		finish_callback : EmitterFinishCallback;
-	*/
-	
-	
-	// NOTE(randy): interactable
-	priority : f32;
-	// is_overlapping_player : b8;
-	
-	// NOTE(randy): blueprint
-	structure_type : StructureType;
-	remaining_items_in_blueprint : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
-	
-	@MapFrom(durability)
-		durability : f32;
-	
-	@NewValue(20)
-		age: i64;
-}
-
-@SerialisableStruct(2) @Version(2)
+@SerialisableStruct(0) @Version(0)
 Entity :: struct
 {
 	properties : u64[ENTITY_PROPERTY_SIZE];
@@ -801,40 +676,20 @@ Entity :: struct
 	
 	// NOTE(randy): Item shit
 	item : Item;
-	@MapFrom(enchamtnets)
-		enchantments: Enchantment[MAX_ENCHANTMENTS];
+	enchantments : Enchantment[MAX_ENCHANTMENTS];
 	
 	// NOTE(randy): Parallax
 	parallax_amount : v2;
 	desired_position : v2;
 	
-	// NOTE(randy): Particle emitter
-	/*
-		life_time : f32;
-		start_time : f32;
-		particle_flags : ParticleEmitterFlags;
-		particles : Particle[MAX_PARTICLE_AMOUNT]; // Need to put this somewhere else?
-		particle_count : i32;
-		free_particle_index : i32;
-		begin_callback : EmitterBeginCallback;
-		finish_callback : EmitterFinishCallback;
-	*/
-	
-	
 	// NOTE(randy): interactable
 	priority : f32;
-	// is_overlapping_player : b8;
 	
 	// NOTE(randy): blueprint
 	structure_type : StructureType;
 	remaining_items_in_blueprint : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
 	
 	durability : f32;
-	
-	age: i64;
-	
-	@NewValue(0)
-		yeet: b8;
 }
 
 @XMacro
