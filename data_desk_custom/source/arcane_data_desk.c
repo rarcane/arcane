@@ -825,6 +825,38 @@ internal DataDeskNode *FindStructVersion(i32 version, char *struct_name)
 	return 0;
 }
 
+internal i32 FindStartStructVersion(char *struct_name)
+{
+	i32 lowest = -1;
+	for (i32 i = 0; i < version_struct_count; i++)
+	{
+		DataDeskNode *candidate_node = version_structs[i];
+		DataDeskNode *candidate_version_param = DataDeskGetTagParameter(DataDeskGetNodeTag(candidate_node, "Version"), 0);
+		i32 candidate_version_number = DataDeskInterpretNumericExpressionAsInteger(candidate_version_param);
+		
+		char candidate_trimmed_name[200] = "";
+		if (DataDeskGetNodeTag(candidate_node, "SerialisableStruct"))
+		{
+			sprintf(candidate_trimmed_name, "%s", candidate_node->name);
+		}
+		else
+		{
+			char *candidate_found = strstr(candidate_node->name, "_Version");
+			if (candidate_found)
+			{
+				strncpy(candidate_trimmed_name, candidate_node->name, candidate_found - candidate_node->name);
+			}
+		}
+		
+		if (strcmp(struct_name, candidate_trimmed_name) == 0 && (lowest == -1 || candidate_version_number < lowest))
+		{
+			lowest = candidate_version_number;
+		}
+	}
+	
+	return lowest;
+}
+
 internal void GenerateSerialisationCode()
 {
 	FILE *h_file = global_catchall_header;
@@ -865,7 +897,8 @@ internal void GenerateSerialisationCode()
 			
 			fprintf(c_file, "    switch (actual_version)\n");
 			fprintf(c_file, "    {\n");
-			for (i32 start_version = 0; start_version < max_version; start_version++)
+			i32 start_version = FindStartStructVersion(root->name);
+			for (start_version; start_version < max_version; start_version++)
 			{
 				char *struct_name = root->name_lowercase_with_underscores;
 				DataDeskNode *start_version_node = FindStructVersion(start_version, root->name);
