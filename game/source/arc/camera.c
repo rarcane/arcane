@@ -150,11 +150,23 @@ static void TransformInGameCamera()
 	
 	core->camera_offset.y = -DEFAULT_CAMERA_OFFSET_Y;
 	
-	core->camera_zoom = (core->render_h / (1080.0f / DEFAULT_CAMERA_ZOOM)) * core->camera_zoom_mult;
+	//core->camera_zoom = (core->render_h / (1080.0f / DEFAULT_CAMERA_ZOOM)) * core->camera_zoom_mult;
+	//core->camera_zoom = 1.0f;
+	
+	f32 transform_mult = platform->key_down[KEY_shift] ? 2.0f : 1.0f;
+	
+	if (platform->mouse_scroll_y != 0.0f)
+	{
+		core->camera_zoom += platform->mouse_scroll_y / 120.0f / 4 * transform_mult;
+		if (core->camera_zoom <= 0.1f)
+			core->camera_zoom = 0.1f;
+		else if (core->camera_zoom > 10.0f)
+			core->camera_zoom = 10.0f;
+	}
 	
 	core->run_data->disable_chunk_loaded_based_off_view = 0;
 	
-	TsUIWindowBegin("window", v4(0.0f, 0.0f, 300.0f, 300.0f), 0, 0);
+	TsUIWindowBegin("debug", v4(0.0f, 0.0f, 300.0f, 300.0f), 0, 0);
 	{
 		TsUIPushColumn(v2(0.0f, 0.0f), v2(100.0f, 20.0f));
 		
@@ -163,6 +175,16 @@ static void TransformInGameCamera()
 			sprintf(lbl, "camera pos: %f, %f", core->camera_position.x, core->camera_position.y);
 			TsUILabel(lbl);
 		}
+		
+		{
+			char lbl[100];
+			sprintf(lbl, "camera zoom: %f", core->camera_zoom);
+			TsUILabel(lbl);
+		}
+		
+		global_ts2d->ground_scale = TsUISlider("Scale", global_ts2d->ground_scale, 0.004f, 0.5f);
+		global_ts2d->ground_vor_step = TsUISlider("Voronoi Step", global_ts2d->ground_vor_step, 0.004f, 0.5f);
+		global_ts2d->ground_band_height = TsUISlider("Band Height", global_ts2d->ground_band_height, 1.0f, 100.0f);
 		
 		/*
 				{

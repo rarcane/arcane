@@ -185,13 +185,6 @@ struct TsUIWidget
     union
     {
         
-        struct ImageButton
-        {
-            Ts2dTexture *texture;
-            v4 source;
-        }
-        image_button;
-        
         struct Toggler
         {
             b32 toggled;
@@ -230,6 +223,7 @@ struct TsUIWidget
         }
         collapsable;
         
+#if 0
         struct TileSelect
         {
             b32 was_selecting;
@@ -241,6 +235,7 @@ struct TsUIWidget
             Ts2dTexture *tilemap_texture;
         }
         tile_select;
+#endif
         
         struct ColorPicker
         {
@@ -440,7 +435,9 @@ void  TsUIStyledWindowBegin              (i32 style_flags, char *title, v4 rect,
 void  TsUIWindowEnd                      (void);
 v3    TsUIStyledColorPicker              (i32 style_flags, char *text, v3 color);
 i32   TsUIStyledNotePicker               (i32 style_flags, char *text, i32 note);
+#if 0
 b32   TsUIStyledTileSelect               (i32 style_flags, char *text, Ts2dTexture *texture, v4 tilemap_source, i32 *tile_select_x0, i32 *tile_select_y0, i32 *tile_select_x1, i32 *tile_select_y1, b32 selection_from_widget);
+#endif
 
 // NOTE(rjf): Ending widget calls
 void  TsUICloseCurrentDropdownTree       (void);
@@ -466,10 +463,12 @@ b32   TsUIWindowCloseButton        (void)                                       
 void  TsUIWindowBegin              (char *title, v4 rect, i32 flags, b32 *open_ptr)  {        TsUIStyledWindowBegin(0, title, rect, flags, open_ptr); }
 v3    TsUIColorPicker              (char *text, v3 color)                            { return TsUIStyledColorPicker(0, text, color);                  }
 i32   TsUINotePicker               (char *text, i32 note)                            { return TsUIStyledNotePicker(0, text, note);                    }
+#if 0
 b32   TsUITileSelect               (char *text, Ts2dTexture *texture, v4 tilemap_source, i32 *tile_select_x0, i32 *tile_select_y0, i32 *tile_select_x1, i32 *tile_select_y1, b32 selection_from_widget)
 {
     return TsUIStyledTileSelect(0, text, texture, tilemap_source, tile_select_x0, tile_select_y0, tile_select_x1, tile_select_y1, selection_from_widget);
 }
+#endif
 
 #ifdef TSUI_STYLE_CALLS_FILE
 #define TsUIStyleCall(name, style_flags) \
@@ -491,10 +490,6 @@ b32   TsUI##name##WindowCloseButton        (void)                               
 void  TsUI##name##WindowBegin              (char *title, v4 rect, i32 flags, b32 *open_ptr)  { TsUIStyledWindowBegin(style_flags, title, rect, flags, open_ptr);              }\
 v3    TsUI##name##ColorPicker              (char *text, v3 color)                            { return TsUIStyledColorPicker(style_flags, text, color);                  }\
 i32   TsUI##name##NotePicker               (char *text, i32 note)                            { return TsUIStyledNotePicker(style_flags, text, note);                    }\
-b32   TsUI##name##TileSelect               (char *text, Ts2dTexture *texture, v4 tilemap_source, i32 *tile_select_x0, i32 *tile_select_y0, i32 *tile_select_x1, i32 *tile_select_y1, b32 selection_from_widget)\
-{\
-return TsUIStyledTileSelect(style_flags, text, texture, tilemap_source, tile_select_x0, tile_select_y0, tile_select_x1, tile_select_y1, selection_from_widget);\
-}\
 
 #include TSUI_STYLE_CALLS_FILE
 #undef TsUIStyleCall

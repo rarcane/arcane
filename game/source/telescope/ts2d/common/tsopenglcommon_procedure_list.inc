@@ -35,6 +35,7 @@ GLProc(UNIFORM1F, Uniform1f)
 GLProc(UNIFORM2F, Uniform2f)
 GLProc(UNIFORM3F, Uniform3f)
 GLProc(UNIFORM4F, Uniform4f)
+GLProc(UNIFORM2FV, Uniform2fv)
 
 GLProc(CREATESHADER, CreateShader)
 GLProc(SHADERSOURCE, ShaderSource)

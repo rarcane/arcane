@@ -132,6 +132,18 @@ global TelescopeModule global_telescope_modules[] =
         .required_linker_flags             = "opengl32.lib",
     },
     
+    // NOTE(rjf): Ts3d
+    {
+        .name                              = "Ts3d",
+        .folder_name                       = "ts3d",
+        .relative_to_telescope_root_path   = "ts3d",
+        .define                            = "TS3D",
+        .module_declaration_type           = "Ts3d *",
+        .module_declaration_name           = "renderer",
+        .platform_declaration_name         = "ts3d",
+        .required_linker_flags             = "opengl32.lib",
+    },
+    
     // NOTE(rjf): TsAssets
     {
         .name                              = "TsAssets",

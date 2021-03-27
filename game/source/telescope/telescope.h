@@ -7,6 +7,10 @@
 #include "ts2d/ts2d.h"
 #endif
 
+#ifdef TS3D
+#include "ts3d/ts3d.h"
+#endif
+
 #ifdef TSASSETS
 #include "tsassets/tsassets.h"
 #endif

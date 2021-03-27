@@ -11,7 +11,10 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
-#include "ext/stb_image.h"
+#include "common/ext/stb_image.h"
+
+#define OBJ_PARSE_IMPLEMENTATION
+#include "common/ext/obj_parse.h"
 
 /*---------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------*/
@@ -47,7 +50,7 @@ void          Ts2dInit                                    (MemoryArena *arena);
 void          Ts2dCleanUp                                 (void);
 void          Ts2dBeginFrame                              (Ts2dBeginFrameInfo *info);
 void          Ts2dEndFrame                                (void);
-void          Ts2dSwapBuffers                             (void);
+void          Ts2dPresent                                 (void);
 void          Ts2dSetDefaultFont                          (Ts2dFont *font);
 Ts2dFont     *Ts2dGetDefaultFont                          (void);
 
@@ -72,6 +75,7 @@ BoundingBox   Ts2dSubModelGetBoundingBox                  (Ts2dSubModel *sub_mod
 void          Ts2dSubModelCleanUp                         (Ts2dSubModel *sub_model);
 Ts2dModel     Ts2dModelInit                               (int sub_model_count, Ts2dSubModel *sub_models, int skeleton_count, Ts2dSkeleton *skeletons);
 Ts2dModel     Ts2dModelInitFromTSMData                    (void *data, u32 data_size);
+Ts2dModel     Ts2dModelInitFromOBJData                    (char *data);
 Ts2dModel     Ts2dModelLoad                               (char *path);
 void          Ts2dModelCleanUp                            (Ts2dModel *model);
 BoundingBox   Ts2dModelGetBoundingBox                     (Ts2dModel *sub_model);
@@ -276,7 +280,7 @@ struct Ts2dSkeleton
 #define TS2D_ONE_OVER_SQUARE_ROOT_OF_TWO_PIf 0.3989422804f
 #define TS2D_EULERS_NUMBERf 2.7182818284590452353602874713527f
 
-#define TS2D_COMMON_DATA            \
+#define TS2D_COMMON_DATA                \
 struct                              \
 {                                   \
 Ts2dRequest active_request;     \
@@ -285,6 +289,8 @@ Ts2dRequest *last_request;      \
 f32         current_time;       \
 Ts2dFont    *default_font;      \
 }
+
+#include "common/tsrendercommon.h"
 
 #if TS2D_BACKEND == TS2D_OPENGL
 #include "ts2d_opengl.h"

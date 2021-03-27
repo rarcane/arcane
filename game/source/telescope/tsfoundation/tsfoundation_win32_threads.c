@@ -81,7 +81,7 @@ Win32WaitForJob(i32 index, u32 milliseconds)
         Win32DispatchJob(platform->work_queue_jobs + index);
         thread_index = platform->work_queue_jobs[index].thread_index;
         
-        // NOTE(rjf): Normal dispatch didn't work and we are waiting forever
+        // NOTE(rjf): Normal dispatch didn't work and we are waiting forever 
         // (which implies that this job needs to be done ASAP), so we'll force
         // wait on the first thread.
         if(thread_index == -1 && milliseconds == TS_WAIT_FOREVER)

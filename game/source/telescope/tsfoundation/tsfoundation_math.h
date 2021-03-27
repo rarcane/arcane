@@ -145,6 +145,13 @@ typedef union V4
     };
     struct
     {
+        f32 up;
+        f32 left;
+        f32 down;
+        f32 right;
+    };
+    struct
+    {
         V2 xy;
         V2 zw;
     };

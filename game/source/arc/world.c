@@ -68,7 +68,7 @@ internal void WorldUpdate()
 #ifdef DEVELOPER_TOOLS
 	DrawDebugLines();
 #endif
-    
+	
 	END_PERF_TIMER;
 }
 
@@ -152,21 +152,27 @@ internal void DrawWorld()
     
 	Ts2dPushWorldEnd();
     
-	// NOTE(randy): Draw velocity projection.
-	/* if (core->draw_velocity)
-    {
-       for (int j = 0; j < core->run_data->entity_components.velocity_component_count; j++)
-       {
-          VelocityComponent *velocity_comp = &core->run_data->entity_components.velocity_components[j];
-          PositionComponent *PositionComponent = velocity_comp->parent_entity->components[COMPONENT_position];
- 
-          Ts2dPushLine(
-             core->renderer,
-             v4(1.0f, 0.0f, 0.0f, 1.0f),
-             v2view(PositionComponent->position),
-             v2view(V2AddV2(PositionComponent->position, V2MultiplyV2(velocity_comp->velocity, v2(0.5f, 0.5f)))));
-       }
-    } */
+	// NOTE(randy): Pass visible ground vertices to renderer
+	MemorySet(global_ts2d->ground_vertices, 0, sizeof(global_ts2d->ground_vertices));
+	global_ts2d->ground_vertex_count = 0;
+	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_ground_segment);)
+	{
+		for (i32 i = 0; i < entity->physics.shape.line_segments.count; i++)
+		{
+			Assert(global_ts2d->ground_vertex_count + 1 < MAX_GROUND_VERTICES);
+			global_ts2d->ground_vertices[global_ts2d->ground_vertex_count] = V2AddV2(entity->physics.shape.line_segments.vertices[i], entity->position);
+			global_ts2d->ground_vertices[global_ts2d->ground_vertex_count].y *= -1.0;
+			global_ts2d->ground_vertex_count++;
+		}
+	}
+	
+	/*
+		global_ts2d->ground_vertices[0] = v2(-150.0f, 30.0f);
+		global_ts2d->ground_vertices[1] = v2(-100.0f, 40.0f);
+		global_ts2d->ground_vertices[2] = v2(-50.0f, 50.0f);
+		global_ts2d->ground_vertices[3] = v2(50.0f, 60.0f);
+		global_ts2d->ground_vertices[4] = v2(150.0f, 60.0f);
+	 */
 }
 
 internal void UpdateParallax()

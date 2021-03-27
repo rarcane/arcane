@@ -1,40 +1,40 @@
-typedef enum Ts2dOpenGLShaderType Ts2dOpenGLShaderType;
-enum Ts2dOpenGLShaderType
+typedef enum TsOpenGLShaderType TsOpenGLShaderType;
+enum TsOpenGLShaderType
 {
-TS2D_OPENGL_SHADER_background,
-TS2D_OPENGL_SHADER_bloom_filter,
-TS2D_OPENGL_SHADER_fbo,
-TS2D_OPENGL_SHADER_fbo_reflection,
-TS2D_OPENGL_SHADER_filled_rect,
-TS2D_OPENGL_SHADER_gaussian_blur,
-TS2D_OPENGL_SHADER_line,
-TS2D_OPENGL_SHADER_model_sprite,
-TS2D_OPENGL_SHADER_post_process,
-TS2D_OPENGL_SHADER_rect,
-TS2D_OPENGL_SHADER_reflection,
-TS2D_OPENGL_SHADER_reflective_rect,
-TS2D_OPENGL_SHADER_shadow,
-TS2D_OPENGL_SHADER_text,
-TS2D_OPENGL_SHADER_texture,
-TS2D_OPENGL_SHADER_texture_reflection,
-TS2D_OPENGL_SHADER_world,
-TS2D_OPENGL_SHADER_world_tile,
-TS2D_OPENGL_SHADER_MAX,
+TS_OPENGL_SHADER_background,
+TS_OPENGL_SHADER_bloom_filter,
+TS_OPENGL_SHADER_fbo_reflection,
+TS_OPENGL_SHADER_filled_rect,
+TS_OPENGL_SHADER_line,
+TS_OPENGL_SHADER_model_sprite,
+TS_OPENGL_SHADER_post_process,
+TS_OPENGL_SHADER_rect,
+TS_OPENGL_SHADER_reflection,
+TS_OPENGL_SHADER_reflective_rect,
+TS_OPENGL_SHADER_shadow,
+TS_OPENGL_SHADER_text,
+TS_OPENGL_SHADER_texture,
+TS_OPENGL_SHADER_texture_reflection,
+TS_OPENGL_SHADER_world,
+TS_OPENGL_SHADER_world_tile,
+TS_OPENGL_SHADER_fbo,
+TS_OPENGL_SHADER_gaussian_blur,
+TS_OPENGL_SHADER_MAX,
 };
 
-#define TS2D_OPENGL_SHADER_INPUT_MAX 16
-#define TS2D_OPENGL_SHADER_OUTPUT_MAX 16
+#define TS_OPENGL_SHADER_INPUT_MAX 16
+#define TS_OPENGL_SHADER_OUTPUT_MAX 16
 global struct
 {
 char *name;
-Ts2dOpenGLShaderInput inputs[TS2D_OPENGL_SHADER_INPUT_MAX];
+TsOpenGLShaderInput inputs[TS_OPENGL_SHADER_INPUT_MAX];
 u32 input_count;
-Ts2dOpenGLShaderOutput outputs[TS2D_OPENGL_SHADER_OUTPUT_MAX];
+TsOpenGLShaderOutput outputs[TS_OPENGL_SHADER_OUTPUT_MAX];
 u32 output_count;
 char *vert;
 char *frag;
 }
-_ts2d__global_opengl_shaders[] = {
+_ts_render_global_opengl_shaders[] = {
 {
 "Background",
 {
@@ -128,76 +128,6 @@ _ts2d__global_opengl_shaders[] = {
 "    }\n"
 "    color *= brightness * 1.4;\n"
 "}\n"
-"",
-},
-{
-"FBO",
-{
-0},
-0,
-{
-{ 0, "color", },
-},
-1,
-"#version 330 core\n"
-"\n"
-"out vec2 frag_uv;\n"
-"out vec2 frag_position;\n"
-"uniform vec4 destination;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    vec2 vertices[] = vec2[](\n"
-"        vec2(0, 0),\n"
-"        vec2(0, 1),\n"
-"        vec2(1, 0),\n"
-"        vec2(1, 1)\n"
-"        );\n"
-"    \n"
-"    vec2 vert_position = vertices[gl_VertexID];\n"
-"    \n"
-"    vec4 screen_position = vec4(vert_position, 0, 1);\n"
-"    screen_position.xy *= destination.zw;\n"
-"    screen_position.xy += destination.xy;\n"
-"    frag_position = screen_position.xy;\n"
-"    gl_Position = screen_position;\n"
-"    frag_uv = vert_position.xy;\n"
-"}\n"
-"",
-"#version 330 core\n"
-"\n"
-"\n"
-"in vec2 frag_uv;\n"
-"in vec2 frag_position;\n"
-"out vec4 color;\n"
-"uniform vec2 uv_offset;\n"
-"uniform vec2 uv_range;\n"
-"uniform vec4 destination;\n"
-"uniform vec2 scale;\n"
-"uniform float opacity;\n"
-"uniform sampler2D tex;\n"
-"uniform vec2 tex_resolution;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    vec2 pixel = (uv_offset + (frag_uv * uv_range));\n"
-"    vec2 sample_uv = floor(pixel) + vec2(0.5, 0.5);\n"
-"    \n"
-"    sample_uv.x += 1.0 - clamp((1.0 - fract(pixel.x)) * scale.x, 0.0, 1.0);\n"
-"    sample_uv.y += 1.0 - clamp((1.0 - fract(pixel.y)) * scale.y, 0.0, 1.0);\n"
-"    \n"
-"    color = texture(tex, sample_uv / tex_resolution);\n"
-"    color.xyz /= color.a;\n"
-"    if(color.a > 0)\n"
-"    {\n"
-"        color *= opacity;\n"
-"    }\n"
-"    else\n"
-"    {\n"
-"        discard;\n"
-"    }\n"
-"}\n"
-"\n"
 "",
 },
 {
@@ -333,77 +263,6 @@ _ts2d__global_opengl_shaders[] = {
 "",
 },
 {
-"Gaussian Blur",
-{
-0},
-0,
-{
-{ 0, "color", },
-},
-1,
-"#version 330 core\n"
-"\n"
-"out vec2 frag_uv;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    vec2 vertices[] = vec2[](\n"
-"        vec2(0, 0),\n"
-"        vec2(0, 1),\n"
-"        vec2(1, 0),\n"
-"        vec2(1, 1)\n"
-"        );\n"
-"    vec2 vert_position = vertices[gl_VertexID];\n"
-"    vec4 screen_position = vec4(vert_position, 0, 1);\n"
-"    screen_position = 2 * screen_position - 1;\n"
-"    gl_Position = screen_position;\n"
-"    frag_uv = vert_position;\n"
-"}\n"
-"\n"
-"",
-"#version 330 core\n"
-"\n"
-"in vec2 frag_uv;\n"
-"out vec4 color;\n"
-"uniform sampler2D tex;\n"
-"uniform vec2 tex_resolution;\n"
-"uniform int radius;\n"
-"uniform vec4 kernel[32];\n"
-"uniform int vertical;\n"
-"uniform vec4 clip;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    color = vec4(0, 0, 0, 0);\n"
-"    \n"
-"    if(gl_FragCoord.x >= clip.x && gl_FragCoord.x <= clip.x + clip.z &&\n"
-"       gl_FragCoord.y >= clip.y && gl_FragCoord.y <= clip.y + clip.w)\n"
-"    {\n"
-"        int first_kernel_index = (16 - radius/4);\n"
-"        \n"
-"        for(int i = 0; i < 2*radius/4; ++i)\n"
-"        {\n"
-"            if(vertical != 0)\n"
-"            {\n"
-"                color += texture(tex, frag_uv + vec2(0, -radius + i*4 + 0) / tex_resolution) * kernel[first_kernel_index + i].x;\n"
-"                color += texture(tex, frag_uv + vec2(0, -radius + i*4 + 1) / tex_resolution) * kernel[first_kernel_index + i].y;\n"
-"                color += texture(tex, frag_uv + vec2(0, -radius + i*4 + 2) / tex_resolution) * kernel[first_kernel_index + i].z;\n"
-"                color += texture(tex, frag_uv + vec2(0, -radius + i*4 + 3) / tex_resolution) * kernel[first_kernel_index + i].w;\n"
-"            }\n"
-"            else\n"
-"            {\n"
-"                color += texture(tex, frag_uv + vec2(-radius + i*4 + 0, 0) / tex_resolution) * kernel[first_kernel_index + i].x;\n"
-"                color += texture(tex, frag_uv + vec2(-radius + i*4 + 1, 0) / tex_resolution) * kernel[first_kernel_index + i].y;\n"
-"                color += texture(tex, frag_uv + vec2(-radius + i*4 + 2, 0) / tex_resolution) * kernel[first_kernel_index + i].z;\n"
-"                color += texture(tex, frag_uv + vec2(-radius + i*4 + 3, 0) / tex_resolution) * kernel[first_kernel_index + i].w;\n"
-"            }\n"
-"        }\n"
-"    }\n"
-"}\n"
-"\n"
-"",
-},
-{
 "Line Batch",
 {
 { 2, "vert_color_data", },
@@ -454,88 +313,88 @@ _ts2d__global_opengl_shaders[] = {
 },
 1,
 "#version 330 core\n"
-"\n"
-"\n"
-"in vec3 vert_position_;\n"
-"in vec2 vert_uv_;\n"
-"in vec3 vert_normal_;\n"
-"in ivec4 vert_bone_indices_;\n"
-"in vec4 vert_bone_weights_;\n"
-"\n"
-"out vec3 frag_position;\n"
-"out vec3 frag_normal;\n"
-"\n"
-"uniform mat3 model_transform;\n"
-"uniform mat4 view_projection;\n"
-"uniform mat4 bone_transform[32];\n"
-"uniform int transform_with_bones;\n"
-"uniform vec3 origin_shift;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    vec3 vert_position = vert_position_;\n"
-"    vec2 vert_uv = vert_uv_;\n"
-"    vec3 vert_normal = vert_normal_;\n"
-"    ivec4 vert_bone_indices = vert_bone_indices_;\n"
-"    vec4 vert_bone_weights = vert_bone_weights_;\n"
-"    \n"
-"    vec4 model_position = vec4(vert_position + origin_shift, 1);\n"
-"    if(transform_with_bones != 0)\n"
-"    {\n"
-"        int bone_index_1 = vert_bone_indices.x;\n"
-"        int bone_index_2 = vert_bone_indices.y;\n"
-"        int bone_index_3 = vert_bone_indices.z;\n"
-"        int bone_index_4 = vert_bone_indices.w;\n"
-"        \n"
-"        float bone_weight_1 = vert_bone_weights.x;\n"
-"        float bone_weight_2 = vert_bone_weights.y;\n"
-"        float bone_weight_3 = vert_bone_weights.z;\n"
-"        float bone_weight_4 = vert_bone_weights.w;\n"
-"        \n"
-"        vec4 bone_transformed_model_position =\n"
-"            ((bone_transform[bone_index_1] * model_position * bone_weight_1) +\n"
-"             (bone_transform[bone_index_2] * model_position * bone_weight_2) +\n"
-"             (bone_transform[bone_index_3] * model_position * bone_weight_3) +\n"
-"             (bone_transform[bone_index_4] * model_position * bone_weight_4));\n"
-"    }\n"
-"    \n"
-"    vec3 vertex_position = model_transform * model_position.xyz;\n"
-"    vec4 world_space_position = vec4(vertex_position.x, vertex_position.y, vertex_position.z, 1);\n"
-"    vec4 clip_space_position = view_projection * world_space_position;\n"
-"    gl_Position = clip_space_position;\n"
-"    frag_position = vertex_position;\n"
-"    frag_normal = model_transform * vert_normal;\n"
-"}\n"
+"\n"
+"\n"
+"in vec3 vert_position_;\n"
+"in vec2 vert_uv_;\n"
+"in vec3 vert_normal_;\n"
+"in ivec4 vert_bone_indices_;\n"
+"in vec4 vert_bone_weights_;\n"
+"\n"
+"out vec3 frag_position;\n"
+"out vec3 frag_normal;\n"
+"\n"
+"uniform mat3 model_transform;\n"
+"uniform mat4 view_projection;\n"
+"uniform mat4 bone_transform[32];\n"
+"uniform int transform_with_bones;\n"
+"uniform vec3 origin_shift;\n"
+"\n"
+"void main()\n"
+"{\n"
+"    vec3 vert_position = vert_position_;\n"
+"    vec2 vert_uv = vert_uv_;\n"
+"    vec3 vert_normal = vert_normal_;\n"
+"    ivec4 vert_bone_indices = vert_bone_indices_;\n"
+"    vec4 vert_bone_weights = vert_bone_weights_;\n"
+"    \n"
+"    vec4 model_position = vec4(vert_position + origin_shift, 1);\n"
+"    if(transform_with_bones != 0)\n"
+"    {\n"
+"        int bone_index_1 = vert_bone_indices.x;\n"
+"        int bone_index_2 = vert_bone_indices.y;\n"
+"        int bone_index_3 = vert_bone_indices.z;\n"
+"        int bone_index_4 = vert_bone_indices.w;\n"
+"        \n"
+"        float bone_weight_1 = vert_bone_weights.x;\n"
+"        float bone_weight_2 = vert_bone_weights.y;\n"
+"        float bone_weight_3 = vert_bone_weights.z;\n"
+"        float bone_weight_4 = vert_bone_weights.w;\n"
+"        \n"
+"        vec4 bone_transformed_model_position =\n"
+"            ((bone_transform[bone_index_1] * model_position * bone_weight_1) +\n"
+"             (bone_transform[bone_index_2] * model_position * bone_weight_2) +\n"
+"             (bone_transform[bone_index_3] * model_position * bone_weight_3) +\n"
+"             (bone_transform[bone_index_4] * model_position * bone_weight_4));\n"
+"    }\n"
+"    \n"
+"    vec3 vertex_position = model_transform * model_position.xyz;\n"
+"    vec4 world_space_position = vec4(vertex_position.x, vertex_position.y, vertex_position.z, 1);\n"
+"    vec4 clip_space_position = view_projection * world_space_position;\n"
+"    gl_Position = clip_space_position;\n"
+"    frag_position = vertex_position;\n"
+"    frag_normal = model_transform * vert_normal;\n"
+"}\n"
 "",
 "#version 330 core\n"
-"\n"
-"\n"
-"in vec3 frag_position;\n"
-"in vec3 frag_normal;\n"
-"\n"
-"out vec4 color;\n"
-"\n"
-"uniform vec3 shadow_vector;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    // NOTE(rjf): Calculate diffuse lighting.\n"
-"    float diffuse_factor = 1;\n"
-"    {\n"
-"        diffuse_factor = dot(shadow_vector, frag_normal);\n"
-"        diffuse_factor *= diffuse_factor;\n"
-"        if(diffuse_factor < 0.5)\n"
-"        {\n"
-"            diffuse_factor = 0.5;\n"
-"        }\n"
-"        else\n"
-"        {\n"
-"            diffuse_factor = 1;\n"
-"        }\n"
-"    }\n"
-"    \n"
-"    color = vec4(diffuse_factor, diffuse_factor, diffuse_factor, 1);\n"
-"}\n"
+"\n"
+"\n"
+"in vec3 frag_position;\n"
+"in vec3 frag_normal;\n"
+"\n"
+"out vec4 color;\n"
+"\n"
+"uniform vec3 shadow_vector;\n"
+"\n"
+"void main()\n"
+"{\n"
+"    // NOTE(rjf): Calculate diffuse lighting.\n"
+"    float diffuse_factor = 1;\n"
+"    {\n"
+"        diffuse_factor = dot(shadow_vector, frag_normal);\n"
+"        diffuse_factor *= diffuse_factor;\n"
+"        if(diffuse_factor < 0.5)\n"
+"        {\n"
+"            diffuse_factor = 0.5;\n"
+"        }\n"
+"        else\n"
+"        {\n"
+"            diffuse_factor = 1;\n"
+"        }\n"
+"    }\n"
+"    \n"
+"    color = vec4(diffuse_factor, diffuse_factor, diffuse_factor, 1);\n"
+"}\n"
 "",
 },
 {
@@ -554,11 +413,11 @@ _ts2d__global_opengl_shaders[] = {
 "void main()\n"
 "{\n"
 "    vec2 vertices[] = vec2[](\n"
-"        vec2(0, 0),\n"
-"        vec2(0, 1),\n"
-"        vec2(1, 0),\n"
-"        vec2(1, 1)\n"
-"        );\n"
+"							 vec2(0, 0),\n"
+"							 vec2(0, 1),\n"
+"							 vec2(1, 0),\n"
+"							 vec2(1, 1)\n"
+"							 );\n"
 "    vec2 vert_position = vertices[gl_VertexID];\n"
 "    vec4 screen_position = vec4(vert_position, 0, 1);\n"
 "    screen_position.xy = screen_position.xy * 2 - 1;\n"
@@ -572,6 +431,91 @@ _ts2d__global_opengl_shaders[] = {
 "out vec4 color;\n"
 "uniform sampler2D tex;\n"
 "uniform float grayscale;\n"
+"uniform vec2 resolution;\n"
+"uniform vec2 camera_pos;\n"
+"uniform float camera_zoom;\n"
+"\n"
+"#define MAX_GROUND_VERTICES 64\n"
+"uniform vec2 ground_vertices[MAX_GROUND_VERTICES];\n"
+"uniform int ground_vertex_count;\n"
+"\n"
+"uniform float scale;\n"
+"uniform float vor_step;\n"
+"uniform float band_height;\n"
+"\n"
+"float random(vec2 st)\n"
+"{\n"
+"    return fract(sin(dot(st.xy,\n"
+"                         vec2(12.9898,78.233))) * 43758.5453123);\n"
+"}\n"
+"\n"
+"vec2 random2(vec2 p)\n"
+"{\n"
+"    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);\n"
+"}\n"
+"\n"
+"vec3 ColorRock(float alpha, vec3 highlight, vec3 body, vec3 outline)\n"
+"{\n"
+"    if (alpha == 1.)\n"
+"    {\n"
+"		return highlight;\n"
+"    }\n"
+"    else if (alpha == .5)\n"
+"    {\n"
+"        return body;\n"
+"    }\n"
+"    else if (alpha == .25)\n"
+"    {\n"
+"        return outline;\n"
+"    }\n"
+"    \n"
+"    return vec3(0.);\n"
+"}\n"
+"\n"
+"float Voronoi(in vec2 st, in float scale, out vec2 min_abs_point, out vec2 id, out float dp)\n"
+"{\n"
+"	st *= scale;\n"
+"	vec2 i_st = floor(st);\n"
+"	vec2 f_st = fract(st);\n"
+"	\n"
+"	vec2 mb;\n"
+"	vec2 mr;\n"
+"	float md = 8.;\n"
+"	\n"
+"	for (int y = -1; y <= 1; y++)\n"
+"		for (int x = -1; x <= 1; x++)\n"
+"	{\n"
+"		vec2 b = vec2(x, y);\n"
+"		vec2 r = vec2(b) + random2(i_st+b)-f_st;\n"
+"		float d = dot(r,r);\n"
+"		\n"
+"		if(d < md)\n"
+"		{\n"
+"			md = d;\n"
+"			mr = r;\n"
+"			mb = b;\n"
+"			\n"
+"			min_abs_point = random2(i_st + b) + b + i_st;\n"
+"			dp = dot(normalize(r), -vec2(0.0, 1.0)) * 0.5 + 0.5;\n"
+"		}\n"
+"	}\n"
+"	\n"
+"	md = 8.;\n"
+"	\n"
+"	for(int y = -2; y <= 2; y++)\n"
+"		for (int x = -2; x <= 2; x++)\n"
+"	{\n"
+"		vec2 b = mb + vec2(x, y);\n"
+"		vec2 r = vec2(b) + random2(i_st+b) - f_st;\n"
+"		float d = dot(.5*(mr+r), normalize(r-mr));\n"
+"		\n"
+"		md = min(md, d);\n"
+"	}\n"
+"	\n"
+"	id = random2(i_st);\n"
+"    \n"
+"    return md;\n"
+"}\n"
 "\n"
 "void main()\n"
 "{\n"
@@ -583,19 +527,179 @@ _ts2d__global_opengl_shaders[] = {
 "    frag_color.g += (brightness - frag_color.g) * grayscale;\n"
 "    frag_color.b += (brightness - frag_color.b) * grayscale;\n"
 "    \n"
-"    if(frag_color.a > 0)\n"
+"	vec2 st = frag_uv * resolution;\n"
+"	\n"
+"	st = st - resolution / 2.;\n"
+"	st += vec2(camera_pos.x * camera_zoom, -camera_pos.y * camera_zoom);\n"
+"	\n"
+"	st = floor(st / camera_zoom);\n"
+"	\n"
+"	vec2 current_point;\n"
+"	vec2 id;\n"
+"	float dp;\n"
+"	float vor = Voronoi(st, scale, current_point, id, dp);\n"
+"	\n"
+"	bool is_below = false;\n"
+"	bool is_pixel_above = false;\n"
+"	\n"
+"	float pixel_depth = 0.;\n"
+"	const float buffer = 0.140;\n"
+"	\n"
+"	for (int i = 0; i < MAX_GROUND_VERTICES - 1; i++)\n"
+"	{\n"
+"		if (i == ground_vertex_count)\n"
+"			break;\n"
+"		\n"
+"		vec2 vert1 = ground_vertices[i] * scale;\n"
+"		vec2 vert2 = ground_vertices[i + 1] * scale;\n"
+"		vec2 diff = vert2 - vert1;\n"
+"		\n"
+"		// Is the current point between the two vertices?\n"
+"		if (current_point.x >= vert1.x && current_point.x < vert2.x)\n"
+"		{\n"
+"			float y = -diff.y / diff.x * (vert1.x - current_point.x);\n"
+"			\n"
+"			if (current_point.y - buffer < y + vert1.y)\n"
+"			{\n"
+"				is_below = true;\n"
+"				\n"
+"				float y_above = -diff.y / diff.x * (vert1.x - st.x * scale);\n"
+"				if (st.y * scale > y_above + vert1.y)\n"
+"				{\n"
+"					is_pixel_above = true;\n"
+"				}\n"
+"				\n"
+"				pixel_depth = y + vert1.y - current_point.y - buffer;\n"
+"				\n"
+"				break;\n"
+"			}\n"
+"		}\n"
+"	}\n"
+"	\n"
+"	vec2 current_point1;\n"
+"    vec2 id1;\n"
+"    float dp1;\n"
+"    vec2 offset = vec2(-0.400,0.260);\n"
+"    float vor1 = Voronoi(st + offset / scale, scale, current_point1, id1, dp1);\n"
+"	\n"
+"	vec3 colors[6];\n"
+"    colors[0] = vec3(121./255., 87./255., 70./255.);\n"
+"    colors[1] = vec3(80./255., 58./255., 51./255.);\n"
+"    colors[2] = vec3(50./255., 33./255., 35./255.);\n"
+"    colors[3] = vec3(29./255., 19./255., 21./255.);\n"
+"    colors[4] = vec3(11./255., 11./255., 12./255.);\n"
+"    colors[5] = vec3(5./255., 5./255., 5./255.);\n"
+"	\n"
+"	float alpha = step(vor_step, vor);\n"
+"    // highlight\n"
+"    if (current_point == current_point1)\n"
 "    {\n"
-"        // const float gamma = 1.8;\n"
-"        // vec3 mapped = frag_color.rgb / (frag_color.rgb + vec3(1.0));\n"
-"        // mapped = pow(mapped, vec3(1.0 / gamma));\n"
-"        // frag_color = vec4(mapped, 1.0);\n"
-"        \n"
-"        color = frag_color;\n"
+"        alpha *= 0.5;\n"
+"        // color = colors[1];\n"
 "    }\n"
-"    else\n"
+"    // fill in cracks\n"
+"    if (alpha == 0.0 && !is_pixel_above)\n"
 "    {\n"
-"        discard;\n"
+"        alpha = 0.25;\n"
 "    }\n"
+"	\n"
+"    vec3 rock_color = vec3(0.);\n"
+"    if (is_below)\n"
+"    {\n"
+"        rock_color = colors[5];\n"
+"		\n"
+"		if (pixel_depth / scale < band_height / 2.)\n"
+"		{\n"
+"			rock_color = ColorRock(alpha, colors[0], colors[1], colors[2]);\n"
+"			if (random(current_point) < 0.25)\n"
+"				rock_color = ColorRock(alpha, vec3(155./255., 117./255., 82./255.), colors[1], colors[2]);\n"
+"		}\n"
+"		else if (pixel_depth / scale < band_height * 1.)\n"
+"		{\n"
+"			rock_color = ColorRock(alpha, colors[0], colors[1], colors[2]);\n"
+"			if (random(current_point) < 0.5)\n"
+"				rock_color = ColorRock(alpha, colors[1], colors[2], colors[2]);\n"
+"		}\n"
+"		else if (pixel_depth / scale < band_height * 2.)\n"
+"		{\n"
+"			rock_color = ColorRock(alpha, colors[1], colors[2], colors[3]);\n"
+"			if (random(current_point) < .25)\n"
+"				rock_color = ColorRock(alpha, colors[2], colors[2], colors[3]);\n"
+"		}\n"
+"		else if (pixel_depth / scale < band_height * 3.)\n"
+"		{\n"
+"			rock_color = ColorRock(alpha, colors[1], colors[2], colors[3]);\n"
+"			if (random(current_point) < 0.25)\n"
+"				rock_color = ColorRock(alpha, colors[2], colors[3], colors[3]);\n"
+"		}\n"
+"		else if (pixel_depth / scale < band_height * 4.)\n"
+"		{\n"
+"			rock_color = ColorRock(alpha, colors[2], colors[3], colors[4]);\n"
+"			if (random(current_point) < 0.25)\n"
+"				rock_color = ColorRock(alpha, colors[2], colors[2], colors[4]);\n"
+"		}\n"
+"		else if (pixel_depth / scale < band_height * 5.)\n"
+"		{\n"
+"			rock_color = ColorRock(alpha, colors[2], colors[3], colors[4]);\n"
+"			if (random(current_point) < 0.5)\n"
+"				rock_color = ColorRock(alpha, colors[3], colors[4], colors[4]);\n"
+"		}\n"
+"		else if (pixel_depth / scale < band_height * 6.)\n"
+"		{\n"
+"			// this was causing a weird bug?\n"
+"			// color = ColorRock(alpha, colors[4], colors[4], colors[5]);\n"
+"			\n"
+"			if (alpha == 1.)\n"
+"			{\n"
+"				rock_color = colors[4];\n"
+"				if (random(current_point) < 0.5)\n"
+"					rock_color = colors[3];\n"
+"			}\n"
+"			else if (alpha == .5)\n"
+"			{\n"
+"				rock_color = colors[4];\n"
+"			}\n"
+"			else if (alpha == .25)\n"
+"			{\n"
+"				rock_color = colors[5];\n"
+"			}\n"
+"		}\n"
+"		else if (pixel_depth / scale < band_height * 7.)\n"
+"		{\n"
+"			rock_color = ColorRock(alpha, colors[4], colors[4], colors[5]);\n"
+"			if (random(current_point) < .5)\n"
+"				rock_color = colors[5];\n"
+"		}\n"
+"		else if (pixel_depth / scale < band_height * 8.)\n"
+"		{\n"
+"			rock_color = ColorRock(alpha, colors[4], colors[5], colors[5]);\n"
+"			if (random(current_point) < 0.75)\n"
+"				rock_color = colors[5];\n"
+"		}\n"
+"    }\n"
+"	\n"
+"	if (rock_color == vec3(0.))\n"
+"	{\n"
+"		if(frag_color.a > 0)\n"
+"		{\n"
+"			color = frag_color;\n"
+"		}\n"
+"		else\n"
+"		{\n"
+"			discard;\n"
+"		}\n"
+"	}\n"
+"	else\n"
+"	{\n"
+"		color = vec4(rock_color.rgb, 1.);\n"
+"	}\n"
+"	\n"
+"	for (int i = 0; i < MAX_GROUND_VERTICES; i++)\n"
+"	{\n"
+"		if (i == ground_vertex_count)\n"
+"			break;\n"
+"		color.rgb += vec3(1.-step(2., length(ground_vertices[i] - st)));\n"
+"	}\n"
 "}\n"
 "",
 },
@@ -943,11 +1047,11 @@ _ts2d__global_opengl_shaders[] = {
 "void main()\n"
 "{\n"
 "    vec2 vertices[] = vec2[](\n"
-"        vec2(0, 0),\n"
-"        vec2(0, 1),\n"
-"        vec2(1, 0),\n"
-"        vec2(1, 1)\n"
-"        );\n"
+"							 vec2(0, 0),\n"
+"							 vec2(0, 1),\n"
+"							 vec2(1, 0),\n"
+"							 vec2(1, 1)\n"
+"							 );\n"
 "    vec2 vert_position = vertices[gl_VertexID];\n"
 "    vec4 screen_position = vec4(vert_position, 0, 1);\n"
 "    vec4 destination;\n"
@@ -1242,6 +1346,147 @@ _ts2d__global_opengl_shaders[] = {
 "        discard;\n"
 "    }\n"
 "}\n"
+"",
+},
+{
+"FBO",
+{
+0},
+0,
+{
+{ 0, "color", },
+},
+1,
+"#version 330 core\n"
+"\n"
+"out vec2 frag_uv;\n"
+"out vec2 frag_position;\n"
+"uniform vec4 destination;\n"
+"\n"
+"void main()\n"
+"{\n"
+"    vec2 vertices[] = vec2[](\n"
+"        vec2(0, 0),\n"
+"        vec2(0, 1),\n"
+"        vec2(1, 0),\n"
+"        vec2(1, 1)\n"
+"        );\n"
+"    \n"
+"    vec2 vert_position = vertices[gl_VertexID];\n"
+"    \n"
+"    vec4 screen_position = vec4(vert_position, 0, 1);\n"
+"    screen_position.xy *= destination.zw;\n"
+"    screen_position.xy += destination.xy;\n"
+"    frag_position = screen_position.xy;\n"
+"    gl_Position = screen_position;\n"
+"    frag_uv = vert_position.xy;\n"
+"}\n"
+"",
+"#version 330 core\n"
+"\n"
+"\n"
+"in vec2 frag_uv;\n"
+"in vec2 frag_position;\n"
+"out vec4 color;\n"
+"uniform vec2 uv_offset;\n"
+"uniform vec2 uv_range;\n"
+"uniform vec4 destination;\n"
+"uniform vec2 scale;\n"
+"uniform float opacity;\n"
+"uniform sampler2D tex;\n"
+"uniform vec2 tex_resolution;\n"
+"\n"
+"void main()\n"
+"{\n"
+"    vec2 pixel = (uv_offset + (frag_uv * uv_range));\n"
+"    vec2 sample_uv = floor(pixel) + vec2(0.5, 0.5);\n"
+"    \n"
+"    sample_uv.x += 1.0 - clamp((1.0 - fract(pixel.x)) * scale.x, 0.0, 1.0);\n"
+"    sample_uv.y += 1.0 - clamp((1.0 - fract(pixel.y)) * scale.y, 0.0, 1.0);\n"
+"    \n"
+"    color = texture(tex, sample_uv / tex_resolution);\n"
+"    color.xyz /= color.a;\n"
+"    if(color.a > 0)\n"
+"    {\n"
+"        color *= opacity;\n"
+"    }\n"
+"    else\n"
+"    {\n"
+"        discard;\n"
+"    }\n"
+"}\n"
+"\n"
+"",
+},
+{
+"Gaussian Blur",
+{
+0},
+0,
+{
+{ 0, "color", },
+},
+1,
+"#version 330 core\n"
+"\n"
+"out vec2 frag_uv;\n"
+"\n"
+"void main()\n"
+"{\n"
+"    vec2 vertices[] = vec2[](\n"
+"        vec2(0, 0),\n"
+"        vec2(0, 1),\n"
+"        vec2(1, 0),\n"
+"        vec2(1, 1)\n"
+"        );\n"
+"    vec2 vert_position = vertices[gl_VertexID];\n"
+"    vec4 screen_position = vec4(vert_position, 0, 1);\n"
+"    screen_position = 2 * screen_position - 1;\n"
+"    gl_Position = screen_position;\n"
+"    frag_uv = vert_position;\n"
+"}\n"
+"\n"
+"",
+"#version 330 core\n"
+"\n"
+"in vec2 frag_uv;\n"
+"out vec4 color;\n"
+"uniform sampler2D tex;\n"
+"uniform vec2 tex_resolution;\n"
+"uniform int radius;\n"
+"uniform vec4 kernel[32];\n"
+"uniform int vertical;\n"
+"uniform vec4 clip;\n"
+"\n"
+"void main()\n"
+"{\n"
+"    color = vec4(0, 0, 0, 0);\n"
+"    \n"
+"    if(gl_FragCoord.x >= clip.x && gl_FragCoord.x <= clip.x + clip.z &&\n"
+"       gl_FragCoord.y >= clip.y && gl_FragCoord.y <= clip.y + clip.w)\n"
+"    {\n"
+"        int first_kernel_index = (16 - radius/4);\n"
+"        \n"
+"        for(int i = 0; i < 2*radius/4; ++i)\n"
+"        {\n"
+"            if(vertical != 0)\n"
+"            {\n"
+"                color += texture(tex, frag_uv + vec2(0, -radius + i*4 + 0) / tex_resolution) * kernel[first_kernel_index + i].x;\n"
+"                color += texture(tex, frag_uv + vec2(0, -radius + i*4 + 1) / tex_resolution) * kernel[first_kernel_index + i].y;\n"
+"                color += texture(tex, frag_uv + vec2(0, -radius + i*4 + 2) / tex_resolution) * kernel[first_kernel_index + i].z;\n"
+"                color += texture(tex, frag_uv + vec2(0, -radius + i*4 + 3) / tex_resolution) * kernel[first_kernel_index + i].w;\n"
+"            }\n"
+"            else\n"
+"            {\n"
+"                color += texture(tex, frag_uv + vec2(-radius + i*4 + 0, 0) / tex_resolution) * kernel[first_kernel_index + i].x;\n"
+"                color += texture(tex, frag_uv + vec2(-radius + i*4 + 1, 0) / tex_resolution) * kernel[first_kernel_index + i].y;\n"
+"                color += texture(tex, frag_uv + vec2(-radius + i*4 + 2, 0) / tex_resolution) * kernel[first_kernel_index + i].z;\n"
+"                color += texture(tex, frag_uv + vec2(-radius + i*4 + 3, 0) / tex_resolution) * kernel[first_kernel_index + i].w;\n"
+"            }\n"
+"        }\n"
+"    }\n"
+"}\n"
+"\n"
 "",
 },
 };

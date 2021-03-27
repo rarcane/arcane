@@ -571,6 +571,7 @@ TsUIRenderWidgetDefaultTs2d(i32 style_flags, TsUIWidget *widget, v4 clip, void *
             break;
         }
         
+#if 0
         case TSUI_WIDGET_tile_select:
         {
             v4 widget_rect = widget->rect;
@@ -589,6 +590,7 @@ TsUIRenderWidgetDefaultTs2d(i32 style_flags, TsUIWidget *widget, v4 clip, void *
             
             break;
         }
+#endif
         
         case TSUI_WIDGET_label:
         {
@@ -2935,6 +2937,7 @@ TsUIStyledNotePicker(i32 style_flags, char *text, i32 note)
     return note;
 }
 
+#if 0
 b32
 _TsUITileSelect(TsUIID id, i32 style_flags, v4 rect, char *text,
                 Ts2dTexture *texture, v4 tilemap_source,
@@ -3128,6 +3131,7 @@ TsUIStyledTileSelect(i32 style_flags, char *text,
                            tile_select_x1, tile_select_y1,
                            selection_from_widget);
 }
+#endif
 
 void
 TsUIBeginAlwaysOnTop(void)

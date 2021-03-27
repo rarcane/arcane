@@ -361,6 +361,12 @@ internal void InitialiseRunData()
 	
 	GetCharacterData()->elemental_skill_points = 3;
 	
+	core->camera_zoom = 1.0f;
+	
+	global_ts2d->ground_scale = 0.2f;
+	global_ts2d->ground_vor_step = 0.13f;
+	global_ts2d->ground_band_height = 10.0f;
+	
 	/*
 				core->run_data->save_job_index = -1;
 				core->run_data->load_job_index = -1;

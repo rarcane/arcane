@@ -6,109 +6,13 @@
 */
 
 #include <gl/gl.h>
-#include "ext/wglext.h"
-#include "ext/glext.h"
+#include "common/ext/wglext.h"
+#include "common/ext/glext.h"
 
 #define TS2D_ADDITIVE_BLEND  (1<<0)
 
-struct Ts2dTexture
-{
-    GLuint id;
-    int width;
-    int height;
-    Ts2dTextureFormat format;
-    Ts2dTextureFlags flags;
-};
-
-struct Ts2dFont
-{
-    Ts2dTexture texture;
-    i16 size;
-    i16 line_height;
-    u32 glyph_count;
-    Ts2dFontGlyph *glyphs;
-    u32 glyph_lower_bound_character;
-};
-
-struct Ts2dMaterial
-{
-    v4 backing_color;
-    Ts2dTexture *albedo_texture;
-};
-
-struct Ts2dSubModel
-{
-    GLuint vao;
-    Ts2dVertexDataFormat vertex_format;
-    int vertex_count;
-    GLuint vertex_buffer;
-    int index_count;
-    GLuint index_buffer;
-    Ts2dMaterial *material;
-    BoundingBox model_space_bounding_box;
-};
-
-struct Ts2dModel
-{
-    int sub_model_count;
-    Ts2dSubModel *sub_models;
-    BoundingBox model_space_bounding_box;
-    int skeleton_count;
-    Ts2dSkeleton *skeletons;
-};
-
-typedef struct Ts2dOpenGLShaderInput Ts2dOpenGLShaderInput;
-struct Ts2dOpenGLShaderInput
-{
-    int index;
-    char *name;
-};
-
-typedef struct Ts2dOpenGLShaderOutput Ts2dOpenGLShaderOutput;
-struct Ts2dOpenGLShaderOutput
-{
-    int index;
-    char *name;
-};
-
+#include "common/tsopenglcommon.h"
 #include "generated/generated_shaders.h"
-
-#define TS2D_OPENGL_FBO_COLOR_OUT_0      (1<<0)
-#define TS2D_OPENGL_FBO_COLOR_OUT_1      (1<<1)
-#define TS2D_OPENGL_FBO_COLOR_OUT_2      (1<<2)
-#define TS2D_OPENGL_FBO_COLOR_OUT_3      (1<<3)
-#define TS2D_OPENGL_FBO_DEPTH_OUT        (1<<4)
-#define TS2D_OPENGL_FBO_COLOR_OUT_0_16F  (1<<5)
-#define TS2D_OPENGL_FBO_COLOR_OUT_1_16F  (1<<6)
-#define TS2D_OPENGL_FBO_COLOR_OUT_2_16F  (1<<7)
-#define TS2D_OPENGL_FBO_COLOR_OUT_3_16F  (1<<8)
-#define TS2D_OPENGL_FBO_COLOR_OUT_0_32F  (1<<9)
-#define TS2D_OPENGL_FBO_COLOR_OUT_1_32F  (1<<10)
-#define TS2D_OPENGL_FBO_COLOR_OUT_2_32F  (1<<11)
-#define TS2D_OPENGL_FBO_COLOR_OUT_3_32F  (1<<12)
-
-typedef struct Ts2dOpenGLFBO Ts2dOpenGLFBO;
-struct Ts2dOpenGLFBO
-{
-    int flags;
-    GLuint fbo;
-    GLuint color_textures[4];
-    GLuint depth_texture;
-    
-    union
-    {
-        struct
-        {
-            int w;
-            int h;
-        };
-        struct
-        {
-            int width;
-            int height;
-        };
-    };
-};
 
 typedef enum Ts2dRequestType Ts2dRequestType;
 enum Ts2dRequestType
@@ -142,12 +46,9 @@ struct Ts2dRequest
     i32 flags;
     void *data;
     Ts2dRequest *next;
-    
-#if TS2D_DEBUG
-    char *file;
-    int line;
-#endif
 };
+
+#define MAX_GROUND_VERTICES 64
 
 typedef struct Ts2d Ts2d;
 struct Ts2d
@@ -160,7 +61,7 @@ struct Ts2d
         f32 render_width;
         f32 render_height;
         f32 delta_t;
-        int flags;
+        i32 flags;
         f32 shadow_opacity;
         v2 shadow_vector;
         v2 camera_pos;
@@ -221,21 +122,28 @@ name;
     // NOTE(rjf): FBO data
     struct
     {
-        Ts2dOpenGLFBO *active_fbo;
-        Ts2dOpenGLFBO pre_lighting_fbo_8u;
-        Ts2dOpenGLFBO post_lighting_fbo_16f;
-        Ts2dOpenGLFBO pre_composite_fbo_8u;
-        Ts2dOpenGLFBO world_tile_fbo_8u;
-        Ts2dOpenGLFBO world_reflection_fbo_8u;
-        Ts2dOpenGLFBO screen_size_scratch_fbo_1_8u;
-        Ts2dOpenGLFBO screen_size_scratch_fbo_2_8u;
-        Ts2dOpenGLFBO screen_size_scratch_fbo_3_8u;
-        Ts2dOpenGLFBO half_screen_size_scratch_fbo_1_8u;
-        Ts2dOpenGLFBO half_screen_size_scratch_fbo_2_8u;
+        TsOpenGLFBO *active_fbo;
+        TsOpenGLFBO pre_lighting_fbo_8u;
+        TsOpenGLFBO post_lighting_fbo_16f;
+        TsOpenGLFBO pre_composite_fbo_8u;
+        TsOpenGLFBO world_tile_fbo_8u;
+        TsOpenGLFBO world_reflection_fbo_8u;
+        TsOpenGLFBO screen_size_scratch_fbo_1_8u;
+        TsOpenGLFBO screen_size_scratch_fbo_2_8u;
+        TsOpenGLFBO screen_size_scratch_fbo_3_8u;
+        TsOpenGLFBO half_screen_size_scratch_fbo_1_8u;
+        TsOpenGLFBO half_screen_size_scratch_fbo_2_8u;
         
-        Ts2dOpenGLFBO model_sprite_fbo;
+        TsOpenGLFBO model_sprite_fbo;
     };
     
     // NOTE(rjf): Shaders
     GLuint *shaders;
+	
+	// NOTE(randy): Ground shader info
+	v2 ground_vertices[MAX_GROUND_VERTICES];
+	i32 ground_vertex_count;
+	float ground_scale;
+	float ground_vor_step;
+	float ground_band_height;
 };
