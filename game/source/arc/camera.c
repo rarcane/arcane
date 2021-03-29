@@ -166,7 +166,7 @@ static void TransformInGameCamera()
 	
 	core->run_data->disable_chunk_loaded_based_off_view = 0;
 	
-	TsUIWindowBegin("debug", v4(0.0f, 0.0f, 300.0f, 300.0f), 0, 0);
+	TsUIWindowBegin("debug", v4(0.0f, 0.0f, 600.0f, 300.0f), 0, 0);
 	{
 		TsUIPushColumn(v2(0.0f, 0.0f), v2(100.0f, 20.0f));
 		
@@ -186,6 +186,12 @@ static void TransformInGameCamera()
 		global_ts2d->ground_vor_step = TsUISlider("Voronoi Step", global_ts2d->ground_vor_step, 0.004f, 0.5f);
 		global_ts2d->ground_band_height = TsUISlider("Band Height", global_ts2d->ground_band_height, 1.0f, 100.0f);
 		
+		{
+			v4 camera_region = GetCameraRegionRect();
+			char lbl[100];
+			sprintf(lbl, "camera region: %f, %f, %f, %f", camera_region.x, camera_region.y, camera_region.z, camera_region.w);
+			TsUILabel(lbl);
+		}
 		/*
 				{
 					char lbl[100];

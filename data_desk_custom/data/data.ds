@@ -436,7 +436,7 @@ Line :: struct
 	p2 : v2;
 }
 
-MAX_LINE_SEGMENT_VERTICES :: 16
+MAX_LINE_SEGMENT_VERTICES :: 17
 LineSegments :: struct
 {
 	count : i32;

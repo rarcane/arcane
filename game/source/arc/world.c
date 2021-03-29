@@ -155,24 +155,28 @@ internal void DrawWorld()
 	// NOTE(randy): Pass visible ground vertices to renderer
 	MemorySet(global_ts2d->ground_vertices, 0, sizeof(global_ts2d->ground_vertices));
 	global_ts2d->ground_vertex_count = 0;
+	v4 camera_region = GetCameraRegionRect();
+	const float x_buffer = 50.0f;
 	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_ground_segment);)
 	{
-		for (i32 i = 0; i < entity->physics.shape.line_segments.count; i++)
+		if (global_ts2d->ground_vertex_count == MAX_GROUND_VERTICES)
+			break;
+		
+		LineSegments *line_segs = &entity->physics.shape.line_segments;
+		for (i32 i = 0; i < line_segs->count; i++)
 		{
-			Assert(global_ts2d->ground_vertex_count + 1 < MAX_GROUND_VERTICES);
-			global_ts2d->ground_vertices[global_ts2d->ground_vertex_count] = V2AddV2(entity->physics.shape.line_segments.vertices[i], entity->position);
-			global_ts2d->ground_vertices[global_ts2d->ground_vertex_count].y *= -1.0;
-			global_ts2d->ground_vertex_count++;
+			v2 vert_pos = V2AddV2(line_segs->vertices[i], entity->position);
+			if (vert_pos.x > camera_region.x - x_buffer && vert_pos.x < camera_region.x + camera_region.z + x_buffer)
+			{
+				global_ts2d->ground_vertices[global_ts2d->ground_vertex_count] = vert_pos;
+				global_ts2d->ground_vertices[global_ts2d->ground_vertex_count].y *= -1.0f;
+				global_ts2d->ground_vertex_count++;
+				
+				if (global_ts2d->ground_vertex_count == MAX_GROUND_VERTICES)
+					break;
+			}
 		}
 	}
-	
-	/*
-		global_ts2d->ground_vertices[0] = v2(-150.0f, 30.0f);
-		global_ts2d->ground_vertices[1] = v2(-100.0f, 40.0f);
-		global_ts2d->ground_vertices[2] = v2(-50.0f, 50.0f);
-		global_ts2d->ground_vertices[3] = v2(50.0f, 60.0f);
-		global_ts2d->ground_vertices[4] = v2(150.0f, 60.0f);
-	 */
 }
 
 internal void UpdateParallax()
@@ -955,6 +959,15 @@ internal b8 CreateWorld(char *world_name)
 	core->is_ingame = 1;
 	
 	Log("Created new world '%s' successfully.", world_name);
+	
+	// NOTE(randy): Temp
+	for (i32 i = -20; i < 30; i++)
+	{
+		Entity *entity = NewEntity();
+		entity->position = v2(256.0f * i, 0.0f);
+		GroundSegmentEntityPresetCallback(entity);
+	}
+	
 	return 1;
 }
 

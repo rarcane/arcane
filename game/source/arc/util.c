@@ -436,9 +436,9 @@ internal v2 GetMousePositionInWorldSpace()
 
 internal v4 GetCameraRegionRect()
 {
-	v2 top_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
-	v2 top_right = {-core->camera_position.x + core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
-	v2 bottom_left = {-core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), -core->camera_position.y + core->render_h / (2.0f * core->camera_zoom)};
+	v2 top_left = {core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
+	v2 top_right = {core->camera_position.x + core->render_w / (2.0f * core->camera_zoom), core->camera_position.y - core->render_h / (2.0f * core->camera_zoom)};
+	v2 bottom_left = {core->camera_position.x - core->render_w / (2.0f * core->camera_zoom), core->camera_position.y + core->render_h / (2.0f * core->camera_zoom)};
     
 	// TODO(randy): simplify
     

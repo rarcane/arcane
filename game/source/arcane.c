@@ -361,7 +361,7 @@ internal void InitialiseRunData()
 	
 	GetCharacterData()->elemental_skill_points = 3;
 	
-	core->camera_zoom = 1.0f;
+	core->camera_zoom = DEFAULT_CAMERA_ZOOM;
 	
 	global_ts2d->ground_scale = 0.2f;
 	global_ts2d->ground_vor_step = 0.13f;
@@ -376,7 +376,7 @@ internal void InitialiseRunData()
 	// NOTE(randy): Fill out function callback array
 	
 #ifdef DEVELOPER_ENVIRONMENT
-	core->run_data->debug_flags |= DEBUG_FLAGS_draw_collision;
+	// core->run_data->debug_flags |= DEBUG_FLAGS_draw_collision;
 #endif
 }
 

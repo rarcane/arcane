@@ -416,7 +416,7 @@ v2 p1;
 v2 p2;
 } Line;
 
-#define MAX_LINE_SEGMENT_VERTICES (16)
+#define MAX_LINE_SEGMENT_VERTICES (17)
 typedef struct LineSegments
 {
 i32 count;
