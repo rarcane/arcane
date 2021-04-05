@@ -803,6 +803,7 @@ Chunk *parent_chunk;
 
 #define CELL_CHUNKS_IN_CHUNK ((CHUNK_SIZE/CELL_CHUNK_SIZE))
 #define CHUNK_AREA ((CHUNK_SIZE*CHUNK_SIZE))
+#define MAX_GROUND_VERT_IN_CHUNK (32)
 typedef struct Chunk
 {
 b8 is_valid;
@@ -811,17 +812,8 @@ i32 *entity_ids;
 i32 entity_count;
 i32 x_index;
 i32 y_index;
-Cell cells[CHUNK_SIZE][CHUNK_SIZE];
-Ts2dTexture texture;
+f32 ground_vert[MAX_GROUND_VERT_IN_CHUNK];
 } Chunk;
-
-typedef struct ChunkSave
-{
-SkeletonChunk skele_chunk;
-Cell cells[CHUNK_SIZE][CHUNK_SIZE];
-i32 entity_count;
-i32 *entity_ids;
-} ChunkSave;
 
 typedef struct WorldSaveData
 {
@@ -964,6 +956,7 @@ EditorState editor_state;
 DebugFlags saved_debug_flags;
 DebugFlags debug_flags;
 Entity *selected_entity;
+Chunk *selected_chunk;
 } RunData;
 
 typedef struct ClientData

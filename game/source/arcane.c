@@ -26,7 +26,6 @@
 #include "arc/skilltree.h"
 #include "arc/entity.h"
 #include "arc/item.h"
-#include "arc/cell.h"
 #include "arc/world.h"
 #include "arc/collision.h"
 #include "arc/player.h"
@@ -53,7 +52,6 @@
 #include "arc/skilltree.c"
 #include "arc/entity.c"
 #include "arc/item.c"
-#include "arc/cell.c"
 #include "arc/world.c"
 #include "arc/collision.c"
 #include "arc/player.c"
@@ -382,8 +380,5 @@ internal void InitialiseRunData()
 
 internal void FreeRunData()
 {
-	for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
-	{
-		Ts2dTextureCleanUp(&core->run_data->active_chunks[i].texture);
-	}
+	
 }

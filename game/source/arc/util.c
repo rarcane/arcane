@@ -534,3 +534,8 @@ internal CharacterData *GetCharacterData()
 {
 	return &core->run_data->character_data;
 }
+
+internal RunData *GetRunData()
+{
+	return core->run_data;
+}

@@ -108,6 +108,8 @@ internal void DrawEditorUI()
 		//~Chunk editor
 		case EDITOR_STATE_chunk :
 		{
+			UpdateChunkEditor();
+			
 			/*
 						v2 world_info_window_size = { 300.0f, 300.0f };
 						v2 world_info_window_pos = {core->render_w - world_info_window_size.x - 10.0f, 10.0f};
@@ -426,6 +428,42 @@ internal void UpdateMapEditor()
 			sprintf(label, "%s", entity->debug_name);
 			TsUILabel(label);
 		}
+		
+		TsUIPopWidth();
+		TsUIPopColumn();
+	}
+	TsUIWindowEnd();
+}
+
+internal void UpdateChunkEditor()
+{
+	v2 window_size_a = {300.0f, 400.0f};
+	TsUIWindowBegin("Chunk List", v4(0.0f, 40.0f, window_size_a.x, window_size_a.y), 0, 0);
+	{
+		TsUIPushColumn(v2(10, 10), v2(150, 30));
+		TsUIPushWidth(270.0f);
+		
+		for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
+		{
+			Chunk *chunk = &GetRunData()->active_chunks[i];
+			
+			char lbl[100];
+			sprintf(lbl, "%i, %i", chunk->x_index, chunk->y_index);
+			TsUILabel(lbl);
+		}
+		
+		TsUIPopWidth();
+		TsUIPopColumn();
+	}
+	TsUIWindowEnd();
+	
+	v2 window_size_b = {300.0f, 400.0f};
+	TsUIWindowBegin("Selected Chunk", v4(0.0f, window_size_a.y + 50.0f, window_size_b.x, window_size_b.y), 0, 0);
+	{
+		TsUIPushColumn(v2(10, 10), v2(150, 30));
+		TsUIPushWidth(270.0f);
+		
+		
 		
 		TsUIPopWidth();
 		TsUIPopColumn();

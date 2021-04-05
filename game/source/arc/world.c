@@ -39,8 +39,6 @@ internal void WorldUpdate()
 	{
 		ElementalSkillTreeUpdate();
 		
-		UpdateCells();
-		
 		PreMoveUpdatePlayer();
         
 		UpdatePhysics();
@@ -58,7 +56,6 @@ internal void WorldUpdate()
 	InteractableUpdate();
 	
 	DrawWorld();
-	RenderCells();
 	
 #ifdef DEVELOPER_TOOLS
 	RenderColliders();
@@ -282,11 +279,6 @@ internal void GenerateTestPlatform()
 				chunk->entity_count = 0;
 				chunk->entity_ids = 0;
 			}
-			
-			Cell *cell = GetCellAtPosition(x_pos, y_pos);
-			cell->material_type = CELL_MATERIAL_TYPE_dirt;
-			
-			QueueChunkForTextureUpdate(chunk);
 		}
 		
 		// NOTE(randy): $Generate ground
@@ -1124,6 +1116,12 @@ internal void ReadInitialMapData()
 	fclose(file);
 }
 
+internal Chunk *LoadChunkAtIndex(i32 x, i32 y)
+{
+	// if the chunk doesn't exist in the world save, create it
+	
+}
+
 internal Chunk *GetChunkAtIndex(i32 x, i32 y)
 {
 	for (int i = 0; i < core->run_data->active_chunk_count; i++)
@@ -1135,7 +1133,6 @@ internal Chunk *GetChunkAtIndex(i32 x, i32 y)
 			return chunk;
 	}
     
-	// Chunk isn't loaded.
 	return 0;
 }
 
@@ -1147,7 +1144,6 @@ internal void DeleteChunk(Chunk *chunk)
 		DeleteEntity(entity);
 	}
     
-	Ts2dTextureCleanUp(&chunk->texture);
 	MemorySet(chunk, 0, sizeof(Chunk));
 }
 

@@ -823,26 +823,23 @@ CellHelper :: struct
 	parent_chunk : *Chunk;
 }
 
-
-/* ---------------------------------- */
-/* ----------- WORLD DATA ----------- */
-/* ---------------------------------- */
-
+//~Chunks
 CELL_CHUNKS_IN_CHUNK :: CHUNK_SIZE / CELL_CHUNK_SIZE
 CHUNK_AREA :: CHUNK_SIZE * CHUNK_SIZE
+MAX_GROUND_VERT_IN_CHUNK :: 32
 Chunk :: struct
 {
 	is_valid : b8;
-	remain_loaded : b8; // Is cleared each frame, systems need to provide this chunk with a reason to keep livin.
+	remain_loaded : b8;
 	entity_ids : *i32;
 	entity_count : i32;
 	x_index : i32;
 	y_index : i32;
 	
-	cells : Cell[CHUNK_SIZE][CHUNK_SIZE];
-	texture : Ts2dTexture;
+	ground_vert : f32[MAX_GROUND_VERT_IN_CHUNK];
 }
 
+/*
 ChunkSave :: struct
 {
 	skele_chunk : SkeletonChunk;
@@ -850,6 +847,7 @@ ChunkSave :: struct
 	entity_count : i32;
 	entity_ids : *i32;
 }
+ */
 
 @SerialisableStruct(0) @Version(0)
 WorldSaveData :: struct
@@ -1054,6 +1052,7 @@ RunData :: struct // Game data used for run-time operations
 	debug_flags : DebugFlags;
 	
 	selected_entity : *Entity;
+	selected_chunk : *Chunk;
 }
 
 // TODO: serialise client options
