@@ -826,18 +826,18 @@ CellHelper :: struct
 //~Chunks
 CELL_CHUNKS_IN_CHUNK :: CHUNK_SIZE / CELL_CHUNK_SIZE
 CHUNK_AREA :: CHUNK_SIZE * CHUNK_SIZE
-MAX_GROUND_VERT_IN_CHUNK :: 32
+MAX_TERRAIN_VERT_IN_CHUNK :: 32
 Chunk :: struct
 {
 	is_valid : b8;
 	remain_loaded : b8;
-	entity_ids : *i32;
+	entities : **Entity;
 	entity_count : i32;
-	x_index : i32;
-	y_index : i32;
+	pos: iv2;
 	
-	ground_vert : f32[MAX_GROUND_VERT_IN_CHUNK];
+	terrain_verts: f32[MAX_TERRAIN_VERT_IN_CHUNK];
 }
+// TODO(randy): is_valid & remain_loaded can be implicitly defined following DOD
 
 /*
 ChunkSave :: struct
@@ -950,68 +950,23 @@ ENTITY_TABLE_SIZE :: (MAX_POSITIONAL_ENTITIES + MAX_FLOATING_ENTITIES)
 
 MAX_CAMERA_CUES :: 32
 
-RunData :: struct // Game data used for run-time operations
+//~RunData - Game data used for run-time operations
+RunData :: struct
 {
-	// TODO(randy): Not really serialisable
 	timers : Timer[MAX_ACTIVE_TIMERS];
 	
 	active_chunks : Chunk[MAX_WORLD_CHUNKS];
 	active_chunk_count : i32;
 	
-	/*
-		// TODO(randy): Extract these into their own dynamically allocated buffer
-		save_job_index : i32;
-		entities_snapshot : Entity[MAX_ENTITIES];
-		entity_count_snapshot : i32;
-		entity_components_snapshot : ComponentSet;
-		positional_entity_ids_snapshot : i32[MAX_POSITIONAL_ENTITIES];
-		positional_entity_id_count_snapshot : i32;
-		chunk_saves : ChunkSave[MAX_WORLD_CHUNKS];
-		chunk_save_count : i32;
-	
-		load_job_index : i32;
-		not_first_time_temp : b8;
-		loaded_entities : EntitySave[MAX_ENTITIES];
-		loaded_entity_count : i32;
-		loaded_entity_components : ComponentSet;
-		loaded_positional_entity_ids : i32[MAX_POSITIONAL_ENTITIES];
-		loaded_positional_entity_id_count : i32;
-		chunk_load_queue : ChunkSave[MAX_WORLD_CHUNKS];
-		chunk_load_queue_count : i32;
-		chunk_generate_queue : *ChunkSave[MAX_WORLD_CHUNKS];
-		chunk_generate_queue_count : i32;
-	*/
-	
 	entities : Entity[ENTITY_TABLE_SIZE];
 	
 	character_data : CharacterData;
-	
-	/*
-		free_entity_id : i32;
-		positional_entity_ids : i32[MAX_POSITIONAL_ENTITIES];
-		positional_entity_id_count : i32;
-		floating_entity_ids : i32[MAX_FLOATING_ENTITIES];
-		floating_entity_id_count : i32;
-		
-		entity_components : ComponentSet;
-	 */
 	
 	world_name : char[50];
 	world_path : char[300];
 	world_chunks_path : char[300];
 	
 	world : WorldSaveData;
-	
-	chunk_texture_update_queue : *Chunk[MAX_WORLD_CHUNKS];
-	chunk_texture_update_queue_count : i32;
-	
-	disable_chunk_loaded_based_off_view : b8;
-	
-	dynamic_cells : CellHelper[MAX_DYNAMIC_CELLS];
-	dynamic_cell_count : i32;
-	free_dynamic_cell_id : i32;
-	queued_dynamic_cells : CellHelper[MAX_DYNAMIC_CELLS];
-	queued_dynamic_cell_count : i32;
 	
 	is_paused : b8;
 	
@@ -1030,7 +985,7 @@ RunData :: struct // Game data used for run-time operations
 	queued_renderables : SortRenderable[MAX_QUEUED_RENDERABLES];
 	queued_renderable_count : i32;
 	
-	// $Camera System
+	//~Camera System
 	camera_cues : CameraCue[MAX_CAMERA_CUES];
 	camera_cue_count : i32;
 	
@@ -1058,6 +1013,5 @@ RunData :: struct // Game data used for run-time operations
 // TODO: serialise client options
 ClientData :: struct // Game client data, settings that should be remembered globally
 {
-	/* ~ Player-controlled options ~ */
 	bloom : b32;
 }

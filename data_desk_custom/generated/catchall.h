@@ -803,16 +803,15 @@ Chunk *parent_chunk;
 
 #define CELL_CHUNKS_IN_CHUNK ((CHUNK_SIZE/CELL_CHUNK_SIZE))
 #define CHUNK_AREA ((CHUNK_SIZE*CHUNK_SIZE))
-#define MAX_GROUND_VERT_IN_CHUNK (32)
+#define MAX_TERRAIN_VERT_IN_CHUNK (32)
 typedef struct Chunk
 {
 b8 is_valid;
 b8 remain_loaded;
-i32 *entity_ids;
+Entity **entities;
 i32 entity_count;
-i32 x_index;
-i32 y_index;
-f32 ground_vert[MAX_GROUND_VERT_IN_CHUNK];
+iv2 pos;
+f32 terrain_verts[MAX_TERRAIN_VERT_IN_CHUNK];
 } Chunk;
 
 typedef struct WorldSaveData
@@ -924,14 +923,6 @@ char world_name[50];
 char world_path[300];
 char world_chunks_path[300];
 WorldSaveData world;
-Chunk *chunk_texture_update_queue[MAX_WORLD_CHUNKS];
-i32 chunk_texture_update_queue_count;
-b8 disable_chunk_loaded_based_off_view;
-CellHelper dynamic_cells[MAX_DYNAMIC_CELLS];
-i32 dynamic_cell_count;
-i32 free_dynamic_cell_id;
-CellHelper queued_dynamic_cells[MAX_DYNAMIC_CELLS];
-i32 queued_dynamic_cell_count;
 b8 is_paused;
 Entity *character_entity;
 CharacterState character_state;

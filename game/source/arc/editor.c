@@ -235,8 +235,6 @@ internal void SwitchEditorState(EditorState editor_state)
 		}
 		
 		
-		core->run_data->disable_chunk_loaded_based_off_view = editor_state != EDITOR_STATE_none;
-		
 		core->run_data->editor_state = editor_state;
 	}
 }
@@ -448,7 +446,7 @@ internal void UpdateChunkEditor()
 			Chunk *chunk = &GetRunData()->active_chunks[i];
 			
 			char lbl[100];
-			sprintf(lbl, "%i, %i", chunk->x_index, chunk->y_index);
+			sprintf(lbl, "%i, %i", chunk->pos.x, chunk->pos.y);
 			TsUILabel(lbl);
 		}
 		

@@ -164,8 +164,6 @@ static void TransformInGameCamera()
 			core->camera_zoom = 10.0f;
 	}
 	
-	core->run_data->disable_chunk_loaded_based_off_view = 0;
-	
 	TsUIWindowBegin("debug", v4(0.0f, 0.0f, 600.0f, 300.0f), 0, 0);
 	{
 		TsUIPushColumn(v2(0.0f, 0.0f), v2(100.0f, 20.0f));
