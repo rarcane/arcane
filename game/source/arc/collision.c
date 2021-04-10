@@ -28,33 +28,6 @@ internal void RenderColliders()
 	{
 		core->run_data->selected_entity = 0;
 	}
-	
-	if (core->run_data->debug_flags & DEBUG_FLAGS_draw_chunk_grid)
-		for (int i = 0; i < core->run_data->active_chunk_count; i++)
-	{
-		Chunk *chunk = &core->run_data->active_chunks[i];
-		if (chunk->is_valid)
-		{
-			/*
-			v3 colour = v3(1.0f, 1.0f, 1.0f);
-						if (core->run_data->chunk_editor.is_chunk_selected && chunk->x_index == core->run_data->chunk_editor.selected_chunk.x_index && chunk->y_index == core->run_data->chunk_editor.selected_chunk.y_index)
-							colour = v3(1.0f, 0.0f, 0.0f);
-			
-						PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index),
-									  v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
-									  colour);
-						PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk->y_index),
-									  v2((f32)CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
-									  colour);
-						PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index),
-									  v2((f32)CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk->y_index),
-									  colour);
-						PushDebugLine(v2((f32)CHUNK_SIZE * chunk->x_index, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
-									  v2((f32)CHUNK_SIZE * chunk->x_index + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk->y_index + CHUNK_SIZE),
-									  colour);
-			 */
-		}
-	}
 }
 #endif
 

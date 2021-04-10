@@ -445,7 +445,7 @@ internal v4 GetCameraRegionRect()
 	return v4(top_left.x, top_left.y, top_right.x - top_left.x, bottom_left.y - top_left.y);
 }
 
-internal void GetSkeletonChunksInRegion(SkeletonChunk *chunks, i32 *chunk_count, v4 rect, i32 buffer)
+internal void GetChunkPositionsInRegion(iv2 *positions, i32 *chunk_count, v4 rect, i32 buffer)
 {
 	*chunk_count = 0;
     
@@ -456,10 +456,13 @@ internal void GetSkeletonChunksInRegion(SkeletonChunk *chunks, i32 *chunk_count,
 	{
 		for (int x = -buffer; x <= width + buffer; x++)
 		{
-			Assert(*chunk_count + 1 < MAX_WORLD_CHUNKS);
-            
-			SkeletonChunk chunk = {WorldSpaceToChunkIndex(rect.x) + x, WorldSpaceToChunkIndex(rect.y) + y};
-			chunks[(*chunk_count)++] = chunk;
+			iv2 chunk = {WorldSpaceToChunkIndex(rect.x) + x, WorldSpaceToChunkIndex(rect.y) + y};
+			positions[(*chunk_count)++] = chunk;
+			
+			if (*chunk_count + 1 == MAX_WORLD_CHUNKS)
+			{
+				return;
+			}
 		}
 	}
 }

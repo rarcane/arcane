@@ -296,12 +296,9 @@ internal b8 CreateWorld(char *world_name)
 	Log("Created new world '%s' successfully.", world_name);
 	
 	// NOTE(randy): Temp
-	for (i32 i = -20; i < 30; i++)
-	{
-		Entity *entity = NewEntity();
-		entity->position = v2(256.0f * i, 0.0f);
-		GroundSegmentEntityPresetCallback(entity);
-	}
+	Entity *entity = NewEntity();
+	entity->position = v2(-128.0f, 0.0f);
+	GroundSegmentEntityPresetCallback(entity);
 	
 	return 1;
 }
@@ -547,7 +544,7 @@ internal Chunk *LoadChunkAtPos(iv2 pos)
 		// NOTE(randy): Chunk doesn't exist on disk, so we create a new one
 		Chunk *chunk = GetUnallocatedChunk();
 		chunk->pos = pos;
-		chunk->is_allocated = 1;
+		chunk->is_valid = 1;
 		return chunk;
 	}
 }

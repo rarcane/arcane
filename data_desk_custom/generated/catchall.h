@@ -947,7 +947,7 @@ EditorState editor_state;
 DebugFlags saved_debug_flags;
 DebugFlags debug_flags;
 Entity *selected_entity;
-Chunk *selected_chunk;
+iv2 selected_chunk;
 } RunData;
 
 typedef struct ClientData

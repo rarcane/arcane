@@ -1007,7 +1007,7 @@ RunData :: struct
 	debug_flags : DebugFlags;
 	
 	selected_entity : *Entity;
-	selected_chunk : *Chunk;
+	selected_chunk : iv2;
 }
 
 // TODO: serialise client options

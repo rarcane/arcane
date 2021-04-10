@@ -435,6 +435,39 @@ internal void UpdateMapEditor()
 
 internal void UpdateChunkEditor()
 {
+	// NOTE(randy): Draw chunks
+	if (GetRunData()->debug_flags & DEBUG_FLAGS_draw_chunk_grid)
+	{
+		iv2 chunks[MAX_WORLD_CHUNKS] = {0};
+		i32 count;
+		GetChunkPositionsInRegion(chunks, &count, GetCameraRegionRect(), 0);
+		
+		for (i32 i = 0; i < count; i++)
+		{
+			iv2 chunk = chunks[i];
+			
+			v3 colour = v3(1.0f, 1.0f, 1.0f);
+			if (GetRunData()->selected_chunk.x == chunk.x &&
+				GetRunData()->selected_chunk.y == chunk.y)
+			{
+				colour = v3(1.0f, 0.0f, 0.0f);
+			}
+			
+			PushDebugLine(v2((f32)CHUNK_SIZE * chunk.x, (f32)CHUNK_SIZE * chunk.y),
+						  v2((f32)CHUNK_SIZE * chunk.x, (f32)CHUNK_SIZE * chunk.y + CHUNK_SIZE),
+						  colour);
+			PushDebugLine(v2((f32)CHUNK_SIZE * chunk.x + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk.y),
+						  v2((f32)CHUNK_SIZE * chunk.x + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk.y + CHUNK_SIZE),
+						  colour);
+			PushDebugLine(v2((f32)CHUNK_SIZE * chunk.x, (f32)CHUNK_SIZE * chunk.y),
+						  v2((f32)CHUNK_SIZE * chunk.x + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk.y),
+						  colour);
+			PushDebugLine(v2((f32)CHUNK_SIZE * chunk.x, (f32)CHUNK_SIZE * chunk.y + CHUNK_SIZE),
+						  v2((f32)CHUNK_SIZE * chunk.x + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk.y + CHUNK_SIZE),
+						  colour);
+		}
+	}
+	
 	v2 window_size_a = {300.0f, 400.0f};
 	TsUIWindowBegin("Chunk List", v4(0.0f, 40.0f, window_size_a.x, window_size_a.y), 0, 0);
 	{
