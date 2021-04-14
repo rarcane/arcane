@@ -200,6 +200,26 @@ internal void RenderSprites()
 				}
 			} break;
 			
+			case RENDERABLE_TYPE_line :
+			{
+				if (queued_renderable->clip.z != 0.0f &&
+					queued_renderable->clip.w != 0.0f)
+				{
+					Ts2dPushClip(queued_renderable->clip);
+				}
+				
+				Line *line = &queued_renderable->data.line;
+				Ts2dPushLine(line->colour,
+							 line->p1,
+							 line->p2);
+				
+				if (queued_renderable->clip.z != 0.0f &&
+					queued_renderable->clip.w != 0.0f)
+				{
+					Ts2dPopClip();
+				}
+			} break;
+			
 			default :
 			Assert(0);
 			break;
@@ -312,6 +332,22 @@ internal void ArcPushFilledRectWithClip(v4 colour, v4 rect, f32 layer, v4 clip)
 		.type = RENDERABLE_TYPE_filled_rect,
 		.layer = layer,
 		.clip = clip,
+	};
+	core->run_data->queued_renderables[core->run_data->queued_renderable_count++] = new_renderable;
+}
+
+internal void ArcPushLine(v4 colour, v2 p1, v2 p2, f32 layer)
+{
+	SortRenderable new_renderable = {
+		.data = {
+			.line = {
+				.colour = colour,
+				.p1 = p1,
+				.p2 = p2,
+			},
+		},
+		.type = RENDERABLE_TYPE_line,
+		.layer = layer
 	};
 	core->run_data->queued_renderables[core->run_data->queued_renderable_count++] = new_renderable;
 }

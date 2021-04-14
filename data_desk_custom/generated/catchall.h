@@ -28,7 +28,6 @@ enum EditorState
 {
 EDITOR_STATE_none,
 EDITOR_STATE_map,
-EDITOR_STATE_chunk,
 EDITOR_STATE_MAX,
 };
 static char *GetEditorStateName(EditorState type);
@@ -51,11 +50,8 @@ typedef uint32 ParticleEmitterFlags;
 #define PIXEL_FLAGS_apply_gravity (1<<0)
 typedef uint32 PixelFlags;
 
-#define DEBUG_FLAGS_draw_world (1<<0)
-#define DEBUG_FLAGS_draw_collision (1<<1)
-#define DEBUG_FLAGS_draw_chunk_grid (1<<2)
-#define DEBUG_FLAGS_debug_cell_view (1<<3)
-#define DEBUG_FLAGS_manual_step (1<<4)
+#define DEBUG_FLAGS_draw_collision (1<<0)
+#define DEBUG_FLAGS_draw_chunk_grid (1<<1)
 typedef uint32 DebugFlags;
 
 typedef struct StaticSpriteData
@@ -410,11 +406,11 @@ static char *GetElementalSkillTypeName(ElementalSkillType type);
 
 typedef struct Entity Entity;
 
-typedef struct Line
+typedef struct LineCol
 {
 v2 p1;
 v2 p2;
-} Line;
+} LineCol;
 
 #define MAX_LINE_SEGMENT_VERTICES (17)
 typedef struct LineSegments
@@ -429,7 +425,7 @@ c2AABB aabb;
 c2Capsule capsule;
 c2Circle circle;
 c2Poly poly;
-Line line;
+LineCol line;
 LineSegments line_segments;
 } c2Shape;
 
@@ -801,13 +797,14 @@ i32 y_position;
 Chunk *parent_chunk;
 } CellHelper;
 
-#define CELL_CHUNKS_IN_CHUNK ((CHUNK_SIZE/CELL_CHUNK_SIZE))
-#define CHUNK_AREA ((CHUNK_SIZE*CHUNK_SIZE))
+#define CHUNK_FLAGS_is_allocated (1<<0)
+typedef uint32 ChunkFlags;
+
 #define MAX_TERRAIN_VERT_IN_CHUNK (32)
+#define CHUNK_VERSION (0)
 typedef struct Chunk
 {
-b8 is_valid;
-b8 remain_loaded;
+ChunkFlags flags;
 Entity **entities;
 i32 entity_count;
 iv2 pos;
@@ -825,6 +822,7 @@ enum RenderableType
 RENDERABLE_TYPE_texture,
 RENDERABLE_TYPE_text,
 RENDERABLE_TYPE_filled_rect,
+RENDERABLE_TYPE_line,
 RENDERABLE_TYPE_MAX,
 };
 static char *GetRenderableTypeName(RenderableType type);
@@ -854,12 +852,20 @@ v4 colour;
 v4 rect;
 } FilledRect;
 
+typedef struct Line
+{
+v4 colour;
+v2 p1;
+v2 p2;
+} Line;
+
 #define MAX_QUEUED_RENDERABLES (1024)
 typedef union Renderable
 {
 Texture texture;
 Text text;
 FilledRect filled_rect;
+Line line;
 } Renderable;
 
 typedef struct SortRenderable
@@ -915,8 +921,7 @@ f32 zoom;
 typedef struct RunData
 {
 Timer timers[MAX_ACTIVE_TIMERS];
-Chunk active_chunks[MAX_WORLD_CHUNKS];
-i32 active_chunk_count;
+Chunk chunks[MAX_WORLD_CHUNKS];
 Entity entities[ENTITY_TABLE_SIZE];
 CharacterData character_data;
 char world_name[50];

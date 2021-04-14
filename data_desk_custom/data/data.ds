@@ -30,7 +30,6 @@ EditorState :: enum
 {
 	none,
 	map,
-	chunk,
 }
 
 
@@ -64,11 +63,8 @@ PixelFlags :: flags
 
 DebugFlags :: flags
 {
-	draw_world,
 	draw_collision,
 	draw_chunk_grid,
-	debug_cell_view,
-	manual_step,
 }
 
 /* --- X-Macros --- */
@@ -430,7 +426,7 @@ ElementalSkillType :: enum
 @ForwardDeclare(Entity)
 ForwardEntity :: _;
 
-Line :: struct
+LineCol :: struct
 {
 	p1 : v2;
 	p2 : v2;
@@ -449,7 +445,7 @@ c2Shape :: union
 	capsule : c2Capsule;
 	circle : c2Circle;
 	poly : c2Poly;
-	line : Line;
+	line : LineCol;
 	line_segments : LineSegments;
 }
 
@@ -610,7 +606,7 @@ EntityProperty :: enum
 	is_character,
 	no_delete,
 	force_floating,
-	map_entity,
+	map_entity, // deprecated?
 	
 	// TODO(randy): yeet this ugly shit
 	interactable,
@@ -824,13 +820,17 @@ CellHelper :: struct
 }
 
 //~Chunks
-CELL_CHUNKS_IN_CHUNK :: CHUNK_SIZE / CELL_CHUNK_SIZE
-CHUNK_AREA :: CHUNK_SIZE * CHUNK_SIZE
+ChunkFlags :: flags
+{
+	is_allocated,
+}
+
 MAX_TERRAIN_VERT_IN_CHUNK :: 32
+CHUNK_VERSION :: 0
+
 Chunk :: struct
 {
-	is_valid : b8;
-	remain_loaded : b8;
+	flags : ChunkFlags;
 	entities : **Entity;
 	entity_count : i32;
 	pos: iv2;
@@ -860,6 +860,7 @@ RenderableType :: enum
 	texture,
 	text,
 	filled_rect,
+	line,
 }
 
 Texture :: struct
@@ -887,12 +888,20 @@ FilledRect :: struct
 	rect : v4;
 }
 
+Line :: struct
+{
+	colour : v4;
+	p1 : v2;
+	p2 : v2;
+}
+
 MAX_QUEUED_RENDERABLES :: 1024
 Renderable :: union
 {
 	texture : Texture;
 	text : Text;
 	filled_rect : FilledRect;
+	line : Line;
 }
 
 SortRenderable :: struct
@@ -955,8 +964,7 @@ RunData :: struct
 {
 	timers : Timer[MAX_ACTIVE_TIMERS];
 	
-	active_chunks : Chunk[MAX_WORLD_CHUNKS];
-	active_chunk_count : i32;
+	chunks : Chunk[MAX_WORLD_CHUNKS];
 	
 	entities : Entity[ENTITY_TABLE_SIZE];
 	

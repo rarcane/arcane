@@ -250,133 +250,26 @@ internal c2Poly v2AddPoly(v2 a, c2Poly poly)
 	return poly;
 }
 
-#ifdef DEVELOPER_TOOLS
-internal void PushDebugLine(v2 p1, v2 p2, v3 colour)
-{
-	DebugLine debug_line = {
-		1,
-		p1,
-		p2,
-		colour,
-		0,
-		0.0f,
-		0.0f,
-	};
-    
-	if (core->debug_line_count == core->free_debug_line_index)
-	{
-		core->debug_lines[core->debug_line_count++] = debug_line;
-		core->free_debug_line_index++;
-	}
-	else
-	{
-		core->debug_lines[core->free_debug_line_index] = debug_line;
-        
-		b8 found_free_index = 0;
-		for (int i = 0; i < core->debug_line_count + 1; i++)
-		{
-			if (!core->debug_lines[i].is_valid)
-			{
-				core->free_debug_line_index = i;
-				found_free_index = 1;
-				break;
-			}
-		}
-        
-		Assert(found_free_index);
-	}
-}
-
-internal void PushDebugLineForDuration(v2 p1, v2 p2, v3 colour, f32 lifetime)
-{
-	DebugLine debug_line = {
-		1,
-		p1,
-		p2,
-		colour,
-		1,
-		lifetime,
-		core->run_data->world.elapsed_world_time,
-	};
-    
-	if (core->debug_line_count == core->free_debug_line_index)
-	{
-		core->debug_lines[core->debug_line_count++] = debug_line;
-		core->free_debug_line_index++;
-	}
-	else
-	{
-		core->debug_lines[core->free_debug_line_index] = debug_line;
-        
-		b8 found_free_index = 0;
-		for (int i = 0; i < core->debug_line_count + 1; i++)
-		{
-			if (!core->debug_lines[i].is_valid)
-			{
-				core->free_debug_line_index = i;
-				found_free_index = 1;
-				break;
-			}
-		}
-        
-		Assert(found_free_index);
-	}
-}
-
-internal void DrawDebugLines()
-{
-	for (int i = 0; i < core->debug_line_count; i++)
-	{
-		DebugLine *debug_line = &core->debug_lines[i];
-        
-		if (debug_line->is_valid && debug_line->has_duration && debug_line->start_time + debug_line->lifetime <= core->run_data->world.elapsed_world_time)
-		{
-			DebugLine empty_debug_line = {0};
-			core->debug_lines[i] = empty_debug_line;
-            
-			if (i < core->free_debug_line_index)
-				core->free_debug_line_index = i;
-		}
-        
-		if (debug_line->is_valid)
-		{
-			f32 alpha;
-			if (debug_line->has_duration)
-				alpha = ((debug_line->start_time + debug_line->lifetime) - core->run_data->world.elapsed_world_time) / debug_line->lifetime;
-			else
-				alpha = 1.0f;
-            
-			Ts2dPushLine(v4(debug_line->colour.r, debug_line->colour.g, debug_line->colour.b, alpha),
-						 v2view(debug_line->p1),
-						 v2view(debug_line->p2));
-            
-			if (!debug_line->has_duration)
-			{
-				DebugLine empty_debug_line = {0};
-				core->debug_lines[i] = empty_debug_line;
-                
-				if (i < core->free_debug_line_index)
-					core->free_debug_line_index = i;
-			}
-		}
-	}
-}
-
+// DrawShape
 internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v3 colour)
 {
 	switch (type)
 	{
         case C2_SHAPE_TYPE_aabb :
         {
-            v2 p0 = V2AddV2(position, v2(shape.aabb.min.x, shape.aabb.min.y));
-            v2 p1 = V2AddV2(position, v2(shape.aabb.max.x, shape.aabb.min.y));
-            v2 p2 = V2AddV2(position, v2(shape.aabb.max.x, shape.aabb.max.y));
-            v2 p3 = V2AddV2(position, v2(shape.aabb.min.x, shape.aabb.max.y));
+			/*
+						v2 p0 = V2AddV2(position, v2(shape.aabb.min.x, shape.aabb.min.y));
+						v2 p1 = V2AddV2(position, v2(shape.aabb.max.x, shape.aabb.min.y));
+						v2 p2 = V2AddV2(position, v2(shape.aabb.max.x, shape.aabb.max.y));
+						v2 p3 = V2AddV2(position, v2(shape.aabb.min.x, shape.aabb.max.y));
+			 */
             
-            PushDebugLine(p0, p1, colour);
-            PushDebugLine(p1, p2, colour);
-            PushDebugLine(p2, p3, colour);
-            PushDebugLine(p3, p0, colour);
+			/*
+						PushDebugLine(p0, p1, colour);
+						PushDebugLine(p1, p2, colour);
+						PushDebugLine(p2, p3, colour);
+						PushDebugLine(p3, p0, colour);
+			 */
         } break;
         
         case C2_SHAPE_TYPE_poly :
@@ -385,53 +278,69 @@ internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v3 co
             {
                 int secondPoint = (i == shape.poly.count - 1 ? 0 : i + 1);
                 
-                v2 p1 = V2AddV2(position, v2(shape.poly.verts[i].x, shape.poly.verts[i].y));
-                v2 p2 = V2AddV2(position, v2(shape.poly.verts[secondPoint].x, shape.poly.verts[secondPoint].y));
+				/*
+								v2 p1 = V2AddV2(position, v2(shape.poly.verts[i].x, shape.poly.verts[i].y));
+								v2 p2 = V2AddV2(position, v2(shape.poly.verts[secondPoint].x, shape.poly.verts[secondPoint].y));
+				 */
                 
-                PushDebugLine(p1,
-                              p2,
-                              colour);
+				/*
+								PushDebugLine(p1,
+											  p2,
+											  colour);
+				 */
             }
         } break;
         
         case C2_SHAPE_TYPE_line :
         {
-            PushDebugLine(V2AddV2(position, shape.line.p1),
-                          V2AddV2(position, shape.line.p2),
-                          colour);
+			/*
+						PushDebugLine(V2AddV2(position, shape.line.p1),
+									  V2AddV2(position, shape.line.p2),
+									  colour);
+			 */
         } break;
 		
 		case C2_SHAPE_TYPE_circle :
 		{
 			position = V2AddV2(position, v2(shape.circle.p.x, shape.circle.p.y));
 			
-			v2 p0 = V2AddV2(position, v2(shape.circle.r, shape.circle.r));
-            v2 p1 = V2AddV2(position, v2(shape.circle.r, -shape.circle.r));
-            v2 p2 = V2AddV2(position, v2(-shape.circle.r, -shape.circle.r));
-            v2 p3 = V2AddV2(position, v2(-shape.circle.r, shape.circle.r));
+			/*
+						v2 p0 = V2AddV2(position, v2(shape.circle.r, shape.circle.r));
+						v2 p1 = V2AddV2(position, v2(shape.circle.r, -shape.circle.r));
+						v2 p2 = V2AddV2(position, v2(-shape.circle.r, -shape.circle.r));
+						v2 p3 = V2AddV2(position, v2(-shape.circle.r, shape.circle.r));
+			 */
             
-            PushDebugLine(p0, p1, colour);
-            PushDebugLine(p1, p2, colour);
-            PushDebugLine(p2, p3, colour);
-            PushDebugLine(p3, p0, colour);
+			/*
+						PushDebugLine(p0, p1, colour);
+						PushDebugLine(p1, p2, colour);
+						PushDebugLine(p2, p3, colour);
+						PushDebugLine(p3, p0, colour);
+			 */
 		} break;
 		
 		case C2_SHAPE_TYPE_line_segments :
         {
 			for (i32 i = 0; i < shape.line_segments.count - 1; i++)
 			{
-				PushDebugLine(V2AddV2(position, shape.line_segments.vertices[i]),
-							  V2AddV2(position, shape.line_segments.vertices[i + 1]),
-							  colour);
+				/*
+								PushDebugLine(V2AddV2(position, shape.line_segments.vertices[i]),
+											  V2AddV2(position, shape.line_segments.vertices[i + 1]),
+											  colour);
+				 */
 			}
 		} break;
 	}
 }
-#endif
 
 internal v2 GetMousePositionInWorldSpace()
 {
 	return v2(platform->mouse_x / core->camera_zoom + core->camera_position.x - GetZeroWorldPosition().x, platform->mouse_y / core->camera_zoom + core->camera_position.y - GetZeroWorldPosition().y);
+}
+
+internal v2 GetMousePosition()
+{
+	return v2(platform->mouse_x, platform->mouse_y);
 }
 
 internal v4 GetCameraRegionRect()

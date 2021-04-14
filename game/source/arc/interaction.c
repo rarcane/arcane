@@ -3,7 +3,7 @@ internal void InteractableUpdate()
 	core->run_data->current_e_interactable = 0;
 	core->run_data->current_left_click_interactable = 0;
 	
-	if (!CanPlayerInteract())
+	if (!CanPlayerInteract() || !GetRunData()->character_entity)
 	{
 		return;
 	}

@@ -183,10 +183,12 @@ GameUpdate(void)
 		{
 			SwitchEditorState(core->run_data->editor_state == EDITOR_STATE_map ? EDITOR_STATE_none : EDITOR_STATE_map);
 		}
-		else if (platform->key_pressed[KEY_f2])
-		{
-			SwitchEditorState(core->run_data->editor_state == EDITOR_STATE_chunk ? EDITOR_STATE_none : EDITOR_STATE_chunk);
-		}
+		/*
+				else if (platform->key_pressed[KEY_f2])
+				{
+					SwitchEditorState(core->run_data->editor_state == EDITOR_STATE_chunk ? EDITOR_STATE_none : EDITOR_STATE_chunk);
+				}
+		 */
 #endif
 		{
 			local_persist b8 initiated_click = 0;
@@ -328,7 +330,18 @@ GameUpdate(void)
 	// NOTE(rjf): Update.
 	if (core->is_ingame)
 	{
-		WorldUpdate();
+		switch (GetRunData()->editor_state)
+		{
+			case EDITOR_STATE_none :
+			{
+				WorldUpdate();
+			} break;
+			
+			case EDITOR_STATE_map :
+			{
+				EditorUpdate();
+			} break;
+		}
 	}
 	else
 	{
@@ -354,8 +367,6 @@ GameUpdate(void)
 
 internal void InitialiseRunData()
 {
-	core->run_data->debug_flags |= DEBUG_FLAGS_draw_world;
-	
 	GetCharacterData()->elemental_skill_points = 3;
 	
 	core->camera_zoom = DEFAULT_CAMERA_ZOOM;
@@ -364,13 +375,14 @@ internal void InitialiseRunData()
 	global_ts2d->ground_vor_step = 0.13f;
 	global_ts2d->ground_band_height = 10.0f;
 	
+	GetRunData()->selected_chunk.x = INT_MAX;
+	GetRunData()->selected_chunk.y = INT_MAX;
+	
 	/*
 				core->run_data->save_job_index = -1;
 				core->run_data->load_job_index = -1;
 				core->run_data->free_entity_id = 1;
 			 */
-	
-	// NOTE(randy): Fill out function callback array
 	
 #ifdef DEVELOPER_ENVIRONMENT
 	// core->run_data->debug_flags |= DEBUG_FLAGS_draw_collision;

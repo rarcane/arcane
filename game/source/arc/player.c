@@ -1,7 +1,8 @@
 internal void PreMoveUpdatePlayer()
 {
 	Entity *character = GetCharacterEntity();
-	Assert(character);
+	if (!character)
+		return;
 	
 	b8 is_sprinting = 0;
 	if (CanPlayerMove() &&

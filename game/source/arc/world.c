@@ -1,41 +1,11 @@
 internal void WorldUpdate()
 {
 	TickTimers();
-	
-	// NOTE(randy): Testing
-	{
-		/*
-				if (platform->key_down[KEY_p])
-				{
-					CameraCue camera = {0};
-					camera.position = v2(0.0f, -200.0f);
-					camera.weight = 1.0f;
-					
-					core->run_data->camera_cues[core->run_data->camera_cue_count++] = camera;
-				}
-				
-				if (platform->key_down[KEY_o])
-				{
-					CameraCue camera = {0};
-					camera.position = v2(0.0f, 200.0f);
-					camera.weight = 1.0f;
-					
-					core->run_data->camera_cues[core->run_data->camera_cue_count++] = camera;
-				}
-		 */
-	}
-	
-#ifdef DEVELOPER_TOOLS
-	DrawEditorUI();
-	if (core->run_data->editor_state)
-		TransformEditorCamera();
-#endif
     
 	core->performance_timer_count = 0;
     
 	START_PERF_TIMER("Update");
 	
-	if ((core->world_delta_t == 0.0f ? (core->run_data->debug_flags & DEBUG_FLAGS_manual_step) : 1))
 	{
 		ElementalSkillTreeUpdate();
 		
@@ -47,8 +17,6 @@ internal void WorldUpdate()
 			TransformInGameCamera();
         
 		PostMoveUpdatePlayer();
-        
-		core->run_data->debug_flags &= ~DEBUG_FLAGS_manual_step;
 	}
     
 	UpdateParallax();
@@ -62,20 +30,12 @@ internal void WorldUpdate()
 #endif
     
 	DrawGameUI();
-#ifdef DEVELOPER_TOOLS
-	DrawDebugLines();
-#endif
 	
 	END_PERF_TIMER;
 }
 
 internal void DrawWorld()
 {
-#ifdef DEVELOPER_TOOLS
-	if (!(core->run_data->debug_flags & DEBUG_FLAGS_draw_world))
-		return;
-#endif
-	
 	Ts2dPushBackgroundBegin();
 	{
 		//Nighttime
@@ -217,8 +177,6 @@ internal b8 CreateWorld(char *world_name)
 		InitialiseRunData();
 	}
 	
-	ReadInitialMapData();
-	
 	// NOTE(randy): Initialise the player
 	{
 		// TODO(randy): clean up
@@ -286,11 +244,6 @@ internal b8 CreateWorld(char *world_name)
 		character_data->freehand_spell_slots[1].type = SPELL_TYPE_yeet;
 	}
 	
-	// NOTE(randy): Initial save.
-	SaveWorld();
-	//Assert(core->run_data->save_job_index != -1);
-	//while(!platform->WaitForJob(core->run_data->save_job_index, TS_WAIT_FOREVER));
-	
 	core->is_ingame = 1;
 	
 	Log("Created new world '%s' successfully.", world_name);
@@ -336,30 +289,32 @@ internal b8 LoadWorld(char *world_name)
 	}
 	
 	// NOTE(randy): Read in chunk data
-	{
-		char chunk_file_path[200] = "";
-		sprintf(chunk_file_path, "%s\\chunks\\temp_chunk.arc", core->run_data->world_path);
-		FILE *file = fopen(chunk_file_path, "rb");
-		Assert(file);
-		
-		for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
+	/*
 		{
-			Entity entity = {0};
-			ReadEntityFromFile(file, &entity);
+			char chunk_file_path[200] = "";
+			sprintf(chunk_file_path, "%s\\chunks\\temp_chunk.arc", core->run_data->world_path);
+			FILE *file = fopen(chunk_file_path, "rb");
+			Assert(file);
 			
-			if (EntityHasProperty(&entity, ENTITY_PROPERTY_is_allocated))
+			for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
 			{
-				core->run_data->entities[i] = entity;
+				Entity entity = {0};
+				ReadEntityFromFile(file, &entity);
 				
-				if (EntityHasProperty(&entity, ENTITY_PROPERTY_is_character))
+				if (EntityHasProperty(&entity, ENTITY_PROPERTY_is_allocated))
 				{
-					core->run_data->character_entity = &core->run_data->entities[i];
+					core->run_data->entities[i] = entity;
+					
+					if (EntityHasProperty(&entity, ENTITY_PROPERTY_is_character))
+					{
+						core->run_data->character_entity = &core->run_data->entities[i];
+					}
 				}
 			}
+			
+			fclose(file);
 		}
-		
-		fclose(file);
-	}
+	 */
 	
 	core->is_ingame = 1;
 	
@@ -410,66 +365,93 @@ internal void SaveWorld()
 	fclose(file);
 }
 
-internal void WriteInitialMapData()
-{
-	char file_path[200] = "";
-	sprintf(file_path, "%sinitial_map\\", core->res_path);
-	
-	if (!platform->DoesDirectoryExist(file_path))
-		platform->MakeDirectory(file_path);
-	
-	strcat(file_path, "temp_chunk_map_entities.arc");
-	FILE *file = fopen(file_path, "wb");
-	Assert(file);
-	
-	for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
-	{
-		Entity *entity = &core->run_data->entities[i];
-		Entity empty_entity = {0};
-		WriteEntityToFile(file, EntityHasProperty(entity, ENTITY_PROPERTY_map_entity) ? entity : &empty_entity);
-	}
-	
-	fclose(file);
-}
-
-internal void ReadInitialMapData()
-{
-	char file_path[200] = "";
-	sprintf(file_path, "%sinitial_map/temp_chunk_map_entities.arc", core->res_path);
-	FILE *file = fopen(file_path, "rb");
-	if (!file)
-	{
-		return;
-	}
-	
-	for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
-	{
-		Entity entity = {0};
-		ReadEntityFromFile(file, &entity);
-		if (EntityHasProperty(&entity, ENTITY_PROPERTY_is_allocated))
-		{
-			Entity *new_entity = NewEntity();
-			*new_entity = entity;
-		}
-	}
-	
-	fclose(file);
-}
-
 internal Chunk *GetUnallocatedChunk()
 {
-	for (i32 i = 0; i < GetRunData()->active_chunk_count; i++)
+	for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
 	{
-		if (!GetRunData()->active_chunks[i].is_valid)
+		if (!(GetRunData()->chunks[i].flags & CHUNK_FLAGS_is_allocated))
 		{
-			return &GetRunData()->active_chunks[i];
+			return &GetRunData()->chunks[i];
 		}
 	}
 	
 	return 0;
 }
 
-internal Chunk *UnloadChunkAtPos(iv2 pos)
+internal void SaveChunkToFile(FILE *file, Chunk *chunk)
+{
+	i32 version = CHUNK_VERSION;
+	WriteToFile(file, &version, sizeof(version));
+	
+	WriteToFile(file, &chunk->flags, sizeof(chunk->flags));
+	WriteToFile(file, &chunk->pos, sizeof(chunk->pos));
+	
+	WriteToFile(file, &chunk->entity_count, sizeof(chunk->entity_count));
+	for (i32 i = 0; i < chunk->entity_count; i++)
+	{
+		Entity *entity = chunk->entities[i];
+		WriteEntityToFile(file, entity);
+	}
+	WriteToFile(file, chunk->terrain_verts, sizeof(chunk->terrain_verts));
+}
+
+internal void ReadChunkFromFile(FILE *file, Chunk *chunk)
+{
+	i32 version;
+	ReadFromFile(file, &version, sizeof(version));
+	Assert(version == CHUNK_VERSION);
+	
+	ReadFromFile(file, &chunk->flags, sizeof(chunk->flags));
+	ReadFromFile(file, &chunk->pos, sizeof(chunk->pos));
+	
+	ReadFromFile(file, &chunk->entity_count, sizeof(chunk->entity_count));
+	for (i32 i = 0; i < chunk->entity_count; i++)
+	{
+		Entity *entity = NewEntity();
+		ReadEntityFromFile(file, entity);
+	}
+	
+	ReadFromFile(file, chunk->terrain_verts, sizeof(chunk->terrain_verts));
+}
+
+internal Chunk *LoadWorldChunk(iv2 pos)
+{
+	if (GetChunkAtPos(pos))
+	{
+		return GetChunkAtPos(pos);
+	}
+	
+	char chunk_path[100];
+	sprintf(chunk_path, "%s%i.%i.chunk", GetRunData()->world_chunks_path, pos.x, pos.y);
+	FILE *file = fopen(chunk_path, "rb");
+	if (file)
+	{
+		// NOTE(randy): Read in world chunk from save
+		Chunk *chunk = GetUnallocatedChunk();
+		Assert(chunk);
+		ReadChunkFromFile(file, chunk);
+		fclose(file);
+		
+		return chunk;
+	}
+	else
+	{
+		// NOTE(randy): Chunk doesn't exist in save, so we try loading from map
+		Chunk *chunk = LoadMapChunk(pos);
+		if (chunk)
+		{
+			return chunk;
+		}
+		else
+		{
+			chunk = GetUnallocatedChunk();
+			chunk->flags |= CHUNK_FLAGS_is_allocated;
+			chunk->pos = pos;
+		}
+	}
+}
+
+internal Chunk *UnloadWorldChunk(iv2 pos)
 {
 	Chunk *chunk = GetChunkAtPos(pos);
 	if (!chunk)
@@ -482,79 +464,18 @@ internal Chunk *UnloadChunkAtPos(iv2 pos)
 	sprintf(chunk_path, "%s%i.%i.chunk", GetRunData()->world_chunks_path, pos.x, pos.y);
 	FILE *file = fopen(chunk_path, "wb");
 	Assert(file);
-	
-	// NOTE(randy): Write chunk to file
-	i32 version = 0;
-	WriteToFile(file, &version, sizeof(version));
-	
-	WriteToFile(file, &chunk->pos, sizeof(chunk->pos));
-	
-	WriteToFile(file, &chunk->entity_count, sizeof(chunk->entity_count));
-	for (i32 i = 0; i < chunk->entity_count; i++)
-	{
-		Entity *entity = chunk->entities[i];
-		WriteEntityToFile(file, entity);
-	}
-	WriteToFile(file, chunk->terrain_verts, sizeof(chunk->terrain_verts));
-	
+	SaveChunkToFile(file, chunk);
 	fclose(file);
 	
 	DeleteChunk(chunk);
 }
 
-internal Chunk *LoadChunkAtPos(iv2 pos)
-{
-	if (GetChunkAtPos(pos))
-	{
-		return GetChunkAtPos(pos);
-	}
-	
-	Assert(GetRunData()->active_chunk_count + 1 < MAX_WORLD_CHUNKS);
-	
-	char chunk_path[100];
-	sprintf(chunk_path, "%s%i.%i.chunk", GetRunData()->world_chunks_path, pos.x, pos.y);
-	FILE *file = fopen(chunk_path, "rb");
-	if (file)
-	{
-		// NOTE(randy): Read in chunk
-		Chunk *chunk = GetUnallocatedChunk();
-		Assert(chunk);
-		
-		i32 version;
-		ReadFromFile(file, &version, sizeof(version));
-		Assert(version == 0);
-		
-		ReadFromFile(file, &chunk->pos, sizeof(chunk->pos));
-		
-		ReadFromFile(file, &chunk->entity_count, sizeof(chunk->entity_count));
-		for (i32 i = 0; i < chunk->entity_count; i++)
-		{
-			Entity *entity = NewEntity();
-			ReadEntityFromFile(file, entity);
-		}
-		
-		ReadFromFile(file, chunk->terrain_verts, sizeof(chunk->terrain_verts));
-		
-		fclose(file);
-		
-		return chunk;
-	}
-	else
-	{
-		// NOTE(randy): Chunk doesn't exist on disk, so we create a new one
-		Chunk *chunk = GetUnallocatedChunk();
-		chunk->pos = pos;
-		chunk->is_valid = 1;
-		return chunk;
-	}
-}
-
 internal Chunk *GetChunkAtPos(iv2 pos)
 {
-	for (int i = 0; i < core->run_data->active_chunk_count; i++)
+	for (int i = 0; i < MAX_WORLD_CHUNKS; i++)
 	{
-		Chunk *chunk = &core->run_data->active_chunks[i];
-		if (chunk->is_valid && pos.x == chunk->pos.x && pos.y == chunk->pos.y)
+		Chunk *chunk = &core->run_data->chunks[i];
+		if ((chunk->flags & CHUNK_FLAGS_is_allocated) && pos.x == chunk->pos.x && pos.y == chunk->pos.y)
 		{
 			return chunk;
 		}

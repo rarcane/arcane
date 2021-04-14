@@ -25,10 +25,13 @@ internal void SaveWorld();
 internal b8 LoadWorld(char *world_name);
 internal void UnloadWorld();
 
-internal void WriteInitialMapData();
-internal void ReadInitialMapData();
-
 internal Chunk *GetChunkAtPos(iv2 pos);
+internal Chunk *GetUnallocatedChunk();
+internal void SaveChunkToFile(FILE* file, Chunk *chunk);
+internal void ReadChunkFromFile(FILE *file, Chunk *chunk);
+
+internal Chunk *LoadWorldChunk(iv2 pos);
+internal Chunk *UnloadWorldChunk(iv2 pos);
 
 inline internal i32 WorldSpaceToChunkIndex(f32 world_space_coord)
 {

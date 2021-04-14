@@ -51,9 +51,6 @@ break;
 case EDITOR_STATE_map:
 return "Map";
 break;
-case EDITOR_STATE_chunk:
-return "Chunk";
-break;
 default:
 return "INVALID";
 break;
@@ -736,6 +733,9 @@ return "Text";
 break;
 case RENDERABLE_TYPE_filled_rect:
 return "Filled Rect";
+break;
+case RENDERABLE_TYPE_line:
+return "Line";
 break;
 default:
 return "INVALID";

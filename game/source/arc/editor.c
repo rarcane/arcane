@@ -1,3 +1,25 @@
+internal void InitMapEditor()
+{
+	if (core->run_data->world_name[0])
+	{
+		UnloadWorld();
+	}
+	
+	core->is_ingame = 1;
+	GetRunData()->editor_state = EDITOR_STATE_map;
+	InitialiseRunData();
+	
+	GetRunData()->debug_flags |= DEBUG_FLAGS_draw_chunk_grid;
+}
+
+internal void EditorUpdate()
+{
+	DrawEditorUI();
+	TransformEditorCamera();
+	DrawWorld();
+	RenderColliders();
+}
+
 internal void DrawEditorUI()
 {
 	local_persist b8 is_entity_window_open = 0;
@@ -15,13 +37,7 @@ internal void DrawEditorUI()
 			{
 				if (TsUIButton("Write Map Data"))
 				{
-					WriteInitialMapData();
-					
-					char dest[200] = "";
-					sprintf(dest, "%s..\\..\\res\\initial_map", core->res_path);
-					char source[200] = "";
-					sprintf(source, "%s/initial_map", core->res_path);
-					platform->CopyDirectoryRecursively(dest, source);
+					CommitActiveChunks();
 				}
 			}
 			TsUIDropdownEnd();
@@ -41,11 +57,6 @@ internal void DrawEditorUI()
 			
 			if (TsUIDropdown("View..."))
 			{
-				if (TsUIToggler("Draw World", core->run_data->debug_flags & DEBUG_FLAGS_draw_world))
-					core->run_data->debug_flags |= DEBUG_FLAGS_draw_world;
-				else
-					core->run_data->debug_flags &= ~DEBUG_FLAGS_draw_world;
-				
 				if (TsUIToggler("Draw Colliders", core->run_data->debug_flags & DEBUG_FLAGS_draw_collision))
 					core->run_data->debug_flags |= DEBUG_FLAGS_draw_collision;
 				else
@@ -55,11 +66,6 @@ internal void DrawEditorUI()
 					core->run_data->debug_flags |= DEBUG_FLAGS_draw_chunk_grid;
 				else
 					core->run_data->debug_flags &= ~DEBUG_FLAGS_draw_chunk_grid;
-				
-				if (TsUIToggler("Debug Cell View", core->run_data->debug_flags & DEBUG_FLAGS_debug_cell_view))
-					core->run_data->debug_flags |= DEBUG_FLAGS_debug_cell_view;
-				else
-					core->run_data->debug_flags &= ~DEBUG_FLAGS_debug_cell_view;
 			}
 			TsUIDropdownEnd();
 			
@@ -105,88 +111,6 @@ internal void DrawEditorUI()
 			UpdateMapEditor();
 		} break;
 		
-		//~Chunk editor
-		case EDITOR_STATE_chunk :
-		{
-			UpdateChunkEditor();
-			
-			/*
-						v2 world_info_window_size = { 300.0f, 300.0f };
-						v2 world_info_window_pos = {core->render_w - world_info_window_size.x - 10.0f, 10.0f};
-						TsUIWindowBegin("World Info", v4(world_info_window_pos.x, world_info_window_pos.y, world_info_window_size.x, world_info_window_size.y), 0, 0);
-						{
-							TsUIPushColumn(v2(10, 10), v2(150, 30));
-							TsUIPushWidth(270.0f);
-							
-							{
-								char label[20];
-								sprintf(label, "Active Chunks: %i", core->run_data->active_chunk_count);
-								TsUILabel(label);
-							}
-							
-							// NOTE(randy): Make a new chunk selection
-							if (platform->left_mouse_pressed)
-							{
-								v2 click_pos = GetMousePositionInWorldSpace();
-								core->run_data->chunk_editor.is_chunk_selected = 1;
-								core->run_data->chunk_editor.selected_chunk.x_index = WorldSpaceToChunkIndex(click_pos.x);
-								core->run_data->chunk_editor.selected_chunk.y_index = WorldSpaceToChunkIndex(click_pos.y);
-							}
-							
-							TsUIPopColumn();
-							TsUIPopWidth();
-						}
-						TsUIWindowEnd();
-						
-						v2 selected_chunk_window_size = { 300.0f, 400.0f };
-						v2 selected_chunk_window_pos = {world_info_window_pos.x, world_info_window_pos.y + world_info_window_size.y + 10.0f};
-						TsUIWindowBegin("Selected Chunk", v4(selected_chunk_window_pos.x, selected_chunk_window_pos.y, selected_chunk_window_size.x, selected_chunk_window_size.y), 0, 0);
-						{
-							TsUIPushColumn(v2(10, 10), v2(150, 30));
-							TsUIPushWidth(270.0f);
-							
-							if (core->run_data->chunk_editor.is_chunk_selected)
-							{
-								Chunk *chunk = GetChunkAtIndex(core->run_data->chunk_editor.selected_chunk.x_index, core->run_data->chunk_editor.selected_chunk.y_index);
-								if (chunk)
-								{
-									{
-										char label[20];
-										sprintf(label, "%i, %i", chunk->x_index, chunk->y_index);
-										TsUITitle(label);
-									}
-									TsUIDivider();
-									{
-										char label[20];
-										sprintf(label, "entity_count: %i", chunk->entity_count);
-										TsUILabel(label);
-									}
-								}
-								else
-								{
-									// NOTE(randy): The selected chunk isn't loaded in.
-									{
-										char label[20];
-										sprintf(label, "%i, %i (unloaded)", core->run_data->chunk_editor.selected_chunk.x_index, core->run_data->chunk_editor.selected_chunk.y_index);
-										TsUITitle(label);
-									}
-									TsUIDivider();
-									
-									// TODO(randy): Option to force load the chunk in?
-								}
-							}
-							else
-							{
-								TsUILabel("No chunk selected.");
-							}
-							
-							TsUIPopColumn();
-							TsUIPopWidth();
-						}
-						TsUIWindowEnd();
-			 */
-		} break;
-		
 		default:
 		Assert(0);
 		break;
@@ -211,29 +135,18 @@ internal void SwitchEditorState(EditorState editor_state)
 {
 	if (core->run_data->editor_state != editor_state)
 	{
-		// NOTE(randy): Cache the no-state debug flags
-		if (core->run_data->editor_state == EDITOR_STATE_none)
-		{
-			core->run_data->saved_debug_flags = core->run_data->debug_flags;
-		}
-		
-		core->run_data->debug_flags = core->run_data->saved_debug_flags;
-		
-		// NOTE(randy): Set state specific debug flags
 		switch (editor_state)
 		{
-			case EDITOR_STATE_map :
+			case EDITOR_STATE_none :
 			{
-				
+				return;
 			} break;
 			
-			case EDITOR_STATE_chunk :
+			case EDITOR_STATE_map :
 			{
-				core->run_data->debug_flags |= DEBUG_FLAGS_draw_collision;
-				core->run_data->debug_flags |= DEBUG_FLAGS_draw_chunk_grid; // TODO(randy): Need to separate this flag out from the collision draw
+				InitMapEditor();
 			} break;
 		}
-		
 		
 		core->run_data->editor_state = editor_state;
 	}
@@ -402,7 +315,7 @@ internal void UpdateMapEditor()
 	}
 	
 	v2 window_size = {300.0f, 400.0f};
-	TsUIWindowBegin("Entity Library", v4(0.0f, 10.0f, window_size.x, window_size.y), 0, 0);
+	TsUIWindowBegin("Entity Library", v4(core->render_w - window_size.x, 0.0f, window_size.x, window_size.y), 0, 0);
 	{
 		TsUIPushColumn(v2(10, 10), v2(150, 30));
 		TsUIPushWidth(270.0f);
@@ -431,11 +344,54 @@ internal void UpdateMapEditor()
 		TsUIPopColumn();
 	}
 	TsUIWindowEnd();
-}
-
-internal void UpdateChunkEditor()
-{
-	// NOTE(randy): Draw chunks
+	
+	iv2 non_existent_chunks[MAX_WORLD_CHUNKS] = {0};
+	i32 non_existent_chunk_count = 0;
+	
+	// NOTE(randy): Load/unload map chunks depending on view
+	{
+		iv2 chunks[MAX_WORLD_CHUNKS] = {0};
+		i32 count;
+		GetChunkPositionsInRegion(chunks, &count, GetCameraRegionRect(), 0);
+		
+		for (i32 i = 0; i < count; i++)
+		{
+			iv2 pos = chunks[i];
+			if (!GetChunkAtPos(pos))
+			{
+				Chunk *chunk = LoadMapChunk(pos);
+				if (!chunk)
+				{
+					non_existent_chunks[non_existent_chunk_count++] = pos;
+				}
+			}
+		}
+		
+		for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
+		{
+			Chunk *chunk = &GetRunData()->chunks[i];
+			if (chunk->flags & CHUNK_FLAGS_is_allocated)
+			{
+				b8 found = 0;
+				for (i32 j = 0; j < count; j++)
+				{
+					iv2 pos = chunks[j];
+					if (pos.x == chunk->pos.x && pos.y == chunk->pos.y)
+					{
+						found = 1;
+						break;
+					}
+				}
+				
+				if (!found)
+				{
+					UnloadMapChunk(chunk->pos);
+				}
+			}
+		}
+	}
+	
+	// NOTE(randy): Draw the chunk grid
 	if (GetRunData()->debug_flags & DEBUG_FLAGS_draw_chunk_grid)
 	{
 		iv2 chunks[MAX_WORLD_CHUNKS] = {0};
@@ -446,58 +402,189 @@ internal void UpdateChunkEditor()
 		{
 			iv2 chunk = chunks[i];
 			
-			v3 colour = v3(1.0f, 1.0f, 1.0f);
+			v4 colour = v4u(0.5f);
+			f32 layer = LAYER_FRONT_UI;
 			if (GetRunData()->selected_chunk.x == chunk.x &&
 				GetRunData()->selected_chunk.y == chunk.y)
 			{
-				colour = v3(1.0f, 0.0f, 0.0f);
+				colour = v4(1.0f, 0.0f, 0.0f, 1.0f);
+				layer -= 1.0f;
+			}
+			else if (GetChunkAtPos(chunk))
+			{
+				colour = v4u(1.0f);
+				layer -= 1.0f;
 			}
 			
-			PushDebugLine(v2((f32)CHUNK_SIZE * chunk.x, (f32)CHUNK_SIZE * chunk.y),
-						  v2((f32)CHUNK_SIZE * chunk.x, (f32)CHUNK_SIZE * chunk.y + CHUNK_SIZE),
-						  colour);
-			PushDebugLine(v2((f32)CHUNK_SIZE * chunk.x + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk.y),
-						  v2((f32)CHUNK_SIZE * chunk.x + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk.y + CHUNK_SIZE),
-						  colour);
-			PushDebugLine(v2((f32)CHUNK_SIZE * chunk.x, (f32)CHUNK_SIZE * chunk.y),
-						  v2((f32)CHUNK_SIZE * chunk.x + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk.y),
-						  colour);
-			PushDebugLine(v2((f32)CHUNK_SIZE * chunk.x, (f32)CHUNK_SIZE * chunk.y + CHUNK_SIZE),
-						  v2((f32)CHUNK_SIZE * chunk.x + CHUNK_SIZE, (f32)CHUNK_SIZE * chunk.y + CHUNK_SIZE),
-						  colour);
+			ArcPushLine(colour,
+						v2view(v2((f32)CHUNK_SIZE * chunk.x,
+								  (f32)CHUNK_SIZE * chunk.y)),
+						v2view(v2((f32)CHUNK_SIZE * chunk.x,
+								  (f32)CHUNK_SIZE * chunk.y + CHUNK_SIZE)),
+						layer);
+			ArcPushLine(colour,
+						v2view(v2((f32)CHUNK_SIZE * chunk.x,
+								  (f32)CHUNK_SIZE * chunk.y + CHUNK_SIZE)),
+						v2view(v2((f32)CHUNK_SIZE * chunk.x + CHUNK_SIZE,
+								  (f32)CHUNK_SIZE * chunk.y + CHUNK_SIZE)),
+						layer);
+			ArcPushLine(colour,
+						v2view(v2((f32)CHUNK_SIZE * chunk.x + CHUNK_SIZE,
+								  (f32)CHUNK_SIZE * chunk.y + CHUNK_SIZE)),
+						v2view(v2((f32)CHUNK_SIZE * chunk.x + CHUNK_SIZE,
+								  (f32)CHUNK_SIZE * chunk.y)),
+						layer);
+			ArcPushLine(colour,
+						v2view(v2((f32)CHUNK_SIZE * chunk.x + CHUNK_SIZE,
+								  (f32)CHUNK_SIZE * chunk.y)),
+						v2view(v2((f32)CHUNK_SIZE * chunk.x,
+								  (f32)CHUNK_SIZE * chunk.y)),
+						layer);
 		}
 	}
 	
-	v2 window_size_a = {300.0f, 400.0f};
-	TsUIWindowBegin("Chunk List", v4(0.0f, 40.0f, window_size_a.x, window_size_a.y), 0, 0);
+	// NOTE(randy): Render load hints for all non-existent surrounding chunks
 	{
-		TsUIPushColumn(v2(10, 10), v2(150, 30));
-		TsUIPushWidth(270.0f);
-		
-		for (i32 i = 0; i < core->run_data->active_chunk_count; i++)
+		for (i32 i = 0; i < non_existent_chunk_count; i++)
 		{
-			Chunk *chunk = &GetRunData()->active_chunks[i];
+			iv2 pos = non_existent_chunks[i];
 			
-			char lbl[100];
-			sprintf(lbl, "%i, %i", chunk->pos.x, chunk->pos.y);
-			TsUILabel(lbl);
+			v2 r_size = v2zoom(v2(CHUNK_SIZE / 5.0f, CHUNK_SIZE / 5.0f));
+			v2 r_pos = V2SubtractV2(v2view(v2((f32)pos.x * CHUNK_SIZE + CHUNK_SIZE / 2.0f,
+											  (f32)pos.y * CHUNK_SIZE + CHUNK_SIZE / 2.0f)),
+									V2DivideF32(r_size, 2.0f));
+			
+			v4 colour = v4u(1.0f);
+			if (IsPositionInBounds(GetMousePosition(),
+								   v4(r_pos.x, r_pos.y, r_size.x, r_size.y)))
+			{
+				colour = v4(0.8f, 0.8f, 0.8f, 1.0f);
+				
+				if (platform->left_mouse_pressed)
+				{
+					platform->left_mouse_pressed = 0;
+					
+					Chunk *chunk = GetUnallocatedChunk();
+					chunk->flags |= CHUNK_FLAGS_is_allocated;
+					chunk->pos = pos;
+				}
+			}
+			
+			ArcPushFilledRect(colour, v4(r_pos.x, r_pos.y, r_size.x, r_size.y), 0.0f);
 		}
-		
-		TsUIPopWidth();
-		TsUIPopColumn();
 	}
-	TsUIWindowEnd();
 	
-	v2 window_size_b = {300.0f, 400.0f};
-	TsUIWindowBegin("Selected Chunk", v4(0.0f, window_size_a.y + 50.0f, window_size_b.x, window_size_b.y), 0, 0);
+	
+	/*
+		{
+			iv2 chunks[MAX_WORLD_CHUNKS] = {0};
+			i32 count = 0;
+			GetChunkPositionsInRegion(chunks, &count, GetCameraRegionRect(), 0);
+			for (i32 i = 0; i < count; i++)
+			{
+				iv2 pos = chunks[i];
+				
+				
+			}
+		}
+	 */
+}
+
+internal b8 DoesMapChunkExistOnDisk(iv2 pos)
+{
+	char chunk_path[100];
+	sprintf(chunk_path, "%sinitial_map/chunks/%i.%i.arc", core->res_path, pos.x, pos.y);
+	FILE *file = fopen(chunk_path, "rb");
+	if (file)
 	{
-		TsUIPushColumn(v2(10, 10), v2(150, 30));
-		TsUIPushWidth(270.0f);
-		
-		
-		
-		TsUIPopWidth();
-		TsUIPopColumn();
+		fclose(file);
+		return 1;
 	}
-	TsUIWindowEnd();
+	else
+	{
+		return 0;
+	}
+}
+
+internal void CommitActiveChunks()
+{
+	for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
+	{
+		Chunk *chunk = &GetRunData()->chunks[i];
+		if (chunk->flags & CHUNK_FLAGS_is_allocated)
+		{
+			iv2 pos = chunk->pos;
+			// NOTE(randy): Stress test for now, there's a more efficent way of doin dis
+			UnloadMapChunk(pos);
+			LoadMapChunk(pos);
+		}
+	}
+}
+
+internal Chunk *LoadMapChunk(iv2 pos)
+{
+	if (GetChunkAtPos(pos))
+	{
+		LogWarning("Chunk %i, %i is already loaded", pos.x, pos.y);
+		return GetChunkAtPos(pos);
+	}
+	
+	char chunk_path[100];
+	sprintf(chunk_path, "%sinitial_map/chunks/%i.%i.arc", core->res_path, pos.x, pos.y);
+	FILE *file = fopen(chunk_path, "rb");
+	if (file)
+	{
+		// NOTE(randy): Read in chunk
+		Chunk *chunk = GetUnallocatedChunk();
+		Assert(chunk);
+		ReadChunkFromFile(file, chunk);
+		fclose(file);
+		
+		return chunk;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+internal void UnloadMapChunk(iv2 pos)
+{
+	Chunk *chunk = GetChunkAtPos(pos);
+	if (!chunk)
+	{
+		LogWarning("There is no chunk to unload at %i, %i", pos.x, pos.y);
+		return;
+	}
+	
+	char path[100];
+	sprintf(path, "%sinitial_map\\", core->res_path);
+	if (!platform->DoesDirectoryExist(path))
+		platform->MakeDirectory(path);
+	
+	sprintf(path, "%sinitial_map\\chunks\\", core->res_path);
+	if (!platform->DoesDirectoryExist(path))
+		platform->MakeDirectory(path);
+	
+	sprintf(path, "%sinitial_map\\chunks\\%i.%i.arc", core->res_path, pos.x, pos.y);
+	FILE *file = fopen(path, "wb");
+	Assert(file);
+	
+	SaveChunkToFile(file, chunk);
+	fclose(file);
+	
+	// NOTE(randy): Commit chunk to the source map
+	char dest[200];
+	sprintf(dest, "%s..\\..\\res\\initial_map\\", core->res_path);
+	if (!platform->DoesDirectoryExist(dest))
+		platform->MakeDirectory(dest);
+	
+	sprintf(dest, "%s..\\..\\res\\initial_map\\chunks\\", core->res_path);
+	if (!platform->DoesDirectoryExist(dest))
+		platform->MakeDirectory(dest);
+	
+	sprintf(dest, "%s..\\..\\res\\initial_map\\chunks\\%i.%i.arc", core->res_path, pos.x, pos.y);
+	platform->CopyFile(dest, path);
+	
+	DeleteChunk(chunk);
 }
