@@ -6,7 +6,7 @@ internal void InitMapEditor()
 	}
 	
 	core->is_ingame = 1;
-	GetRunData()->editor_state = EDITOR_STATE_map;
+	GetRunData()->editor_state = EDITOR_STATE_general;
 	InitialiseRunData();
 	
 	GetRunData()->debug_flags |= DEBUG_FLAGS_draw_chunk_grid;
@@ -14,6 +14,7 @@ internal void InitMapEditor()
 
 internal void EditorUpdate()
 {
+	UpdateMapChunks();
 	DrawEditorUI();
 	TransformEditorCamera();
 	DrawWorld();
@@ -22,93 +23,20 @@ internal void EditorUpdate()
 
 internal void DrawEditorUI()
 {
-	local_persist b8 is_entity_window_open = 0;
-	local_persist b8 is_performance_window_open = 0;
-	local_persist b8 is_debug_window_open = 0;
-	
-	local_persist b8 pin_windows = 0;
-	
-	// NOTE(randy): Drop-down menus
-	if (core->run_data->editor_state)
-	{
-		TsUIPushAutoRow(v2(0, 0), 30);
-		{
-			if (TsUIDropdown("Map..."))
-			{
-				if (TsUIButton("Write Map Data"))
-				{
-					CommitActiveChunks();
-				}
-			}
-			TsUIDropdownEnd();
-			
-			if (TsUIDropdown("Editor Mode..."))
-			{
-				for (i32 i = 1; i < EDITOR_STATE_MAX; i++)
-				{
-					if (TsUIToggler(GetEditorStateName(i),
-									core->run_data->editor_state == i))
-					{
-						SwitchEditorState(i);
-					}
-				}
-			}
-			TsUIDropdownEnd();
-			
-			if (TsUIDropdown("View..."))
-			{
-				if (TsUIToggler("Draw Colliders", core->run_data->debug_flags & DEBUG_FLAGS_draw_collision))
-					core->run_data->debug_flags |= DEBUG_FLAGS_draw_collision;
-				else
-					core->run_data->debug_flags &= ~DEBUG_FLAGS_draw_collision;
-				
-				if (TsUIToggler("Draw Chunk Grid", core->run_data->debug_flags & DEBUG_FLAGS_draw_chunk_grid))
-					core->run_data->debug_flags |= DEBUG_FLAGS_draw_chunk_grid;
-				else
-					core->run_data->debug_flags &= ~DEBUG_FLAGS_draw_chunk_grid;
-			}
-			TsUIDropdownEnd();
-			
-			if (TsUIDropdown("Windows..."))
-			{
-				if (TsUIToggler("Entity", is_entity_window_open))
-					is_entity_window_open = 1;
-				else
-					is_entity_window_open = 0;
-				
-				if (TsUIToggler("Performance", is_performance_window_open))
-					is_performance_window_open = 1;
-				else
-					is_performance_window_open = 0;
-				
-				if (TsUIToggler("Debug", is_debug_window_open))
-					is_debug_window_open = 1;
-				else
-					is_debug_window_open = 0;
-			}
-			TsUIDropdownEnd();
-			
-			if (TsUIDropdown("Options..."))
-			{
-				if (TsUIToggler("Pin Windows", pin_windows))
-					pin_windows = 1;
-				else
-					pin_windows = 0;
-			}
-			TsUIDropdownEnd();
-		}
-		TsUIPopRow();
-	}
-	
-	//~Editors
+	// NOTE(randy): Editor drawing / updating
 	switch (core->run_data->editor_state)
 	{
 		case EDITOR_STATE_none:
 		break;
 		
-		case EDITOR_STATE_map:
+		case EDITOR_STATE_general:
 		{
-			UpdateMapEditor();
+			DrawGeneralEditor();
+		} break;
+		
+		case EDITOR_STATE_terrain:
+		{
+			DrawTerrainEditor();
 		} break;
 		
 		default:
@@ -133,27 +61,71 @@ internal void DrawEditorUI()
 
 internal void SwitchEditorState(EditorState editor_state)
 {
-	if (core->run_data->editor_state != editor_state)
+	if (GetRunData()->editor_state == EDITOR_STATE_none && editor_state != EDITOR_STATE_none)
 	{
-		switch (editor_state)
-		{
-			case EDITOR_STATE_none :
-			{
-				return;
-			} break;
-			
-			case EDITOR_STATE_map :
-			{
-				InitMapEditor();
-			} break;
-		}
-		
-		core->run_data->editor_state = editor_state;
+		InitMapEditor();
 	}
+	else if (GetRunData()->editor_state != EDITOR_STATE_none && editor_state == EDITOR_STATE_none)
+	{
+		// TODO(randy): Rebuild normal world
+	}
+	
+	core->run_data->editor_state = editor_state;
 }
 
-internal void UpdateMapEditor()
+internal void DrawGeneralEditor()
 {
+	TsUIPushAutoRow(v2(0, 0), 30);
+	{
+		if (TsUIDropdown("Map..."))
+		{
+			if (TsUIButton("Write Map Data"))
+			{
+				CommitActiveChunks();
+			}
+		}
+		TsUIDropdownEnd();
+	}
+	TsUIPopRow();
+	
+	v2 window_size = {300.0f, 400.0f};
+	TsUIWindowBegin("Info", v4(core->render_w - window_size.x, 0.0f, window_size.x, window_size.y), 0, 0);
+	{
+		TsUIPushColumn(v2(10, 10), v2(150, 30));
+		TsUIPushWidth(270.0f);
+		
+		char lbl[50];
+		sprintf(lbl, "Camera: %f, %f", core->camera_position.x, core->camera_position.y);
+		TsUILabel(lbl);
+		
+		TsUILabel("-------------");
+		
+		if (platform->left_mouse_pressed && platform->key_down[KEY_alt])
+		{
+			GetRunData()->selected_chunk = iv2(WorldSpaceToChunkIndex(GetMousePositionInWorldSpace().x),
+											   WorldSpaceToChunkIndex(GetMousePositionInWorldSpace().y));
+			
+			platform->left_mouse_pressed = 0;
+		}
+		
+		if (GetRunData()->selected_chunk.x != INT_MAX)
+		{
+			sprintf(lbl, "Chunk %i, %i",
+					GetRunData()->selected_chunk.x,
+					GetRunData()->selected_chunk.y);
+			TsUILabel(lbl);
+		}
+		else
+		{
+			sprintf(lbl, "Alt left-click to select a chunk");
+			TsUILabel(lbl);
+		}
+		
+		TsUIPopWidth();
+		TsUIPopColumn();
+	}
+	TsUIWindowEnd();
+	
 	Entity *selected_entity = core->run_data->selected_entity;
 	if (selected_entity)
 	{
@@ -209,113 +181,10 @@ internal void UpdateMapEditor()
 						   v4u(middle_tint),
 						   LAYER_HUD);
 		}
-		
-		// NOTE(randy): Vertex circles
-		if (selected_entity->physics.shape_type == C2_SHAPE_TYPE_line_segments)
-		{
-			f32 circle_size = 3.0f;
-			c2Shape middle_bounds = {0};
-			middle_bounds.aabb.min = c2V(-circle_size / 2.0f, -circle_size / 2.0f);
-			middle_bounds.aabb.max = c2V(circle_size / 2.0f, circle_size / 2.0f);
-			
-			local_persist v2 *selected_seg = 0;
-			
-			for (i32 i = 0; i < selected_entity->physics.shape.line_segments.count; i++)
-			{
-				LineSegments *segs = &selected_entity->physics.shape.line_segments;
-				
-				c2Shape point_shape = middle_bounds;
-				v2 p1_pos = V2AddV2(selected_entity->position,
-									segs->vertices[i]);
-				AddPositionOffsetToShape(&point_shape, C2_SHAPE_TYPE_aabb, p1_pos);
-				
-				f32 p1_tint = 1.0f;
-				local_persist v2 grab_offset = {0.0f, 0.0f};
-				
-				if (IsV2OverlappingShape(GetMousePositionInWorldSpace(),
-										 point_shape,
-										 C2_SHAPE_TYPE_aabb))
-				{
-					p1_tint = 0.75f;
-					
-					if (platform->left_mouse_pressed)
-					{
-						grab_offset = V2SubtractV2(p1_pos, GetMousePositionInWorldSpace());
-						selected_seg = &segs->vertices[i];
-						platform->left_mouse_pressed = 0;
-					}
-				}
-				
-				if (&segs->vertices[i] == selected_seg)
-				{
-					p1_tint = 0.5f;
-					
-					b8 has_snapped = 0;
-					/*
-										for (Entity *candidate = 0; IncrementEntityWithProperty(&candidate, ENTITY_PROPERTY_ground_segment);)
-										{
-											if (candidate == selected_entity)
-												continue;
-											
-											f32 snap_amount = 2.0f;
-											
-											v2 pos = GetMousePositionInWorldSpace();
-											v2 candidate_pos_p1 = V2AddV2(candidate->physics.shape.line.p1,
-																		  candidate->position);
-											v2 candidate_pos_p2 = V2AddV2(candidate->physics.shape.line.p2,
-																		  candidate->position);
-											
-											if (pos.x >= candidate_pos_p1.x - snap_amount &&
-												pos.x <= candidate_pos_p1.x + snap_amount &&
-												pos.y >= candidate_pos_p1.y - snap_amount &&
-												pos.y <= candidate_pos_p1.y + snap_amount)
-											{
-												has_snapped = 1;
-												selected_entity->physics.shape.line.p1 = V2SubtractV2(candidate_pos_p1, selected_entity->position);
-												break;
-											}
-											else if (pos.x >= candidate_pos_p2.x - snap_amount &&
-													 pos.x <= candidate_pos_p2.x + snap_amount &&
-													 pos.y >= candidate_pos_p2.y - snap_amount &&
-													 pos.y <= candidate_pos_p2.y + snap_amount)
-											{
-												has_snapped = 1;
-												selected_entity->physics.shape.line.p1 = V2SubtractV2(candidate_pos_p2, selected_entity->position);
-												break;
-											}
-											
-										}
-					 */
-					
-					if (!has_snapped)
-					{
-						segs->vertices[i] = V2AddV2(V2SubtractV2(GetMousePositionInWorldSpace(), selected_entity->position), grab_offset);
-					}
-				}
-				
-				if (core->left_mouse_released)
-				{
-					selected_seg = 0;
-				}
-				
-				v2 p1_pos_view = v2view(v2(p1_pos.x - circle_size / 2.0f,
-										   p1_pos.y - circle_size / 2.0f));
-				v2 middle_size = v2zoom(v2(circle_size, circle_size));
-				
-				StaticSpriteData *circle = &global_static_sprite_data[STATIC_SPRITE_circle_icon];
-				
-				ArcPushTexture(circle->texture_atlas,
-							   0,
-							   circle->source,
-							   v4(p1_pos_view.x, p1_pos_view.y, middle_size.x, middle_size.y),
-							   v4u(p1_tint),
-							   LAYER_HUD);
-			}
-		}
 	}
 	
-	v2 window_size = {300.0f, 400.0f};
-	TsUIWindowBegin("Entity Library", v4(core->render_w - window_size.x, 0.0f, window_size.x, window_size.y), 0, 0);
+	//~Entity Library
+	TsUIWindowBegin("Entity Library", v4(0.0f, 80.0f, window_size.x, window_size.y), 0, 0);
 	{
 		TsUIPushColumn(v2(10, 10), v2(150, 30));
 		TsUIPushWidth(270.0f);
@@ -344,7 +213,171 @@ internal void UpdateMapEditor()
 		TsUIPopColumn();
 	}
 	TsUIWindowEnd();
+}
+
+internal void DrawTerrainEditor()
+{
+	local_persist b8 prime_terrain_drawer = 0;
+	local_persist v2 last_point = {INFINITY, INFINITY};
 	
+	TsUIPushAutoRow(v2(0, 0), 30);
+	{
+		if (TsUIDropdown("Terrain..."))
+		{
+			if (TsUIButton("Draw Terrain"))
+			{
+				prime_terrain_drawer = 1;
+				platform->left_mouse_pressed = 0;
+			}
+		}
+		TsUIDropdownEnd();
+	}
+	TsUIPopRow();
+	
+	v2 window_size = {300.0f, 400.0f};
+	TsUIWindowBegin("Info", v4(core->render_w - window_size.x, 0.0f, window_size.x, window_size.y), 0, 0);
+	{
+		TsUIPushColumn(v2(10, 10), v2(150, 30));
+		TsUIPushWidth(270.0f);
+		
+		if (platform->left_mouse_pressed && platform->key_down[KEY_alt])
+		{
+			GetRunData()->selected_chunk = iv2(WorldSpaceToChunkIndex(GetMousePositionInWorldSpace().x),
+											   WorldSpaceToChunkIndex(GetMousePositionInWorldSpace().y));
+			
+			platform->left_mouse_pressed = 0;
+		}
+		
+		char lbl[50];
+		if (GetRunData()->selected_chunk.x != INT_MAX)
+		{
+			Chunk *chunk = GetChunkAtPos(GetRunData()->selected_chunk);
+			
+			sprintf(lbl, "Chunk %i, %i",
+					GetRunData()->selected_chunk.x,
+					GetRunData()->selected_chunk.y);
+			TsUILabel(lbl);
+			
+			if (chunk)
+			{
+				i32 vert_count = 0;
+				for (i32 i = 0; i < MAX_TERRAIN_VERT_IN_CHUNK; i++)
+				{
+					v2 *vert = &chunk->terrain_verts[i];
+					if (!isfinite(vert->x))
+					{
+						break;
+					}
+					vert_count++;
+				}
+				
+				if (vert_count > 0)
+				{
+					sprintf(lbl, "Terrain Vertices: %i", vert_count);
+					TsUILabel(lbl);
+					if (TsUIButton("Clear Vertices"))
+					{
+						for (i32 i = 0; i < MAX_TERRAIN_VERT_IN_CHUNK; i++)
+						{
+							chunk->terrain_verts[i].x = INFINITY;
+							chunk->terrain_verts[i].y = INFINITY;
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			sprintf(lbl, "Alt left-click to select a chunk");
+			TsUILabel(lbl);
+		}
+		
+		TsUIPopWidth();
+		TsUIPopColumn();
+	}
+	TsUIWindowEnd();
+	
+	local_persist b8 is_drawing_terrain = 0;
+	if (prime_terrain_drawer && platform->left_mouse_pressed)
+	{
+		is_drawing_terrain = 1;
+	}
+	
+	if (is_drawing_terrain)
+	{
+		if (core->left_mouse_released)
+		{
+			prime_terrain_drawer = 0;
+			is_drawing_terrain = 0;
+			last_point = v2(INFINITY, INFINITY);
+			core->left_mouse_released = 0;
+		}
+		else if (platform->left_mouse_down)
+		{
+			v2 diff = V2SubtractV2(last_point, GetMousePositionInWorldSpace());
+			f32 dist = PythagSolve(diff.x, diff.y);
+			const f32 TERRAIN_LENGTH = 15.0f;
+			if (!isfinite(last_point.x) || dist >= TERRAIN_LENGTH)
+			{
+				last_point = GetMousePositionInWorldSpace();
+				iv2 lp_chunk_pos = iv2(WorldSpaceToChunkIndex(last_point.x),
+									   WorldSpaceToChunkIndex(last_point.y));
+				Chunk *chunk = GetChunkAtPos(lp_chunk_pos);
+				if (!chunk && !LoadMapChunk(lp_chunk_pos))
+				{
+					chunk = AllocateNewChunk(lp_chunk_pos);
+				}
+				
+				for (i32 i = 0; i < MAX_TERRAIN_VERT_IN_CHUNK; i++)
+				{
+					v2 *vert = &chunk->terrain_verts[i];
+					if (!isfinite(vert->x))
+					{
+						*vert = V2SubtractV2(last_point, v2((f32)chunk->pos.x * CHUNK_SIZE,
+															(f32)chunk->pos.y * CHUNK_SIZE));
+						break;
+					}
+				}
+			}
+		}
+	}
+	
+	
+	f32 circle_size = 3.0f;
+	c2Shape middle_bounds = {0};
+	middle_bounds.aabb.min = c2V(-circle_size / 2.0f, -circle_size / 2.0f);
+	middle_bounds.aabb.max = c2V(circle_size / 2.0f, circle_size / 2.0f);
+	StaticSpriteData *circle = &global_static_sprite_data[STATIC_SPRITE_circle_icon];
+	for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
+	{
+		Chunk *chunk = &GetRunData()->chunks[i];
+		if (chunk->flags & CHUNK_FLAGS_is_allocated)
+		{
+			for (i32 j = 0; j < MAX_TERRAIN_VERT_IN_CHUNK; j++)
+			{
+				if (isfinite(chunk->terrain_verts[j].x))
+				{
+					v2 pos = V2AddV2(chunk->terrain_verts[j], v2((f32)chunk->pos.x * CHUNK_SIZE,
+																 (f32)chunk->pos.y * CHUNK_SIZE));
+					
+					v2 r_pos = v2view(v2(pos.x - circle_size / 2.0f,
+										 pos.y - circle_size / 2.0f));
+					v2 r_size = v2zoom(v2(circle_size, circle_size));
+					
+					ArcPushTexture(circle->texture_atlas,
+								   0,
+								   circle->source,
+								   v4(r_pos.x, r_pos.y, r_size.x, r_size.y),
+								   v4u(1.0f),
+								   LAYER_HUD);
+				}
+			}
+		}
+	}
+}
+
+internal void UpdateMapChunks()
+{
 	iv2 non_existent_chunks[MAX_WORLD_CHUNKS] = {0};
 	i32 non_existent_chunk_count = 0;
 	
@@ -408,7 +441,7 @@ internal void UpdateMapEditor()
 				GetRunData()->selected_chunk.y == chunk.y)
 			{
 				colour = v4(1.0f, 0.0f, 0.0f, 1.0f);
-				layer -= 1.0f;
+				layer -= 2.0f;
 			}
 			else if (GetChunkAtPos(chunk))
 			{
@@ -463,31 +496,13 @@ internal void UpdateMapEditor()
 				if (platform->left_mouse_pressed)
 				{
 					platform->left_mouse_pressed = 0;
-					
-					Chunk *chunk = GetUnallocatedChunk();
-					chunk->flags |= CHUNK_FLAGS_is_allocated;
-					chunk->pos = pos;
+					AllocateNewChunk(pos);
 				}
 			}
 			
 			ArcPushFilledRect(colour, v4(r_pos.x, r_pos.y, r_size.x, r_size.y), 0.0f);
 		}
 	}
-	
-	
-	/*
-		{
-			iv2 chunks[MAX_WORLD_CHUNKS] = {0};
-			i32 count = 0;
-			GetChunkPositionsInRegion(chunks, &count, GetCameraRegionRect(), 0);
-			for (i32 i = 0; i < count; i++)
-			{
-				iv2 pos = chunks[i];
-				
-				
-			}
-		}
-	 */
 }
 
 internal b8 DoesMapChunkExistOnDisk(iv2 pos)

@@ -29,7 +29,8 @@ GeneralisedEntityType :: enum
 EditorState :: enum
 {
 	none,
-	map,
+	general,
+	terrain,
 }
 
 
@@ -67,10 +68,7 @@ DebugFlags :: flags
 	draw_chunk_grid,
 }
 
-/* --- X-Macros --- */
-
-//~
-
+//~StaticSprite
 @XMacro
 StaticSpriteData :: struct
 {
@@ -240,6 +238,7 @@ StaticSprite :: enum
 		dummy,
 }
 
+//~DynamicSprite
 @XMacro
 DynamicSpriteData :: struct
 {
@@ -835,9 +834,8 @@ Chunk :: struct
 	entity_count : i32;
 	pos: iv2;
 	
-	terrain_verts: f32[MAX_TERRAIN_VERT_IN_CHUNK];
+	terrain_verts: v2[MAX_TERRAIN_VERT_IN_CHUNK];
 }
-// TODO(randy): is_valid & remain_loaded can be implicitly defined following DOD
 
 /*
 ChunkSave :: struct
@@ -1011,7 +1009,6 @@ RunData :: struct
 	
 	//~Editor
 	editor_state : EditorState;
-	saved_debug_flags : DebugFlags;
 	debug_flags : DebugFlags;
 	
 	selected_entity : *Entity;

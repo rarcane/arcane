@@ -179,16 +179,13 @@ GameUpdate(void)
         
 #ifdef DEVELOPER_TOOLS
 		// NOTE(randy): Enter editor mode
-		if (platform->key_pressed[KEY_f1])
+		for (i32 i = 1; i < EDITOR_STATE_MAX; i++)
 		{
-			SwitchEditorState(core->run_data->editor_state == EDITOR_STATE_map ? EDITOR_STATE_none : EDITOR_STATE_map);
+			if (platform->key_pressed[KEY_f1 + i - 1])
+			{
+				SwitchEditorState(GetRunData()->editor_state == i ? EDITOR_STATE_none : i);
+			}
 		}
-		/*
-				else if (platform->key_pressed[KEY_f2])
-				{
-					SwitchEditorState(core->run_data->editor_state == EDITOR_STATE_chunk ? EDITOR_STATE_none : EDITOR_STATE_chunk);
-				}
-		 */
 #endif
 		{
 			local_persist b8 initiated_click = 0;
@@ -330,17 +327,13 @@ GameUpdate(void)
 	// NOTE(rjf): Update.
 	if (core->is_ingame)
 	{
-		switch (GetRunData()->editor_state)
+		if (GetRunData()->editor_state == EDITOR_STATE_none)
 		{
-			case EDITOR_STATE_none :
-			{
-				WorldUpdate();
-			} break;
-			
-			case EDITOR_STATE_map :
-			{
-				EditorUpdate();
-			} break;
+			WorldUpdate();
+		}
+		else
+		{
+			EditorUpdate();
 		}
 	}
 	else

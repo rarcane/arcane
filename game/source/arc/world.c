@@ -378,6 +378,21 @@ internal Chunk *GetUnallocatedChunk()
 	return 0;
 }
 
+internal Chunk *AllocateNewChunk(iv2 pos)
+{
+	Chunk *chunk = GetUnallocatedChunk();
+	Assert(chunk);
+	chunk->flags |= CHUNK_FLAGS_is_allocated;
+	chunk->pos = pos;
+	for (i32 j = 0; j < MAX_TERRAIN_VERT_IN_CHUNK; j++)
+	{
+		chunk->terrain_verts[j].x = INFINITY;
+		chunk->terrain_verts[j].y = INFINITY;
+	}
+	
+	return chunk;
+}
+
 internal void SaveChunkToFile(FILE *file, Chunk *chunk)
 {
 	i32 version = CHUNK_VERSION;
@@ -444,9 +459,7 @@ internal Chunk *LoadWorldChunk(iv2 pos)
 		}
 		else
 		{
-			chunk = GetUnallocatedChunk();
-			chunk->flags |= CHUNK_FLAGS_is_allocated;
-			chunk->pos = pos;
+			AllocateNewChunk(pos);
 		}
 	}
 }

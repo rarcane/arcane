@@ -27,6 +27,7 @@ internal void UnloadWorld();
 
 internal Chunk *GetChunkAtPos(iv2 pos);
 internal Chunk *GetUnallocatedChunk();
+internal Chunk *AllocateNewChunk(iv2 pos);
 internal void SaveChunkToFile(FILE* file, Chunk *chunk);
 internal void ReadChunkFromFile(FILE *file, Chunk *chunk);
 

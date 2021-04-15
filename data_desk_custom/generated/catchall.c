@@ -48,8 +48,11 @@ switch(type)
 case EDITOR_STATE_none:
 return "None";
 break;
-case EDITOR_STATE_map:
-return "Map";
+case EDITOR_STATE_general:
+return "General";
+break;
+case EDITOR_STATE_terrain:
+return "Terrain";
 break;
 default:
 return "INVALID";

@@ -27,7 +27,8 @@ typedef enum EditorState EditorState;
 enum EditorState
 {
 EDITOR_STATE_none,
-EDITOR_STATE_map,
+EDITOR_STATE_general,
+EDITOR_STATE_terrain,
 EDITOR_STATE_MAX,
 };
 static char *GetEditorStateName(EditorState type);
@@ -808,7 +809,7 @@ ChunkFlags flags;
 Entity **entities;
 i32 entity_count;
 iv2 pos;
-f32 terrain_verts[MAX_TERRAIN_VERT_IN_CHUNK];
+v2 terrain_verts[MAX_TERRAIN_VERT_IN_CHUNK];
 } Chunk;
 
 typedef struct WorldSaveData
@@ -949,7 +950,6 @@ f32 move_to_zoom;
 f32 move_to_time;
 f32 move_to_start_time;
 EditorState editor_state;
-DebugFlags saved_debug_flags;
 DebugFlags debug_flags;
 Entity *selected_entity;
 iv2 selected_chunk;

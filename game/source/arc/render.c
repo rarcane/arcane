@@ -231,6 +231,8 @@ internal void RenderSprites()
 
 internal void ArcPushText(Ts2dFont *font, i32 flags, v4 colour, v2 pos, f32 font_scale, char *text, f32 layer)
 {
+	Assert(core->run_data->queued_renderable_count + 1 < MAX_QUEUED_RENDERABLES);
+	
 	SortRenderable new_text = {
 		.data = {
 			.text = {
@@ -250,6 +252,8 @@ internal void ArcPushText(Ts2dFont *font, i32 flags, v4 colour, v2 pos, f32 font
 
 internal void ArcPushTextWithClip(Ts2dFont *font, i32 flags, v4 colour, v2 pos, f32 font_scale, char *text, f32 layer, v4 clip)
 {
+	Assert(core->run_data->queued_renderable_count + 1 < MAX_QUEUED_RENDERABLES);
+	
 	SortRenderable new_text = {
 		.data = {
 			.text = {
@@ -270,6 +274,8 @@ internal void ArcPushTextWithClip(Ts2dFont *font, i32 flags, v4 colour, v2 pos, 
 
 internal void ArcPushTexture(Ts2dTexture *texture, i32 flags, v4 source, v4 destination, v4 tint, f32 layer)
 {
+	Assert(core->run_data->queued_renderable_count + 1 < MAX_QUEUED_RENDERABLES);
+	
 	SortRenderable new_texture = {
 		.data = {
 			.texture = {
@@ -288,6 +294,8 @@ internal void ArcPushTexture(Ts2dTexture *texture, i32 flags, v4 source, v4 dest
 
 internal void ArcPushTextureWithClip(Ts2dTexture *texture_atlas, i32 flags, v4 source, v4 destination, v4 tint, f32 layer, v4 clip)
 {
+	Assert(core->run_data->queued_renderable_count + 1 < MAX_QUEUED_RENDERABLES);
+	
 	SortRenderable new_texture = {
 		.data = {
 			.texture = {
@@ -307,6 +315,8 @@ internal void ArcPushTextureWithClip(Ts2dTexture *texture_atlas, i32 flags, v4 s
 
 internal void ArcPushFilledRect(v4 colour, v4 rect, f32 layer)
 {
+	Assert(core->run_data->queued_renderable_count + 1 < MAX_QUEUED_RENDERABLES);
+	
 	SortRenderable new_renderable = {
 		.data = {
 			.filled_rect = {
@@ -322,6 +332,8 @@ internal void ArcPushFilledRect(v4 colour, v4 rect, f32 layer)
 
 internal void ArcPushFilledRectWithClip(v4 colour, v4 rect, f32 layer, v4 clip)
 {
+	Assert(core->run_data->queued_renderable_count + 1 < MAX_QUEUED_RENDERABLES);
+	
 	SortRenderable new_renderable = {
 		.data = {
 			.filled_rect = {
@@ -338,6 +350,8 @@ internal void ArcPushFilledRectWithClip(v4 colour, v4 rect, f32 layer, v4 clip)
 
 internal void ArcPushLine(v4 colour, v2 p1, v2 p2, f32 layer)
 {
+	Assert(core->run_data->queued_renderable_count + 1 < MAX_QUEUED_RENDERABLES);
+	
 	SortRenderable new_renderable = {
 		.data = {
 			.line = {
