@@ -413,7 +413,7 @@ v2 p1;
 v2 p2;
 } LineCol;
 
-#define MAX_LINE_SEGMENT_VERTICES (17)
+#define MAX_LINE_SEGMENT_VERTICES (33)
 typedef struct LineSegments
 {
 i32 count;
@@ -617,16 +617,12 @@ ENTITY_PROPERTY_parallaxable,
 ENTITY_PROPERTY_physical,
 ENTITY_PROPERTY_blueprint,
 ENTITY_PROPERTY_queryable,
-ENTITY_PROPERTY_ground_segment,
+ENTITY_PROPERTY_terrain_segment,
 ENTITY_PROPERTY_MAX,
 };
 static char *GetEntityPropertyName(EntityProperty type);
 
 #define ENTITY_PROPERTY_SIZE (((ENTITY_PROPERTY_MAX/64)+1))
-#define MAX_HOTBAR_SLOTS (9)
-#define MAX_INVENTORY_SLOTS (9)
-#define MAX_SPELL_SLOTS (8)
-#define MAX_EQUIPMENT_SLOTS (6)
 typedef struct Entity
 {
 u64 properties[ENTITY_PROPERTY_SIZE];
@@ -674,11 +670,15 @@ ENTITY_PRESET_TYPE_MAX,
 };
 global EntityPresetTypeData global_entity_preset_type_data[ENTITY_PRESET_TYPE_MAX] = {
     { "none", 0, },
-    { "Ground Segment", GroundSegmentEntityPresetCallback, },
+    { "Terrain Segment", TerrainSegmentEntityPresetCallback, },
 };
 
 static char *GetEntityPresetTypeName(EntityPresetType type);
 
+#define MAX_HOTBAR_SLOTS (9)
+#define MAX_INVENTORY_SLOTS (9)
+#define MAX_SPELL_SLOTS (8)
+#define MAX_EQUIPMENT_SLOTS (6)
 typedef struct CharacterData
 {
 Item inventory[MAX_INVENTORY_SLOTS];

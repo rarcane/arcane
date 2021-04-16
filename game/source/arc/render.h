@@ -25,6 +25,8 @@ internal void ArcPushTexture(Ts2dTexture *texture, i32 flags, v4 source, v4 dest
 internal void RenderForegroundSprites();
 internal void RenderBackgroundSprites();
 
+internal void ArcPushLine(v4 colour, v2 p1, v2 p2, f32 layer);
+
 typedef enum StaticSprite StaticSprite;
 typedef enum DynamicSprite DynamicSprite;
 

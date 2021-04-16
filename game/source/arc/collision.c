@@ -13,10 +13,10 @@ internal void RenderColliders()
 			platform->left_mouse_pressed = 0;
 		}
 		
-		v3 col = {1.0f, 1.0f, 1.0f};
+		v4 col = v4u(1.0f);
 		if (core->run_data->selected_entity &&
 			entity == core->run_data->selected_entity)
-			col = v3(1.0f, 0.0f, 0.0f);
+			col = v4(1.0f, 0.0f, 0.0f, 1.0f);
 		
 		PushDebugShape(entity->physics.shape,
 					   entity->physics.shape_type,

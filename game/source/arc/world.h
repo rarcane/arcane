@@ -43,5 +43,7 @@ inline internal i32 WorldSpaceToChunkIndex(f32 world_space_coord)
 
 internal void DeleteChunk(Chunk *chunk);
 
+internal void GenerateTerrainSegments();
+
 internal void TickTimers();
 internal Timer *NewTimer(f32 duration, TimerCompleteCallback complete_callback);

@@ -110,30 +110,32 @@ internal void DrawWorld()
 	Ts2dPushWorldEnd();
     
 	// NOTE(randy): Pass visible ground vertices to renderer
-	MemorySet(global_ts2d->ground_vertices, 0, sizeof(global_ts2d->ground_vertices));
-	global_ts2d->ground_vertex_count = 0;
-	v4 camera_region = GetCameraRegionRect();
-	const float x_buffer = 50.0f;
-	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_ground_segment);)
-	{
-		if (global_ts2d->ground_vertex_count == MAX_GROUND_VERTICES)
-			break;
-		
-		LineSegments *line_segs = &entity->physics.shape.line_segments;
-		for (i32 i = 0; i < line_segs->count; i++)
+	/*
+		MemorySet(global_ts2d->ground_vertices, 0, sizeof(global_ts2d->ground_vertices));
+		global_ts2d->ground_vertex_count = 0;
+		v4 camera_region = GetCameraRegionRect();
+		const float x_buffer = 50.0f;
+		for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_terrain_segment);)
 		{
-			v2 vert_pos = V2AddV2(line_segs->vertices[i], entity->position);
-			if (vert_pos.x > camera_region.x - x_buffer && vert_pos.x < camera_region.x + camera_region.z + x_buffer)
+			if (global_ts2d->ground_vertex_count == MAX_GROUND_VERTICES)
+				break;
+			
+			LineSegments *line_segs = &entity->physics.shape.line_segments;
+			for (i32 i = 0; i < line_segs->count; i++)
 			{
-				global_ts2d->ground_vertices[global_ts2d->ground_vertex_count] = vert_pos;
-				global_ts2d->ground_vertices[global_ts2d->ground_vertex_count].y *= -1.0f;
-				global_ts2d->ground_vertex_count++;
-				
-				if (global_ts2d->ground_vertex_count == MAX_GROUND_VERTICES)
-					break;
+				v2 vert_pos = V2AddV2(line_segs->vertices[i], entity->position);
+				if (vert_pos.x > camera_region.x - x_buffer && vert_pos.x < camera_region.x + camera_region.z + x_buffer)
+				{
+					global_ts2d->ground_vertices[global_ts2d->ground_vertex_count] = vert_pos;
+					global_ts2d->ground_vertices[global_ts2d->ground_vertex_count].y *= -1.0f;
+					global_ts2d->ground_vertex_count++;
+					
+					if (global_ts2d->ground_vertex_count == MAX_GROUND_VERTICES)
+						break;
+				}
 			}
 		}
-	}
+	 */
 }
 
 internal void UpdateParallax()
@@ -247,11 +249,6 @@ internal b8 CreateWorld(char *world_name)
 	core->is_ingame = 1;
 	
 	Log("Created new world '%s' successfully.", world_name);
-	
-	// NOTE(randy): Temp
-	Entity *entity = NewEntity();
-	entity->position = v2(-128.0f, 0.0f);
-	GroundSegmentEntityPresetCallback(entity);
 	
 	return 1;
 }
@@ -505,6 +502,67 @@ internal void DeleteChunk(Chunk *chunk)
 	}
     
 	MemorySet(chunk, 0, sizeof(Chunk));
+}
+
+internal void GenerateTerrainSegments()
+{
+	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_terrain_segment);)
+	{
+		DeleteEntity(entity);
+	}
+	
+	for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
+	{
+		Chunk *chunk = &GetRunData()->chunks[i];
+		if (chunk && chunk->flags & CHUNK_FLAGS_is_allocated && isfinite(chunk->terrain_verts[0].x))
+		{
+			Entity *new_seg = NewEntity();
+			TerrainSegmentEntityPresetCallback(new_seg);
+			
+			i32 vert_count = 0;
+			for (i32 j = 0; j < MAX_TERRAIN_VERT_IN_CHUNK; j++)
+			{
+				if (isfinite(chunk->terrain_verts[j].x))
+				{
+					new_seg->physics.shape.line_segments.vertices[j] = v2(chunk->pos.x * CHUNK_SIZE + chunk->terrain_verts[j].x,
+																		  chunk->pos.y * CHUNK_SIZE + chunk->terrain_verts[j].y);
+					vert_count++;
+				}
+				else
+				{
+					break;
+				}
+			}
+			new_seg->physics.shape.line_segments.count = vert_count;
+			
+			v2 last_vert = new_seg->physics.shape.line_segments.vertices[vert_count - 1];
+			v2 closest_vert = {INFINITY, INFINITY};
+			for (i32 x = 0; x < 2; x++)
+				for (i32 y = -1; y < 2; y++)
+			{
+				if (x == 0 && y == 0)
+					continue;
+				
+				Chunk *neighbour_chunk = GetChunkAtPos(iv2(chunk->pos.x + x, chunk->pos.y + y));
+				if (neighbour_chunk && neighbour_chunk->flags & CHUNK_FLAGS_is_allocated && isfinite(neighbour_chunk->terrain_verts[0].x))
+				{
+					v2 potential_vert = V2AddV2(neighbour_chunk->terrain_verts[0],
+												v2((f32)neighbour_chunk->pos.x * CHUNK_SIZE,
+												   (f32)neighbour_chunk->pos.y * CHUNK_SIZE));
+					if (potential_vert.x > last_vert.x && potential_vert.x < closest_vert.x)
+					{
+						closest_vert = potential_vert;
+					}
+				}
+			}
+			
+			if (isfinite(closest_vert.x) && vert_count > 0)
+			{
+				new_seg->physics.shape.line_segments.vertices[vert_count] = closest_vert;
+				new_seg->physics.shape.line_segments.count = vert_count + 1;
+			}
+		}
+	}
 }
 
 internal void TickTimers()

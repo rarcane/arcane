@@ -1,3 +1,8 @@
+v2 ClampV2(v2 v, v2 min, v2 max)
+{
+	return v2(ClampF32(v.x, min.x, max.x), ClampF32(v.y, min.y, max.y));
+}
+
 f32 sigmoid(f32 x)
 {
 	f32 exp_value = (f32)exp(-x);
@@ -251,25 +256,21 @@ internal c2Poly v2AddPoly(v2 a, c2Poly poly)
 }
 
 // DrawShape
-internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v3 colour)
+internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v4 colour)
 {
 	switch (type)
 	{
         case C2_SHAPE_TYPE_aabb :
         {
-			/*
-						v2 p0 = V2AddV2(position, v2(shape.aabb.min.x, shape.aabb.min.y));
-						v2 p1 = V2AddV2(position, v2(shape.aabb.max.x, shape.aabb.min.y));
-						v2 p2 = V2AddV2(position, v2(shape.aabb.max.x, shape.aabb.max.y));
-						v2 p3 = V2AddV2(position, v2(shape.aabb.min.x, shape.aabb.max.y));
-			 */
+			v2 p0 = V2AddV2(position, v2(shape.aabb.min.x, shape.aabb.min.y));
+			v2 p1 = V2AddV2(position, v2(shape.aabb.max.x, shape.aabb.min.y));
+			v2 p2 = V2AddV2(position, v2(shape.aabb.max.x, shape.aabb.max.y));
+			v2 p3 = V2AddV2(position, v2(shape.aabb.min.x, shape.aabb.max.y));
             
-			/*
-						PushDebugLine(p0, p1, colour);
-						PushDebugLine(p1, p2, colour);
-						PushDebugLine(p2, p3, colour);
-						PushDebugLine(p3, p0, colour);
-			 */
+			ArcPushLine(colour, v2view(p0), v2view(p1), LAYER_FRONT_UI);
+			ArcPushLine(colour, v2view(p1), v2view(p2), LAYER_FRONT_UI);
+			ArcPushLine(colour, v2view(p2), v2view(p3), LAYER_FRONT_UI);
+			ArcPushLine(colour, v2view(p3), v2view(p0), LAYER_FRONT_UI);
         } break;
         
         case C2_SHAPE_TYPE_poly :
@@ -278,56 +279,48 @@ internal void PushDebugShape(c2Shape shape, c2ShapeType type, v2 position, v3 co
             {
                 int secondPoint = (i == shape.poly.count - 1 ? 0 : i + 1);
                 
-				/*
-								v2 p1 = V2AddV2(position, v2(shape.poly.verts[i].x, shape.poly.verts[i].y));
-								v2 p2 = V2AddV2(position, v2(shape.poly.verts[secondPoint].x, shape.poly.verts[secondPoint].y));
-				 */
+				v2 p1 = V2AddV2(position,
+								v2(shape.poly.verts[i].x,
+								   shape.poly.verts[i].y));
+				v2 p2 = V2AddV2(position,
+								v2(shape.poly.verts[secondPoint].x,
+								   shape.poly.verts[secondPoint].y));
                 
-				/*
-								PushDebugLine(p1,
-											  p2,
-											  colour);
-				 */
+				ArcPushLine(colour, v2view(p1), v2view(p2), LAYER_FRONT_UI);
             }
         } break;
         
         case C2_SHAPE_TYPE_line :
         {
-			/*
-						PushDebugLine(V2AddV2(position, shape.line.p1),
-									  V2AddV2(position, shape.line.p2),
-									  colour);
-			 */
+			ArcPushLine(colour,
+						v2view(V2AddV2(position, shape.line.p1)),
+						v2view(V2AddV2(position, shape.line.p2)),
+						LAYER_FRONT_UI);
         } break;
 		
 		case C2_SHAPE_TYPE_circle :
 		{
 			position = V2AddV2(position, v2(shape.circle.p.x, shape.circle.p.y));
 			
-			/*
-						v2 p0 = V2AddV2(position, v2(shape.circle.r, shape.circle.r));
-						v2 p1 = V2AddV2(position, v2(shape.circle.r, -shape.circle.r));
-						v2 p2 = V2AddV2(position, v2(-shape.circle.r, -shape.circle.r));
-						v2 p3 = V2AddV2(position, v2(-shape.circle.r, shape.circle.r));
-			 */
+			v2 p0 = V2AddV2(position, v2(shape.circle.r, shape.circle.r));
+			v2 p1 = V2AddV2(position, v2(shape.circle.r, -shape.circle.r));
+			v2 p2 = V2AddV2(position, v2(-shape.circle.r, -shape.circle.r));
+			v2 p3 = V2AddV2(position, v2(-shape.circle.r, shape.circle.r));
             
-			/*
-						PushDebugLine(p0, p1, colour);
-						PushDebugLine(p1, p2, colour);
-						PushDebugLine(p2, p3, colour);
-						PushDebugLine(p3, p0, colour);
-			 */
+			ArcPushLine(colour, v2view(p0), v2view(p1), LAYER_FRONT_UI);
+			ArcPushLine(colour, v2view(p1), v2view(p2), LAYER_FRONT_UI);
+			ArcPushLine(colour, v2view(p2), v2view(p3), LAYER_FRONT_UI);
+			ArcPushLine(colour, v2view(p3), v2view(p0), LAYER_FRONT_UI);
 		} break;
 		
 		case C2_SHAPE_TYPE_line_segments :
         {
 			for (i32 i = 0; i < shape.line_segments.count - 1; i++)
 			{
-				/*
-								PushDebugLine(V2AddV2(position, shape.line_segments.vertices[i]),
-											  V2AddV2(position, shape.line_segments.vertices[i + 1]),
-											  colour);
-				 */
+				ArcPushLine(colour,
+							v2view(V2AddV2(position, shape.line_segments.vertices[i])),
+							v2view(V2AddV2(position, shape.line_segments.vertices[i + 1])),
+							LAYER_FRONT_UI);
 			}
 		} break;
 	}

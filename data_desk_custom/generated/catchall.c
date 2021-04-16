@@ -658,8 +658,8 @@ break;
 case ENTITY_PROPERTY_queryable:
 return "Queryable";
 break;
-case ENTITY_PROPERTY_ground_segment:
-return "Ground Segment";
+case ENTITY_PROPERTY_terrain_segment:
+return "Terrain Segment";
 break;
 default:
 return "INVALID";

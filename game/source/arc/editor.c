@@ -10,6 +10,7 @@ internal void InitMapEditor()
 	InitialiseRunData();
 	
 	GetRunData()->debug_flags |= DEBUG_FLAGS_draw_chunk_grid;
+	GetRunData()->debug_flags |= DEBUG_FLAGS_draw_collision;
 }
 
 internal void EditorUpdate()
@@ -17,6 +18,7 @@ internal void EditorUpdate()
 	UpdateMapChunks();
 	DrawEditorUI();
 	TransformEditorCamera();
+	GenerateTerrainSegments();
 	DrawWorld();
 	RenderColliders();
 }
@@ -137,7 +139,7 @@ internal void DrawGeneralEditor()
 			middle_bounds.aabb.max = c2V(circle_size / 2.0f, circle_size / 2.0f);
 			AddPositionOffsetToShape(&middle_bounds, C2_SHAPE_TYPE_aabb, selected_entity->position);
 			
-			PushDebugShape(middle_bounds, C2_SHAPE_TYPE_aabb, v2(0.0f, 0.0f), v3(1.0f, 1.0f, 1.0f));
+			PushDebugShape(middle_bounds, C2_SHAPE_TYPE_aabb, v2(0.0f, 0.0f), v4u(1.0f));
 			
 			f32 middle_tint = 1.0f;
 			local_persist b8 is_holding_middle = 0;
@@ -242,8 +244,17 @@ internal void DrawTerrainEditor()
 		
 		if (platform->left_mouse_pressed && platform->key_down[KEY_alt])
 		{
-			GetRunData()->selected_chunk = iv2(WorldSpaceToChunkIndex(GetMousePositionInWorldSpace().x),
-											   WorldSpaceToChunkIndex(GetMousePositionInWorldSpace().y));
+			iv2 new_sel_chunk = iv2(WorldSpaceToChunkIndex(GetMousePositionInWorldSpace().x),
+									WorldSpaceToChunkIndex(GetMousePositionInWorldSpace().y));
+			if (new_sel_chunk.x == GetRunData()->selected_chunk.x &&
+				new_sel_chunk.y == GetRunData()->selected_chunk.y)
+			{
+				GetRunData()->selected_chunk = iv2(INT_MAX, INT_MAX);
+			}
+			else
+			{
+				GetRunData()->selected_chunk = new_sel_chunk;
+			}
 			
 			platform->left_mouse_pressed = 0;
 		}
@@ -337,6 +348,8 @@ internal void DrawTerrainEditor()
 															(f32)chunk->pos.y * CHUNK_SIZE));
 						break;
 					}
+					
+					// TODO(randy): sort in place
 				}
 			}
 		}
@@ -348,6 +361,7 @@ internal void DrawTerrainEditor()
 	middle_bounds.aabb.min = c2V(-circle_size / 2.0f, -circle_size / 2.0f);
 	middle_bounds.aabb.max = c2V(circle_size / 2.0f, circle_size / 2.0f);
 	StaticSpriteData *circle = &global_static_sprite_data[STATIC_SPRITE_circle_icon];
+	local_persist v2 *held_vert = 0;
 	for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
 	{
 		Chunk *chunk = &GetRunData()->chunks[i];
@@ -360,6 +374,44 @@ internal void DrawTerrainEditor()
 					v2 pos = V2AddV2(chunk->terrain_verts[j], v2((f32)chunk->pos.x * CHUNK_SIZE,
 																 (f32)chunk->pos.y * CHUNK_SIZE));
 					
+					v4 tint = v4u(1.0);
+					if (!is_drawing_terrain)
+					{
+						if (platform->left_mouse_down && held_vert == &chunk->terrain_verts[j])
+						{
+							tint = v4(0.5f, 0.5f, 0.5f, 1.0f);
+							
+							*held_vert = ClampV2(V2SubtractV2(GetMousePositionInWorldSpace(),
+															  v2((f32)chunk->pos.x * CHUNK_SIZE,
+																 (f32)chunk->pos.y * CHUNK_SIZE)),
+												 v2(0.0f, 0.0f),
+												 v2(CHUNK_SIZE, CHUNK_SIZE));
+						}
+						else
+						{
+							c2Shape vert_shape = middle_bounds;
+							AddPositionOffsetToShape(&vert_shape, C2_SHAPE_TYPE_aabb, pos);
+							if (IsV2OverlappingShape(GetMousePositionInWorldSpace(),
+													 vert_shape,
+													 C2_SHAPE_TYPE_aabb))
+							{
+								tint = v4(0.8f, 0.8f, 0.8f, 1.0f);
+								
+								if (platform->left_mouse_pressed)
+								{
+									held_vert = &chunk->terrain_verts[j];
+									platform->left_mouse_pressed = 0;
+								}
+							}
+						}
+						
+						if (core->left_mouse_released)
+						{
+							held_vert = 0;
+							core->left_mouse_released = 0;
+						}
+					}
+					
 					v2 r_pos = v2view(v2(pos.x - circle_size / 2.0f,
 										 pos.y - circle_size / 2.0f));
 					v2 r_size = v2zoom(v2(circle_size, circle_size));
@@ -368,7 +420,7 @@ internal void DrawTerrainEditor()
 								   0,
 								   circle->source,
 								   v4(r_pos.x, r_pos.y, r_size.x, r_size.y),
-								   v4u(1.0f),
+								   tint,
 								   LAYER_HUD);
 				}
 			}
