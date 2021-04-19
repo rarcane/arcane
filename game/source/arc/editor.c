@@ -348,13 +348,10 @@ internal void DrawTerrainEditor()
 															(f32)chunk->pos.y * CHUNK_SIZE));
 						break;
 					}
-					
-					// TODO(randy): sort in place
 				}
 			}
 		}
 	}
-	
 	
 	f32 circle_size = 3.0f;
 	c2Shape middle_bounds = {0};
@@ -422,6 +419,27 @@ internal void DrawTerrainEditor()
 								   v4(r_pos.x, r_pos.y, r_size.x, r_size.y),
 								   tint,
 								   LAYER_HUD);
+				}
+			}
+			
+			// NOTE(randy): Sort all vertices in order of x pos
+			for (i32 step = 0; step < MAX_TERRAIN_VERT_IN_CHUNK - 1; step++)
+				for (i32 j = 0; j < MAX_TERRAIN_VERT_IN_CHUNK - step - 1; j++)
+			{
+				if (chunk->terrain_verts[j].x > chunk->terrain_verts[j + 1].x)
+				{
+					v2 temp = chunk->terrain_verts[j];
+					chunk->terrain_verts[j] = chunk->terrain_verts[j + 1];
+					chunk->terrain_verts[j + 1] = temp;
+					
+					if (held_vert == &chunk->terrain_verts[j])
+					{
+						held_vert = &chunk->terrain_verts[j + 1];
+					}
+					else if (held_vert == &chunk->terrain_verts[j + 1])
+					{
+						held_vert = &chunk->terrain_verts[j];
+					}
 				}
 			}
 		}
