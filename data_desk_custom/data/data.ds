@@ -605,9 +605,8 @@ EntityProperty :: enum
 {
 	is_allocated,
 	is_character,
-	no_delete,
-	force_floating,
 	map_entity,
+	positional,
 	
 	// TODO(randy): yeet this ugly shit
 	interactable,
@@ -696,36 +695,6 @@ EntityPresetType:: enum
 		none,
 	@Data("'Terrain Segment'", TerrainSegmentEntityPresetCallback)
 		ground_segment,
-}
-
-//~CharacterData
-
-MAX_HOTBAR_SLOTS :: 9;
-MAX_INVENTORY_SLOTS :: 9;
-MAX_SPELL_SLOTS :: 8
-MAX_EQUIPMENT_SLOTS :: 6
-
-@SerialisableStruct(0) @Version(0)
-CharacterData :: struct
-{
-	inventory : Item[MAX_INVENTORY_SLOTS];
-	inventory_size : i32;
-	hotbar : Item[MAX_HOTBAR_SLOTS];
-	hotbar_size : i32;
-	active_hotbar_slot : i32;
-	grabbed_item : Item;
-	grabbed_item_offset : v2;
-	@DoNotSerialise
-		grabbed_item_origin_slot : *Item; // TODO(randy): serialisation issues?
-	
-	freehand_spell_slots : Spell[MAX_SPELL_SLOTS];
-	freehand_spell_count : i32;
-	
-	equipment_slots : Item[MAX_EQUIPMENT_SLOTS];
-	
-	unlocked_elemental_skills : b8[ELEMENTAL_SKILL_TYPE_MAX];
-	purchased_elemental_skills : ElementalSkillType[ELEMENTAL_SKILL_TYPE_MAX];
-	elemental_skill_points : i32;
 }
 
 /* ----------------------------------------- */
@@ -832,7 +801,7 @@ CHUNK_VERSION :: 0
 Chunk :: struct
 {
 	flags : ChunkFlags;
-	entities : **Entity;
+	entities : *Entity[512]; // TODO(randy): Turn this into a nested array within rundata to prevent entity cap to any particular chunk
 	entity_count : i32;
 	pos: iv2;
 	
@@ -848,12 +817,6 @@ ChunkSave :: struct
 	entity_ids : *i32;
 }
  */
-
-@SerialisableStruct(0) @Version(0)
-WorldSaveData :: struct
-{
-	elapsed_world_time : f32;
-}
 
 RenderableType :: enum
 {
@@ -953,13 +916,52 @@ CameraCue :: struct
 	zoom : f32;
 }
 
+//~WorldData - Serialised to each world save
+
+MAX_HOTBAR_SLOTS :: 9;
+MAX_INVENTORY_SLOTS :: 9;
+MAX_SPELL_SLOTS :: 8
+MAX_EQUIPMENT_SLOTS :: 6
+
+@SerialisableStruct(0) @Version(0)
+CharacterData :: struct
+{
+	inventory : Item[MAX_INVENTORY_SLOTS];
+	inventory_size : i32;
+	hotbar : Item[MAX_HOTBAR_SLOTS];
+	hotbar_size : i32;
+	active_hotbar_slot : i32;
+	grabbed_item : Item;
+	grabbed_item_offset : v2;
+	@DoNotSerialise
+		grabbed_item_origin_slot : *Item; // TODO(randy): serialisation issues?
+	
+	freehand_spell_slots : Spell[MAX_SPELL_SLOTS];
+	freehand_spell_count : i32;
+	
+	equipment_slots : Item[MAX_EQUIPMENT_SLOTS];
+	
+	unlocked_elemental_skills : b8[ELEMENTAL_SKILL_TYPE_MAX];
+	purchased_elemental_skills : ElementalSkillType[ELEMENTAL_SKILL_TYPE_MAX];
+	elemental_skill_points : i32;
+}
+
+@SerialisableStruct(0) @Version(0)
+WorldData :: struct
+{
+	character_data : CharacterData;
+	elapsed_world_time : f32;
+	character_chunk : iv2;
+}
+
+//~RunData - Game data used for run-time operations
+
 MAX_POSITIONAL_ENTITIES :: 2048
 MAX_FLOATING_ENTITIES :: 2048
 ENTITY_TABLE_SIZE :: (MAX_POSITIONAL_ENTITIES + MAX_FLOATING_ENTITIES)
 
 MAX_CAMERA_CUES :: 32
 
-//~RunData - Game data used for run-time operations
 RunData :: struct
 {
 	timers : Timer[MAX_ACTIVE_TIMERS];
@@ -968,13 +970,10 @@ RunData :: struct
 	
 	entities : Entity[ENTITY_TABLE_SIZE];
 	
-	character_data : CharacterData;
-	
 	world_name : char[50];
 	world_path : char[300];
 	world_chunks_path : char[300];
-	
-	world : WorldSaveData;
+	world_data : WorldData;
 	
 	is_paused : b8;
 	

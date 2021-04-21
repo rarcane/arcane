@@ -85,7 +85,7 @@ internal void PreMoveUpdatePlayer()
 	
 	// Acceleration calculations?
 	
-	CharacterData *character_data = &core->run_data->character_data;
+	CharacterData *character_data = GetCharacterData();
 	
 	// NOTE(randy): Player keybind stuff
 	if (CanPlayerMove() &&

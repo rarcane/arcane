@@ -21,7 +21,7 @@ internal void UpdateAnimations()
 		
 		if (entity->animation_flags & ANIMATION_FLAGS_playing) // ((animation_flags & (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat)) == (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat))
 		{
-			if (core->run_data->world.elapsed_world_time >= entity->frame_start_time + dynamic_sprite->frame_interval * entity->interval_mult)
+			if (core->run_data->world_data.elapsed_world_time >= entity->frame_start_time + dynamic_sprite->frame_interval * entity->interval_mult)
 			{
 				// Frame is complete
 				if (entity->animation_flags & ANIMATION_FLAGS_reversing)
@@ -61,7 +61,7 @@ internal void UpdateAnimations()
 					}
 				}
 				
-				entity->frame_start_time = core->run_data->world.elapsed_world_time;
+				entity->frame_start_time = GetRunData()->world_data.elapsed_world_time;
 			}
 		}
 	}

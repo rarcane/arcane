@@ -63,12 +63,10 @@ internal void InteractableUpdate()
 			}
 			else if (EntityHasProperty(core->run_data->current_e_interactable, ENTITY_PROPERTY_item))
 			{
-				CharacterData *character_data = &core->run_data->character_data;
-				
 				i32 free_inventory_slot = -1;
-				for (i32 i = 0; i < character_data->inventory_size; i++)
+				for (i32 i = 0; i < GetCharacterData()->inventory_size; i++)
 				{
-					Item *item = &character_data->inventory[i];
+					Item *item = &GetCharacterData()->inventory[i];
 					if (item->type == ITEM_TYPE_none)
 					{
 						free_inventory_slot = i;
@@ -78,7 +76,7 @@ internal void InteractableUpdate()
 				
 				if (free_inventory_slot != -1)
 				{
-					character_data->inventory[free_inventory_slot] = core->run_data->current_e_interactable->item;
+					GetCharacterData()->inventory[free_inventory_slot] = core->run_data->current_e_interactable->item;
 					DeleteEntity(core->run_data->current_e_interactable);
 				}
 			}

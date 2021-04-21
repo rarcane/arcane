@@ -11,7 +11,7 @@ internal void SetArcEntityAnimationState(Entity *entity, ArcEntityAnimationState
 	{
 		entity->sprite_data.dynamic_sprite = global_arc_entity_animation_state_data[new_animation_state].dynamic_sprite;
 		
-		entity->frame_start_time = core->run_data->world.elapsed_world_time;
+		entity->frame_start_time = GetWorldData()->elapsed_world_time;
 		entity->current_frame = 0;
 		entity->animation_flags = animation_flags;
 		

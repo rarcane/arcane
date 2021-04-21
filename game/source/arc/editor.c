@@ -69,7 +69,18 @@ internal void SwitchEditorState(EditorState editor_state)
 	}
 	else if (GetRunData()->editor_state != EDITOR_STATE_none && editor_state == EDITOR_STATE_none)
 	{
-		// TODO(randy): Rebuild normal world
+		for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
+		{
+			Chunk *chunk = &GetRunData()->chunks[i];
+			if (chunk->flags & CHUNK_FLAGS_is_allocated)
+			{
+				iv2 pos = chunk->pos;
+				UnloadMapChunk(pos);
+			}
+		}
+		
+		if (!LoadWorld("testing"))
+			CreateWorld("testing");
 	}
 	
 	core->run_data->editor_state = editor_state;
@@ -455,7 +466,7 @@ internal void UpdateMapChunks()
 	{
 		iv2 chunks[MAX_WORLD_CHUNKS] = {0};
 		i32 count;
-		GetChunkPositionsInRegion(chunks, &count, GetCameraRegionRect(), 0);
+		GetChunkPositionsInRegion(chunks, &count, GetCameraRegionRect(), 1);
 		
 		for (i32 i = 0; i < count; i++)
 		{

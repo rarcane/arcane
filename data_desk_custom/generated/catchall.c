@@ -610,14 +610,11 @@ break;
 case ENTITY_PROPERTY_is_character:
 return "Is Character";
 break;
-case ENTITY_PROPERTY_no_delete:
-return "No Delete";
-break;
-case ENTITY_PROPERTY_force_floating:
-return "Force Floating";
-break;
 case ENTITY_PROPERTY_map_entity:
 return "Map Entity";
+break;
+case ENTITY_PROPERTY_positional:
+return "Positional";
 break;
 case ENTITY_PROPERTY_interactable:
 return "Interactable";
@@ -815,20 +812,20 @@ static void ReadCharacterDataFromFile(FILE *file, CharacterData *data)
     }
 }
 
-static void WriteWorldSaveDataToFile(FILE *file, WorldSaveData *data)
+static void WriteWorldDataToFile(FILE *file, WorldData *data)
 {
     i32 version = 0;
     WriteToFile(file, &version, sizeof(i32));
-    WriteWorldSaveData_Version0ToFile(file, data);
+    WriteWorldData_Version0ToFile(file, data);
 }
 
-static void ReadWorldSaveDataFromFile(FILE *file, WorldSaveData *data)
+static void ReadWorldDataFromFile(FILE *file, WorldData *data)
 {
     i32 actual_version = -1;
     ReadFromFile(file, &actual_version, sizeof(i32));
     if (actual_version == 0)
     {
-        ReadWorldSaveData_Version0FromFile(file, data);
+        ReadWorldData_Version0FromFile(file, data);
         return;
     }
 
@@ -1069,15 +1066,23 @@ static void ReadCharacterData_Version0FromFile(FILE *file, CharacterData *data)
 
 }
 
-static void WriteWorldSaveData_Version0ToFile(FILE *file, WorldSaveData *data)
+static void WriteWorldData_Version0ToFile(FILE *file, WorldData *data)
 {
+    WriteCharacterDataToFile(file, &data->character_data);
+
     WriteToFile(file, &data->elapsed_world_time, sizeof(data->elapsed_world_time));
+
+    WriteToFile(file, &data->character_chunk, sizeof(data->character_chunk));
 
 }
 
-static void ReadWorldSaveData_Version0FromFile(FILE *file, WorldSaveData *data)
+static void ReadWorldData_Version0FromFile(FILE *file, WorldData *data)
 {
+    ReadCharacterDataFromFile(file, &data->character_data);
+
     ReadFromFile(file, &data->elapsed_world_time, sizeof(data->elapsed_world_time));
+
+    ReadFromFile(file, &data->character_chunk, sizeof(data->character_chunk));
 
 }
 

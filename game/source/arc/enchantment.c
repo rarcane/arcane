@@ -5,7 +5,7 @@ internal void DrawEnchantingUI()
 		return;
 	
 	Entity *character = GetCharacterEntity();
-	CharacterData *character_data = &core->run_data->character_data;
+	CharacterData *character_data = GetCharacterData();
 	Entity *enchanter = core->run_data->engaged_station_entity;
 	Assert(enchanter);
 	

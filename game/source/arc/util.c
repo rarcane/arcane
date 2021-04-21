@@ -369,6 +369,22 @@ internal void GetChunkPositionsInRegion(iv2 *positions, i32 *chunk_count, v4 rec
 	}
 }
 
+internal Chunk *GetChunkFromEntity(Entity *entity)
+{
+	Assert(entity);
+	if (EntityHasProperty(entity, ENTITY_PROPERTY_positional))
+	{
+		iv2 pos = iv2(WorldSpaceToChunkIndex(entity->position.x),
+					  WorldSpaceToChunkIndex(entity->position.y));
+		return GetChunkAtPos(pos);
+	}
+	else
+	{
+		LogWarning("Entity %s isn't positional, can't retrieve chunk", entity->debug_name);
+		return 0;
+	}
+}
+
 internal Entity *GetClosestEntityWithProperty(EntityProperty property, f32 max_distance_from_player)
 {
 	// NOTE(randy): This will eventually prioritise player direction and whatnot to fine tune selection
@@ -435,12 +451,17 @@ internal void ReadElementsFromFile(FILE *file, void *data, size_t size_bytes, si
 	}
 }
 
-internal CharacterData *GetCharacterData()
-{
-	return &core->run_data->character_data;
-}
-
 internal RunData *GetRunData()
 {
 	return core->run_data;
+}
+
+internal WorldData *GetWorldData()
+{
+	return &core->run_data->world_data;
+}
+
+internal CharacterData *GetCharacterData()
+{
+	return &core->run_data->world_data.character_data;
 }

@@ -601,9 +601,8 @@ enum EntityProperty
 {
 ENTITY_PROPERTY_is_allocated,
 ENTITY_PROPERTY_is_character,
-ENTITY_PROPERTY_no_delete,
-ENTITY_PROPERTY_force_floating,
 ENTITY_PROPERTY_map_entity,
+ENTITY_PROPERTY_positional,
 ENTITY_PROPERTY_interactable,
 ENTITY_PROPERTY_interactable_left_click,
 ENTITY_PROPERTY_lumber_axable,
@@ -674,29 +673,6 @@ global EntityPresetTypeData global_entity_preset_type_data[ENTITY_PRESET_TYPE_MA
 };
 
 static char *GetEntityPresetTypeName(EntityPresetType type);
-
-#define MAX_HOTBAR_SLOTS (9)
-#define MAX_INVENTORY_SLOTS (9)
-#define MAX_SPELL_SLOTS (8)
-#define MAX_EQUIPMENT_SLOTS (6)
-typedef struct CharacterData
-{
-Item inventory[MAX_INVENTORY_SLOTS];
-i32 inventory_size;
-Item hotbar[MAX_HOTBAR_SLOTS];
-i32 hotbar_size;
-i32 active_hotbar_slot;
-Item grabbed_item;
-v2 grabbed_item_offset;
-// @DoNotSerialise 
-Item *grabbed_item_origin_slot;
-Spell freehand_spell_slots[MAX_SPELL_SLOTS];
-i32 freehand_spell_count;
-Item equipment_slots[MAX_EQUIPMENT_SLOTS];
-b8 unlocked_elemental_skills[ELEMENTAL_SKILL_TYPE_MAX];
-ElementalSkillType purchased_elemental_skills[ELEMENTAL_SKILL_TYPE_MAX];
-i32 elemental_skill_points;
-} CharacterData;
 
 #define MINIMUM_AIR_PRESSURE (1.0f)
 #define LIQUID_RESOLUTION (0.2f)
@@ -806,16 +782,11 @@ typedef uint32 ChunkFlags;
 typedef struct Chunk
 {
 ChunkFlags flags;
-Entity **entities;
+Entity *entities[512];
 i32 entity_count;
 iv2 pos;
 v2 terrain_verts[MAX_TERRAIN_VERT_IN_CHUNK];
 } Chunk;
-
-typedef struct WorldSaveData
-{
-f32 elapsed_world_time;
-} WorldSaveData;
 
 typedef enum RenderableType RenderableType;
 enum RenderableType
@@ -915,6 +886,36 @@ f32 weight;
 f32 zoom;
 } CameraCue;
 
+#define MAX_HOTBAR_SLOTS (9)
+#define MAX_INVENTORY_SLOTS (9)
+#define MAX_SPELL_SLOTS (8)
+#define MAX_EQUIPMENT_SLOTS (6)
+typedef struct CharacterData
+{
+Item inventory[MAX_INVENTORY_SLOTS];
+i32 inventory_size;
+Item hotbar[MAX_HOTBAR_SLOTS];
+i32 hotbar_size;
+i32 active_hotbar_slot;
+Item grabbed_item;
+v2 grabbed_item_offset;
+// @DoNotSerialise 
+Item *grabbed_item_origin_slot;
+Spell freehand_spell_slots[MAX_SPELL_SLOTS];
+i32 freehand_spell_count;
+Item equipment_slots[MAX_EQUIPMENT_SLOTS];
+b8 unlocked_elemental_skills[ELEMENTAL_SKILL_TYPE_MAX];
+ElementalSkillType purchased_elemental_skills[ELEMENTAL_SKILL_TYPE_MAX];
+i32 elemental_skill_points;
+} CharacterData;
+
+typedef struct WorldData
+{
+CharacterData character_data;
+f32 elapsed_world_time;
+iv2 character_chunk;
+} WorldData;
+
 #define MAX_POSITIONAL_ENTITIES (2048)
 #define MAX_FLOATING_ENTITIES (2048)
 #define ENTITY_TABLE_SIZE ((MAX_POSITIONAL_ENTITIES+MAX_FLOATING_ENTITIES))
@@ -924,11 +925,10 @@ typedef struct RunData
 Timer timers[MAX_ACTIVE_TIMERS];
 Chunk chunks[MAX_WORLD_CHUNKS];
 Entity entities[ENTITY_TABLE_SIZE];
-CharacterData character_data;
 char world_name[50];
 char world_path[300];
 char world_chunks_path[300];
-WorldSaveData world;
+WorldData world_data;
 b8 is_paused;
 Entity *character_entity;
 CharacterState character_state;
@@ -968,9 +968,9 @@ static void WriteCharacterDataToFile(FILE *file, CharacterData *data);
 
 static void ReadCharacterDataFromFile(FILE *file, CharacterData *data);
 
-static void WriteWorldSaveDataToFile(FILE *file, WorldSaveData *data);
+static void WriteWorldDataToFile(FILE *file, WorldData *data);
 
-static void ReadWorldSaveDataFromFile(FILE *file, WorldSaveData *data);
+static void ReadWorldDataFromFile(FILE *file, WorldData *data);
 
 static void WriteEntity_Version0ToFile(FILE *file, Entity *data);
 
@@ -980,7 +980,7 @@ static void WriteCharacterData_Version0ToFile(FILE *file, CharacterData *data);
 
 static void ReadCharacterData_Version0FromFile(FILE *file, CharacterData *data);
 
-static void WriteWorldSaveData_Version0ToFile(FILE *file, WorldSaveData *data);
+static void WriteWorldData_Version0ToFile(FILE *file, WorldData *data);
 
-static void ReadWorldSaveData_Version0FromFile(FILE *file, WorldSaveData *data);
+static void ReadWorldData_Version0FromFile(FILE *file, WorldData *data);
 

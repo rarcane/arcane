@@ -16,7 +16,7 @@ internal Entity *NewEntity()
 	entity->sprite_data.tint = v4u(1.0f);
 	entity->sprite_data.scale = v2(1.0f, 1.0f);
 	entity->animation_flags = ANIMATION_FLAGS_playing | ANIMATION_FLAGS_repeat;
-	entity->frame_start_time = core->run_data->world.elapsed_world_time;
+	entity->frame_start_time = GetWorldData()->elapsed_world_time;
 	entity->interval_mult = 1.0f;
 	
 	entity->move_speed_mult = 1.0f;

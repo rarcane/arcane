@@ -16,41 +16,6 @@ typedef struct BlockTimer
 	f32 finish_time;
 } BlockTimer;
 
-typedef struct SerialisationPointer
-{
-	void **pointer_address;
-	i32 offset;
-} SerialisationPointer;
-
-/*
-typedef uint32 EntityFlags;
-typedef enum GeneralisedEntityType GeneralisedEntityType;
-typedef struct EntitySave
-{
-	char name[20]; // Do we really need this?
-	EntityFlags flags;
-	GeneralisedEntityType type;
-} EntitySave;
- */
-
-/*
-typedef struct ComponentSaveHelper
-{
-	i32 entity_offset;
-	void *comp_data;
-} ComponentSaveHelper;
- */
-
-typedef struct SkeletonChunk
-{
-	i32 x_index;
-	i32 y_index;
-} SkeletonChunk;
-
-#define MAX_SERIALISATION_POINTERS 10240
-global i32 serialisation_pointer_count = 0;
-global SerialisationPointer serialisation_pointers[MAX_SERIALISATION_POINTERS];
-
 internal f32 Fade(f32 alpha);
 internal f32 PythagSolve(f32 a, f32 b);
 
@@ -58,3 +23,10 @@ internal f32 GetPerlinNoise(f32 x_pos, f32 y_pos);
 
 internal v2 GetMousePositionInWorldSpace();
 internal v4 GetCameraRegionRect();
+
+typedef struct RunData RunData;
+typedef struct WorldData WorldData;
+typedef struct CharacterData CharacterData;
+internal RunData *GetRunData();
+internal WorldData *GetWorldData();
+internal CharacterData *GetCharacterData();

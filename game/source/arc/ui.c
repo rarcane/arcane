@@ -2,7 +2,7 @@ internal void inventory_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 {
 	InventoryIconCanvasData *icon_data = user_data;
 	Entity *character = GetCharacterEntity();
-	CharacterData *character_data = &core->run_data->character_data;
+	CharacterData *character_data = GetCharacterData();
 	
 	if (mouse.x >= 0.0f && mouse.x < rect.z && mouse.y >= 0.0f && mouse.y < rect.w)
 		icon_data->is_hovered = 1;
@@ -251,7 +251,7 @@ internal void hotbar_icon_canvas_update_callback(char *name, v4 rect, v2 mouse, 
 {
 	InventoryIconCanvasData *icon_data = user_data;
 	Entity *character = GetCharacterEntity();
-	CharacterData *character_data = &core->run_data->character_data;
+	CharacterData *character_data = GetCharacterData();
 	
 	if (mouse.x >= 0.0f && mouse.x < rect.z && mouse.y >= 0.0f && mouse.y < rect.w)
 	{
@@ -401,7 +401,7 @@ internal void hotbar_icon_canvas_render_callback(char *name, v4 rect, v2 mouse, 
 {
 	InventoryIconCanvasData *icon_data = user_data;
 	Entity *character = GetCharacterEntity();
-	CharacterData *character_data = &core->run_data->character_data;
+	CharacterData *character_data = GetCharacterData();
 	
 	Ts2dPushRect(v4(1.0f, 1.0f, 1.0f, 0.8f), rect);
 	
@@ -440,7 +440,7 @@ internal void equipment_icon_canvas_update_callback(char *name, v4 rect, v2 mous
 {
 	InventoryIconCanvasData *icon_data = user_data;
 	Entity *character = GetCharacterEntity();
-	CharacterData *character_data = &core->run_data->character_data;
+	CharacterData *character_data = GetCharacterData();
 	
 	if (mouse.x >= 0.0f && mouse.x < rect.z && mouse.y >= 0.0f && mouse.y < rect.w)
 	{
@@ -561,7 +561,7 @@ internal void grabbed_icon_canvas_render_callback(char *name, v4 rect, v2 mouse,
 {
 	GrabbedIconCanvasData *texture_data = user_data;
 	Entity *character = GetCharacterEntity();
-	CharacterData *character_data = &core->run_data->character_data;
+	CharacterData *character_data = GetCharacterData();
 	
 	Ts2dPushTexture(texture_data->static_sprite->texture_atlas, texture_data->static_sprite->source, rect);
 	
@@ -587,7 +587,7 @@ internal void DrawGameUI()
 	}
 	
 	Entity *character = GetCharacterEntity();
-	CharacterData *character_data = &core->run_data->character_data;
+	CharacterData *character_data = GetCharacterData();
 	
 	// NOTE(randy): Draw backpack UI.
 	if (!!(core->run_data->character_state & CHARACTER_STATE_is_backpack_open))

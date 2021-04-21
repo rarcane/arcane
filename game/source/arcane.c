@@ -289,7 +289,7 @@ GameUpdate(void)
 	{
 		core->delta_t = core->raw_delta_t * core->delta_mult;
 		core->world_delta_t = core->delta_t * core->world_delta_mult;
-		core->run_data->world.elapsed_world_time += core->world_delta_t;
+		GetWorldData()->elapsed_world_time += core->world_delta_t;
 	}
     
 #ifdef DEVELOPER_TOOLS
@@ -368,8 +368,7 @@ internal void InitialiseRunData()
 	global_ts2d->ground_vor_step = 0.13f;
 	global_ts2d->ground_band_height = 10.0f;
 	
-	GetRunData()->selected_chunk.x = INT_MAX;
-	GetRunData()->selected_chunk.y = INT_MAX;
+	GetRunData()->selected_chunk = iv2(INT_MAX, INT_MAX);
 	
 	/*
 				core->run_data->save_job_index = -1;

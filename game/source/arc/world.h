@@ -20,7 +20,9 @@ internal void UpdateWorld();
 internal void DrawWorld();
 internal void UpdateParallax();
 
+internal b8 DoesWorldExist(char *world_name);
 internal b8 CreateWorld(char *world_name);
+internal void DeleteWorld(char *world_name);
 internal void SaveWorld();
 internal b8 LoadWorld(char *world_name);
 internal void UnloadWorld();
@@ -32,7 +34,7 @@ internal void SaveChunkToFile(FILE* file, Chunk *chunk);
 internal void ReadChunkFromFile(FILE *file, Chunk *chunk);
 
 internal Chunk *LoadWorldChunk(iv2 pos);
-internal Chunk *UnloadWorldChunk(iv2 pos);
+internal b8 UnloadWorldChunk(iv2 pos);
 
 inline internal i32 WorldSpaceToChunkIndex(f32 world_space_coord)
 {
@@ -42,7 +44,7 @@ inline internal i32 WorldSpaceToChunkIndex(f32 world_space_coord)
 }
 
 internal void DeleteChunk(Chunk *chunk);
-
+internal void UpdateWorldChunks();
 internal void GenerateTerrainSegments();
 
 internal void TickTimers();
