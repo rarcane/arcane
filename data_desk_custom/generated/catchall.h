@@ -53,6 +53,7 @@ typedef uint32 PixelFlags;
 
 #define DEBUG_FLAGS_draw_collision (1<<0)
 #define DEBUG_FLAGS_draw_chunk_grid (1<<1)
+#define DEBUG_FLAGS_disable_draw_terrain (1<<2)
 typedef uint32 DebugFlags;
 
 typedef struct StaticSpriteData
@@ -949,6 +950,7 @@ v2 move_to_location;
 f32 move_to_zoom;
 f32 move_to_time;
 f32 move_to_start_time;
+b8 is_ejected;
 EditorState editor_state;
 DebugFlags debug_flags;
 Entity *selected_entity;

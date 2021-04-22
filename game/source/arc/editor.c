@@ -11,6 +11,7 @@ internal void InitMapEditor()
 	
 	GetRunData()->debug_flags |= DEBUG_FLAGS_draw_chunk_grid;
 	GetRunData()->debug_flags |= DEBUG_FLAGS_draw_collision;
+	GetRunData()->debug_flags |= DEBUG_FLAGS_disable_draw_terrain;
 }
 
 internal void EditorUpdate()
@@ -319,6 +320,7 @@ internal void DrawTerrainEditor()
 	}
 	TsUIWindowEnd();
 	
+	// NOTE(randy): Vertex drawing
 	local_persist b8 is_drawing_terrain = 0;
 	if (prime_terrain_drawer && platform->left_mouse_pressed)
 	{
@@ -364,6 +366,7 @@ internal void DrawTerrainEditor()
 		}
 	}
 	
+	// NOTE(randy): Vertex adjustment
 	f32 circle_size = 3.0f;
 	c2Shape middle_bounds = {0};
 	middle_bounds.aabb.min = c2V(-circle_size / 2.0f, -circle_size / 2.0f);
@@ -510,7 +513,7 @@ internal void UpdateMapChunks()
 	{
 		iv2 chunks[MAX_WORLD_CHUNKS] = {0};
 		i32 count;
-		GetChunkPositionsInRegion(chunks, &count, GetCameraRegionRect(), 0);
+		GetChunkPositionsInRegion(chunks, &count, GetCameraRegionRect(), 1);
 		
 		for (i32 i = 0; i < count; i++)
 		{

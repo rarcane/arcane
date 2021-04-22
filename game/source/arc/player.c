@@ -1,5 +1,10 @@
 internal void PreMoveUpdatePlayer()
 {
+	if (platform->key_pressed[KEY_e] && platform->key_down[KEY_alt])
+	{
+		SetEjectedMode(!GetRunData()->is_ejected);
+	}
+	
 	Entity *character = GetCharacterEntity();
 	if (!character)
 		return;
@@ -183,7 +188,8 @@ internal b8 CanPlayerMove()
 	return !(core->run_data->character_state & CHARACTER_STATE_is_crafting) &&
 		!(core->run_data->character_state & CHARACTER_STATE_is_blueprinting) &&
 		!(core->run_data->character_state & CHARACTER_STATE_is_enchanting) &&
-		!(core->run_data->character_state & CHARACTER_STATE_is_in_elemental_skill_tree);
+		!(core->run_data->character_state & CHARACTER_STATE_is_in_elemental_skill_tree) &&
+		!GetRunData()->is_ejected;
 }
 
 internal void SetArcaneMode(i32 on)
@@ -203,4 +209,64 @@ internal void SetArcaneMode(i32 on)
 		core->run_data->character_state &= ~CHARACTER_STATE_is_enchanting;
 		core->run_data->character_state &= ~CHARACTER_STATE_is_in_elemental_skill_tree;
 	}
+}
+
+internal void SetEjectedMode(b8 value)
+{
+	if (value == GetRunData()->is_ejected)
+	{
+		return;
+	}
+	
+	if (value)
+	{
+		GetRunData()->debug_flags = DEFAULT_EJECTED_DEBUG_FLAGS;
+		GetRunData()->is_ejected = 1;
+	}
+	else
+	{
+		GetRunData()->debug_flags = 0;
+		GetRunData()->is_ejected = 0;
+	}
+}
+
+internal void UpdateEjectedMode()
+{
+	TsUIWindowBegin("debug", v4(0.0f, 0.0f, 600.0f, 300.0f), 0, 0);
+	{
+		TsUIPushColumn(v2(0.0f, 0.0f), v2(100.0f, 20.0f));
+		
+		{
+			char lbl[100];
+			sprintf(lbl, "camera pos: %f, %f", core->camera_position.x, core->camera_position.y);
+			TsUILabel(lbl);
+		}
+		
+		{
+			char lbl[100];
+			sprintf(lbl, "camera zoom: %f", core->camera_zoom);
+			TsUILabel(lbl);
+		}
+		
+		global_ts2d->ground_scale = TsUISlider("Scale", global_ts2d->ground_scale, 0.004f, 0.5f);
+		global_ts2d->ground_vor_step = TsUISlider("Voronoi Step", global_ts2d->ground_vor_step, 0.004f, 0.5f);
+		global_ts2d->ground_band_height = TsUISlider("Band Height", global_ts2d->ground_band_height, 1.0f, 100.0f);
+		
+		{
+			v4 camera_region = GetCameraRegionRect();
+			char lbl[100];
+			sprintf(lbl, "camera region: %f, %f, %f, %f", camera_region.x, camera_region.y, camera_region.z, camera_region.w);
+			TsUILabel(lbl);
+		}
+		/*
+				{
+					char lbl[100];
+					sprintf(lbl, "alpha: %f", alpha);
+					TsUILabel(lbl);
+				}
+		 */
+		
+		TsUIPopColumn();
+	}
+	TsUIWindowEnd();
 }

@@ -66,6 +66,7 @@ DebugFlags :: flags
 {
 	draw_collision,
 	draw_chunk_grid,
+	disable_draw_terrain,
 }
 
 //~StaticSprite
@@ -1009,6 +1010,7 @@ RunData :: struct
 	//camera_action_count : i32;
 	
 	//~Editor
+	is_ejected : b8;
 	editor_state : EditorState;
 	debug_flags : DebugFlags;
 	

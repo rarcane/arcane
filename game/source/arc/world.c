@@ -19,8 +19,15 @@ internal void WorldUpdate()
         
 		UpdatePhysics();
         
-		if (!core->run_data->editor_state)
+		if (GetRunData()->is_ejected)
+		{
+			TransformEditorCamera();
+			UpdateEjectedMode();
+		}
+		else
+		{
 			TransformInGameCamera();
+		}
         
 		PostMoveUpdatePlayer();
 	}
@@ -121,37 +128,40 @@ internal void DrawWorld()
 	// NOTE(randy): Pass visible ground vertices to renderer
 	MemorySet(global_ts2d->ground_vertices, 0, sizeof(global_ts2d->ground_vertices));
 	global_ts2d->ground_vertex_count = 0;
-	v4 camera_region = GetCameraRegionRect();
-	const float x_buffer = 50.0f;
-	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_terrain_segment);)
+	if (!(GetRunData()->debug_flags & DEBUG_FLAGS_disable_draw_terrain))
 	{
-		if (global_ts2d->ground_vertex_count == MAX_GROUND_VERTICES)
-			break;
-		
-		LineSegments *line_segs = &entity->physics.shape.line_segments;
-		for (i32 i = 0; i < line_segs->count; i++)
+		v4 camera_region = GetCameraRegionRect();
+		const float x_buffer = 50.0f;
+		for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_terrain_segment);)
 		{
-			v2 vert_pos = V2AddV2(line_segs->vertices[i], entity->position);
-			if (vert_pos.x > camera_region.x - x_buffer && vert_pos.x < camera_region.x + camera_region.z + x_buffer)
+			if (global_ts2d->ground_vertex_count == MAX_GROUND_VERTICES)
+				break;
+			
+			LineSegments *line_segs = &entity->physics.shape.line_segments;
+			for (i32 i = 0; i < line_segs->count; i++)
 			{
-				global_ts2d->ground_vertices[global_ts2d->ground_vertex_count] = vert_pos;
-				global_ts2d->ground_vertices[global_ts2d->ground_vertex_count].y *= -1.0f;
-				global_ts2d->ground_vertex_count++;
-				
-				if (global_ts2d->ground_vertex_count == MAX_GROUND_VERTICES)
-					break;
+				v2 vert_pos = V2AddV2(line_segs->vertices[i], entity->position);
+				if (vert_pos.x > camera_region.x - x_buffer && vert_pos.x < camera_region.x + camera_region.z + x_buffer)
+				{
+					global_ts2d->ground_vertices[global_ts2d->ground_vertex_count] = vert_pos;
+					global_ts2d->ground_vertices[global_ts2d->ground_vertex_count].y *= -1.0f;
+					global_ts2d->ground_vertex_count++;
+					
+					if (global_ts2d->ground_vertex_count == MAX_GROUND_VERTICES)
+						break;
+				}
 			}
 		}
-	}
-	
-	for (i32 step = 0; step < global_ts2d->ground_vertex_count - 1; step++)
-		for (i32 i = 0; i < global_ts2d->ground_vertex_count - step - 1; i++)
-	{
-		if (global_ts2d->ground_vertices[i].x > global_ts2d->ground_vertices[i + 1].x)
+		
+		for (i32 step = 0; step < global_ts2d->ground_vertex_count - 1; step++)
+			for (i32 i = 0; i < global_ts2d->ground_vertex_count - step - 1; i++)
 		{
-			v2 temp = global_ts2d->ground_vertices[i];
-			global_ts2d->ground_vertices[i] = global_ts2d->ground_vertices[i + 1];
-			global_ts2d->ground_vertices[i + 1] = temp;
+			if (global_ts2d->ground_vertices[i].x > global_ts2d->ground_vertices[i + 1].x)
+			{
+				v2 temp = global_ts2d->ground_vertices[i];
+				global_ts2d->ground_vertices[i] = global_ts2d->ground_vertices[i + 1];
+				global_ts2d->ground_vertices[i + 1] = temp;
+			}
 		}
 	}
 }
@@ -613,14 +623,17 @@ internal void UpdateWorldChunks()
 	}
 	
 	// NOTE(randy): Figure out what chunk character is in
-	Chunk* chunk = GetChunkFromEntity(GetRunData()->character_entity);
-	if (chunk)
+	if (GetRunData()->character_entity)
 	{
-		GetWorldData()->character_chunk = chunk->pos;
-	}
-	else
-	{
-		LogWarning("Character chunk isn't loaded");
+		Chunk* chunk = GetChunkFromEntity(GetRunData()->character_entity);
+		if (chunk)
+		{
+			GetWorldData()->character_chunk = chunk->pos;
+		}
+		else
+		{
+			LogError("Character chunk isn't loaded?");
+		}
 	}
 }
 

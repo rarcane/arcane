@@ -1,6 +1,8 @@
 #define DEVELOPER_TOOLS
 #define DEVELOPER_ENVIRONMENT
 
+#define DEFAULT_EJECTED_DEBUG_FLAGS (DEBUG_FLAGS_draw_collision | DEBUG_FLAGS_disable_draw_terrain)
+
 typedef struct Entity Entity;
 typedef struct OverlappedColliderInfo
 {

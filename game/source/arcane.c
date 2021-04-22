@@ -375,10 +375,6 @@ internal void InitialiseRunData()
 				core->run_data->load_job_index = -1;
 				core->run_data->free_entity_id = 1;
 			 */
-	
-#ifdef DEVELOPER_ENVIRONMENT
-	// core->run_data->debug_flags |= DEBUG_FLAGS_draw_collision;
-#endif
 }
 
 internal void FreeRunData()
