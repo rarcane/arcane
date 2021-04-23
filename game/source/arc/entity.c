@@ -28,6 +28,9 @@ internal Entity *NewEntity()
 
 internal void DeleteEntity(Entity *entity)
 {
+	if (GetRunData()->selected_entity == entity)
+		GetRunData()->selected_entity = 0;
+	
 	MemorySet(entity, 0, sizeof(Entity));
 }
 
@@ -125,4 +128,42 @@ IncrementEntityWithProperty(Entity **entity_ptr, EntityProperty property)
 	*entity_ptr = entity;
 	result = !!entity;
 	return result;
+}
+
+internal void PrintEntityFields(Entity *entity)
+{
+	Assert(entity && EntityHasProperty(entity, ENTITY_PROPERTY_is_allocated));
+	
+	TsUITitle(entity->debug_name);
+	
+	if (TsUICollapsable("Properties"))
+	{
+		for (i32 i = 1; i < ENTITY_PROPERTY_MAX; i++)
+		{
+			if (TsUIToggler(GetEntityPropertyName(i), EntityHasProperty(entity, i)))
+			{
+				EntitySetProperty(entity, i);
+			}
+			else
+			{
+				EntityUnsetProperty(entity, i);
+			}
+		}
+		
+		TsUICollapsableEnd();
+	}
+	
+	if (EntityHasProperty(entity, ENTITY_PROPERTY_positional))
+	{
+		char lbl[100];
+		sprintf(lbl, "Position: %f, %f", entity->position.x, entity->position.y);
+		TsUILabel(lbl);
+	}
+	
+	TsUIDivider();
+	
+	if (TsUIButton("Delete"))
+	{
+		DeleteEntity(entity);
+	}
 }

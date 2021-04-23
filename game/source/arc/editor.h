@@ -6,3 +6,6 @@ internal b8 DoesMapChunkExistOnDisk(iv2 pos);
 internal Chunk *LoadMapChunk(iv2 pos);
 internal void UnloadMapChunk(iv2 pos);
 internal void CommitActiveChunks();
+
+internal void SetEjectedMode(b8 value);
+internal void UpdateEjectedMode();

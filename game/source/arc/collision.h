@@ -29,4 +29,3 @@ internal void GenerateCollisionManifold(c2Shape a_shape, c2ShapeType a_shape_typ
 internal i32 GetOverlappingBodiesWithShape(Entity **overlapping_entities,
 										   c2Shape shape,
 										   c2ShapeType shape_type);
-internal b8 IsV2OverlappingShape(v2 pos, c2Shape shape, c2ShapeType shape_type);

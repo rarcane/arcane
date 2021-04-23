@@ -2,8 +2,6 @@ internal void PreMoveUpdatePlayer();
 internal void PostMoveUpdatePlayer();
 internal b8 CanPlayerMove();
 internal void SetArcaneMode(i32 on);
-internal void SetEjectedMode(b8 value);
-internal void UpdateEjectedMode();
 
 inline internal Entity *GetCharacterEntity()
 {

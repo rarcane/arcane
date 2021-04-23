@@ -106,11 +106,17 @@ internal void RenderSprites()
 			render_pos = V2AddV2(render_pos, v2(render_size.x / -2.0f, -render_size.y));
 			render_pos = V2AddV2(render_pos, v2zoom(v2((static_sprite->offset.x + entity->sprite_data.offset.x) * (entity->is_flipped ? -1.0f : 1.0f), static_sprite->offset.y + entity->sprite_data.offset.y)));
 			
+			v4 tint = v4u(1.0f);
+			if (entity == GetRunData()->selected_entity)
+			{
+				tint = v4(1.0f, 0.6f, 0.6f, 1.0f);
+			}
+			
 			ArcPushTexture(static_sprite->texture_atlas,
 						   0,
 						   v4(static_sprite->source.x, static_sprite->source.y, static_sprite->source.z - 0.5f, static_sprite->source.w - 0.5f),
 						   v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-						   entity->sprite_data.tint,
+						   V4MultiplyV4(entity->sprite_data.tint, tint),
 						   entity->sprite_data.render_layer);
 		}
 		else

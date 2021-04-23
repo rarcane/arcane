@@ -242,7 +242,16 @@ global DynamicSpriteData global_dynamic_sprite_data[DYNAMIC_SPRITE_MAX] = {
 
 static char *GetDynamicSpriteName(DynamicSprite type);
 
-#define MAX_SUB_SPRITES (5)
+typedef struct SpriteData
+{
+StaticSprite static_sprite;
+DynamicSprite dynamic_sprite;
+v2 offset;
+f32 render_layer;
+v2 scale;
+v4 tint;
+} SpriteData;
+
 typedef struct ArcEntityAnimationStateData
 {
 DynamicSprite dynamic_sprite;
@@ -597,6 +606,16 @@ PhysicsBodyTypeFlags type;
 PhysicsBodyTypeFlags collide_against;
 } PhysicsBodyData;
 
+typedef enum TreeType TreeType;
+enum TreeType
+{
+TREE_TYPE_oak,
+TREE_TYPE_birch,
+TREE_TYPE_pine,
+TREE_TYPE_MAX,
+};
+static char *GetTreeTypeName(TreeType type);
+
 typedef enum EntityProperty EntityProperty;
 enum EntityProperty
 {
@@ -618,6 +637,7 @@ ENTITY_PROPERTY_physical,
 ENTITY_PROPERTY_blueprint,
 ENTITY_PROPERTY_queryable,
 ENTITY_PROPERTY_terrain_segment,
+ENTITY_PROPERTY_tree,
 ENTITY_PROPERTY_MAX,
 };
 static char *GetEntityPropertyName(EntityProperty type);
@@ -653,6 +673,7 @@ f32 priority;
 StructureType structure_type;
 Item remaining_items_in_blueprint[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
 f32 durability;
+TreeType tree_type;
 } Entity;
 
 typedef struct EntityPresetTypeData
@@ -665,12 +686,12 @@ typedef enum EntityPresetType EntityPresetType;
 enum EntityPresetType
 {
 ENTITY_PRESET_TYPE_none,
-ENTITY_PRESET_TYPE_ground_segment,
+ENTITY_PRESET_TYPE_tree,
 ENTITY_PRESET_TYPE_MAX,
 };
 global EntityPresetTypeData global_entity_preset_type_data[ENTITY_PRESET_TYPE_MAX] = {
     { "none", 0, },
-    { "Terrain Segment", TerrainSegmentEntityPresetCallback, },
+    { "Tree", TreeEntityPresetCallback, },
 };
 
 static char *GetEntityPresetTypeName(EntityPresetType type);

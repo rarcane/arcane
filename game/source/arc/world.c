@@ -287,6 +287,8 @@ internal b8 CreateWorld(char *world_name)
 	
 	core->is_ingame = 1;
 	
+	LoadWorldChunksInView();
+	
 	Log("Created new world '%s' successfully.", world_name);
 	
 	return 1;
@@ -389,6 +391,20 @@ internal void SaveWorld()
 			}
 		}
 	}
+}
+
+internal Chunk *GetChunkAtPos(iv2 pos)
+{
+	for (int i = 0; i < MAX_WORLD_CHUNKS; i++)
+	{
+		Chunk *chunk = &core->run_data->chunks[i];
+		if ((chunk->flags & CHUNK_FLAGS_is_allocated) && pos.x == chunk->pos.x && pos.y == chunk->pos.y)
+		{
+			return chunk;
+		}
+	}
+    
+	return 0;
 }
 
 internal Chunk *GetUnallocatedChunk()
@@ -510,6 +526,20 @@ internal Chunk *LoadWorldChunk(iv2 pos)
 	}
 }
 
+internal void LoadWorldChunksInView()
+{
+	iv2 chunks[MAX_WORLD_CHUNKS] = {0};
+	i32 count;
+	GetChunkPositionsInRegion(chunks, &count, GetCameraRegionRect(), 1);
+	
+	for (i32 i = 0; i < count; i++)
+	{
+		iv2 pos = chunks[i];
+		Chunk *chunk = LoadWorldChunk(pos);
+		Assert(chunk);
+	}
+}
+
 internal b8 UnloadWorldChunk(iv2 pos)
 {
 	Chunk *chunk = GetChunkAtPos(pos);
@@ -538,18 +568,34 @@ internal b8 UnloadWorldChunk(iv2 pos)
 	return 1;
 }
 
-internal Chunk *GetChunkAtPos(iv2 pos)
+internal void UnloadWorldChunksOutOfView()
 {
-	for (int i = 0; i < MAX_WORLD_CHUNKS; i++)
+	iv2 chunks[MAX_WORLD_CHUNKS] = {0};
+	i32 count;
+	GetChunkPositionsInRegion(chunks, &count, GetCameraRegionRect(), 1);
+	
+	for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
 	{
-		Chunk *chunk = &core->run_data->chunks[i];
-		if ((chunk->flags & CHUNK_FLAGS_is_allocated) && pos.x == chunk->pos.x && pos.y == chunk->pos.y)
+		Chunk *chunk = &GetRunData()->chunks[i];
+		if (chunk->flags & CHUNK_FLAGS_is_allocated)
 		{
-			return chunk;
+			b8 found = 0;
+			for (i32 j = 0; j < count; j++)
+			{
+				iv2 pos = chunks[j];
+				if (pos.x == chunk->pos.x && pos.y == chunk->pos.y)
+				{
+					found = 1;
+					break;
+				}
+			}
+			
+			if (!found)
+			{
+				UnloadWorldChunk(chunk->pos);
+			}
 		}
 	}
-    
-	return 0;
 }
 
 internal void DeleteChunk(Chunk *chunk)
@@ -564,43 +610,6 @@ internal void DeleteChunk(Chunk *chunk)
 
 internal void UpdateWorldChunks()
 {
-	// NOTE(randy): Load/unload world chunks depending on camera region
-	{
-		iv2 chunks[MAX_WORLD_CHUNKS] = {0};
-		i32 count;
-		GetChunkPositionsInRegion(chunks, &count, GetCameraRegionRect(), 1);
-		
-		for (i32 i = 0; i < count; i++)
-		{
-			iv2 pos = chunks[i];
-			Chunk *chunk = LoadWorldChunk(pos);
-			Assert(chunk);
-		}
-		
-		for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
-		{
-			Chunk *chunk = &GetRunData()->chunks[i];
-			if (chunk->flags & CHUNK_FLAGS_is_allocated)
-			{
-				b8 found = 0;
-				for (i32 j = 0; j < count; j++)
-				{
-					iv2 pos = chunks[j];
-					if (pos.x == chunk->pos.x && pos.y == chunk->pos.y)
-					{
-						found = 1;
-						break;
-					}
-				}
-				
-				if (!found)
-				{
-					UnloadWorldChunk(chunk->pos);
-				}
-			}
-		}
-	}
-	
 	// NOTE(randy): Update positional entities
 	for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
 	{
@@ -622,7 +631,10 @@ internal void UpdateWorldChunks()
 		}
 	}
 	
-	// NOTE(randy): Figure out what chunk character is in
+	UnloadWorldChunksOutOfView();
+	LoadWorldChunksInView();
+	
+	// NOTE(randy): Figure out what chunk the character is in
 	if (GetRunData()->character_entity)
 	{
 		Chunk* chunk = GetChunkFromEntity(GetRunData()->character_entity);

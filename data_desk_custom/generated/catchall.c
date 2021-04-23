@@ -600,6 +600,25 @@ break;
 }
 }
 
+static char *GetTreeTypeName(TreeType type)
+{
+switch(type)
+{
+case TREE_TYPE_oak:
+return "Oak";
+break;
+case TREE_TYPE_birch:
+return "Birch";
+break;
+case TREE_TYPE_pine:
+return "Pine";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
 static char *GetEntityPropertyName(EntityProperty type)
 {
 switch(type)
@@ -658,6 +677,9 @@ break;
 case ENTITY_PROPERTY_terrain_segment:
 return "Terrain Segment";
 break;
+case ENTITY_PROPERTY_tree:
+return "Tree";
+break;
 default:
 return "INVALID";
 break;
@@ -671,8 +693,8 @@ switch(type)
 case ENTITY_PRESET_TYPE_none:
 return "None";
 break;
-case ENTITY_PRESET_TYPE_ground_segment:
-return "Ground Segment";
+case ENTITY_PRESET_TYPE_tree:
+return "Tree";
 break;
 default:
 return "INVALID";
@@ -900,6 +922,8 @@ static void WriteEntity_Version0ToFile(FILE *file, Entity *data)
 
     WriteToFile(file, &data->durability, sizeof(data->durability));
 
+    WriteToFile(file, &data->tree_type, sizeof(data->tree_type));
+
 }
 
 static void ReadEntity_Version0FromFile(FILE *file, Entity *data)
@@ -967,6 +991,8 @@ static void ReadEntity_Version0FromFile(FILE *file, Entity *data)
     }
 
     ReadFromFile(file, &data->durability, sizeof(data->durability));
+
+    ReadFromFile(file, &data->tree_type, sizeof(data->tree_type));
 
 }
 

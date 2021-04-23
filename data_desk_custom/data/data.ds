@@ -275,7 +275,16 @@ DynamicSprite :: enum
 		birch_tree4,
 }
 
-MAX_SUB_SPRITES :: 5
+//~Sprite
+SpriteData :: struct
+{
+	static_sprite : StaticSprite;
+	dynamic_sprite : DynamicSprite;
+	offset : v2;
+	render_layer : f32;
+	scale : v2;
+	tint : v4;
+}
 
 @XMacro
 ArcEntityAnimationStateData :: struct
@@ -586,7 +595,6 @@ ForwardChunk :: _;
 @GenerateComponentCode
 Dummy2 :: _;
 
-//~ $Entity
 PhysicsBodyData :: struct
 {
 	shape : c2Shape;
@@ -598,6 +606,13 @@ PhysicsBodyData :: struct
 	gravity_multiplier : f32;
 	type : PhysicsBodyTypeFlags;
 	collide_against : PhysicsBodyTypeFlags;
+}
+
+TreeType :: enum
+{
+	oak,
+	birch,
+	pine,
 }
 
 //~Entity
@@ -628,6 +643,8 @@ EntityProperty :: enum
 	queryable,
 	
 	terrain_segment,
+	
+	tree,
 }
 
 ENTITY_PROPERTY_SIZE :: (ENTITY_PROPERTY_MAX / 64 + 1)
@@ -681,6 +698,8 @@ Entity :: struct
 	remaining_items_in_blueprint : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
 	
 	durability : f32;
+	
+	tree_type : TreeType;
 }
 
 @XMacro
@@ -694,14 +713,12 @@ EntityPresetType:: enum
 {
 	@Data("'none'", 0)
 		none,
-	@Data("'Terrain Segment'", TerrainSegmentEntityPresetCallback)
-		ground_segment,
+	@Data("'Tree'", TreeEntityPresetCallback)
+		tree,
 }
 
-/* ----------------------------------------- */
-/* ----------- CELLULAR AUTOMATA ----------- */
-/* ----------------------------------------- */
 
+//~CA
 //FLUID_COMPRESSION :: 0.1f
 MINIMUM_AIR_PRESSURE :: 1.0f;
 LIQUID_RESOLUTION :: 0.2f;

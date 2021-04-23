@@ -32,9 +32,10 @@ internal Chunk *GetUnallocatedChunk();
 internal Chunk *AllocateNewChunk(iv2 pos);
 internal void SaveChunkToFile(FILE* file, Chunk *chunk);
 internal void ReadChunkFromFile(FILE *file, Chunk *chunk);
-
 internal Chunk *LoadWorldChunk(iv2 pos);
+internal void LoadWorldChunksInView();
 internal b8 UnloadWorldChunk(iv2 pos);
+internal void UnloadWorldChunksOutOfView();
 
 inline internal i32 WorldSpaceToChunkIndex(f32 world_space_coord)
 {

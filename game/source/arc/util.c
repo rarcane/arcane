@@ -23,8 +23,7 @@ internal f32 Fade(f32 alpha)
 internal b8 IsPositionInBounds(v2 position, v4 bounds)
 {
 	return position.x > bounds.x && position.x < bounds.x + bounds.z &&
-		platform->mouse_y > bounds.y &&
-		platform->mouse_y < bounds.y + bounds.w;
+		position.y > bounds.y && position.y < bounds.y + bounds.w;
 }
 
 internal f32 LerpF32(f32 alpha, f32 a, f32 b)
@@ -222,6 +221,37 @@ internal void AddPositionOffsetToShape(c2Shape *shape, c2ShapeType shape_type, v
 	}
 }
 
+internal b8 IsV2OverlappingShape(v2 pos, c2Shape shape, c2ShapeType shape_type)
+{
+	switch (shape_type)
+	{
+		case C2_SHAPE_TYPE_aabb:
+		{
+			return (pos.x >= shape.aabb.min.x && pos.x < shape.aabb.max.x &&
+					pos.y >= shape.aabb.min.y && pos.y < shape.aabb.max.y);
+		} break;
+		
+		case C2_SHAPE_TYPE_line:
+		{
+			f32 thicc = 1.0f;
+			
+			return (pos.x >= shape.line.p1.x && pos.x <= shape.line.p2.x &&
+					pos.y >= (shape.line.p1.y + shape.line.p2.y) / 2.0f - thicc && pos.y <= (shape.line.p1.y + shape.line.p2.y) / 2.0f + thicc);
+		} break;
+		
+		case C2_SHAPE_TYPE_line_segments :
+		{
+			return (pos.x >= shape.line_segments.vertices[0].x && pos.x < shape.line_segments.vertices[shape.line_segments.count - 1].x &&
+					pos.y >= shape.line_segments.vertices[shape.line_segments.count - 1].y && pos.y < shape.line_segments.vertices[0].y);
+		} break;
+		
+		default:
+		return 0;
+	}
+	
+	return 0;
+}
+
 internal c2Shape GetEntityShapeInWorldspace(Entity *entity)
 {
 	c2Shape shape = entity->physics.shape;
@@ -413,6 +443,59 @@ internal Entity *GetClosestEntityWithProperty(EntityProperty property, f32 max_d
 	}
 	
 	return (closest_mag <= max_distance_from_player ? closest_entity : 0);
+}
+
+internal b8 IsPositionOverlappingEntity(Entity *entity, v2 pos)
+{
+	if (!EntityHasProperty(entity, ENTITY_PROPERTY_positional))
+		return 0;
+	
+	if (EntityHasProperty(entity, ENTITY_PROPERTY_sprite))
+	{
+		v2 min = {0};
+		v2 max = {0};
+		if (entity->sprite_data.static_sprite)
+		{
+			StaticSpriteData *sprite = &global_static_sprite_data[entity->sprite_data.static_sprite];
+			v2 size = v2(sprite->source.z - sprite->source.x,
+						 sprite->source.w - sprite->source.y);
+			
+			min = v2(size.x / -2.0f, -size.y);
+			max = v2(size.x / 2.0f, 0.0f);
+			
+			min = V2SubtractV2(min, sprite->offset);
+			max = V2SubtractV2(max, sprite->offset);
+		}
+		else
+		{
+			Assert(entity->sprite_data.dynamic_sprite);
+			DynamicSpriteData *sprite = &global_dynamic_sprite_data[entity->sprite_data.dynamic_sprite];
+			v2 size = v2(sprite->source.z - sprite->source.x,
+						 sprite->source.w - sprite->source.y);
+			size = V2DivideF32(size, (f32)sprite->frames);
+			
+			min = v2(size.x / -2.0f, -size.y);
+			max = v2(size.x / 2.0f, 0.0f);
+			
+			min = V2SubtractV2(min, sprite->offset);
+			max = V2SubtractV2(max, sprite->offset);
+		}
+		
+		c2Shape shape = {0};
+		shape.aabb.min.x = min.x;
+		shape.aabb.min.y = min.y;
+		shape.aabb.max.x = max.x;
+		shape.aabb.max.y = max.y;
+		AddPositionOffsetToShape(&shape, C2_SHAPE_TYPE_aabb, entity->position);
+		
+		return IsV2OverlappingShape(pos, shape, C2_SHAPE_TYPE_aabb);
+	}
+	else if (EntityHasProperty(entity, ENTITY_PROPERTY_physical))
+	{
+		return IsV2OverlappingShape(pos, GetEntityShapeInWorldspace(entity), entity->physics.shape_type);
+	}
+	
+	return 0;
 }
 
 internal void WriteToFile(FILE *file, void *data, size_t size_bytes)

@@ -6,13 +6,6 @@ internal void RenderColliders()
 	
 	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_physical);)
 	{
-		if (platform->left_mouse_pressed &&
-			IsV2OverlappingShape(GetMousePositionInWorldSpace(), GetEntityShapeInWorldspace(entity), entity->physics.shape_type))
-		{
-			core->run_data->selected_entity = entity;
-			platform->left_mouse_pressed = 0;
-		}
-		
 		v4 col = v4u(1.0f);
 		if (core->run_data->selected_entity &&
 			entity == core->run_data->selected_entity)
@@ -561,37 +554,7 @@ internal i32 GetOverlappingBodiesWithShape(Entity **overlapping_entities,
 	return overlap_count;
 }
 
-internal b8 IsV2OverlappingShape(v2 pos, c2Shape shape, c2ShapeType shape_type)
-{
-	switch (shape_type)
-	{
-		case C2_SHAPE_TYPE_aabb:
-		{
-			return (pos.x >= shape.aabb.min.x && pos.x < shape.aabb.max.x &&
-					pos.y >= shape.aabb.min.y && pos.y < shape.aabb.max.y);
-		} break;
-		
-		case C2_SHAPE_TYPE_line:
-		{
-			f32 thicc = 1.0f;
-			
-			return (pos.x >= shape.line.p1.x && pos.x <= shape.line.p2.x &&
-					pos.y >= (shape.line.p1.y + shape.line.p2.y) / 2.0f - thicc && pos.y <= (shape.line.p1.y + shape.line.p2.y) / 2.0f + thicc);
-		} break;
-		
-		case C2_SHAPE_TYPE_line_segments :
-		{
-			return (pos.x >= shape.line_segments.vertices[0].x && pos.x < shape.line_segments.vertices[shape.line_segments.count - 1].x &&
-					pos.y >= shape.line_segments.vertices[shape.line_segments.count - 1].y && pos.y < shape.line_segments.vertices[0].y);
-		} break;
-		
-		default:
-		return 0;
-		break;
-	}
-	
-	return 0;
-}
+
 
 // https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html
 /* int pnpoly(int nvert, float *vertx, float *verty, float testx, float testy)
