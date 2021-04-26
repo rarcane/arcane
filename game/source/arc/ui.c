@@ -224,7 +224,7 @@ internal void inventory_icon_canvas_render_callback(char *name, v4 rect, v2 mous
 	if (icon_data->item->type)
 	{
 		f32 padding = 15;
-		StaticSpriteData *sprite = &global_static_sprite_data[global_item_type_data[icon_data->item->type].icon_sprite];
+		SpriteData *sprite = &global_sprite_data[global_item_type_data[icon_data->item->type].icon_sprite];
 		Ts2dPushTexture(sprite->texture_atlas, sprite->source, v4(rect.x + padding / 2, rect.y + padding / 2, rect.z - padding, rect.w - padding));
 		
 		if (icon_data->item->stack_size > 1)
@@ -408,7 +408,7 @@ internal void hotbar_icon_canvas_render_callback(char *name, v4 rect, v2 mouse, 
 	if (icon_data->item->type)
 	{
 		f32 padding = 15;
-		StaticSpriteData *sprite = &global_static_sprite_data[global_item_type_data[icon_data->item->type].icon_sprite];
+		SpriteData *sprite = &global_sprite_data[global_item_type_data[icon_data->item->type].icon_sprite];
 		Ts2dPushTexture(sprite->texture_atlas, sprite->source, v4(rect.x + padding / 2, rect.y + padding / 2, rect.z - padding, rect.w - padding));
 		
 		// Assert(icon_data->item->stack_size == 1); // NOTE(randy): Don't yet support hotbar items with stacks. Is this intentional?
@@ -531,7 +531,7 @@ internal void equipment_icon_canvas_render_callback(char *name, v4 rect, v2 mous
 	if (icon_data->item->type)
 	{
 		f32 padding = 15;
-		StaticSpriteData *sprite = &global_static_sprite_data[global_item_type_data[icon_data->item->type].icon_sprite];
+		SpriteData *sprite = &global_sprite_data[global_item_type_data[icon_data->item->type].icon_sprite];
 		Ts2dPushTexture(sprite->texture_atlas, sprite->source, v4(rect.x + padding / 2, rect.y + padding / 2, rect.z - padding, rect.w - padding));
 	}
 	
@@ -712,7 +712,7 @@ internal void DrawGameUI()
 			TsUIPushSize(v2(60, 60));
 			
 			GrabbedIconCanvasData *grabbed_icon_data = MemoryArenaAllocateAndZero(core->frame_arena, sizeof(GrabbedIconCanvasData));
-			grabbed_icon_data->static_sprite = &global_static_sprite_data[global_item_type_data[character_data->grabbed_item.type].icon_sprite];
+			grabbed_icon_data->static_sprite = &global_sprite_data[global_item_type_data[character_data->grabbed_item.type].icon_sprite];
 			TsUICanvas("Texture",
 					   &grabbed_icon_canvas_update_callback, 0, &grabbed_icon_canvas_render_callback, grabbed_icon_data);
 			

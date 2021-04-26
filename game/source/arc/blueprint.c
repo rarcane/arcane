@@ -82,26 +82,26 @@ internal void DrawBlueprintUI()
 				v2 render_pos = v2view(v2(character->position.x + start_pos + (i - 1) * 20.0f, character->position.y - 60.0f));
 				v2 render_size = v2zoom(v2(20.0f, 20.0f));
 				
-				StaticSprite texture = STATIC_SPRITE_INVALID;
+				Sprite texture = 0;
 				switch(i)
 				{
 					case STRUCTURE_CATEGORY_shia:
 					{
-						texture = STATIC_SPRITE_shia;
+						texture = SPRITE_shia;
 					} break;
 					
 					case STRUCTURE_CATEGORY_crafting:
 					{
-						texture = STATIC_SPRITE_crafting_tool;
+						texture = SPRITE_crafting_tool;
 					} break;
 					
 					case STRUCTURE_CATEGORY_base:
 					{
-						texture = STATIC_SPRITE_flint_sword_icon;
+						texture = SPRITE_flint_sword_icon;
 					} break;
 				}
 				
-				StaticSpriteData *category_sprite = &global_static_sprite_data[texture];
+				SpriteData *category_sprite = &global_sprite_data[texture];
 				ArcPushTexture(category_sprite->texture_atlas,
 							   0,
 							   category_sprite->source,
@@ -170,7 +170,7 @@ internal void DrawBlueprintUI()
 				v2 render_pos = v2view(v2(character->position.x + start_pos + i * 20.0f, character->position.y - 60.0f));
 				v2 render_size = v2zoom(v2(20.0f, 20.0f));
 				
-				StaticSpriteData *sprite = &global_static_sprite_data[structures[i].data->icon_sprite];
+				SpriteData *sprite = &global_sprite_data[structures[i].data->icon_sprite];
 				ArcPushTexture(sprite->texture_atlas,
 							   0,
 							   sprite->source,
@@ -181,7 +181,7 @@ internal void DrawBlueprintUI()
 			}
 			
 			// NOTE(randy): Render blueprint at mouse location
-			StaticSpriteData *sprite = &global_static_sprite_data[selected_structure->world_sprite];
+			SpriteData *sprite = &global_sprite_data[selected_structure->world_sprite];
 			v2 render_size = v2zoom(v2(sprite->source.z, sprite->source.w));
 			v2 render_pos = v2view(V2AddV2(GetMousePositionInWorldSpace(),
 										   v2(sprite->source.z / -2.0f, -sprite->source.w)));
@@ -202,7 +202,7 @@ internal void DrawBlueprintUI()
 				
 				new_structure->position = GetMousePositionInWorldSpace();
 				
-				new_structure->sprite_data.static_sprite = selected_structure->world_sprite;
+				new_structure->sprite_data.sprite = selected_structure->world_sprite;
 				new_structure->sprite_data.tint = v4(0.5f, 0.5f, 1.0f, 0.4f);
 				
 				new_structure->structure_type = structures[selected_structure_index].type;
@@ -251,7 +251,7 @@ internal void DrawBlueprintUI()
 			
 			if (item->stack_size > 0)
 			{
-				StaticSpriteData *sprite = &global_static_sprite_data[item_data->icon_sprite];
+				SpriteData *sprite = &global_sprite_data[item_data->icon_sprite];
 				
 				v2 render_pos = v2view(V2AddV2(v2(current_blueprint->position.x + start_pos + index * 20.0f,
 												  current_blueprint->position.y - 40.0f),

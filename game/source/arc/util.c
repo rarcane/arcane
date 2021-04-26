@@ -454,32 +454,16 @@ internal b8 IsPositionOverlappingEntity(Entity *entity, v2 pos)
 	{
 		v2 min = {0};
 		v2 max = {0};
-		if (entity->sprite_data.static_sprite)
-		{
-			StaticSpriteData *sprite = &global_static_sprite_data[entity->sprite_data.static_sprite];
-			v2 size = v2(sprite->source.z - sprite->source.x,
-						 sprite->source.w - sprite->source.y);
-			
-			min = v2(size.x / -2.0f, -size.y);
-			max = v2(size.x / 2.0f, 0.0f);
-			
-			min = V2SubtractV2(min, sprite->offset);
-			max = V2SubtractV2(max, sprite->offset);
-		}
-		else
-		{
-			Assert(entity->sprite_data.dynamic_sprite);
-			DynamicSpriteData *sprite = &global_dynamic_sprite_data[entity->sprite_data.dynamic_sprite];
-			v2 size = v2(sprite->source.z - sprite->source.x,
-						 sprite->source.w - sprite->source.y);
-			size = V2DivideF32(size, (f32)sprite->frames);
-			
-			min = v2(size.x / -2.0f, -size.y);
-			max = v2(size.x / 2.0f, 0.0f);
-			
-			min = V2SubtractV2(min, sprite->offset);
-			max = V2SubtractV2(max, sprite->offset);
-		}
+		SpriteData *sprite = &global_sprite_data[entity->sprite_data.sprite];
+		
+		v2 size = v2(sprite->source.width,
+					 sprite->source.height);
+		
+		min = v2(size.x / -2.0f, -size.y);
+		max = v2(size.x / 2.0f, 0.0f);
+		
+		min = V2SubtractV2(min, sprite->offset);
+		max = V2SubtractV2(max, sprite->offset);
 		
 		c2Shape shape = {0};
 		shape.aabb.min.x = min.x;

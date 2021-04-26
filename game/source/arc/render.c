@@ -1,14 +1,8 @@
 internal void InitialiseSpriteData()
 {
-	for (int i = 0; i < STATIC_SPRITE_MAX; i++)
+	for (int i = 0; i < SPRITE_MAX; i++)
 	{
-		StaticSpriteData *sprite = &global_static_sprite_data[i];
-		sprite->texture_atlas = TsAssetsRequestAssetByName(ASSET_TYPE_Ts2dTexture, sprite->texture_path);
-	}
-	
-	for (int i = 0; i < DYNAMIC_SPRITE_MAX; i++)
-	{
-		DynamicSpriteData *sprite = &global_dynamic_sprite_data[i];
+		SpriteData *sprite = &global_sprite_data[i];
 		sprite->texture_atlas = TsAssetsRequestAssetByName(ASSET_TYPE_Ts2dTexture, sprite->texture_path);
 	}
 }
@@ -17,9 +11,9 @@ internal void UpdateAnimations()
 {
 	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_flipbook);)
 	{
-		DynamicSpriteData *dynamic_sprite = &global_dynamic_sprite_data[entity->sprite_data.dynamic_sprite];
+		SpriteData *dynamic_sprite = &global_sprite_data[entity->sprite_data.sprite];
 		
-		if (entity->animation_flags & ANIMATION_FLAGS_playing) // ((animation_flags & (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat)) == (ANIMATION_FLAG_playing | ANIMATION_FLAG_repeat))
+		if (entity->animation_flags & ANIMATION_FLAGS_playing)
 		{
 			if (core->run_data->world_data.elapsed_world_time >= entity->frame_start_time + dynamic_sprite->frame_interval * entity->interval_mult)
 			{
@@ -69,60 +63,36 @@ internal void UpdateAnimations()
 
 internal void RenderSprites()
 {
-	// NOTE(randy): Add all sprite components to queue
 	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_sprite);)
 	{
-		if (entity->sprite_data.dynamic_sprite)
+		SpriteData *sprite = &global_sprite_data[entity->sprite_data.sprite];
+		
+		v2 render_size = v2zoom(v2(sprite->source.z * entity->sprite_data.scale.x * (entity->is_flipped ? -1.0f : 1.0f), sprite->source.w * entity->sprite_data.scale.y));
+		
+		// NOTE(randy): Determine proper position of the Sprite - Offset is defaulted to BottomCentre
+		v2 render_pos = v2view(entity->position);
+		render_pos = V2AddV2(render_pos, v2(render_size.x / -2.0f, -render_size.y));
+		render_pos = V2AddV2(render_pos, v2zoom(v2((sprite->offset.x + entity->sprite_data.offset.x) * (entity->is_flipped ? -1.0f : 1.0f), sprite->offset.y + entity->sprite_data.offset.y)));
+		
+		// NOTE(randy): The X source pos is translated to the right depending on the current frame.
+		v2 source_pos = v2(sprite->source.x, sprite->source.y);
+		if (entity->sprite_data.sprite >= SPRITE_default_dynamic)
 		{
-			DynamicSpriteData *dynamic_sprite = &global_dynamic_sprite_data[entity->sprite_data.dynamic_sprite];
-			
-			Assert(EntityHasProperty(entity, ENTITY_PROPERTY_flipbook));
-			
-			v2 render_size = v2zoom(v2(dynamic_sprite->source.z * entity->sprite_data.scale.x * (entity->is_flipped ? -1.0f : 1.0f), dynamic_sprite->source.w * entity->sprite_data.scale.y));
-			
-			// NOTE(randy): Determine proper position of the Sprite - Offset is defaulted to BottomCentre
-			v2 render_pos = v2view(entity->position);
-			render_pos = V2AddV2(render_pos, v2(render_size.x / -2.0f, -render_size.y));
-			render_pos = V2AddV2(render_pos, v2zoom(v2((dynamic_sprite->offset.x + entity->sprite_data.offset.x) * (entity->is_flipped ? -1.0f : 1.0f), dynamic_sprite->offset.y + entity->sprite_data.offset.y)));
-			
-			// NOTE(randy): The X source pos is translated to the right depending on the current frame.
-			v2 source_pos = v2(dynamic_sprite->source.x + dynamic_sprite->source.z * entity->current_frame, dynamic_sprite->source.y);
-			
-			ArcPushTexture(dynamic_sprite->texture_atlas,
-						   0,
-						   v4(source_pos.x, source_pos.y, dynamic_sprite->source.z - 0.5f, dynamic_sprite->source.w - 0.5f),
-						   v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-						   (core->run_data->editor_state && entity == core->run_data->selected_entity ? V4MultiplyV4(v4(1.0f, 0.8f, 0.8f, 1.0f), entity->sprite_data.tint) : entity->sprite_data.tint),
-						   entity->sprite_data.render_layer);
+			source_pos.x += sprite->source.z * entity->current_frame;
 		}
-		else if (entity->sprite_data.static_sprite)
+		
+		v4 tint = v4u(1.0f);
+		if (entity == GetRunData()->selected_entity)
 		{
-			StaticSpriteData *static_sprite = &global_static_sprite_data[entity->sprite_data.static_sprite];
-			
-			v2 render_size = v2zoom(v2(static_sprite->source.z * entity->sprite_data.scale.x * (entity->is_flipped ? -1.0f : 1.0f), static_sprite->source.w * entity->sprite_data.scale.y));
-			
-			// NOTE(randy): Determine proper position of the Sprite - Offset is defaulted to BottomCentre
-			v2 render_pos = v2view(entity->position);
-			render_pos = V2AddV2(render_pos, v2(render_size.x / -2.0f, -render_size.y));
-			render_pos = V2AddV2(render_pos, v2zoom(v2((static_sprite->offset.x + entity->sprite_data.offset.x) * (entity->is_flipped ? -1.0f : 1.0f), static_sprite->offset.y + entity->sprite_data.offset.y)));
-			
-			v4 tint = v4u(1.0f);
-			if (entity == GetRunData()->selected_entity)
-			{
-				tint = v4(1.0f, 0.6f, 0.6f, 1.0f);
-			}
-			
-			ArcPushTexture(static_sprite->texture_atlas,
-						   0,
-						   v4(static_sprite->source.x, static_sprite->source.y, static_sprite->source.z - 0.5f, static_sprite->source.w - 0.5f),
-						   v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-						   V4MultiplyV4(entity->sprite_data.tint, tint),
-						   entity->sprite_data.render_layer);
+			tint = v4(1.0f, 0.6f, 0.6f, 1.0f);
 		}
-		else
-		{
-			Assert(0);
-		}
+		
+		ArcPushTexture(sprite->texture_atlas,
+					   0,
+					   v4(source_pos.x, source_pos.y, sprite->source.z - 0.5f, sprite->source.w - 0.5f),
+					   v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
+					   V4MultiplyV4(entity->sprite_data.tint, tint),
+					   entity->sprite_data.render_layer);
 	}
 	
 	// NOTE(randy): Sort & render everything in the queue

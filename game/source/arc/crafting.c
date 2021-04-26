@@ -114,7 +114,7 @@ internal void DrawCraftingUI()
 				TsPlatformCaptureKeyboard();
 			}
 			
-			StaticSpriteData *arrow_sprite = &global_static_sprite_data[STATIC_SPRITE_side_arrow];
+			SpriteData *arrow_sprite = &global_sprite_data[SPRITE_side_arrow];
 			v2 render_pos = v2view(v2(item_position.x - 20.0f,
 									  item_position.y - 40.0f));
 			v2 render_size = v2zoom(v2(arrow_sprite->source.width,
@@ -139,7 +139,7 @@ internal void DrawCraftingUI()
 				TsPlatformCaptureKeyboard();
 			}
 			
-			StaticSpriteData *arrow_sprite = &global_static_sprite_data[STATIC_SPRITE_side_arrow];
+			SpriteData *arrow_sprite = &global_sprite_data[SPRITE_side_arrow];
 			v2 render_pos = v2view(v2(item_position.x + 20.0f,
 									  item_position.y - 40.0f));
 			v2 render_size = v2zoom(v2(arrow_sprite->source.width,
@@ -158,7 +158,7 @@ internal void DrawCraftingUI()
 		// NOTE(randy): Render the craftable sprite
 		CraftingRecipeTypeData *recipe = &global_crafting_recipe_type_data[craftable_recipes[selected_recipe_index]];
 		
-		StaticSpriteData *recipe_output_sprite = &global_static_sprite_data[global_item_type_data[recipe->output.type].icon_sprite];
+		SpriteData *recipe_output_sprite = &global_sprite_data[global_item_type_data[recipe->output.type].icon_sprite];
 		v2 render_pos = v2view(v2(item_position.x - 7.0f,
 								  item_position.y - 43.0f));
 		v2 render_size = v2zoom(v2(recipe_output_sprite->source.width,

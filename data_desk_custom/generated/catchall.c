@@ -60,237 +60,227 @@ break;
 }
 }
 
-static char *GetStaticSpriteName(StaticSprite type)
+static char *GetSpriteName(Sprite type)
 {
 switch(type)
 {
-case STATIC_SPRITE_INVALID:
-return "INVALID";
+case SPRITE_default:
+return "Default";
 break;
-case STATIC_SPRITE_ground_arctic:
+case SPRITE_ground_arctic:
 return "Ground Arctic";
 break;
-case STATIC_SPRITE_ground_desert:
+case SPRITE_ground_desert:
 return "Ground Desert";
 break;
-case STATIC_SPRITE_ground_plains:
+case SPRITE_ground_plains:
 return "Ground Plains";
 break;
-case STATIC_SPRITE_player:
+case SPRITE_player:
 return "Player";
 break;
-case STATIC_SPRITE_far_mountains:
+case SPRITE_far_mountains:
 return "Far Mountains";
 break;
-case STATIC_SPRITE_mid_mountains:
+case SPRITE_mid_mountains:
 return "Mid Mountains";
 break;
-case STATIC_SPRITE_cloud_v1:
+case SPRITE_cloud_v1:
 return "Cloud V1";
 break;
-case STATIC_SPRITE_cloud_v2:
+case SPRITE_cloud_v2:
 return "Cloud V2";
 break;
-case STATIC_SPRITE_cloud_v3:
+case SPRITE_cloud_v3:
 return "Cloud V3";
 break;
-case STATIC_SPRITE_cloud_v4:
+case SPRITE_cloud_v4:
 return "Cloud V4";
 break;
-case STATIC_SPRITE_cloud_v5:
+case SPRITE_cloud_v5:
 return "Cloud V5";
 break;
-case STATIC_SPRITE_cloud_v6:
+case SPRITE_cloud_v6:
 return "Cloud V6";
 break;
-case STATIC_SPRITE_ground_forest_flat:
+case SPRITE_ground_forest_flat:
 return "Ground Forest Flat";
 break;
-case STATIC_SPRITE_ground_forest_10_degree:
+case SPRITE_ground_forest_10_degree:
 return "Ground Forest 10 Degree";
 break;
-case STATIC_SPRITE_ground_rocks_v1:
+case SPRITE_ground_rocks_v1:
 return "Ground Rocks V1";
 break;
-case STATIC_SPRITE_ground_rocks_v2:
+case SPRITE_ground_rocks_v2:
 return "Ground Rocks V2";
 break;
-case STATIC_SPRITE_pine_tree_v1:
+case SPRITE_pine_tree_v1:
 return "Pine Tree V1";
 break;
-case STATIC_SPRITE_hills_1_v1:
+case SPRITE_hills_1_v1:
 return "Hills 1v1";
 break;
-case STATIC_SPRITE_hills_1_v2:
+case SPRITE_hills_1_v2:
 return "Hills 1v2";
 break;
-case STATIC_SPRITE_bg1_shrub_v1:
+case SPRITE_bg1_shrub_v1:
 return "Bg1 Shrub V1";
 break;
-case STATIC_SPRITE_bg1_shrub_v2:
+case SPRITE_bg1_shrub_v2:
 return "Bg1 Shrub V2";
 break;
-case STATIC_SPRITE_bg1_shrub_v3:
+case SPRITE_bg1_shrub_v3:
 return "Bg1 Shrub V3";
 break;
-case STATIC_SPRITE_bg1_sapling_v1:
+case SPRITE_bg1_sapling_v1:
 return "Bg1 Sapling V1";
 break;
-case STATIC_SPRITE_bg1_sapling_v2:
+case SPRITE_bg1_sapling_v2:
 return "Bg1 Sapling V2";
 break;
-case STATIC_SPRITE_bg1_sapling_v3:
+case SPRITE_bg1_sapling_v3:
 return "Bg1 Sapling V3";
 break;
-case STATIC_SPRITE_bg1_pine_tree_v1:
+case SPRITE_bg1_pine_tree_v1:
 return "Bg1 Pine Tree V1";
 break;
-case STATIC_SPRITE_bg1_pine_tree_v2:
+case SPRITE_bg1_pine_tree_v2:
 return "Bg1 Pine Tree V2";
 break;
-case STATIC_SPRITE_bg2_hills_v1:
+case SPRITE_bg2_hills_v1:
 return "Bg2 Hills V1";
 break;
-case STATIC_SPRITE_bg2_hills_v2:
+case SPRITE_bg2_hills_v2:
 return "Bg2 Hills V2";
 break;
-case STATIC_SPRITE_bg2_shrub_v1:
+case SPRITE_bg2_shrub_v1:
 return "Bg2 Shrub V1";
 break;
-case STATIC_SPRITE_bg2_shrub_v2:
+case SPRITE_bg2_shrub_v2:
 return "Bg2 Shrub V2";
 break;
-case STATIC_SPRITE_bg2_shrub_v3:
+case SPRITE_bg2_shrub_v3:
 return "Bg2 Shrub V3";
 break;
-case STATIC_SPRITE_bg2_pine_tree_v1:
+case SPRITE_bg2_pine_tree_v1:
 return "Bg2 Pine Tree V1";
 break;
-case STATIC_SPRITE_bg2_pine_tree_v2:
+case SPRITE_bg2_pine_tree_v2:
 return "Bg2 Pine Tree V2";
 break;
-case STATIC_SPRITE_bg3_hills_v1:
+case SPRITE_bg3_hills_v1:
 return "Bg3 Hills V1";
 break;
-case STATIC_SPRITE_bg3_shrub_v1:
+case SPRITE_bg3_shrub_v1:
 return "Bg3 Shrub V1";
 break;
-case STATIC_SPRITE_bg3_shrub_v2:
+case SPRITE_bg3_shrub_v2:
 return "Bg3 Shrub V2";
 break;
-case STATIC_SPRITE_bg3_shrub_v3:
+case SPRITE_bg3_shrub_v3:
 return "Bg3 Shrub V3";
 break;
-case STATIC_SPRITE_bg3_shrub_v4:
+case SPRITE_bg3_shrub_v4:
 return "Bg3 Shrub V4";
 break;
-case STATIC_SPRITE_bg3_pine_tree_v1:
+case SPRITE_bg3_pine_tree_v1:
 return "Bg3 Pine Tree V1";
 break;
-case STATIC_SPRITE_bg3_pine_tree_v2:
+case SPRITE_bg3_pine_tree_v2:
 return "Bg3 Pine Tree V2";
 break;
-case STATIC_SPRITE_bg3_pine_tree_v3:
+case SPRITE_bg3_pine_tree_v3:
 return "Bg3 Pine Tree V3";
 break;
-case STATIC_SPRITE_bg3_pine_tree_v4:
+case SPRITE_bg3_pine_tree_v4:
 return "Bg3 Pine Tree V4";
 break;
-case STATIC_SPRITE_bg3_pine_tree_v5:
+case SPRITE_bg3_pine_tree_v5:
 return "Bg3 Pine Tree V5";
 break;
-case STATIC_SPRITE_bg3_pine_tree_v6:
+case SPRITE_bg3_pine_tree_v6:
 return "Bg3 Pine Tree V6";
 break;
-case STATIC_SPRITE_bg3_pine_tree_v7:
+case SPRITE_bg3_pine_tree_v7:
 return "Bg3 Pine Tree V7";
 break;
-case STATIC_SPRITE_bg3_pine_tree_v8:
+case SPRITE_bg3_pine_tree_v8:
 return "Bg3 Pine Tree V8";
 break;
-case STATIC_SPRITE_y_axis_arrow_icon:
+case SPRITE_y_axis_arrow_icon:
 return "Yaxis Arrow Icon";
 break;
-case STATIC_SPRITE_x_axis_arrow_icon:
+case SPRITE_x_axis_arrow_icon:
 return "Xaxis Arrow Icon";
 break;
-case STATIC_SPRITE_circle_icon:
+case SPRITE_circle_icon:
 return "Circle Icon";
 break;
-case STATIC_SPRITE_side_arrow:
+case SPRITE_side_arrow:
 return "Side Arrow";
 break;
-case STATIC_SPRITE_test_icon:
+case SPRITE_test_icon:
 return "Test Icon";
 break;
-case STATIC_SPRITE_crafting_stump:
+case SPRITE_crafting_stump:
 return "Crafting Stump";
 break;
-case STATIC_SPRITE_runic_enchanter:
+case SPRITE_runic_enchanter:
 return "Runic Enchanter";
 break;
-case STATIC_SPRITE_flint_sword_icon:
+case SPRITE_flint_sword_icon:
 return "Flint Sword Icon";
 break;
-case STATIC_SPRITE_flint_sword_ground:
+case SPRITE_flint_sword_ground:
 return "Flint Sword Ground";
 break;
-case STATIC_SPRITE_flint_axe:
+case SPRITE_flint_axe:
 return "Flint Axe";
 break;
-case STATIC_SPRITE_flint:
+case SPRITE_flint:
 return "Flint";
 break;
-case STATIC_SPRITE_twig:
+case SPRITE_twig:
 return "Twig";
 break;
-case STATIC_SPRITE_crafting_tool:
+case SPRITE_crafting_tool:
 return "Crafting Tool";
 break;
-case STATIC_SPRITE_test_chestpiece:
+case SPRITE_test_chestpiece:
 return "Test Chestpiece";
 break;
-case STATIC_SPRITE_shia:
+case SPRITE_shia:
 return "Shia";
 break;
-case STATIC_SPRITE_shia2:
+case SPRITE_shia2:
 return "Shia2";
 break;
-case STATIC_SPRITE_dummy:
+case SPRITE_dummy:
 return "Dummy";
 break;
-default:
-return "INVALID";
+case SPRITE_default_dynamic:
+return "Default Dynamic";
 break;
-}
-}
-
-static char *GetDynamicSpriteName(DynamicSprite type)
-{
-switch(type)
-{
-case DYNAMIC_SPRITE_INVALID:
-return "INVALID";
-break;
-case DYNAMIC_SPRITE_player_idle:
+case SPRITE_player_idle:
 return "Player Idle";
 break;
-case DYNAMIC_SPRITE_player_walking:
+case SPRITE_player_walking:
 return "Player Walking";
 break;
-case DYNAMIC_SPRITE_player_sprinting:
+case SPRITE_player_sprinting:
 return "Player Sprinting";
 break;
-case DYNAMIC_SPRITE_birch_tree1:
+case SPRITE_birch_tree1:
 return "Birch Tree1";
 break;
-case DYNAMIC_SPRITE_birch_tree2:
+case SPRITE_birch_tree2:
 return "Birch Tree2";
 break;
-case DYNAMIC_SPRITE_birch_tree3:
+case SPRITE_birch_tree3:
 return "Birch Tree3";
 break;
-case DYNAMIC_SPRITE_birch_tree4:
+case SPRITE_birch_tree4:
 return "Birch Tree4";
 break;
 default:

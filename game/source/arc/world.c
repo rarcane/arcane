@@ -255,7 +255,7 @@ internal b8 CreateWorld(char *world_name)
 		character->move_speed = 100.0f;
 		character->entity_type = ARC_ENTITY_TYPE_player;
 		character->current_animation_state = ARC_ENTITY_ANIMATION_STATE_player_idle;
-		character->sprite_data.dynamic_sprite = DYNAMIC_SPRITE_player_idle;
+		character->sprite_data.sprite = SPRITE_player_idle;
 		
 		
 		CharacterData *character_data = GetCharacterData();

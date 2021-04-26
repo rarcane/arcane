@@ -26,6 +26,12 @@ internal void EditorUpdate()
 
 internal void DrawEditorUI()
 {
+	if (platform->key_pressed[KEY_s] && platform->key_down[KEY_ctrl])
+	{
+		CommitActiveChunks();
+		TsPlatformCaptureKeyboard();
+	}
+	
 	// NOTE(randy): Editor drawing / updating
 	switch (core->run_data->editor_state)
 	{
@@ -293,7 +299,7 @@ internal void DrawGeneralEditor()
 								  selected_entity->position.y - circle_size / 2.0f));
 		v2 middle_size = v2zoom(v2(circle_size, circle_size));
 		
-		StaticSpriteData *middle = &global_static_sprite_data[STATIC_SPRITE_circle_icon];
+		SpriteData *middle = &global_sprite_data[SPRITE_circle_icon];
 		
 		ArcPushTexture(middle->texture_atlas,
 					   0,
@@ -482,7 +488,7 @@ internal void DrawTerrainEditor()
 	c2Shape middle_bounds = {0};
 	middle_bounds.aabb.min = c2V(-circle_size / 2.0f, -circle_size / 2.0f);
 	middle_bounds.aabb.max = c2V(circle_size / 2.0f, circle_size / 2.0f);
-	StaticSpriteData *circle = &global_static_sprite_data[STATIC_SPRITE_circle_icon];
+	SpriteData *circle = &global_sprite_data[SPRITE_circle_icon];
 	local_persist v2 *held_vert = 0;
 	for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
 	{

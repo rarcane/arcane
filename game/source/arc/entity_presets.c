@@ -27,6 +27,6 @@ EntityPresetCallback(Tree)
 	char *name = "Tree";
 	strcpy(entity->debug_name, name);
 	
-	entity->sprite_data.static_sprite = STATIC_SPRITE_pine_tree_v1;
+	entity->sprite_data.sprite = SPRITE_pine_tree_v1;
 	entity->sprite_data.render_layer = LAYER_TREE;
 }

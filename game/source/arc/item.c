@@ -10,7 +10,7 @@ internal Entity *NewGroundItemEntity(v2 position, Item item_data)
 	
 	ItemTypeData *item_type = &global_item_type_data[item_data.type];
 	
-	entity->sprite_data.static_sprite = item_type->ground_sprite;
+	entity->sprite_data.sprite = item_type->ground_sprite;
 	
 	c2Circle circle = {
 		.p = c2V(0.0f, -10.0f),

@@ -23,7 +23,7 @@ internal void ElementalSkillNodeRender(ElementalSkillType skill, i32 depth, i32 
 		// TODO(randy): Left click functionality
 	}
 	
-	StaticSpriteData *sprite = &global_static_sprite_data[skill_data->skill_image];
+	SpriteData *sprite = &global_sprite_data[skill_data->skill_image];
 	
 	ArcPushTextureWithClip(sprite->texture_atlas,
 						   0,

@@ -127,7 +127,7 @@ internal void PreMoveUpdatePlayer()
 				
 				render_pos = V2SubtractV2(render_pos, V2MultiplyF32(render_size, 0.5f));
 				
-				StaticSpriteData *sprite = &global_static_sprite_data[STATIC_SPRITE_shia];
+				SpriteData *sprite = &global_sprite_data[SPRITE_shia];
 				ArcPushTexture(sprite->texture_atlas,
 							   0,
 							   sprite->source,
@@ -147,7 +147,7 @@ internal void PreMoveUpdatePlayer()
 				
 				render_pos = V2SubtractV2(render_pos, V2MultiplyF32(render_size, 0.5f));
 				
-				StaticSpriteData *sprite = &global_static_sprite_data[STATIC_SPRITE_shia2];
+				SpriteData *sprite = &global_sprite_data[SPRITE_shia2];
 				ArcPushTexture(sprite->texture_atlas,
 							   0,
 							   sprite->source,

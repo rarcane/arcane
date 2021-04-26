@@ -165,7 +165,7 @@ internal void DrawEnchantingUI()
 		{
 			Item *item = enchantable_items[i];
 			ItemTypeData *item_data = &global_item_type_data[item->type];
-			StaticSpriteData *sprite = &global_static_sprite_data[item_data->icon_sprite];
+			SpriteData *sprite = &global_sprite_data[item_data->icon_sprite];
 			
 			v2 render_pos = v2view(V2AddV2(enchanter->position, v2(first_pos + i * 20.0f, -50.0f)));
 			v2 render_size = v2zoom(v2(20.0f, 20.0f));

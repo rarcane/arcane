@@ -56,156 +56,7 @@ typedef uint32 PixelFlags;
 #define DEBUG_FLAGS_disable_draw_terrain (1<<2)
 typedef uint32 DebugFlags;
 
-typedef struct StaticSpriteData
-{
-char texture_path[50];
-v4 source;
-v2 offset;
-// @Ignore 
-Ts2dTexture *texture_atlas;
-} StaticSpriteData;
-
-typedef enum StaticSprite StaticSprite;
-enum StaticSprite
-{
-STATIC_SPRITE_INVALID,
-STATIC_SPRITE_ground_arctic,
-STATIC_SPRITE_ground_desert,
-STATIC_SPRITE_ground_plains,
-STATIC_SPRITE_player,
-STATIC_SPRITE_far_mountains,
-STATIC_SPRITE_mid_mountains,
-STATIC_SPRITE_cloud_v1,
-STATIC_SPRITE_cloud_v2,
-STATIC_SPRITE_cloud_v3,
-STATIC_SPRITE_cloud_v4,
-STATIC_SPRITE_cloud_v5,
-STATIC_SPRITE_cloud_v6,
-STATIC_SPRITE_ground_forest_flat,
-STATIC_SPRITE_ground_forest_10_degree,
-STATIC_SPRITE_ground_rocks_v1,
-STATIC_SPRITE_ground_rocks_v2,
-STATIC_SPRITE_pine_tree_v1,
-STATIC_SPRITE_hills_1_v1,
-STATIC_SPRITE_hills_1_v2,
-STATIC_SPRITE_bg1_shrub_v1,
-STATIC_SPRITE_bg1_shrub_v2,
-STATIC_SPRITE_bg1_shrub_v3,
-STATIC_SPRITE_bg1_sapling_v1,
-STATIC_SPRITE_bg1_sapling_v2,
-STATIC_SPRITE_bg1_sapling_v3,
-STATIC_SPRITE_bg1_pine_tree_v1,
-STATIC_SPRITE_bg1_pine_tree_v2,
-STATIC_SPRITE_bg2_hills_v1,
-STATIC_SPRITE_bg2_hills_v2,
-STATIC_SPRITE_bg2_shrub_v1,
-STATIC_SPRITE_bg2_shrub_v2,
-STATIC_SPRITE_bg2_shrub_v3,
-STATIC_SPRITE_bg2_pine_tree_v1,
-STATIC_SPRITE_bg2_pine_tree_v2,
-STATIC_SPRITE_bg3_hills_v1,
-STATIC_SPRITE_bg3_shrub_v1,
-STATIC_SPRITE_bg3_shrub_v2,
-STATIC_SPRITE_bg3_shrub_v3,
-STATIC_SPRITE_bg3_shrub_v4,
-STATIC_SPRITE_bg3_pine_tree_v1,
-STATIC_SPRITE_bg3_pine_tree_v2,
-STATIC_SPRITE_bg3_pine_tree_v3,
-STATIC_SPRITE_bg3_pine_tree_v4,
-STATIC_SPRITE_bg3_pine_tree_v5,
-STATIC_SPRITE_bg3_pine_tree_v6,
-STATIC_SPRITE_bg3_pine_tree_v7,
-STATIC_SPRITE_bg3_pine_tree_v8,
-STATIC_SPRITE_y_axis_arrow_icon,
-STATIC_SPRITE_x_axis_arrow_icon,
-STATIC_SPRITE_circle_icon,
-STATIC_SPRITE_side_arrow,
-STATIC_SPRITE_test_icon,
-STATIC_SPRITE_crafting_stump,
-STATIC_SPRITE_runic_enchanter,
-STATIC_SPRITE_flint_sword_icon,
-STATIC_SPRITE_flint_sword_ground,
-STATIC_SPRITE_flint_axe,
-STATIC_SPRITE_flint,
-STATIC_SPRITE_twig,
-STATIC_SPRITE_crafting_tool,
-STATIC_SPRITE_test_chestpiece,
-STATIC_SPRITE_shia,
-STATIC_SPRITE_shia2,
-STATIC_SPRITE_dummy,
-STATIC_SPRITE_MAX,
-};
-global StaticSpriteData global_static_sprite_data[STATIC_SPRITE_MAX] = {
-    { "invalid_texture", {0.0f, 0.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, },
-    { "scenic/biome_ground", {0.0f, 0.0f, 100.0f, 150.0f}, {0.0f, 147.0f}, },
-    { "scenic/biome_ground", {100.0f, 0.0f, 100.0f, 150.0f}, {0.0f, 147.0f}, },
-    { "scenic/biome_ground", {200.0f, 0.0f, 100.0f, 150.0f}, {0.0f, 147.0f}, },
-    { "entity/player/temp_player", {0.0f, 0.0f, 14.0f, 35.0f}, {0.0f, 0.0f}, },
-    { "scenic/mountains", {0.0f, 0.0f, 600.0f, 160.0f}, {0.0f, 5.0f}, },
-    { "scenic/mountains", {0.0f, 160.0f, 600.0f, 90.0f}, {0.0f, 10.0f}, },
-    { "scenic/clouds", {0.0f, 0.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, },
-    { "scenic/clouds", {80.0f, 0.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, },
-    { "scenic/clouds", {160.0f, 0.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, },
-    { "scenic/clouds", {0.0f, 25.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, },
-    { "scenic/clouds", {80.0f, 25.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, },
-    { "scenic/clouds", {160.0f, 25.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, },
-    { "scenic/forest_ground", {0.0f, 40.0f, 100.0f, 90.0f }, {20.0f, 87.0f}, },
-    { "scenic/forest_ground", {100.0f, 25.0f, 100.0f, 105.0f}, {0.0f, 87.0f}, },
-    { "scenic/forest_ground", {0.0f, 0.0f, 100.0f, 4.0f}, {0.0f, 0.0f}, },
-    { "scenic/forest_ground", {0.0f, 4.0f, 100.0f, 4.0f}, {0.0f, 0.0f}, },
-    { "scenic/trees/pine_tree", {0.0f, 0.0f, 90.0f, 170.0f}, {0.0f, 0.0f}, },
-    { "scenic/background/bg1_hills", {0.0f, 0.0f, 200.0f, 35.0f}, {0.0f, 20.0f}, },
-    { "scenic/background/bg1_hills", {0.0f, 35.0f, 200.0f, 35.0f}, {0.0f, 20.0f}, },
-    { "scenic/background/vegetation", {0.0f, 0.0f, 50.0f, 25.0f}, {0.0f, 0.0f}, },
-    { "scenic/background/vegetation", {50.0f, 0.0f, 50.0f, 25.0f}, {0.0f, 0.0f}, },
-    { "scenic/background/vegetation", {100.0f, 0.0f, 50.0f, 25.0f}, {0.0f, 0.0f}, },
-    { "scenic/background/vegetation", {75.0f, 25.0f, 20.0f, 40.0f}, {0.0f, 0.0f}, },
-    { "scenic/background/vegetation", {95.0f, 25.0f, 20.0f, 40.0f}, {0.0f, 0.0f}, },
-    { "scenic/background/vegetation", {115.0f, 25.0f, 20.0f, 40.0f}, {0.0f, 0.0f}, },
-    { "scenic/background/bg1_pine_tree", {0.0f, 0.0f, 90.0f, 170.0f}, {0.0f, 0.0f}, },
-    { "scenic/background/bg1_pine_tree", {90.0f, 0.0f, 90.0f, 170.0f}, {0.0f, 0.0f}, },
-    { "scenic/background/bg2_hills", {0.0f, 0.0f, 200.0f, 40.0f}, {0.0f, 21.0f}, },
-    { "scenic/background/bg2_hills", {0.0f, 40.0f, 200.0f, 40.0f}, {0.0f, 21.0f}, },
-    { "scenic/background/vegetation", {0.0f, 25.0f, 25.0f, 20.0f}, {0.0f, -13.0f}, },
-    { "scenic/background/vegetation", {25.0f, 25.0f, 25.0f, 20.0f}, {0.0f, -13.0f}, },
-    { "scenic/background/vegetation", {50.0f, 25.0f, 25.0f, 20.0f}, {0.0f, -13.0f}, },
-    { "scenic/background/bg2_pine_tree", {0.0f, 0.0f, 40.0f, 110.0f}, {0.0f, -5.0f}, },
-    { "scenic/background/bg2_pine_tree", {40.0f, 0.0f, 40.0f, 110.0f}, {0.0f, -5.0f}, },
-    { "scenic/background/bg3_hills", {0.0f, 0.0f, 200.0f, 40.0f}, {0.0f, 17.0f}, },
-    { "scenic/background/vegetation", {0.0f, 45.0f, 15.0f, 10.0f}, {0.0f, -20.0f}, },
-    { "scenic/background/vegetation", {15.0f, 45.0f, 15.0f, 10.0f}, {0.0f, -20.0f}, },
-    { "scenic/background/vegetation", {30.0f, 45.0f, 15.0f, 10.0f}, {0.0f, -20.0f}, },
-    { "scenic/background/vegetation", {45.0f, 45.0f, 15.0f, 10.0f}, {0.0f, -20.0f}, },
-    { "scenic/background/bg3_pine_tree", {0.0f, 0.0f, 20.0f, 50.0f}, {0.0f, -18.0f}, },
-    { "scenic/background/bg3_pine_tree", {20.0f, 0.0f, 20.0f, 50.0f}, {0.0f, -18.0f}, },
-    { "scenic/background/bg3_pine_tree", {40.0f, 0.0f, 20.0f, 50.0f}, {0.0f, -18.0f}, },
-    { "scenic/background/bg3_pine_tree", {60.0f, 0.0f, 20.0f, 50.0f}, {0.0f, -18.0f}, },
-    { "scenic/background/bg3_pine_tree", {80.0f, 0.0f, 20.0f, 50.0f}, {0.0f, -18.0f}, },
-    { "scenic/background/bg3_pine_tree", {100.0f, 0.0f, 20.0f, 50.0f}, {0.0f, -18.0f}, },
-    { "scenic/background/bg3_pine_tree", {120.0f, 0.0f, 20.0f, 50.0f}, {0.0f, -18.0f}, },
-    { "scenic/background/bg3_pine_tree", {140.0f, 0.0f, 20.0f, 50.0f}, {0.0f, -18.0f}, },
-    { "icon/axis_icons", {0.0f, 0.0f, 7.0f, 40.0f}, {0.0f, 0.0f}, },
-    { "icon/axis_icons", {0.0f, 33.0f, 40.0f, 7.0f}, {0.0f, 0.0f}, },
-    { "icon/axis_icons", {33.0f, 0.0f, 7.0f, 7.0f}, {0.0f, 0.0f}, },
-    { "icon/side_arrow", {0.0f, 0.0f, 5.0f, 9.0f}, {0.0f, 0.0f}, },
-    { "icon/test_icon", {0.0f, 0.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, },
-    { "structures/crafting_stump", {0.0f, 0.0f, 32.0f, 32.0f}, {0.0f, 0.0f}, },
-    { "structures/runic_enchanter", {0.0f, 0.0f, 32.0f, 32.0f}, {0.0f, 0.0f}, },
-    { "item/flint_sword", {0.0f, 0.0f, 16.0f, 16.0f}, {6.0f, 2.0f}, },
-    { "item/flint_sword_ground", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, },
-    { "item/flint_axe", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, },
-    { "item/flint", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
-    { "item/twig", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
-    { "item/crafting_tool", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, },
-    { "item/test_chestpiece", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, },
-    { "item/shia", {0.0f, 0.0f, 800.0f, 1200.0f}, {0.0f, 0.0f}, },
-    { "item/shia2", {0.0f, 0.0f, 590.0f, 631.0f}, {0.0f, 0.0f}, },
-    { "entity/ron", {0.0f, 0.0f, 512.0f, 512.0f}, {0.0f, 0.0f}, },
-};
-
-static char *GetStaticSpriteName(StaticSprite type);
-
-typedef struct DynamicSpriteData
+typedef struct SpriteData
 {
 char texture_path[50];
 v4 source;
@@ -214,22 +65,152 @@ i32 frames;
 f32 frame_interval;
 // @Ignore 
 Ts2dTexture *texture_atlas;
-} DynamicSpriteData;
+} SpriteData;
 
-typedef enum DynamicSprite DynamicSprite;
-enum DynamicSprite
+typedef enum Sprite Sprite;
+enum Sprite
 {
-DYNAMIC_SPRITE_INVALID,
-DYNAMIC_SPRITE_player_idle,
-DYNAMIC_SPRITE_player_walking,
-DYNAMIC_SPRITE_player_sprinting,
-DYNAMIC_SPRITE_birch_tree1,
-DYNAMIC_SPRITE_birch_tree2,
-DYNAMIC_SPRITE_birch_tree3,
-DYNAMIC_SPRITE_birch_tree4,
-DYNAMIC_SPRITE_MAX,
+SPRITE_default,
+SPRITE_ground_arctic,
+SPRITE_ground_desert,
+SPRITE_ground_plains,
+SPRITE_player,
+SPRITE_far_mountains,
+SPRITE_mid_mountains,
+SPRITE_cloud_v1,
+SPRITE_cloud_v2,
+SPRITE_cloud_v3,
+SPRITE_cloud_v4,
+SPRITE_cloud_v5,
+SPRITE_cloud_v6,
+SPRITE_ground_forest_flat,
+SPRITE_ground_forest_10_degree,
+SPRITE_ground_rocks_v1,
+SPRITE_ground_rocks_v2,
+SPRITE_pine_tree_v1,
+SPRITE_hills_1_v1,
+SPRITE_hills_1_v2,
+SPRITE_bg1_shrub_v1,
+SPRITE_bg1_shrub_v2,
+SPRITE_bg1_shrub_v3,
+SPRITE_bg1_sapling_v1,
+SPRITE_bg1_sapling_v2,
+SPRITE_bg1_sapling_v3,
+SPRITE_bg1_pine_tree_v1,
+SPRITE_bg1_pine_tree_v2,
+SPRITE_bg2_hills_v1,
+SPRITE_bg2_hills_v2,
+SPRITE_bg2_shrub_v1,
+SPRITE_bg2_shrub_v2,
+SPRITE_bg2_shrub_v3,
+SPRITE_bg2_pine_tree_v1,
+SPRITE_bg2_pine_tree_v2,
+SPRITE_bg3_hills_v1,
+SPRITE_bg3_shrub_v1,
+SPRITE_bg3_shrub_v2,
+SPRITE_bg3_shrub_v3,
+SPRITE_bg3_shrub_v4,
+SPRITE_bg3_pine_tree_v1,
+SPRITE_bg3_pine_tree_v2,
+SPRITE_bg3_pine_tree_v3,
+SPRITE_bg3_pine_tree_v4,
+SPRITE_bg3_pine_tree_v5,
+SPRITE_bg3_pine_tree_v6,
+SPRITE_bg3_pine_tree_v7,
+SPRITE_bg3_pine_tree_v8,
+SPRITE_y_axis_arrow_icon,
+SPRITE_x_axis_arrow_icon,
+SPRITE_circle_icon,
+SPRITE_side_arrow,
+SPRITE_test_icon,
+SPRITE_crafting_stump,
+SPRITE_runic_enchanter,
+SPRITE_flint_sword_icon,
+SPRITE_flint_sword_ground,
+SPRITE_flint_axe,
+SPRITE_flint,
+SPRITE_twig,
+SPRITE_crafting_tool,
+SPRITE_test_chestpiece,
+SPRITE_shia,
+SPRITE_shia2,
+SPRITE_dummy,
+SPRITE_default_dynamic,
+SPRITE_player_idle,
+SPRITE_player_walking,
+SPRITE_player_sprinting,
+SPRITE_birch_tree1,
+SPRITE_birch_tree2,
+SPRITE_birch_tree3,
+SPRITE_birch_tree4,
+SPRITE_MAX,
 };
-global DynamicSpriteData global_dynamic_sprite_data[DYNAMIC_SPRITE_MAX] = {
+global SpriteData global_sprite_data[SPRITE_MAX] = {
+    { "default_texture", {0.0f, 0.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/biome_ground", {0.0f, 0.0f, 100.0f, 150.0f}, {0.0f, 147.0f}, 0, 0.0f, },
+    { "scenic/biome_ground", {100.0f, 0.0f, 100.0f, 150.0f}, {0.0f, 147.0f}, 0, 0.0f, },
+    { "scenic/biome_ground", {200.0f, 0.0f, 100.0f, 150.0f}, {0.0f, 147.0f}, 0, 0.0f, },
+    { "entity/player/temp_player", {0.0f, 0.0f, 14.0f, 35.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/mountains", {0.0f, 0.0f, 600.0f, 160.0f}, {0.0f, 5.0f}, 0, 0.0f, },
+    { "scenic/mountains", {0.0f, 160.0f, 600.0f, 90.0f}, {0.0f, 10.0f}, 0, 0.0f, },
+    { "scenic/clouds", {0.0f, 0.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/clouds", {80.0f, 0.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/clouds", {160.0f, 0.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/clouds", {0.0f, 25.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/clouds", {80.0f, 25.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/clouds", {160.0f, 25.0f, 80.0f, 25.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/forest_ground", {0.0f, 40.0f, 100.0f, 90.0f }, {20.0f, 87.0f}, 0, 0.0f, },
+    { "scenic/forest_ground", {100.0f, 25.0f, 100.0f, 105.0f}, {0.0f, 87.0f}, 0, 0.0f, },
+    { "scenic/forest_ground", {0.0f, 0.0f, 100.0f, 4.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/forest_ground", {0.0f, 4.0f, 100.0f, 4.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/trees/pine_tree", {0.0f, 0.0f, 90.0f, 170.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/background/bg1_hills", {0.0f, 0.0f, 200.0f, 35.0f}, {0.0f, 20.0f}, 0, 0.0f, },
+    { "scenic/background/bg1_hills", {0.0f, 35.0f, 200.0f, 35.0f}, {0.0f, 20.0f}, 0, 0.0f, },
+    { "scenic/background/vegetation", {0.0f, 0.0f, 50.0f, 25.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/background/vegetation", {50.0f, 0.0f, 50.0f, 25.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/background/vegetation", {100.0f, 0.0f, 50.0f, 25.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/background/vegetation", {75.0f, 25.0f, 20.0f, 40.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/background/vegetation", {95.0f, 25.0f, 20.0f, 40.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/background/vegetation", {115.0f, 25.0f, 20.0f, 40.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/background/bg1_pine_tree", {0.0f, 0.0f, 90.0f, 170.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/background/bg1_pine_tree", {90.0f, 0.0f, 90.0f, 170.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "scenic/background/bg2_hills", {0.0f, 0.0f, 200.0f, 40.0f}, {0.0f, 21.0f}, 0, 0.0f, },
+    { "scenic/background/bg2_hills", {0.0f, 40.0f, 200.0f, 40.0f}, {0.0f, 21.0f}, 0, 0.0f, },
+    { "scenic/background/vegetation", {0.0f, 25.0f, 25.0f, 20.0f}, {0.0f, -13.0f}, 0, 0.0f, },
+    { "scenic/background/vegetation", {25.0f, 25.0f, 25.0f, 20.0f}, {0.0f, -13.0f}, 0, 0.0f, },
+    { "scenic/background/vegetation", {50.0f, 25.0f, 25.0f, 20.0f}, {0.0f, -13.0f}, 0, 0.0f, },
+    { "scenic/background/bg2_pine_tree", {0.0f, 0.0f, 40.0f, 110.0f}, {0.0f, -5.0f}, 0, 0.0f, },
+    { "scenic/background/bg2_pine_tree", {40.0f, 0.0f, 40.0f, 110.0f}, {0.0f, -5.0f}, 0, 0.0f, },
+    { "scenic/background/bg3_hills", {0.0f, 0.0f, 200.0f, 40.0f}, {0.0f, 17.0f}, 0, 0.0f, },
+    { "scenic/background/vegetation", {0.0f, 45.0f, 15.0f, 10.0f}, {0.0f, -20.0f}, 0, 0.0f, },
+    { "scenic/background/vegetation", {15.0f, 45.0f, 15.0f, 10.0f}, {0.0f, -20.0f}, 0, 0.0f, },
+    { "scenic/background/vegetation", {30.0f, 45.0f, 15.0f, 10.0f}, {0.0f, -20.0f}, 0, 0.0f, },
+    { "scenic/background/vegetation", {45.0f, 45.0f, 15.0f, 10.0f}, {0.0f, -20.0f}, 0, 0.0f, },
+    { "scenic/background/bg3_pine_tree", {0.0f, 0.0f, 20.0f, 50.0f}, {0.0f, -18.0f}, 0, 0.0f, },
+    { "scenic/background/bg3_pine_tree", {20.0f, 0.0f, 20.0f, 50.0f}, {0.0f, -18.0f}, 0, 0.0f, },
+    { "scenic/background/bg3_pine_tree", {40.0f, 0.0f, 20.0f, 50.0f}, {0.0f, -18.0f}, 0, 0.0f, },
+    { "scenic/background/bg3_pine_tree", {60.0f, 0.0f, 20.0f, 50.0f}, {0.0f, -18.0f}, 0, 0.0f, },
+    { "scenic/background/bg3_pine_tree", {80.0f, 0.0f, 20.0f, 50.0f}, {0.0f, -18.0f}, 0, 0.0f, },
+    { "scenic/background/bg3_pine_tree", {100.0f, 0.0f, 20.0f, 50.0f}, {0.0f, -18.0f}, 0, 0.0f, },
+    { "scenic/background/bg3_pine_tree", {120.0f, 0.0f, 20.0f, 50.0f}, {0.0f, -18.0f}, 0, 0.0f, },
+    { "scenic/background/bg3_pine_tree", {140.0f, 0.0f, 20.0f, 50.0f}, {0.0f, -18.0f}, 0, 0.0f, },
+    { "icon/axis_icons", {0.0f, 0.0f, 7.0f, 40.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "icon/axis_icons", {0.0f, 33.0f, 40.0f, 7.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "icon/axis_icons", {33.0f, 0.0f, 7.0f, 7.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "icon/side_arrow", {0.0f, 0.0f, 5.0f, 9.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "icon/test_icon", {0.0f, 0.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "structures/crafting_stump", {0.0f, 0.0f, 32.0f, 32.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "structures/runic_enchanter", {0.0f, 0.0f, 32.0f, 32.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "item/flint_sword", {0.0f, 0.0f, 16.0f, 16.0f}, {6.0f, 2.0f}, 0, 0.0f, },
+    { "item/flint_sword_ground", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "item/flint_axe", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "item/flint", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "item/twig", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "item/crafting_tool", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "item/test_chestpiece", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "item/shia", {0.0f, 0.0f, 800.0f, 1200.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "item/shia2", {0.0f, 0.0f, 590.0f, 631.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "entity/ron", {0.0f, 0.0f, 512.0f, 512.0f}, {0.0f, 0.0f}, 0, 0.0f, },
     { "invalid_texture", {0.0f, 0.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 0, 0.0f, },
     { "entity/player/player_animations", {0.0f, 192.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 4, 0.15f, },
     { "entity/player/player_animations", {0.0f, 256.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 8, 0.1f, },
@@ -240,21 +221,20 @@ global DynamicSpriteData global_dynamic_sprite_data[DYNAMIC_SPRITE_MAX] = {
     { "scenic/trees/birch_idle", {0.0f, 480.0f, 120.0f, 160.0f}, {0.0f, 0.0f}, 6, 0.1f, },
 };
 
-static char *GetDynamicSpriteName(DynamicSprite type);
+static char *GetSpriteName(Sprite type);
 
-typedef struct SpriteData
+typedef struct SpriteRender
 {
-StaticSprite static_sprite;
-DynamicSprite dynamic_sprite;
+Sprite sprite;
 v2 offset;
 f32 render_layer;
 v2 scale;
 v4 tint;
-} SpriteData;
+} SpriteRender;
 
 typedef struct ArcEntityAnimationStateData
 {
-DynamicSprite dynamic_sprite;
+Sprite dynamic_sprite;
 } ArcEntityAnimationStateData;
 
 typedef enum ArcEntityAnimationState ArcEntityAnimationState;
@@ -266,9 +246,9 @@ ARC_ENTITY_ANIMATION_STATE_player_sprinting,
 ARC_ENTITY_ANIMATION_STATE_MAX,
 };
 global ArcEntityAnimationStateData global_arc_entity_animation_state_data[ARC_ENTITY_ANIMATION_STATE_MAX] = {
-    { DYNAMIC_SPRITE_player_idle, },
-    { DYNAMIC_SPRITE_player_walking, },
-    { DYNAMIC_SPRITE_player_sprinting, },
+    { SPRITE_player_idle, },
+    { SPRITE_player_walking, },
+    { SPRITE_player_sprinting, },
 };
 
 static char *GetArcEntityAnimationStateName(ArcEntityAnimationState type);
@@ -348,8 +328,8 @@ typedef uint32 ItemFlags;
 typedef struct ItemTypeData
 {
 char print_name[20];
-StaticSprite icon_sprite;
-StaticSprite ground_sprite;
+Sprite icon_sprite;
+Sprite ground_sprite;
 i32 max_stack_size;
 ItemCategory category;
 ItemFlags flags;
@@ -368,13 +348,13 @@ ITEM_TYPE_test_chestpiece,
 ITEM_TYPE_MAX,
 };
 global ItemTypeData global_item_type_data[ITEM_TYPE_MAX] = {
-    { "none", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, 0, 0, 0, },
-    { "Flint Sword", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_CATEGORY_sword, ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable | ITEM_FLAGS_enchantable, },
-    { "Flint Axe", STATIC_SPRITE_flint_axe, STATIC_SPRITE_flint_axe, 1, ITEM_CATEGORY_lumber_axe, ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable | ITEM_FLAGS_enchantable, },
-    { "Flint", STATIC_SPRITE_flint, STATIC_SPRITE_flint, 8, 0, 0, },
-    { "Twig", STATIC_SPRITE_twig, STATIC_SPRITE_twig, 8, 0, 0, },
-    { "Crafting Tool", STATIC_SPRITE_crafting_tool, STATIC_SPRITE_crafting_tool, 1, 0, ITEM_FLAGS_hotbarable, },
-    { "Test Chestpiece", STATIC_SPRITE_test_chestpiece, STATIC_SPRITE_test_chestpiece, 1, ITEM_CATEGORY_chestpiece, 0, },
+    { "none", 0, 0, 0, 0, 0, },
+    { "Flint Sword", SPRITE_flint_sword_icon, SPRITE_flint_sword_ground, 1, ITEM_CATEGORY_sword, ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable | ITEM_FLAGS_enchantable, },
+    { "Flint Axe", SPRITE_flint_axe, SPRITE_flint_axe, 1, ITEM_CATEGORY_lumber_axe, ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable | ITEM_FLAGS_enchantable, },
+    { "Flint", SPRITE_flint, SPRITE_flint, 8, 0, 0, },
+    { "Twig", SPRITE_twig, SPRITE_twig, 8, 0, 0, },
+    { "Crafting Tool", SPRITE_crafting_tool, SPRITE_crafting_tool, 1, 0, ITEM_FLAGS_hotbarable, },
+    { "Test Chestpiece", SPRITE_test_chestpiece, SPRITE_test_chestpiece, 1, ITEM_CATEGORY_chestpiece, 0, },
 };
 
 static char *GetItemTypeName(ItemType type);
@@ -394,7 +374,7 @@ typedef struct ElementalSkillTypeData
 char print_name[20];
 i32 cost;
 ElementalSkillType child_skills[MAX_CHILD_SKILLS];
-StaticSprite skill_image;
+Sprite skill_image;
 } ElementalSkillTypeData;
 
 typedef enum ElementalSkillType ElementalSkillType;
@@ -408,7 +388,7 @@ ELEMENTAL_SKILL_TYPE_MAX,
 };
 global ElementalSkillTypeData global_elemental_skill_type_data[ELEMENTAL_SKILL_TYPE_MAX] = {
     { "none", 0, 0, 0, },
-    { "Hand Flame", 3, { ELEMENTAL_SKILL_TYPE_hand_flame_2, ELEMENTAL_SKILL_TYPE_hand_flame_3 }, STATIC_SPRITE_test_icon, },
+    { "Hand Flame", 3, { ELEMENTAL_SKILL_TYPE_hand_flame_2, ELEMENTAL_SKILL_TYPE_hand_flame_3 }, SPRITE_test_icon, },
     { "Hand Flame 2", 4, 0, 0, },
     { "Hand Flame 3", 5, 0, 0, },
 };
@@ -512,8 +492,8 @@ typedef struct StructureTypeData
 {
 char print_name[20];
 StructureCategory category;
-StaticSprite icon_sprite;
-StaticSprite world_sprite;
+Sprite icon_sprite;
+Sprite world_sprite;
 Item recipe[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
 StructureBuildCallback on_structure_build;
 } StructureTypeData;
@@ -529,11 +509,11 @@ STRUCTURE_TYPE_base,
 STRUCTURE_TYPE_MAX,
 };
 global StructureTypeData global_structure_type_data[STRUCTURE_TYPE_MAX] = {
-    { "none", STRUCTURE_CATEGORY_none, STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, {0}, 0, },
-    { "Shia", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia, STATIC_SPRITE_shia, {0}, 0, },
-    { "Crafting Stump", STRUCTURE_CATEGORY_crafting, STATIC_SPRITE_crafting_stump, STATIC_SPRITE_crafting_stump, { {ITEM_TYPE_twig, 5}, {ITEM_TYPE_flint, 2} }, 0, },
-    { "Shia 2", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, {0}, 0, },
-    { "Base", STRUCTURE_CATEGORY_base, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, {0}, 0, },
+    { "none", STRUCTURE_CATEGORY_none, 0, 0, {0}, 0, },
+    { "Shia", STRUCTURE_CATEGORY_shia, SPRITE_shia, SPRITE_shia, {0}, 0, },
+    { "Crafting Stump", STRUCTURE_CATEGORY_crafting, SPRITE_crafting_stump, SPRITE_crafting_stump, { {ITEM_TYPE_twig, 5}, {ITEM_TYPE_flint, 2} }, 0, },
+    { "Shia 2", STRUCTURE_CATEGORY_shia, SPRITE_shia2, SPRITE_shia2, {0}, 0, },
+    { "Base", STRUCTURE_CATEGORY_base, SPRITE_shia2, SPRITE_shia2, {0}, 0, },
 };
 
 static char *GetStructureTypeName(StructureType type);
@@ -649,7 +629,7 @@ u64 properties[ENTITY_PROPERTY_SIZE];
 i32 testint;
 char debug_name[100];
 v2 position;
-SpriteData sprite_data;
+SpriteRender sprite_data;
 b8 is_flipped;
 b8 is_background_sprite;
 AnimationFlags animation_flags;

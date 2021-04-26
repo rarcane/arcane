@@ -21,8 +21,6 @@ internal Entity *NewEntity()
 	
 	entity->move_speed_mult = 1.0f;
 	
-	entity->current_general_state = "Idle";
-	
 	return entity;
 }
 
@@ -134,7 +132,7 @@ internal void PrintEntityFields(Entity *entity)
 {
 	Assert(entity && EntityHasProperty(entity, ENTITY_PROPERTY_is_allocated));
 	
-	TsUITitle(entity->debug_name);
+	TsUITitle(entity->debug_name); // TODO(randy): Make this editable
 	
 	if (TsUICollapsable("Properties"))
 	{
@@ -153,11 +151,66 @@ internal void PrintEntityFields(Entity *entity)
 		TsUICollapsableEnd();
 	}
 	
+	char lbl[100];
 	if (EntityHasProperty(entity, ENTITY_PROPERTY_positional))
 	{
-		char lbl[100];
 		sprintf(lbl, "Position: %f, %f", entity->position.x, entity->position.y);
 		TsUILabel(lbl);
+	}
+	
+	if (EntityHasProperty(entity, ENTITY_PROPERTY_sprite))
+	{
+		if (TsUICollapsable("Sprite"))
+		{
+			sprintf(lbl, "Render Layer: %f", entity->sprite_data.render_layer);
+			TsUILabel(lbl);
+			
+			if (TsUICollapsable("Sprite Type"))
+			{
+				for (i32 i = 0; i < SPRITE_MAX; i++)
+				{
+					if (TsUIToggler(GetSpriteName(i), entity->sprite_data.sprite == i))
+					{
+						entity->sprite_data.sprite = i;
+					}
+				}
+				
+				TsUICollapsableEnd();
+			}
+			
+			TsUICollapsableEnd();
+		}
+	}
+	
+	if (EntityHasProperty(entity, ENTITY_PROPERTY_tree))
+	{
+		if (TsUICollapsable("Tree Type"))
+		{
+			for (i32 i = 0; i < TREE_TYPE_MAX; i++)
+			{
+				if (TsUIToggler(GetTreeTypeName(i), entity->tree_type == i))
+				{
+					entity->tree_type = i;
+					switch (i)
+					{
+						case TREE_TYPE_oak :
+						{
+							entity->sprite_data.sprite = SPRITE_birch_tree1;
+						} break;
+						case TREE_TYPE_birch :
+						{
+							entity->sprite_data.sprite = SPRITE_birch_tree2;
+						} break;
+						case TREE_TYPE_pine :
+						{
+							entity->sprite_data.sprite = SPRITE_pine_tree_v1;
+						} break;
+					}
+				}
+			}
+			
+			TsUICollapsableEnd();
+		}
 	}
 	
 	TsUIDivider();

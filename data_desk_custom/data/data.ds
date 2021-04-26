@@ -69,183 +69,14 @@ DebugFlags :: flags
 	disable_draw_terrain,
 }
 
-//~StaticSprite
+//~Sprites
 @XMacro
-StaticSpriteData :: struct
+SpriteData :: struct
 {
 	texture_path : char[50];
 	source : v4;
 	offset : v2;
-	@Ignore
-		texture_atlas : *Ts2dTexture;
-}
-@XMacro
-StaticSprite :: enum
-{
-	@Data("'invalid_texture'", "{0.0f, 0.0f, 64.0f, 64.0f}", "{0.0f, 0.0f}")
-		INVALID,
 	
-	@Data("'scenic/biome_ground'", "{0.0f, 0.0f, 100.0f, 150.0f}", "{0.0f, 147.0f}")
-		ground_arctic,
-	@Data("'scenic/biome_ground'", "{100.0f, 0.0f, 100.0f, 150.0f}", "{0.0f, 147.0f}")
-		ground_desert,
-	@Data("'scenic/biome_ground'", "{200.0f, 0.0f, 100.0f, 150.0f}", "{0.0f, 147.0f}")
-		ground_plains,
-	
-	@Data("'entity/player/temp_player'", "{0.0f, 0.0f, 14.0f, 35.0f}", "{0.0f, 0.0f}")
-		player,
-	
-	// Background
-	@Data("'scenic/mountains'", "{0.0f, 0.0f, 600.0f, 160.0f}", "{0.0f, 5.0f}")
-		far_mountains,
-	@Data("'scenic/mountains'", "{0.0f, 160.0f, 600.0f, 90.0f}", "{0.0f, 10.0f}")
-		mid_mountains,
-	
-	@Data("'scenic/clouds'", "{0.0f, 0.0f, 80.0f, 25.0f}", "{0.0f, 0.0f}")
-		cloud_v1,
-	@Data("'scenic/clouds'", "{80.0f, 0.0f, 80.0f, 25.0f}", "{0.0f, 0.0f}")
-		cloud_v2,
-	@Data("'scenic/clouds'", "{160.0f, 0.0f, 80.0f, 25.0f}", "{0.0f, 0.0f}")
-		cloud_v3,
-	@Data("'scenic/clouds'", "{0.0f, 25.0f, 80.0f, 25.0f}", "{0.0f, 0.0f}")
-		cloud_v4,
-	@Data("'scenic/clouds'", "{80.0f, 25.0f, 80.0f, 25.0f}", "{0.0f, 0.0f}")
-		cloud_v5,
-	@Data("'scenic/clouds'", "{160.0f, 25.0f, 80.0f, 25.0f}", "{0.0f, 0.0f}")
-		cloud_v6,
-	
-	// Forest
-	@Data("'scenic/forest_ground'", "{0.0f, 40.0f, 100.0f, 90.0f }", "{20.0f, 87.0f}")
-		ground_forest_flat,
-	@Data("'scenic/forest_ground'", "{100.0f, 25.0f, 100.0f, 105.0f}", "{0.0f, 87.0f}")
-		ground_forest_10_degree,
-	
-	@Data("'scenic/forest_ground'", "{0.0f, 0.0f, 100.0f, 4.0f}", "{0.0f, 0.0f}")
-		ground_rocks_v1,
-	@Data("'scenic/forest_ground'", "{0.0f, 4.0f, 100.0f, 4.0f}", "{0.0f, 0.0f}")
-		ground_rocks_v2,
-	
-	@Data("'scenic/trees/pine_tree'", "{0.0f, 0.0f, 90.0f, 170.0f}", "{0.0f, 0.0f}")
-		pine_tree_v1,
-	
-	@Data("'scenic/background/bg1_hills'", "{0.0f, 0.0f, 200.0f, 35.0f}", "{0.0f, 20.0f}")
-		hills_1_v1,
-	@Data("'scenic/background/bg1_hills'", "{0.0f, 35.0f, 200.0f, 35.0f}", "{0.0f, 20.0f}")
-		hills_1_v2,
-	
-	@Data("'scenic/background/vegetation'", "{0.0f, 0.0f, 50.0f, 25.0f}", "{0.0f, 0.0f}")
-		bg1_shrub_v1,
-	@Data("'scenic/background/vegetation'", "{50.0f, 0.0f, 50.0f, 25.0f}", "{0.0f, 0.0f}")
-		bg1_shrub_v2,
-	@Data("'scenic/background/vegetation'", "{100.0f, 0.0f, 50.0f, 25.0f}", "{0.0f, 0.0f}")
-		bg1_shrub_v3,
-	
-	@Data("'scenic/background/vegetation'", "{75.0f, 25.0f, 20.0f, 40.0f}", "{0.0f, 0.0f}")
-		bg1_sapling_v1,
-	@Data("'scenic/background/vegetation'", "{95.0f, 25.0f, 20.0f, 40.0f}", "{0.0f, 0.0f}")
-		bg1_sapling_v2,
-	@Data("'scenic/background/vegetation'", "{115.0f, 25.0f, 20.0f, 40.0f}", "{0.0f, 0.0f}")
-		bg1_sapling_v3,
-	
-	@Data("'scenic/background/bg1_pine_tree'", "{0.0f, 0.0f, 90.0f, 170.0f}", "{0.0f, 0.0f}")
-		bg1_pine_tree_v1,
-	@Data("'scenic/background/bg1_pine_tree'", "{90.0f, 0.0f, 90.0f, 170.0f}", "{0.0f, 0.0f}")
-		bg1_pine_tree_v2,
-	
-	@Data("'scenic/background/bg2_hills'", "{0.0f, 0.0f, 200.0f, 40.0f}", "{0.0f, 21.0f}")
-		bg2_hills_v1,
-	@Data("'scenic/background/bg2_hills'", "{0.0f, 40.0f, 200.0f, 40.0f}", "{0.0f, 21.0f}")
-		bg2_hills_v2,
-	
-	@Data("'scenic/background/vegetation'", "{0.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, -13.0f}")
-		bg2_shrub_v1,
-	@Data("'scenic/background/vegetation'", "{25.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, -13.0f}")
-		bg2_shrub_v2,
-	@Data("'scenic/background/vegetation'", "{50.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, -13.0f}")
-		bg2_shrub_v3,
-	
-	@Data("'scenic/background/bg2_pine_tree'", "{0.0f, 0.0f, 40.0f, 110.0f}", "{0.0f, -5.0f}")
-		bg2_pine_tree_v1,
-	@Data("'scenic/background/bg2_pine_tree'", "{40.0f, 0.0f, 40.0f, 110.0f}", "{0.0f, -5.0f}")
-		bg2_pine_tree_v2,
-	
-	@Data("'scenic/background/bg3_hills'", "{0.0f, 0.0f, 200.0f, 40.0f}", "{0.0f, 17.0f}")
-		bg3_hills_v1,
-	@Data("'scenic/background/vegetation'", "{0.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, -20.0f}")
-		bg3_shrub_v1,
-	@Data("'scenic/background/vegetation'", "{15.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, -20.0f}")
-		bg3_shrub_v2,
-	@Data("'scenic/background/vegetation'", "{30.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, -20.0f}")
-		bg3_shrub_v3,
-	@Data("'scenic/background/vegetation'", "{45.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, -20.0f}")
-		bg3_shrub_v4,
-	
-	@Data("'scenic/background/bg3_pine_tree'", "{0.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}")
-		bg3_pine_tree_v1,
-	@Data("'scenic/background/bg3_pine_tree'", "{20.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}")
-		bg3_pine_tree_v2,
-	@Data("'scenic/background/bg3_pine_tree'", "{40.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}")
-		bg3_pine_tree_v3,
-	@Data("'scenic/background/bg3_pine_tree'", "{60.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}")
-		bg3_pine_tree_v4,
-	@Data("'scenic/background/bg3_pine_tree'", "{80.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}")
-		bg3_pine_tree_v5,
-	@Data("'scenic/background/bg3_pine_tree'", "{100.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}")
-		bg3_pine_tree_v6,
-	@Data("'scenic/background/bg3_pine_tree'", "{120.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}")
-		bg3_pine_tree_v7,
-	@Data("'scenic/background/bg3_pine_tree'", "{140.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}")
-		bg3_pine_tree_v8,
-	
-	// Icons
-	@Data("'icon/axis_icons'", "{0.0f, 0.0f, 7.0f, 40.0f}", "{0.0f, 0.0f}")
-		y_axis_arrow_icon,
-	@Data("'icon/axis_icons'", "{0.0f, 33.0f, 40.0f, 7.0f}", "{0.0f, 0.0f}")
-		x_axis_arrow_icon,
-	@Data("'icon/axis_icons'", "{33.0f, 0.0f, 7.0f, 7.0f}", "{0.0f, 0.0f}")
-		circle_icon,
-	@Data("'icon/side_arrow'", "{0.0f, 0.0f, 5.0f, 9.0f}", "{0.0f, 0.0f}")
-		side_arrow,
-	@Data("'icon/test_icon'", "{0.0f, 0.0f, 64.0f, 64.0f}", "{0.0f, 0.0f}")
-		test_icon,
-	
-	// NOTE(randy): Structures
-	@Data("'structures/crafting_stump'", "{0.0f, 0.0f, 32.0f, 32.0f}", "{0.0f, 0.0f}")
-		crafting_stump,
-	@Data("'structures/runic_enchanter'", "{0.0f, 0.0f, 32.0f, 32.0f}", "{0.0f, 0.0f}")
-		runic_enchanter,
-	
-	// NOTE(randy): Items
-	@Data("'item/flint_sword'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{6.0f, 2.0f}")
-		flint_sword_icon,
-	@Data("'item/flint_sword_ground'", "{0.0f, 0.0f, 24.0f, 24.0f}", "{0.0f, 0.0f}")
-		flint_sword_ground,
-	@Data("'item/flint_axe'", "{0.0f, 0.0f, 24.0f, 24.0f}", "{0.0f, 0.0f}")
-		flint_axe,
-	@Data("'item/flint'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{0.0f, 0.0f}")
-		flint,
-	@Data("'item/twig'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{0.0f, 0.0f}")
-		twig,
-	@Data("'item/crafting_tool'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{0.0f, 0.0f}")
-		crafting_tool,
-	@Data("'item/test_chestpiece'", "{0.0f, 0.0f, 24.0f, 24.0f}", "{0.0f, 0.0f}")
-		test_chestpiece,
-	
-	@Data("'item/shia'", "{0.0f, 0.0f, 800.0f, 1200.0f}", "{0.0f, 0.0f}")
-		shia,
-	@Data("'item/shia2'", "{0.0f, 0.0f, 590.0f, 631.0f}", "{0.0f, 0.0f}")
-		shia2,
-	@Data("'entity/ron'", "{0.0f, 0.0f, 512.0f, 512.0f}", "{0.0f, 0.0f}")
-		dummy,
-}
-
-//~DynamicSprite
-@XMacro
-DynamicSpriteData :: struct
-{
-	texture_path : char[50];
-	source : v4;
-	offset : v2;
 	frames : i32;
 	frame_interval : f32;
 	
@@ -253,10 +84,167 @@ DynamicSpriteData :: struct
 		texture_atlas : *Ts2dTexture;
 }
 @XMacro
-DynamicSprite :: enum
+Sprite :: enum
 {
+	@Data("'default_texture'", "{0.0f, 0.0f, 64.0f, 64.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		default,
+	
+	@Data("'scenic/biome_ground'", "{0.0f, 0.0f, 100.0f, 150.0f}", "{0.0f, 147.0f}", 0, 0.0f)
+		ground_arctic,
+	@Data("'scenic/biome_ground'", "{100.0f, 0.0f, 100.0f, 150.0f}", "{0.0f, 147.0f}", 0, 0.0f)
+		ground_desert,
+	@Data("'scenic/biome_ground'", "{200.0f, 0.0f, 100.0f, 150.0f}", "{0.0f, 147.0f}", 0, 0.0f)
+		ground_plains,
+	
+	@Data("'entity/player/temp_player'", "{0.0f, 0.0f, 14.0f, 35.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		player,
+	
+	// Background
+	@Data("'scenic/mountains'", "{0.0f, 0.0f, 600.0f, 160.0f}", "{0.0f, 5.0f}", 0, 0.0f)
+		far_mountains,
+	@Data("'scenic/mountains'", "{0.0f, 160.0f, 600.0f, 90.0f}", "{0.0f, 10.0f}", 0, 0.0f)
+		mid_mountains,
+	
+	@Data("'scenic/clouds'", "{0.0f, 0.0f, 80.0f, 25.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		cloud_v1,
+	@Data("'scenic/clouds'", "{80.0f, 0.0f, 80.0f, 25.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		cloud_v2,
+	@Data("'scenic/clouds'", "{160.0f, 0.0f, 80.0f, 25.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		cloud_v3,
+	@Data("'scenic/clouds'", "{0.0f, 25.0f, 80.0f, 25.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		cloud_v4,
+	@Data("'scenic/clouds'", "{80.0f, 25.0f, 80.0f, 25.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		cloud_v5,
+	@Data("'scenic/clouds'", "{160.0f, 25.0f, 80.0f, 25.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		cloud_v6,
+	
+	// Forest
+	@Data("'scenic/forest_ground'", "{0.0f, 40.0f, 100.0f, 90.0f }", "{20.0f, 87.0f}", 0, 0.0f)
+		ground_forest_flat,
+	@Data("'scenic/forest_ground'", "{100.0f, 25.0f, 100.0f, 105.0f}", "{0.0f, 87.0f}", 0, 0.0f)
+		ground_forest_10_degree,
+	
+	@Data("'scenic/forest_ground'", "{0.0f, 0.0f, 100.0f, 4.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		ground_rocks_v1,
+	@Data("'scenic/forest_ground'", "{0.0f, 4.0f, 100.0f, 4.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		ground_rocks_v2,
+	
+	@Data("'scenic/trees/pine_tree'", "{0.0f, 0.0f, 90.0f, 170.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		pine_tree_v1,
+	
+	@Data("'scenic/background/bg1_hills'", "{0.0f, 0.0f, 200.0f, 35.0f}", "{0.0f, 20.0f}", 0, 0.0f)
+		hills_1_v1,
+	@Data("'scenic/background/bg1_hills'", "{0.0f, 35.0f, 200.0f, 35.0f}", "{0.0f, 20.0f}", 0, 0.0f)
+		hills_1_v2,
+	
+	@Data("'scenic/background/vegetation'", "{0.0f, 0.0f, 50.0f, 25.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		bg1_shrub_v1,
+	@Data("'scenic/background/vegetation'", "{50.0f, 0.0f, 50.0f, 25.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		bg1_shrub_v2,
+	@Data("'scenic/background/vegetation'", "{100.0f, 0.0f, 50.0f, 25.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		bg1_shrub_v3,
+	
+	@Data("'scenic/background/vegetation'", "{75.0f, 25.0f, 20.0f, 40.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		bg1_sapling_v1,
+	@Data("'scenic/background/vegetation'", "{95.0f, 25.0f, 20.0f, 40.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		bg1_sapling_v2,
+	@Data("'scenic/background/vegetation'", "{115.0f, 25.0f, 20.0f, 40.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		bg1_sapling_v3,
+	
+	@Data("'scenic/background/bg1_pine_tree'", "{0.0f, 0.0f, 90.0f, 170.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		bg1_pine_tree_v1,
+	@Data("'scenic/background/bg1_pine_tree'", "{90.0f, 0.0f, 90.0f, 170.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		bg1_pine_tree_v2,
+	
+	@Data("'scenic/background/bg2_hills'", "{0.0f, 0.0f, 200.0f, 40.0f}", "{0.0f, 21.0f}", 0, 0.0f)
+		bg2_hills_v1,
+	@Data("'scenic/background/bg2_hills'", "{0.0f, 40.0f, 200.0f, 40.0f}", "{0.0f, 21.0f}", 0, 0.0f)
+		bg2_hills_v2,
+	
+	@Data("'scenic/background/vegetation'", "{0.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, -13.0f}", 0, 0.0f)
+		bg2_shrub_v1,
+	@Data("'scenic/background/vegetation'", "{25.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, -13.0f}", 0, 0.0f)
+		bg2_shrub_v2,
+	@Data("'scenic/background/vegetation'", "{50.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, -13.0f}", 0, 0.0f)
+		bg2_shrub_v3,
+	
+	@Data("'scenic/background/bg2_pine_tree'", "{0.0f, 0.0f, 40.0f, 110.0f}", "{0.0f, -5.0f}", 0, 0.0f)
+		bg2_pine_tree_v1,
+	@Data("'scenic/background/bg2_pine_tree'", "{40.0f, 0.0f, 40.0f, 110.0f}", "{0.0f, -5.0f}", 0, 0.0f)
+		bg2_pine_tree_v2,
+	
+	@Data("'scenic/background/bg3_hills'", "{0.0f, 0.0f, 200.0f, 40.0f}", "{0.0f, 17.0f}", 0, 0.0f)
+		bg3_hills_v1,
+	@Data("'scenic/background/vegetation'", "{0.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, -20.0f}", 0, 0.0f)
+		bg3_shrub_v1,
+	@Data("'scenic/background/vegetation'", "{15.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, -20.0f}", 0, 0.0f)
+		bg3_shrub_v2,
+	@Data("'scenic/background/vegetation'", "{30.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, -20.0f}", 0, 0.0f)
+		bg3_shrub_v3,
+	@Data("'scenic/background/vegetation'", "{45.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, -20.0f}", 0, 0.0f)
+		bg3_shrub_v4,
+	
+	@Data("'scenic/background/bg3_pine_tree'", "{0.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}", 0, 0.0f)
+		bg3_pine_tree_v1,
+	@Data("'scenic/background/bg3_pine_tree'", "{20.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}", 0, 0.0f)
+		bg3_pine_tree_v2,
+	@Data("'scenic/background/bg3_pine_tree'", "{40.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}", 0, 0.0f)
+		bg3_pine_tree_v3,
+	@Data("'scenic/background/bg3_pine_tree'", "{60.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}", 0, 0.0f)
+		bg3_pine_tree_v4,
+	@Data("'scenic/background/bg3_pine_tree'", "{80.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}", 0, 0.0f)
+		bg3_pine_tree_v5,
+	@Data("'scenic/background/bg3_pine_tree'", "{100.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}", 0, 0.0f)
+		bg3_pine_tree_v6,
+	@Data("'scenic/background/bg3_pine_tree'", "{120.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}", 0, 0.0f)
+		bg3_pine_tree_v7,
+	@Data("'scenic/background/bg3_pine_tree'", "{140.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}", 0, 0.0f)
+		bg3_pine_tree_v8,
+	
+	// Icons
+	@Data("'icon/axis_icons'", "{0.0f, 0.0f, 7.0f, 40.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		y_axis_arrow_icon,
+	@Data("'icon/axis_icons'", "{0.0f, 33.0f, 40.0f, 7.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		x_axis_arrow_icon,
+	@Data("'icon/axis_icons'", "{33.0f, 0.0f, 7.0f, 7.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		circle_icon,
+	@Data("'icon/side_arrow'", "{0.0f, 0.0f, 5.0f, 9.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		side_arrow,
+	@Data("'icon/test_icon'", "{0.0f, 0.0f, 64.0f, 64.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		test_icon,
+	
+	// NOTE(randy): Structures
+	@Data("'structures/crafting_stump'", "{0.0f, 0.0f, 32.0f, 32.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		crafting_stump,
+	@Data("'structures/runic_enchanter'", "{0.0f, 0.0f, 32.0f, 32.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		runic_enchanter,
+	
+	// NOTE(randy): Items
+	@Data("'item/flint_sword'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{6.0f, 2.0f}", 0, 0.0f)
+		flint_sword_icon,
+	@Data("'item/flint_sword_ground'", "{0.0f, 0.0f, 24.0f, 24.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		flint_sword_ground,
+	@Data("'item/flint_axe'", "{0.0f, 0.0f, 24.0f, 24.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		flint_axe,
+	@Data("'item/flint'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		flint,
+	@Data("'item/twig'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		twig,
+	@Data("'item/crafting_tool'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		crafting_tool,
+	@Data("'item/test_chestpiece'", "{0.0f, 0.0f, 24.0f, 24.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		test_chestpiece,
+	
+	@Data("'item/shia'", "{0.0f, 0.0f, 800.0f, 1200.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		shia,
+	@Data("'item/shia2'", "{0.0f, 0.0f, 590.0f, 631.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		shia2,
+	@Data("'entity/ron'", "{0.0f, 0.0f, 512.0f, 512.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		dummy,
+	
+	//~Dynamic Sprites
 	@Data("'invalid_texture'", "{0.0f, 0.0f, 64.0f, 64.0f}", "{0.0f, 0.0f}", 0, 0.0f)
-		INVALID,
+		default_dynamic,
 	
 	@Data("'entity/player/player_animations'", "{0.0f, 192.0f, 64.0f, 64.0f}", "{0.0f, 0.0f}", 4, 0.15f)
 		player_idle,
@@ -275,11 +263,9 @@ DynamicSprite :: enum
 		birch_tree4,
 }
 
-//~Sprite
-SpriteData :: struct
+SpriteRender :: struct
 {
-	static_sprite : StaticSprite;
-	dynamic_sprite : DynamicSprite;
+	sprite : Sprite;
 	offset : v2;
 	render_layer : f32;
 	scale : v2;
@@ -289,16 +275,16 @@ SpriteData :: struct
 @XMacro
 ArcEntityAnimationStateData :: struct
 {
-	dynamic_sprite : DynamicSprite;
+	dynamic_sprite : Sprite;
 }
 @XMacro
 ArcEntityAnimationState :: enum
 {
-	@Data(DYNAMIC_SPRITE_player_idle)
+	@Data(SPRITE_player_idle)
 		player_idle,
-	@Data(DYNAMIC_SPRITE_player_walking)
+	@Data(SPRITE_player_walking)
 		player_walking,
-	@Data(DYNAMIC_SPRITE_player_sprinting)
+	@Data(SPRITE_player_sprinting)
 		player_sprinting,
 }
 
@@ -314,6 +300,7 @@ ArcEntityType :: enum
 	@Data("{'Idle', 'Walking', 'Sprinting'}", "{ARC_ENTITY_ANIMATION_STATE_player_idle, ARC_ENTITY_ANIMATION_STATE_player_walking, ARC_ENTITY_ANIMATION_STATE_player_sprinting}")
 		player,
 }
+
 
 @XMacro
 EnchantmentTypeData :: struct
@@ -369,8 +356,8 @@ ItemFlags :: flags
 ItemTypeData :: struct
 {
 	print_name : char[20];
-	icon_sprite : StaticSprite;
-	ground_sprite : StaticSprite;
+	icon_sprite : Sprite;
+	ground_sprite : Sprite;
 	max_stack_size : i32;
 	category : ItemCategory;
 	flags : ItemFlags;
@@ -378,19 +365,19 @@ ItemTypeData :: struct
 @XMacro
 ItemType :: enum
 {
-	@Data("'none'", STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, 0, 0, 0)
+	@Data("'none'", 0, 0, 0, 0, 0)
 		none,
-	@Data("'Flint Sword'", STATIC_SPRITE_flint_sword_icon, STATIC_SPRITE_flint_sword_ground, 1, ITEM_CATEGORY_sword, "ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable | ITEM_FLAGS_enchantable")
+	@Data("'Flint Sword'", SPRITE_flint_sword_icon, SPRITE_flint_sword_ground, 1, ITEM_CATEGORY_sword, "ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable | ITEM_FLAGS_enchantable")
 		flint_sword,
-	@Data("'Flint Axe'", STATIC_SPRITE_flint_axe, STATIC_SPRITE_flint_axe, 1, ITEM_CATEGORY_lumber_axe, "ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable | ITEM_FLAGS_enchantable")
+	@Data("'Flint Axe'", SPRITE_flint_axe, SPRITE_flint_axe, 1, ITEM_CATEGORY_lumber_axe, "ITEM_FLAGS_hotbarable | ITEM_FLAGS_primary_usable | ITEM_FLAGS_enchantable")
 		flint_axe,
-	@Data("'Flint'", STATIC_SPRITE_flint, STATIC_SPRITE_flint, 8, 0, 0)
+	@Data("'Flint'", SPRITE_flint, SPRITE_flint, 8, 0, 0)
 		flint,
-	@Data("'Twig'", STATIC_SPRITE_twig, STATIC_SPRITE_twig, 8, 0, 0)
+	@Data("'Twig'", SPRITE_twig, SPRITE_twig, 8, 0, 0)
 		twig,
-	@Data("'Crafting Tool'", STATIC_SPRITE_crafting_tool, STATIC_SPRITE_crafting_tool, 1, 0, ITEM_FLAGS_hotbarable)
+	@Data("'Crafting Tool'", SPRITE_crafting_tool, SPRITE_crafting_tool, 1, 0, ITEM_FLAGS_hotbarable)
 		crafting_tool,
-	@Data("'Test Chestpiece'", STATIC_SPRITE_test_chestpiece, STATIC_SPRITE_test_chestpiece, 1, ITEM_CATEGORY_chestpiece, 0)
+	@Data("'Test Chestpiece'", SPRITE_test_chestpiece, SPRITE_test_chestpiece, 1, ITEM_CATEGORY_chestpiece, 0)
 		test_chestpiece,
 }
 
@@ -413,14 +400,14 @@ ElementalSkillTypeData :: struct
 	print_name : char[20];
 	cost : i32;
 	child_skills : ElementalSkillType[MAX_CHILD_SKILLS];
-	skill_image : StaticSprite;
+	skill_image : Sprite;
 }
 @XMacro
 ElementalSkillType :: enum
 {
 	@Data("'none'", 0, 0, 0)
 		none,
-	@Data("'Hand Flame'", 3, "{ ELEMENTAL_SKILL_TYPE_hand_flame_2, ELEMENTAL_SKILL_TYPE_hand_flame_3 }", STATIC_SPRITE_test_icon)
+	@Data("'Hand Flame'", 3, "{ ELEMENTAL_SKILL_TYPE_hand_flame_2, ELEMENTAL_SKILL_TYPE_hand_flame_3 }", SPRITE_test_icon)
 		hand_flame,
 	@Data("'Hand Flame 2'", 4, 0, 0)
 		hand_flame_2,
@@ -528,23 +515,23 @@ StructureTypeData :: struct
 {
 	print_name : char[20];
 	category : StructureCategory;
-	icon_sprite : StaticSprite;
-	world_sprite : StaticSprite;
+	icon_sprite : Sprite;
+	world_sprite : Sprite;
 	recipe : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
 	on_structure_build : StructureBuildCallback;
 }
 @XMacro
 StructureType :: enum
 {
-	@Data("'none'", STRUCTURE_CATEGORY_none, STATIC_SPRITE_INVALID, STATIC_SPRITE_INVALID, "{0}", 0)
+	@Data("'none'", STRUCTURE_CATEGORY_none, 0, 0, "{0}", 0)
 		none,
-	@Data("'Shia'", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia, STATIC_SPRITE_shia, "{0}", 0)
+	@Data("'Shia'", STRUCTURE_CATEGORY_shia, SPRITE_shia, SPRITE_shia, "{0}", 0)
 		shia,
-	@Data("'Crafting Stump'", STRUCTURE_CATEGORY_crafting, STATIC_SPRITE_crafting_stump, STATIC_SPRITE_crafting_stump, "{ {ITEM_TYPE_twig, 5}, {ITEM_TYPE_flint, 2} }", 0)
+	@Data("'Crafting Stump'", STRUCTURE_CATEGORY_crafting, SPRITE_crafting_stump, SPRITE_crafting_stump, "{ {ITEM_TYPE_twig, 5}, {ITEM_TYPE_flint, 2} }", 0)
 		crafting_stump,
-	@Data("'Shia 2'", STRUCTURE_CATEGORY_shia, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, "{0}", 0)
+	@Data("'Shia 2'", STRUCTURE_CATEGORY_shia, SPRITE_shia2, SPRITE_shia2, "{0}", 0)
 		shia2,
-	@Data("'Base'", STRUCTURE_CATEGORY_base, STATIC_SPRITE_shia2, STATIC_SPRITE_shia2, "{0}", 0)
+	@Data("'Base'", STRUCTURE_CATEGORY_base, SPRITE_shia2, SPRITE_shia2, "{0}", 0)
 		base,
 }
 
@@ -658,7 +645,7 @@ Entity :: struct
 	
 	position : v2;
 	
-	sprite_data : SpriteData;
+	sprite_data : SpriteRender;
 	is_flipped : b8;
 	is_background_sprite : b8; // Temp solution
 	
