@@ -128,6 +128,28 @@ IncrementEntityWithProperty(Entity **entity_ptr, EntityProperty property)
 	return result;
 }
 
+internal void UpdateEntitySprite(Entity *entity)
+{
+	if (EntityHasProperty(entity, ENTITY_PROPERTY_tree))
+	{
+		switch (entity->tree_type)
+		{
+			case TREE_TYPE_oak :
+			{
+				entity->sprite_data.sprite = SPRITE_birch_tree1;
+			} break;
+			case TREE_TYPE_birch :
+			{
+				entity->sprite_data.sprite = SPRITE_birch_tree2;
+			} break;
+			case TREE_TYPE_pine :
+			{
+				entity->sprite_data.sprite = SPRITE_pine_tree_v1;
+			} break;
+		}
+	}
+}
+
 internal void PrintEntityFields(Entity *entity)
 {
 	Assert(entity && EntityHasProperty(entity, ENTITY_PROPERTY_is_allocated));
@@ -191,21 +213,7 @@ internal void PrintEntityFields(Entity *entity)
 				if (TsUIToggler(GetTreeTypeName(i), entity->tree_type == i))
 				{
 					entity->tree_type = i;
-					switch (i)
-					{
-						case TREE_TYPE_oak :
-						{
-							entity->sprite_data.sprite = SPRITE_birch_tree1;
-						} break;
-						case TREE_TYPE_birch :
-						{
-							entity->sprite_data.sprite = SPRITE_birch_tree2;
-						} break;
-						case TREE_TYPE_pine :
-						{
-							entity->sprite_data.sprite = SPRITE_pine_tree_v1;
-						} break;
-					}
+					UpdateEntitySprite(entity);
 				}
 			}
 			

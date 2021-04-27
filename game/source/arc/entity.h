@@ -7,4 +7,5 @@ internal void EntityUnsetProperty(Entity *entity, EntityProperty property);
 internal b32 IncrementEntity(Entity **entity_ptr);
 internal b32 IncrementEntityWithProperty(Entity **entity_ptr, EntityProperty property);
 
+internal void UpdateEntitySprite();
 internal void PrintEntityFields(Entity *entity);

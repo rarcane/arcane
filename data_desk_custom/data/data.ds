@@ -694,13 +694,14 @@ EntityPresetTypeData:: struct
 {
 	print_name : char[20];
 	setup_callback : EntityPresetCallback;
+	icon : Sprite;
 }
 @XMacro
 EntityPresetType:: enum
 {
-	@Data("'none'", 0)
+	@Data("'none'", 0, 0)
 		none,
-	@Data("'Tree'", TreeEntityPresetCallback)
+	@Data("'Tree'", TreeEntityPresetCallback, SPRITE_pine_tree_v1)
 		tree,
 }
 

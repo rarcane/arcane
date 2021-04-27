@@ -175,6 +175,59 @@ internal void SwitchEditorState(EditorState editor_state)
 	core->run_data->editor_state = editor_state;
 }
 
+typedef struct EntityLibCanvasData
+{
+	EntityPresetType type;
+} EntityLibCanvasData;
+
+internal void EntityLibIconUpdateCallback(char *name, v4 rect, v2 mouse, void *user_data)
+{
+	EntityLibCanvasData *data = user_data;
+	EntityPresetTypeData *entity_preset = &global_entity_preset_type_data[data->type];
+	
+	local_persist Entity *dragged_entity = 0;
+	
+	if (platform->left_mouse_pressed &&
+		mouse.x >= 0.0f && mouse.x < rect.z && mouse.y >= 0.0f && mouse.y < rect.w)
+	{
+		Entity *entity = NewEntity();
+		entity_preset->setup_callback(entity);
+		dragged_entity = entity;
+		
+		platform->left_mouse_pressed = 0;
+	}
+	
+	if (platform->left_mouse_down && dragged_entity)
+	{
+		dragged_entity->position = GetMousePositionInWorldSpace();
+	}
+	
+	if (core->left_mouse_released)
+	{
+		dragged_entity = 0;
+	}
+}
+
+internal void EntityLibIconRenderCallback(char *name, v4 rect, v2 mouse, void *user_data)
+{
+	EntityLibCanvasData *data = user_data;
+	EntityPresetTypeData *entity_preset = &global_entity_preset_type_data[data->type];
+	
+	v4 tint = v4u(1.0f);
+	if (mouse.x >= 0.0f && mouse.x < rect.z && mouse.y >= 0.0f && mouse.y < rect.w)
+	{
+		tint = v4(0.7f, 0.7f, 0.7f, 1.0f);
+		if (platform->left_mouse_down)
+		{
+			tint = v4(0.5f, 0.5f, 0.5f, 1.0f);
+		}
+	}
+	
+	SpriteData *sprite = &global_sprite_data[entity_preset->icon];
+	Ts2dPushFilledRect(tint, rect);
+	Ts2dPushTintedTexture(sprite->texture_atlas, sprite->source, rect, tint);
+}
+
 internal void DrawGeneralEditor()
 {
 	TsUIPushAutoRow(v2(0, 0), 30);
@@ -194,37 +247,34 @@ internal void DrawGeneralEditor()
 	v2 window_size = {300.0f, 400.0f};
 	TsUIWindowBegin("Entity Library", v4(0.0f, 80.0f, window_size.x, window_size.y), 0, 0);
 	{
-		TsUIPushColumn(v2(10, 10), v2(150, 30));
-		TsUIPushWidth(270.0f);
+		const i32 row_length = 4;
+		f32 size = window_size.x / (f32)row_length;
+		
+		TsUIPushX(-size);
+		TsUIPushSize(v2(size, size));
 		
 		for (i32 i = 1; i < ENTITY_PRESET_TYPE_MAX; i++)
 		{
+			TsUIPushPosition(v2(((i - 1) % row_length) * size,
+								((i - 1) / row_length) * size));
+			
 			EntityPresetTypeData *entity_preset = &global_entity_preset_type_data[i];
 			
 			char label[100];
 			sprintf(label, "%s", entity_preset->print_name);
-			if (TsUIButton(label))
-			{
-				Entity *entity = NewEntity();
-				entity_preset->setup_callback(entity);
-				
-				v4 camera_region = GetCameraRegionRect();
-				entity->position = v2(camera_region.x + camera_region.z / 2.0f,
-									  camera_region.y + camera_region.w / 2.0f);
-			}
+			
+			EntityLibCanvasData *data = MemoryArenaAllocateAndZero(core->frame_arena, sizeof(EntityLibCanvasData));
+			data->type = i;
+			TsUICanvas("", EntityLibIconUpdateCallback, data, EntityLibIconRenderCallback, data);
+			
+			TsUIPopPosition();
 		}
 		
-		/*
-				for (Entity *entity = 0; IncrementEntity(&entity);)
-				{
-					char label[100];
-					sprintf(label, "%s", entity->debug_name);
-					TsUILabel(label);
-				}
-		 */
+		TsUIPopSize();
+		TsUIPopX();
 		
-		TsUIPopWidth();
-		TsUIPopColumn();
+		//TsUIPopWidth();
+		//TsUIPopHeight();
 	}
 	TsUIWindowEnd();
 	
@@ -254,8 +304,16 @@ internal void DrawGeneralEditor()
 	}
 	TsUIWindowEnd();
 	
-	// NOTE(randy): Selected entity movement handle
 	Entity *selected_entity = GetRunData()->selected_entity;
+	if (platform->key_pressed[KEY_delete] && selected_entity)
+	{
+		DeleteEntity(selected_entity);
+		selected_entity = 0;
+		
+		TsPlatformCaptureKeyboard();
+	}
+	
+	// NOTE(randy): Selected entity movement handle
 	if (selected_entity)
 	{
 		f32 circle_size = 3.0f;

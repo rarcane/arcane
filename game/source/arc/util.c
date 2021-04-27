@@ -462,8 +462,8 @@ internal b8 IsPositionOverlappingEntity(Entity *entity, v2 pos)
 		min = v2(size.x / -2.0f, -size.y);
 		max = v2(size.x / 2.0f, 0.0f);
 		
-		min = V2SubtractV2(min, sprite->offset);
-		max = V2SubtractV2(max, sprite->offset);
+		min = V2AddV2(min, sprite->offset);
+		max = V2AddV2(max, sprite->offset);
 		
 		c2Shape shape = {0};
 		shape.aabb.min.x = min.x;

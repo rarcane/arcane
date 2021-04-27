@@ -660,6 +660,7 @@ typedef struct EntityPresetTypeData
 {
 char print_name[20];
 EntityPresetCallback setup_callback;
+Sprite icon;
 } EntityPresetTypeData;
 
 typedef enum EntityPresetType EntityPresetType;
@@ -670,8 +671,8 @@ ENTITY_PRESET_TYPE_tree,
 ENTITY_PRESET_TYPE_MAX,
 };
 global EntityPresetTypeData global_entity_preset_type_data[ENTITY_PRESET_TYPE_MAX] = {
-    { "none", 0, },
-    { "Tree", TreeEntityPresetCallback, },
+    { "none", 0, 0, },
+    { "Tree", TreeEntityPresetCallback, SPRITE_pine_tree_v1, },
 };
 
 static char *GetEntityPresetTypeName(EntityPresetType type);
