@@ -399,19 +399,77 @@ internal void GetChunkPositionsInRegion(iv2 *positions, i32 *chunk_count, v4 rec
 	}
 }
 
-internal Chunk *GetChunkFromEntity(Entity *entity)
+internal v2 GetEntityParallaxAmount(Entity *entity)
+{
+	if (entity->sprite_data.render_layer <= RENDER_LAYER_shrub)
+	{
+		LogWarning("Entity %s does not have a render layer, can't derive parallax amount", entity->debug_name);
+		return v2(0.0f, 0.0f);
+	}
+	
+	switch (entity->sprite_data.render_layer)
+	{
+		case RENDER_LAYER_BG1_hill :
+		case RENDER_LAYER_BG1_tree :
+		case RENDER_LAYER_BG1_saplings :
+		case RENDER_LAYER_BG1_shrubs :
+		return PARALLAX_FORMULA(0.4f);
+		break;
+		
+		case RENDER_LAYER_BG2_hill :
+		case RENDER_LAYER_BG2_tree :
+		case RENDER_LAYER_BG2_shrubs :
+		return PARALLAX_FORMULA(0.6f);
+		break;
+		
+		case RENDER_LAYER_BG3_hill :
+		case RENDER_LAYER_BG3_trees :
+		case RENDER_LAYER_BG3_shrubs :
+		return PARALLAX_FORMULA(0.75f);
+		break;
+		
+		case RENDER_LAYER_close_mountains :
+		return PARALLAX_FORMULA(0.93f);
+		break;
+		
+		case RENDER_LAYER_far_mountains :
+		return PARALLAX_FORMULA(0.95f);
+		break;
+		
+		default:
+		return v2(0.0f, 0.0f);
+	}
+}
+
+internal v2 ParallaxPosition(v2 position, v2 parallax)
+{
+	return v2(position.x + (core->camera_position.x - position.x) * parallax.x,
+			  position.y + (core->camera_position.y - position.y) * parallax.y);
+}
+
+internal iv2 GetChunkPosFromEntity(Entity *entity)
 {
 	Assert(entity);
 	if (EntityHasProperty(entity, ENTITY_PROPERTY_positional))
 	{
-		iv2 pos = iv2(WorldSpaceToChunkIndex(entity->position.x),
-					  WorldSpaceToChunkIndex(entity->position.y));
-		return GetChunkAtPos(pos);
+		if (EntityHasProperty(entity, ENTITY_PROPERTY_parallaxable))
+		{
+			v2 entity_pos = ParallaxPosition(entity->position, GetEntityParallaxAmount(entity));
+			iv2 pos = iv2(WorldSpaceToChunkIndex(entity_pos.x),
+						  WorldSpaceToChunkIndex(entity_pos.y));
+			return pos;
+		}
+		else
+		{
+			iv2 pos = iv2(WorldSpaceToChunkIndex(entity->position.x),
+						  WorldSpaceToChunkIndex(entity->position.y));
+			return pos;
+		}
 	}
 	else
 	{
 		LogWarning("Entity %s isn't positional, can't retrieve chunk", entity->debug_name);
-		return 0;
+		return iv2(INT_MAX, INT_MAX);
 	}
 }
 

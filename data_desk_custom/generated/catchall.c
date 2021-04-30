@@ -289,6 +289,67 @@ break;
 }
 }
 
+static char *GetRenderLayerName(RenderLayer type)
+{
+switch(type)
+{
+case RENDER_LAYER_none:
+return "None";
+break;
+case RENDER_LAYER_front_UI:
+return "Front UI";
+break;
+case RENDER_LAYER_ingame_HUD:
+return "Ingame HUD";
+break;
+case RENDER_LAYER_tree:
+return "Tree";
+break;
+case RENDER_LAYER_shrub:
+return "Shrub";
+break;
+case RENDER_LAYER_BG1_hill:
+return "BG1 Hill";
+break;
+case RENDER_LAYER_BG1_tree:
+return "BG1 Tree";
+break;
+case RENDER_LAYER_BG1_shrubs:
+return "BG1 Shrubs";
+break;
+case RENDER_LAYER_BG1_saplings:
+return "BG1 Saplings";
+break;
+case RENDER_LAYER_BG2_hill:
+return "BG2 Hill";
+break;
+case RENDER_LAYER_BG2_tree:
+return "BG2 Tree";
+break;
+case RENDER_LAYER_BG2_shrubs:
+return "BG2 Shrubs";
+break;
+case RENDER_LAYER_BG3_hill:
+return "BG3 Hill";
+break;
+case RENDER_LAYER_BG3_trees:
+return "BG3 Trees";
+break;
+case RENDER_LAYER_BG3_shrubs:
+return "BG3 Shrubs";
+break;
+case RENDER_LAYER_close_mountains:
+return "Close Mountains";
+break;
+case RENDER_LAYER_far_mountains:
+return "Far Mountains";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
 static char *GetArcEntityAnimationStateName(ArcEntityAnimationState type)
 {
 switch(type)
@@ -676,6 +737,25 @@ break;
 }
 }
 
+static char *GetEntityPresetCategoryName(EntityPresetCategory type)
+{
+switch(type)
+{
+case ENTITY_PRESET_CATEGORY_none:
+return "None";
+break;
+case ENTITY_PRESET_CATEGORY_resource:
+return "Resource";
+break;
+case ENTITY_PRESET_CATEGORY_background:
+return "Background";
+break;
+default:
+return "INVALID";
+break;
+}
+}
+
 static char *GetEntityPresetTypeName(EntityPresetType type)
 {
 switch(type)
@@ -685,6 +765,12 @@ return "None";
 break;
 case ENTITY_PRESET_TYPE_tree:
 return "Tree";
+break;
+case ENTITY_PRESET_TYPE_bg1_tree:
+return "Bg1 Tree";
+break;
+case ENTITY_PRESET_TYPE_bg2_tree:
+return "Bg2 Tree";
 break;
 default:
 return "INVALID";
@@ -862,6 +948,8 @@ static void WriteEntity_Version0ToFile(FILE *file, Entity *data)
 
     WriteToFile(file, &data->position, sizeof(data->position));
 
+    WriteToFile(file, &data->parallax_position, sizeof(data->parallax_position));
+
     WriteToFile(file, &data->sprite_data, sizeof(data->sprite_data));
 
     WriteToFile(file, &data->is_flipped, sizeof(data->is_flipped));
@@ -897,10 +985,6 @@ static void WriteEntity_Version0ToFile(FILE *file, Entity *data)
         WriteToFile(file, &data->enchantments[i], sizeof(Enchantment));
     }
 
-    WriteToFile(file, &data->parallax_amount, sizeof(data->parallax_amount));
-
-    WriteToFile(file, &data->desired_position, sizeof(data->desired_position));
-
     WriteToFile(file, &data->priority, sizeof(data->priority));
 
     WriteToFile(file, &data->structure_type, sizeof(data->structure_type));
@@ -931,6 +1015,8 @@ static void ReadEntity_Version0FromFile(FILE *file, Entity *data)
     }
 
     ReadFromFile(file, &data->position, sizeof(data->position));
+
+    ReadFromFile(file, &data->parallax_position, sizeof(data->parallax_position));
 
     ReadFromFile(file, &data->sprite_data, sizeof(data->sprite_data));
 
@@ -966,10 +1052,6 @@ static void ReadEntity_Version0FromFile(FILE *file, Entity *data)
     {
         ReadFromFile(file, &data->enchantments[i], sizeof(Enchantment));
     }
-
-    ReadFromFile(file, &data->parallax_amount, sizeof(data->parallax_amount));
-
-    ReadFromFile(file, &data->desired_position, sizeof(data->desired_position));
 
     ReadFromFile(file, &data->priority, sizeof(data->priority));
 

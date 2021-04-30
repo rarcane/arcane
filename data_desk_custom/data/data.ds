@@ -263,11 +263,38 @@ Sprite :: enum
 		birch_tree4,
 }
 
+RenderLayer :: enum
+{
+	none,
+	
+	front_UI,
+	ingame_HUD,
+	tree,
+	shrub,
+	
+	// NOTE(randy): Everything beyond this point is parallaxable
+	BG1_hill,
+	BG1_tree,
+	BG1_shrubs,
+	BG1_saplings,
+	
+	BG2_hill,
+	BG2_tree,
+	BG2_shrubs,
+	
+	BG3_hill,
+	BG3_trees,
+	BG3_shrubs,
+	
+	close_mountains,
+	far_mountains,
+}
+
 SpriteRender :: struct
 {
 	sprite : Sprite;
 	offset : v2;
-	render_layer : f32;
+	render_layer : RenderLayer;
 	scale : v2;
 	tint : v4;
 }
@@ -644,6 +671,7 @@ Entity :: struct
 	debug_name : char[100];
 	
 	position : v2;
+	parallax_position : v2;
 	
 	sprite_data : SpriteRender;
 	is_flipped : b8;
@@ -673,10 +701,6 @@ Entity :: struct
 	item : Item;
 	enchantments : Enchantment[MAX_ENCHANTMENTS];
 	
-	// NOTE(randy): Parallax
-	parallax_amount : v2;
-	desired_position : v2;
-	
 	// NOTE(randy): interactable
 	priority : f32;
 	
@@ -689,20 +713,33 @@ Entity :: struct
 	tree_type : TreeType;
 }
 
+EntityPresetCategory :: enum
+{
+	none,
+	resource,
+	background,
+}
+
 @XMacro
 EntityPresetTypeData:: struct
 {
 	print_name : char[20];
 	setup_callback : EntityPresetCallback;
-	icon : Sprite;
+	category : EntityPresetCategory;
 }
 @XMacro
 EntityPresetType:: enum
 {
-	@Data("'none'", 0, 0)
+	@Data("'none'", 0, 0, 0)
 		none,
-	@Data("'Tree'", TreeEntityPresetCallback, SPRITE_pine_tree_v1)
+	
+	@Data("'Tree'", TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_resource)
 		tree,
+	
+	@Data("'BG1 Tree'", BG1TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background)
+		bg1_tree,
+	@Data("'BG2 Tree'", BG2TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background)
+		bg2_tree,
 }
 
 

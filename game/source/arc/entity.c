@@ -184,7 +184,7 @@ internal void PrintEntityFields(Entity *entity)
 	{
 		if (TsUICollapsable("Sprite"))
 		{
-			sprintf(lbl, "Render Layer: %f", entity->sprite_data.render_layer);
+			sprintf(lbl, "Render Layer: %s", GetRenderLayerName(entity->sprite_data.render_layer));
 			TsUILabel(lbl);
 			
 			if (TsUICollapsable("Sprite Type"))

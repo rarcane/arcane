@@ -193,6 +193,7 @@ internal void EntityLibIconUpdateCallback(char *name, v4 rect, v2 mouse, void *u
 		Entity *entity = NewEntity();
 		entity_preset->setup_callback(entity);
 		dragged_entity = entity;
+		GetRunData()->selected_entity = entity;
 		
 		platform->left_mouse_pressed = 0;
 	}
@@ -223,9 +224,14 @@ internal void EntityLibIconRenderCallback(char *name, v4 rect, v2 mouse, void *u
 		}
 	}
 	
-	SpriteData *sprite = &global_sprite_data[entity_preset->icon];
-	Ts2dPushFilledRect(tint, rect);
-	Ts2dPushTintedTexture(sprite->texture_atlas, sprite->source, rect, tint);
+	Ts2dPushFilledRect(v4u(0.5f), rect);
+	Ts2dPushText(Ts2dGetDefaultFont(),
+				 TS2D_TEXT_ALIGN_CENTER_X | TS2D_TEXT_ALIGN_CENTER_Y,
+				 tint,
+				 v2(rect.x + rect.z / 2,
+					rect.y + rect.w / 2 + 3),
+				 0.3f,
+				 entity_preset->print_name);
 }
 
 internal void DrawGeneralEditor()
@@ -247,34 +253,32 @@ internal void DrawGeneralEditor()
 	v2 window_size = {300.0f, 400.0f};
 	TsUIWindowBegin("Entity Library", v4(0.0f, 80.0f, window_size.x, window_size.y), 0, 0);
 	{
-		const i32 row_length = 4;
-		f32 size = window_size.x / (f32)row_length;
+		TsUIPushColumn(v2(0.0f, 0.0f), v2(window_size.x, 30.0f));
 		
-		TsUIPushX(-size);
-		TsUIPushSize(v2(size, size));
-		
-		for (i32 i = 1; i < ENTITY_PRESET_TYPE_MAX; i++)
+		for (i32 i = 1; i < ENTITY_PRESET_CATEGORY_MAX; i++)
 		{
-			TsUIPushPosition(v2(((i - 1) % row_length) * size,
-								((i - 1) / row_length) * size));
-			
-			EntityPresetTypeData *entity_preset = &global_entity_preset_type_data[i];
-			
-			char label[100];
-			sprintf(label, "%s", entity_preset->print_name);
-			
-			EntityLibCanvasData *data = MemoryArenaAllocateAndZero(core->frame_arena, sizeof(EntityLibCanvasData));
-			data->type = i;
-			TsUICanvas("", EntityLibIconUpdateCallback, data, EntityLibIconRenderCallback, data);
-			
-			TsUIPopPosition();
+			if (TsUICollapsable(GetEntityPresetCategoryName(i)))
+			{
+				for (i32 j = 1; j < ENTITY_PRESET_TYPE_MAX; j++)
+				{
+					EntityPresetTypeData *entity_preset = &global_entity_preset_type_data[j];
+					
+					if (entity_preset->category == i)
+					{
+						char label[100];
+						sprintf(label, "%s", entity_preset->print_name);
+						
+						EntityLibCanvasData *data = MemoryArenaAllocateAndZero(core->frame_arena, sizeof(EntityLibCanvasData));
+						data->type = j;
+						TsUICanvas("", EntityLibIconUpdateCallback, data, EntityLibIconRenderCallback, data);
+					}
+				}
+				
+				TsUICollapsableEnd();
+			}
 		}
 		
-		TsUIPopSize();
-		TsUIPopX();
-		
-		//TsUIPopWidth();
-		//TsUIPopHeight();
+		TsUIPopColumn();
 	}
 	TsUIWindowEnd();
 	
@@ -286,6 +290,9 @@ internal void DrawGeneralEditor()
 		
 		char lbl[50];
 		sprintf(lbl, "Camera: %f, %f", core->camera_position.x, core->camera_position.y);
+		TsUILabel(lbl);
+		
+		sprintf(lbl, "mouse %f, %f", platform->mouse_x, platform->mouse_y);
 		TsUILabel(lbl);
 		
 		TsUILabel("-------------");
@@ -648,12 +655,13 @@ internal void UpdateMapChunks()
 	}
 	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_positional);)
 	{
-		Chunk *chunk = GetChunkFromEntity(entity);
-		if (chunk)
-		{
-			Assert(chunk->entity_count + 1 < 512);
-			chunk->entities[chunk->entity_count++] = entity;
-		}
+		iv2 pos = GetChunkPosFromEntity(entity);
+		Chunk *chunk = GetChunkAtPos(pos);
+		if (!chunk)
+			continue;
+		
+		Assert(chunk->entity_count + 1 < 512);
+		chunk->entities[chunk->entity_count++] = entity;
 	}
 	
 	// NOTE(randy): Load/unload map chunks depending on view
@@ -729,9 +737,9 @@ internal void CommitActiveChunks()
 
 internal Chunk *LoadMapChunk(iv2 pos)
 {
+	Assert(pos.x != INT_MAX);
 	if (GetChunkAtPos(pos))
 	{
-		LogWarning("Chunk %i, %i is already loaded", pos.x, pos.y);
 		return GetChunkAtPos(pos);
 	}
 	

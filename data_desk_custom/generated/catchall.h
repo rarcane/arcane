@@ -223,11 +223,35 @@ global SpriteData global_sprite_data[SPRITE_MAX] = {
 
 static char *GetSpriteName(Sprite type);
 
+typedef enum RenderLayer RenderLayer;
+enum RenderLayer
+{
+RENDER_LAYER_none,
+RENDER_LAYER_front_UI,
+RENDER_LAYER_ingame_HUD,
+RENDER_LAYER_tree,
+RENDER_LAYER_shrub,
+RENDER_LAYER_BG1_hill,
+RENDER_LAYER_BG1_tree,
+RENDER_LAYER_BG1_shrubs,
+RENDER_LAYER_BG1_saplings,
+RENDER_LAYER_BG2_hill,
+RENDER_LAYER_BG2_tree,
+RENDER_LAYER_BG2_shrubs,
+RENDER_LAYER_BG3_hill,
+RENDER_LAYER_BG3_trees,
+RENDER_LAYER_BG3_shrubs,
+RENDER_LAYER_close_mountains,
+RENDER_LAYER_far_mountains,
+RENDER_LAYER_MAX,
+};
+static char *GetRenderLayerName(RenderLayer type);
+
 typedef struct SpriteRender
 {
 Sprite sprite;
 v2 offset;
-f32 render_layer;
+RenderLayer render_layer;
 v2 scale;
 v4 tint;
 } SpriteRender;
@@ -629,6 +653,7 @@ u64 properties[ENTITY_PROPERTY_SIZE];
 i32 testint;
 char debug_name[100];
 v2 position;
+v2 parallax_position;
 SpriteRender sprite_data;
 b8 is_flipped;
 b8 is_background_sprite;
@@ -647,8 +672,6 @@ char *current_general_state;
 ArcEntityAnimationState current_animation_state;
 Item item;
 Enchantment enchantments[MAX_ENCHANTMENTS];
-v2 parallax_amount;
-v2 desired_position;
 f32 priority;
 StructureType structure_type;
 Item remaining_items_in_blueprint[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
@@ -656,11 +679,21 @@ f32 durability;
 TreeType tree_type;
 } Entity;
 
+typedef enum EntityPresetCategory EntityPresetCategory;
+enum EntityPresetCategory
+{
+ENTITY_PRESET_CATEGORY_none,
+ENTITY_PRESET_CATEGORY_resource,
+ENTITY_PRESET_CATEGORY_background,
+ENTITY_PRESET_CATEGORY_MAX,
+};
+static char *GetEntityPresetCategoryName(EntityPresetCategory type);
+
 typedef struct EntityPresetTypeData
 {
 char print_name[20];
 EntityPresetCallback setup_callback;
-Sprite icon;
+EntityPresetCategory category;
 } EntityPresetTypeData;
 
 typedef enum EntityPresetType EntityPresetType;
@@ -668,11 +701,15 @@ enum EntityPresetType
 {
 ENTITY_PRESET_TYPE_none,
 ENTITY_PRESET_TYPE_tree,
+ENTITY_PRESET_TYPE_bg1_tree,
+ENTITY_PRESET_TYPE_bg2_tree,
 ENTITY_PRESET_TYPE_MAX,
 };
 global EntityPresetTypeData global_entity_preset_type_data[ENTITY_PRESET_TYPE_MAX] = {
     { "none", 0, 0, },
-    { "Tree", TreeEntityPresetCallback, SPRITE_pine_tree_v1, },
+    { "Tree", TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_resource, },
+    { "BG1 Tree", BG1TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background, },
+    { "BG2 Tree", BG2TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background, },
 };
 
 static char *GetEntityPresetTypeName(EntityPresetType type);

@@ -5,8 +5,8 @@ static void TransformEditorCamera()
 	if (platform->mouse_scroll_y != 0.0f)
 	{
 		core->camera_zoom += platform->mouse_scroll_y / 120.0f / 4 * transform_mult;
-		if (core->camera_zoom <= 0.1f)
-			core->camera_zoom = 0.1f;
+		if (core->camera_zoom <= 0.5f)
+			core->camera_zoom = 0.5f;
 		else if (core->camera_zoom > 10.0f)
 			core->camera_zoom = 10.0f;
 	}
@@ -145,7 +145,8 @@ static void TransformInGameCamera()
 		
 		last_axis = character->axis_x;
 		
-		core->camera_position = V2AddV2(v2(core->camera_offset.x, core->camera_offset.y), idle_camera_pos);
+		// core->camera_position = V2AddV2(v2(core->camera_offset.x, core->camera_offset.y), idle_camera_pos);
+		core->camera_position = V2AddV2(idle_camera_pos, v2(0.0f, -DEFAULT_CAMERA_OFFSET_Y));
 	}
 	
 	core->camera_offset.y = -DEFAULT_CAMERA_OFFSET_Y;
@@ -158,8 +159,8 @@ static void TransformInGameCamera()
 	if (platform->mouse_scroll_y != 0.0f)
 	{
 		core->camera_zoom += platform->mouse_scroll_y / 120.0f / 4 * transform_mult;
-		if (core->camera_zoom <= 0.1f)
-			core->camera_zoom = 0.1f;
+		if (core->camera_zoom <= 2.0f)
+			core->camera_zoom = 2.0f;
 		else if (core->camera_zoom > 10.0f)
 			core->camera_zoom = 10.0f;
 	}

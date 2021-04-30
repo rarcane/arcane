@@ -69,8 +69,18 @@ internal void RenderSprites()
 		
 		v2 render_size = v2zoom(v2(sprite->source.z * entity->sprite_data.scale.x * (entity->is_flipped ? -1.0f : 1.0f), sprite->source.w * entity->sprite_data.scale.y));
 		
+		v2 render_pos;
+		if (EntityHasProperty(entity, ENTITY_PROPERTY_parallaxable))
+		{
+			v2 par_amt = GetEntityParallaxAmount(entity);
+			render_pos = v2view(ParallaxPosition(entity->position, par_amt));
+		}
+		else
+		{
+			render_pos = v2view(entity->position);
+		}
+		
 		// NOTE(randy): Determine proper position of the Sprite - Offset is defaulted to BottomCentre
-		v2 render_pos = v2view(entity->position);
 		render_pos = V2AddV2(render_pos, v2(render_size.x / -2.0f, -render_size.y));
 		render_pos = V2AddV2(render_pos, v2zoom(v2((sprite->offset.x + entity->sprite_data.offset.x) * (entity->is_flipped ? -1.0f : 1.0f), sprite->offset.y + entity->sprite_data.offset.y)));
 		
@@ -93,6 +103,12 @@ internal void RenderSprites()
 					   v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
 					   V4MultiplyV4(entity->sprite_data.tint, tint),
 					   entity->sprite_data.render_layer);
+		
+		if (GetRunData()->editor_state && EntityHasProperty(entity, ENTITY_PROPERTY_parallaxable))
+		{
+			// TODO(randy): draw parallax bounds
+			
+		}
 	}
 	
 	// NOTE(randy): Sort & render everything in the queue

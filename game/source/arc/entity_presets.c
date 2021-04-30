@@ -27,7 +27,41 @@ EntityPresetCallback(Tree)
 	char *name = "Tree";
 	strcpy(entity->debug_name, name);
 	
-	entity->sprite_data.render_layer = LAYER_TREE;
+	entity->sprite_data.render_layer = RENDER_LAYER_tree;
+	entity->tree_type = TREE_TYPE_pine;
+	
+	UpdateEntitySprite(entity);
+}
+
+EntityPresetCallback(BG1Tree)
+{
+	EntitySetProperty(entity, ENTITY_PROPERTY_map_entity);
+	EntitySetProperty(entity, ENTITY_PROPERTY_positional);
+	EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+	EntitySetProperty(entity, ENTITY_PROPERTY_tree);
+	EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+	
+	EntityPresetTypeData *preset_data = &global_entity_preset_type_data[ENTITY_PRESET_TYPE_bg1_tree];
+	strcpy(entity->debug_name, preset_data->print_name);
+	
+	entity->sprite_data.render_layer = RENDER_LAYER_BG1_tree;
+	entity->tree_type = TREE_TYPE_pine;
+	
+	UpdateEntitySprite(entity);
+}
+
+EntityPresetCallback(BG2Tree)
+{
+	EntitySetProperty(entity, ENTITY_PROPERTY_map_entity);
+	EntitySetProperty(entity, ENTITY_PROPERTY_positional);
+	EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+	EntitySetProperty(entity, ENTITY_PROPERTY_tree);
+	EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+	
+	EntityPresetTypeData *preset_data = &global_entity_preset_type_data[ENTITY_PRESET_TYPE_bg2_tree];
+	strcpy(entity->debug_name, preset_data->print_name);
+	
+	entity->sprite_data.render_layer = RENDER_LAYER_BG2_tree;
 	entity->tree_type = TREE_TYPE_pine;
 	
 	UpdateEntitySprite(entity);

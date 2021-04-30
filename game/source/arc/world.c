@@ -32,8 +32,6 @@ internal void WorldUpdate()
 		PostMoveUpdatePlayer();
 	}
     
-	UpdateParallax();
-    
 	InteractableUpdate();
 	
 	UpdateWorldChunks();
@@ -163,19 +161,6 @@ internal void DrawWorld()
 				global_ts2d->ground_vertices[i + 1] = temp;
 			}
 		}
-	}
-}
-
-internal void UpdateParallax()
-{
-	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_parallaxable);)
-	{
-		// TODO: Need to find a way to centralise the desired_position of the parallax, whilst still maintaining spatial consistency across sprites
-		entity->position.x = entity->desired_position.x + core->camera_position.x * entity->parallax_amount.x;
-		entity->position.y = entity->desired_position.y + (core->camera_position.y + DEFAULT_CAMERA_OFFSET_Y) * entity->parallax_amount.y;
-		
-		// position_comp->position.x = parallax_comp->desired_position.x - (parallax_comp->desired_position.x - player_pos->position.x + core->camera_offset.x) * parallax_comp->parallax_amount.x;
-		// position_comp->position.y = parallax_comp->desired_position.y - (parallax_comp->desired_position.y - player_pos->position.y + core->camera_offset.y) * parallax_comp->parallax_amount.y;
 	}
 }
 
@@ -619,16 +604,11 @@ internal void UpdateWorldChunks()
 	}
 	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_positional);)
 	{
-		Chunk *chunk = GetChunkFromEntity(entity);
-		if (chunk)
-		{
-			Assert(chunk->entity_count + 1 < 512);
-			chunk->entities[chunk->entity_count++] = entity;
-		}
-		else
-		{
-			LogError("why is entity %s not in a loaded chunk??", entity->debug_name);
-		}
+		iv2 pos = GetChunkPosFromEntity(entity);
+		Chunk *chunk = LoadWorldChunk(pos);
+		
+		Assert(chunk->entity_count + 1 < 512);
+		chunk->entities[chunk->entity_count++] = entity;
 	}
 	
 	UnloadWorldChunksOutOfView();
@@ -637,7 +617,7 @@ internal void UpdateWorldChunks()
 	// NOTE(randy): Figure out what chunk the character is in
 	if (GetRunData()->character_entity)
 	{
-		Chunk* chunk = GetChunkFromEntity(GetRunData()->character_entity);
+		Chunk* chunk = GetChunkAtPos(GetChunkPosFromEntity(GetRunData()->character_entity));
 		if (chunk)
 		{
 			GetWorldData()->character_chunk = chunk->pos;
