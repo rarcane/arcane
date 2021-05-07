@@ -223,35 +223,11 @@ global SpriteData global_sprite_data[SPRITE_MAX] = {
 
 static char *GetSpriteName(Sprite type);
 
-typedef enum RenderLayer RenderLayer;
-enum RenderLayer
-{
-RENDER_LAYER_none,
-RENDER_LAYER_front_UI,
-RENDER_LAYER_ingame_HUD,
-RENDER_LAYER_tree,
-RENDER_LAYER_shrub,
-RENDER_LAYER_BG1_hill,
-RENDER_LAYER_BG1_tree,
-RENDER_LAYER_BG1_shrubs,
-RENDER_LAYER_BG1_saplings,
-RENDER_LAYER_BG2_hill,
-RENDER_LAYER_BG2_tree,
-RENDER_LAYER_BG2_shrubs,
-RENDER_LAYER_BG3_hill,
-RENDER_LAYER_BG3_trees,
-RENDER_LAYER_BG3_shrubs,
-RENDER_LAYER_close_mountains,
-RENDER_LAYER_far_mountains,
-RENDER_LAYER_MAX,
-};
-static char *GetRenderLayerName(RenderLayer type);
-
 typedef struct SpriteRender
 {
 Sprite sprite;
 v2 offset;
-RenderLayer render_layer;
+i8 render_layer;
 v2 scale;
 v4 tint;
 } SpriteRender;
@@ -653,7 +629,6 @@ u64 properties[ENTITY_PROPERTY_SIZE];
 i32 testint;
 char debug_name[100];
 v2 position;
-v2 parallax_position;
 SpriteRender sprite_data;
 b8 is_flipped;
 b8 is_background_sprite;

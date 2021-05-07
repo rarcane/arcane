@@ -289,67 +289,6 @@ break;
 }
 }
 
-static char *GetRenderLayerName(RenderLayer type)
-{
-switch(type)
-{
-case RENDER_LAYER_none:
-return "None";
-break;
-case RENDER_LAYER_front_UI:
-return "Front UI";
-break;
-case RENDER_LAYER_ingame_HUD:
-return "Ingame HUD";
-break;
-case RENDER_LAYER_tree:
-return "Tree";
-break;
-case RENDER_LAYER_shrub:
-return "Shrub";
-break;
-case RENDER_LAYER_BG1_hill:
-return "BG1 Hill";
-break;
-case RENDER_LAYER_BG1_tree:
-return "BG1 Tree";
-break;
-case RENDER_LAYER_BG1_shrubs:
-return "BG1 Shrubs";
-break;
-case RENDER_LAYER_BG1_saplings:
-return "BG1 Saplings";
-break;
-case RENDER_LAYER_BG2_hill:
-return "BG2 Hill";
-break;
-case RENDER_LAYER_BG2_tree:
-return "BG2 Tree";
-break;
-case RENDER_LAYER_BG2_shrubs:
-return "BG2 Shrubs";
-break;
-case RENDER_LAYER_BG3_hill:
-return "BG3 Hill";
-break;
-case RENDER_LAYER_BG3_trees:
-return "BG3 Trees";
-break;
-case RENDER_LAYER_BG3_shrubs:
-return "BG3 Shrubs";
-break;
-case RENDER_LAYER_close_mountains:
-return "Close Mountains";
-break;
-case RENDER_LAYER_far_mountains:
-return "Far Mountains";
-break;
-default:
-return "INVALID";
-break;
-}
-}
-
 static char *GetArcEntityAnimationStateName(ArcEntityAnimationState type)
 {
 switch(type)
@@ -948,8 +887,6 @@ static void WriteEntity_Version0ToFile(FILE *file, Entity *data)
 
     WriteToFile(file, &data->position, sizeof(data->position));
 
-    WriteToFile(file, &data->parallax_position, sizeof(data->parallax_position));
-
     WriteToFile(file, &data->sprite_data, sizeof(data->sprite_data));
 
     WriteToFile(file, &data->is_flipped, sizeof(data->is_flipped));
@@ -1015,8 +952,6 @@ static void ReadEntity_Version0FromFile(FILE *file, Entity *data)
     }
 
     ReadFromFile(file, &data->position, sizeof(data->position));
-
-    ReadFromFile(file, &data->parallax_position, sizeof(data->parallax_position));
 
     ReadFromFile(file, &data->sprite_data, sizeof(data->sprite_data));
 

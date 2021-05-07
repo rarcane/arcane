@@ -263,38 +263,11 @@ Sprite :: enum
 		birch_tree4,
 }
 
-RenderLayer :: enum
-{
-	none,
-	
-	front_UI,
-	ingame_HUD,
-	tree,
-	shrub,
-	
-	// NOTE(randy): Everything beyond this point is parallaxable
-	BG1_hill,
-	BG1_tree,
-	BG1_shrubs,
-	BG1_saplings,
-	
-	BG2_hill,
-	BG2_tree,
-	BG2_shrubs,
-	
-	BG3_hill,
-	BG3_trees,
-	BG3_shrubs,
-	
-	close_mountains,
-	far_mountains,
-}
-
 SpriteRender :: struct
 {
 	sprite : Sprite;
 	offset : v2;
-	render_layer : RenderLayer;
+	render_layer : i8;
 	scale : v2;
 	tint : v4;
 }
@@ -671,7 +644,6 @@ Entity :: struct
 	debug_name : char[100];
 	
 	position : v2;
-	parallax_position : v2;
 	
 	sprite_data : SpriteRender;
 	is_flipped : b8;

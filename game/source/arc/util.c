@@ -377,6 +377,15 @@ internal v4 GetCameraRegionRect()
 	return v4(top_left.x, top_left.y, top_right.x - top_left.x, bottom_left.y - top_left.y);
 }
 
+internal c2AABB GetCameraRegionAABB()
+{
+	v4 rect = GetCameraRegionRect();
+	c2AABB aabb = {0};
+	aabb.min = c2V(rect.x, rect.y);
+	aabb.max = c2V(rect.x + rect.width, rect.y + rect.height);
+	return aabb;
+}
+
 internal void GetChunkPositionsInRegion(iv2 *positions, i32 *chunk_count, v4 rect, i32 buffer)
 {
 	*chunk_count = 0;
@@ -401,44 +410,14 @@ internal void GetChunkPositionsInRegion(iv2 *positions, i32 *chunk_count, v4 rec
 
 internal v2 GetEntityParallaxAmount(Entity *entity)
 {
-	if (entity->sprite_data.render_layer <= RENDER_LAYER_shrub)
+	if (entity->sprite_data.render_layer < 28)
 	{
-		LogWarning("Entity %s does not have a render layer, can't derive parallax amount", entity->debug_name);
+		LogWarning("Entity %s at layer %i is not the the parallax range", entity->debug_name, entity->sprite_data.render_layer);
 		return v2(0.0f, 0.0f);
 	}
 	
-	switch (entity->sprite_data.render_layer)
-	{
-		case RENDER_LAYER_BG1_hill :
-		case RENDER_LAYER_BG1_tree :
-		case RENDER_LAYER_BG1_saplings :
-		case RENDER_LAYER_BG1_shrubs :
-		return PARALLAX_FORMULA(0.4f);
-		break;
-		
-		case RENDER_LAYER_BG2_hill :
-		case RENDER_LAYER_BG2_tree :
-		case RENDER_LAYER_BG2_shrubs :
-		return PARALLAX_FORMULA(0.6f);
-		break;
-		
-		case RENDER_LAYER_BG3_hill :
-		case RENDER_LAYER_BG3_trees :
-		case RENDER_LAYER_BG3_shrubs :
-		return PARALLAX_FORMULA(0.75f);
-		break;
-		
-		case RENDER_LAYER_close_mountains :
-		return PARALLAX_FORMULA(0.93f);
-		break;
-		
-		case RENDER_LAYER_far_mountains :
-		return PARALLAX_FORMULA(0.95f);
-		break;
-		
-		default:
-		return v2(0.0f, 0.0f);
-	}
+	f32 parallax = (f32)(entity->sprite_data.render_layer - 28) / 100.0f;
+	return PARALLAX_FORMULA(parallax);
 }
 
 internal v2 ParallaxPosition(v2 position, v2 parallax)
@@ -503,10 +482,11 @@ internal Entity *GetClosestEntityWithProperty(EntityProperty property, f32 max_d
 	return (closest_mag <= max_distance_from_player ? closest_entity : 0);
 }
 
-internal b8 IsPositionOverlappingEntity(Entity *entity, v2 pos)
+internal c2AABB GetEntityAABBViaSprite(Entity *entity)
 {
+	c2AABB aabb = {0};
 	if (!EntityHasProperty(entity, ENTITY_PROPERTY_positional))
-		return 0;
+		return aabb;
 	
 	if (EntityHasProperty(entity, ENTITY_PROPERTY_sprite))
 	{
@@ -523,13 +503,39 @@ internal b8 IsPositionOverlappingEntity(Entity *entity, v2 pos)
 		min = V2AddV2(min, sprite->offset);
 		max = V2AddV2(max, sprite->offset);
 		
-		c2Shape shape = {0};
-		shape.aabb.min.x = min.x;
-		shape.aabb.min.y = min.y;
-		shape.aabb.max.x = max.x;
-		shape.aabb.max.y = max.y;
-		AddPositionOffsetToShape(&shape, C2_SHAPE_TYPE_aabb, entity->position);
+		aabb.min.x = min.x + entity->position.x;
+		aabb.min.y = min.y + entity->position.y;
+		aabb.max.x = max.x + entity->position.x;
+		aabb.max.y = max.y + entity->position.y;
 		
+		return aabb;
+	}
+	
+	return aabb;
+}
+
+internal b8 IsAABBOnScreen(c2AABB aabb)
+{
+	c2Shape shape = {0};
+	shape.aabb = aabb;
+	c2Shape screen = {0};
+	screen.aabb = GetCameraRegionAABB();
+	c2Manifold manifold = {0};
+	GenerateCollisionManifold(shape, C2_SHAPE_TYPE_aabb, screen, C2_SHAPE_TYPE_aabb, &manifold);
+	
+	return (manifold.count > 0);
+}
+
+internal b8 IsPositionOverlappingEntity(Entity *entity, v2 pos)
+{
+	if (!EntityHasProperty(entity, ENTITY_PROPERTY_positional))
+		return 0;
+	
+	if (EntityHasProperty(entity, ENTITY_PROPERTY_sprite))
+	{
+		c2AABB aabb = GetEntityAABBViaSprite(entity);
+		c2Shape shape = {0};
+		shape.aabb = aabb;
 		return IsV2OverlappingShape(pos, shape, C2_SHAPE_TYPE_aabb);
 	}
 	else if (EntityHasProperty(entity, ENTITY_PROPERTY_physical))

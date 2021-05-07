@@ -1,24 +1,30 @@
 #define MAX_ANIMATION_FRAMES 10
 
-#define LAYER_FRONT_UI -5.0f
-#define LAYER_FRONT_GROUND -1.0f
-#define LAYER_FOREGROUND_GEORGE 0.0f
-#define LAYER_HUD 0.5f
-#define LAYER_GROUND_ROCKS 1.0f
-#define LAYER_TREE 2.0f
-#define LAYER_SHRUB 3.0f
-#define LAYER_HILL_1 4.0f
-#define LAYER_BG_TREE_1 5.0f
-#define LAYER_BG_SHRUBS_1 6.0f
-#define LAYER_BG_SAPLINGS_1 7.0f
-#define LAYER_HILL_2 8.0f
-#define LAYER_BG_TREES_2 9.0f
-#define LAYER_BG_SHRUBS_2 10.0f
-#define LAYER_HILLS_3 11.0f
-#define LAYER_BG_TREES_3 12.0f
-#define LAYER_BG_SHRUBS_3 13.0f
-#define LAYER_MID_MOUNTAINS 14.0f
-#define LAYER_FAR_MOUNTAINS 15.0f
+// render_layer
+// -128 -> 128
+// -28 -> 28 is parallax free
+#define LAYER_FRONT_UI -4
+#define LAYER_FRONT_GROUND -3
+#define LAYER_HUD -2
+#define LAYER_GROUND -1
+#define LAYER_PLAYER 0
+#define LAYER_GROUND_ROCKS 1 // Small rocks that go behind the player to give extra depth
+#define LAYER_TREE 2
+#define LAYER_SHRUB 3
+
+// Background parallax
+#define LAYER_BG1_HILL 28 + 40
+#define LAYER_BG1_TREE 28 + 41
+#define LAYER_BG1_SHRUBS 28 + 42
+#define LAYER_BG1_SAPLINGS 28 + 43
+#define LAYER_BG2_HILL 28 + 60
+#define LAYER_BG2_TREE 28 + 61
+#define LAYER_BG2_SHRUBS 28 + 62
+#define LAYER_BG3_HILLS 28 + 75
+#define LAYER_BG3_TREES 28 + 76
+#define LAYER_BG3_SHRUBS 28 + 77
+#define LAYER_MID_MOUNTAINS 28 + 93
+#define LAYER_FAR_MOUNTAINS 28 + 95
 
 internal void UpdateAnimations();
 internal void ArcPushTexture(Ts2dTexture *texture, i32 flags, v4 source, v4 destination, v4 tint, f32 layer);

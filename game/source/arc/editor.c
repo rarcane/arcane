@@ -295,6 +295,17 @@ internal void DrawGeneralEditor()
 		sprintf(lbl, "mouse %f, %f", platform->mouse_x, platform->mouse_y);
 		TsUILabel(lbl);
 		
+		if (GetRunData()->selected_entity)
+		{
+			sprintf(lbl, "On screen: %i", IsAABBOnScreen(GetEntityAABBViaSprite(GetRunData()->selected_entity)));
+			
+			c2Shape shape = {0};
+			shape.aabb = GetEntityAABBViaSprite(GetRunData()->selected_entity);
+			PushDebugShape(shape, C2_SHAPE_TYPE_aabb, v2(0.0f, 0.0f), v4(1.0f, 0.0f, 0.0f, 1.0f));
+			
+			TsUILabel(lbl);
+		}
+		
 		TsUILabel("-------------");
 		
 		if (GetRunData()->selected_entity)
