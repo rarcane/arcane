@@ -503,10 +503,26 @@ internal c2AABB GetEntityAABBViaSprite(Entity *entity)
 		min = V2AddV2(min, sprite->offset);
 		max = V2AddV2(max, sprite->offset);
 		
-		aabb.min.x = min.x + entity->position.x;
-		aabb.min.y = min.y + entity->position.y;
-		aabb.max.x = max.x + entity->position.x;
-		aabb.max.y = max.y + entity->position.y;
+		aabb.min.x = min.x;
+		aabb.min.y = min.y;
+		aabb.max.x = max.x;
+		aabb.max.y = max.y;
+		
+		if (EntityHasProperty(entity, ENTITY_PROPERTY_parallaxable))
+		{
+			v2 parallax = GetEntityParallaxAmount(entity);
+			aabb.min.x += ParallaxPosition(entity->position, parallax).x;
+			aabb.min.y += ParallaxPosition(entity->position, parallax).y;
+			aabb.max.x += ParallaxPosition(entity->position, parallax).x;
+			aabb.max.y += ParallaxPosition(entity->position, parallax).y;
+		}
+		else
+		{
+			aabb.min.x += entity->position.x;
+			aabb.min.y += entity->position.y;
+			aabb.max.x += entity->position.x;
+			aabb.max.y += entity->position.y;
+		}
 		
 		return aabb;
 	}
@@ -524,6 +540,40 @@ internal b8 IsAABBOnScreen(c2AABB aabb)
 	GenerateCollisionManifold(shape, C2_SHAPE_TYPE_aabb, screen, C2_SHAPE_TYPE_aabb, &manifold);
 	
 	return (manifold.count > 0);
+}
+
+internal v4 GetEntityVisibleParallaxBounds(Entity *entity)
+{
+	if (!EntityHasProperty(entity, ENTITY_PROPERTY_sprite) || !EntityHasProperty(entity, ENTITY_PROPERTY_parallaxable))
+	{
+		LogWarning("Unable to extract parallax bounds from entity");
+		return v4u(0.0f);
+	}
+	
+	v2 parallax = GetEntityParallaxAmount(entity);
+	v4 cam = GetCameraRegionRect(); // NOTE(randy): This should technically be max zoom
+	
+	SpriteData *sprite = &global_sprite_data[entity->sprite_data.sprite];
+	
+	v2 size = v2(sprite->source.width,
+				 sprite->source.height);
+	
+	// NOTE(randy): This is fucked lmao
+	
+	f32 left_x = (2.0f * parallax.x + cam.width + (size.x / 2.0f + sprite->offset.x) * 2.0f) / (-2.0f * parallax.x + 2.0f);
+	left_x -= cam.width / 2.0f;
+	
+	f32 right_x = (2.0f * parallax.x + cam.width + (size.x / 2.0f + sprite->offset.x) * 2.0f) / (-2.0f * parallax.x + 2.0f);
+	right_x -= cam.width / 2.0f;
+	right_x *= -1.0f;
+	
+	f32 top_y = (2.0f * parallax.y + cam.height + (size.y + sprite->offset.y) * 2.0f) / (-2.0f * parallax.y + 2.0f);
+	top_y -= cam.height / 2.0f;
+	
+	f32 bottom_y = (2.0f * parallax.y + cam.height + sprite->offset.y * 2.0f) / (-2.0f * parallax.y + 2.0f);
+	bottom_y -= cam.height / 2.0f;
+	
+	return v4(left_x, right_x, top_y, bottom_y);
 }
 
 internal b8 IsPositionOverlappingEntity(Entity *entity, v2 pos)

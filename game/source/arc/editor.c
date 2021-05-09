@@ -835,38 +835,55 @@ internal void SetEjectedMode(b8 value)
 
 internal void UpdateEjectedMode()
 {
+	Entity *entity = &GetRunData()->entities[1];
+	
+	v4 bounds = GetEntityVisibleParallaxBounds(entity);
+	
+	ArcPushLine(v4(0.0f, 0.0f, 1.0f, 1.0f),
+				v2view(entity->position),
+				v2view(V2AddV2(v2(bounds.x, 0.0f), entity->position)),
+				-5.0f);
+	
+	ArcPushLine(v4(0.0f, 1.0f, 1.0f, 1.0f),
+				v2view(entity->position),
+				v2view(V2AddV2(v2(bounds.y, 0.0f), entity->position)),
+				-5.0f);
+	
+	ArcPushLine(v4(1.0f, 0.0f, 0.0f, 1.0f),
+				v2view(entity->position),
+				v2view(V2AddV2(v2(0.0f, -bounds.z), entity->position)),
+				-5.0f);
+	
+	ArcPushLine(v4(1.0f, 1.0f, 0.0f, 1.0f),
+				v2view(entity->position),
+				v2view(V2AddV2(v2(0.0f, bounds.w), entity->position)),
+				-5.0f);
+	
+	c2Shape shape;
+	shape.aabb = GetEntityAABBViaSprite(entity);
+	PushDebugShape(shape, C2_SHAPE_TYPE_aabb, v2(0.0f, 0.0f), v4u(1.0f));
+	
 	TsUIWindowBegin("debug", v4(0.0f, 0.0f, 600.0f, 300.0f), 0, 0);
 	{
 		TsUIPushColumn(v2(0.0f, 0.0f), v2(100.0f, 20.0f));
+		char lbl[200];
 		
-		{
-			char lbl[100];
-			sprintf(lbl, "camera pos: %f, %f", core->camera_position.x, core->camera_position.y);
-			TsUILabel(lbl);
-		}
+		sprintf(lbl, "camera pos: %f, %f", core->camera_position.x, core->camera_position.y);
+		TsUILabel(lbl);
 		
-		{
-			char lbl[100];
-			sprintf(lbl, "camera zoom: %f", core->camera_zoom);
-			TsUILabel(lbl);
-		}
+		sprintf(lbl, "camera zoom: %f", core->camera_zoom);
+		TsUILabel(lbl);
 		
-		global_ts2d->ground_scale = TsUISlider("Scale", global_ts2d->ground_scale, 0.004f, 0.5f);
-		global_ts2d->ground_vor_step = TsUISlider("Voronoi Step", global_ts2d->ground_vor_step, 0.004f, 0.5f);
-		global_ts2d->ground_band_height = TsUISlider("Band Height", global_ts2d->ground_band_height, 1.0f, 100.0f);
+		v4 camera_region = GetCameraRegionRect();
+		sprintf(lbl, "camera region: %f, %f, %f, %f", camera_region.x, camera_region.y, camera_region.z, camera_region.w);
+		TsUILabel(lbl);
 		
-		{
-			v4 camera_region = GetCameraRegionRect();
-			char lbl[100];
-			sprintf(lbl, "camera region: %f, %f, %f, %f", camera_region.x, camera_region.y, camera_region.z, camera_region.w);
-			TsUILabel(lbl);
-		}
 		/*
-				{
-					char lbl[100];
-					sprintf(lbl, "alpha: %f", alpha);
-					TsUILabel(lbl);
-				}
+				sprintf(lbl, "value: %f", x);
+				TsUILabel(lbl);
+				
+				sprintf(lbl, "x bound: %f", x + entity->position.x);
+				TsUILabel(lbl);
 		 */
 		
 		TsUIPopColumn();
