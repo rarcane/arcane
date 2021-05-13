@@ -368,13 +368,10 @@ internal void InitialiseRunData()
 	global_ts2d->ground_vor_step = 0.13f;
 	global_ts2d->ground_band_height = 10.0f;
 	
-	GetRunData()->selected_chunk = iv2(INT_MAX, INT_MAX);
-	
-	/*
-				core->run_data->save_job_index = -1;
-				core->run_data->load_job_index = -1;
-				core->run_data->free_entity_id = 1;
-			 */
+	for (i32 i = 0; i < TERRAIN_TABLE_SIZE; i++)
+	{
+		GetRunData()->terrain[i] = v2(INFINITY, INFINITY);
+	}
 }
 
 internal void FreeRunData()

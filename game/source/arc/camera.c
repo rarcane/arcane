@@ -5,8 +5,8 @@ static void TransformEditorCamera()
 	if (platform->mouse_scroll_y != 0.0f)
 	{
 		core->camera_zoom += platform->mouse_scroll_y / 120.0f / 4 * transform_mult;
-		if (core->camera_zoom <= 0.5f)
-			core->camera_zoom = 0.5f;
+		if (core->camera_zoom <= MIN_CAMERA_ZOOM / 4.0f)
+			core->camera_zoom = MIN_CAMERA_ZOOM / 4.0f;
 		else if (core->camera_zoom > 10.0f)
 			core->camera_zoom = 10.0f;
 	}
@@ -159,8 +159,8 @@ static void TransformInGameCamera()
 	if (platform->mouse_scroll_y != 0.0f)
 	{
 		core->camera_zoom += platform->mouse_scroll_y / 120.0f / 4 * transform_mult;
-		if (core->camera_zoom <= 2.0f)
-			core->camera_zoom = 2.0f;
+		if (core->camera_zoom <= MIN_CAMERA_ZOOM)
+			core->camera_zoom = MIN_CAMERA_ZOOM;
 		else if (core->camera_zoom > 10.0f)
 			core->camera_zoom = 10.0f;
 	}

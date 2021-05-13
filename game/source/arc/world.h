@@ -27,16 +27,6 @@ internal void SaveWorld();
 internal b8 LoadWorld(char *world_name);
 internal void UnloadWorld();
 
-internal Chunk *GetChunkAtPos(iv2 pos);
-internal Chunk *GetUnallocatedChunk();
-internal Chunk *AllocateNewChunk(iv2 pos);
-internal void SaveChunkToFile(FILE* file, Chunk *chunk);
-internal void ReadChunkFromFile(FILE *file, Chunk *chunk);
-internal Chunk *LoadWorldChunk(iv2 pos);
-internal void LoadWorldChunksInView();
-internal b8 UnloadWorldChunk(iv2 pos);
-internal void UnloadWorldChunksOutOfView();
-
 inline internal i32 WorldSpaceToChunkIndex(f32 world_space_coord)
 {
 	f32 div = world_space_coord / (f32)CHUNK_SIZE;
@@ -44,8 +34,6 @@ inline internal i32 WorldSpaceToChunkIndex(f32 world_space_coord)
 	return index;
 }
 
-internal void DeleteChunk(Chunk *chunk);
-internal void UpdateWorldChunks();
 internal void GenerateTerrainSegments();
 
 internal void TickTimers();

@@ -768,6 +768,9 @@ break;
 case RENDERABLE_TYPE_text:
 return "Text";
 break;
+case RENDERABLE_TYPE_rect:
+return "Rect";
+break;
 case RENDERABLE_TYPE_filled_rect:
 return "Filled Rect";
 break;
@@ -878,8 +881,6 @@ static void WriteEntity_Version0ToFile(FILE *file, Entity *data)
         WriteToFile(file, &data->properties[i], sizeof(u64));
     }
 
-    WriteToFile(file, &data->testint, sizeof(data->testint));
-
     for (i32 i = 0; i < 100; i++)
     {
         WriteToFile(file, &data->debug_name[i], sizeof(char));
@@ -892,6 +893,8 @@ static void WriteEntity_Version0ToFile(FILE *file, Entity *data)
     WriteToFile(file, &data->is_flipped, sizeof(data->is_flipped));
 
     WriteToFile(file, &data->is_background_sprite, sizeof(data->is_background_sprite));
+
+    WriteToFile(file, &data->previous_parallax_rect, sizeof(data->previous_parallax_rect));
 
     WriteToFile(file, &data->animation_flags, sizeof(data->animation_flags));
 
@@ -944,8 +947,6 @@ static void ReadEntity_Version0FromFile(FILE *file, Entity *data)
         ReadFromFile(file, &data->properties[i], sizeof(u64));
     }
 
-    ReadFromFile(file, &data->testint, sizeof(data->testint));
-
     for (i32 i = 0; i < 100; i++)
     {
         ReadFromFile(file, &data->debug_name[i], sizeof(char));
@@ -958,6 +959,8 @@ static void ReadEntity_Version0FromFile(FILE *file, Entity *data)
     ReadFromFile(file, &data->is_flipped, sizeof(data->is_flipped));
 
     ReadFromFile(file, &data->is_background_sprite, sizeof(data->is_background_sprite));
+
+    ReadFromFile(file, &data->previous_parallax_rect, sizeof(data->previous_parallax_rect));
 
     ReadFromFile(file, &data->animation_flags, sizeof(data->animation_flags));
 

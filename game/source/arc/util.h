@@ -30,3 +30,7 @@ typedef struct CharacterData CharacterData;
 internal RunData *GetRunData();
 internal WorldData *GetWorldData();
 internal CharacterData *GetCharacterData();
+
+typedef struct Entity Entity;
+internal v4 GetEntityVisibleParallaxRect(Entity *entity);
+internal v4 GetEntityRectViaSprite(Entity *entity);

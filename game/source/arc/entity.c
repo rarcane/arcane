@@ -6,7 +6,6 @@ internal Entity *NewEntity()
 		if (!EntityHasProperty(&core->run_data->entities[i], ENTITY_PROPERTY_is_allocated))
 		{
 			entity = &core->run_data->entities[i];
-			entity->testint = i;
 			break;
 		}
 	}
@@ -30,6 +29,21 @@ internal void DeleteEntity(Entity *entity)
 		GetRunData()->selected_entity = 0;
 	
 	MemorySet(entity, 0, sizeof(Entity));
+}
+
+internal Entity *GetUnallocatedEntity()
+{
+	Entity *entity = 0;
+	for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
+	{
+		if (!EntityHasProperty(&core->run_data->entities[i], ENTITY_PROPERTY_is_allocated))
+		{
+			entity = &core->run_data->entities[i];
+			break;
+		}
+	}
+	Assert(entity);
+	return entity;
 }
 
 internal b32

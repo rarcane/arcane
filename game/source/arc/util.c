@@ -386,7 +386,7 @@ internal c2AABB GetCameraRegionAABB()
 	return aabb;
 }
 
-internal void GetChunkPositionsInRegion(iv2 *positions, i32 *chunk_count, v4 rect, i32 buffer)
+internal void GetChunkPositionsInRect(iv2 *positions, i32 *chunk_count, v4 rect, i32 buffer)
 {
 	*chunk_count = 0;
     
@@ -452,6 +452,42 @@ internal iv2 GetChunkPosFromEntity(Entity *entity)
 	}
 }
 
+internal void GetChunksFromEntity(Entity *entity, iv2 *chunks)
+{
+	Assert(entity);
+	
+	for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
+	{
+		chunks[i] = iv2(INT_MAX, INT_MAX);
+	}
+	
+	if (EntityHasProperty(entity, ENTITY_PROPERTY_positional))
+	{
+		if (EntityHasProperty(entity, ENTITY_PROPERTY_physical))
+		{
+			// TODO(randy):
+		}
+		else if (EntityHasProperty(entity, ENTITY_PROPERTY_sprite))
+		{
+			v4 rect;
+			if (EntityHasProperty(entity, ENTITY_PROPERTY_parallaxable))
+			{
+				rect = GetEntityVisibleParallaxRect(entity);
+			}
+			else
+			{
+				rect = GetEntityRectViaSprite(entity);
+			}
+			i32 count;
+			GetChunkPositionsInRect(chunks, &count, rect, 0);
+		}
+	}
+	else
+	{
+		LogWarning("Can't get chunks from a non-positional entity");
+	}
+}
+
 internal Entity *GetClosestEntityWithProperty(EntityProperty property, f32 max_distance_from_player)
 {
 	// NOTE(randy): This will eventually prioritise player direction and whatnot to fine tune selection
@@ -482,52 +518,44 @@ internal Entity *GetClosestEntityWithProperty(EntityProperty property, f32 max_d
 	return (closest_mag <= max_distance_from_player ? closest_entity : 0);
 }
 
-internal c2AABB GetEntityAABBViaSprite(Entity *entity)
+internal c2AABB RectToAABB(v4 rect)
 {
 	c2AABB aabb = {0};
+	aabb.min = c2V(rect.x, rect.y);
+	aabb.max = c2V(rect.x + rect.width, rect.y + rect.height);
+	return aabb;
+}
+
+internal v4 GetEntityRectViaSprite(Entity *entity)
+{
+	v4 rect = {0};
 	if (!EntityHasProperty(entity, ENTITY_PROPERTY_positional))
-		return aabb;
+		return rect;
 	
 	if (EntityHasProperty(entity, ENTITY_PROPERTY_sprite))
 	{
-		v2 min = {0};
-		v2 max = {0};
 		SpriteData *sprite = &global_sprite_data[entity->sprite_data.sprite];
 		
 		v2 size = v2(sprite->source.width,
 					 sprite->source.height);
 		
-		min = v2(size.x / -2.0f, -size.y);
-		max = v2(size.x / 2.0f, 0.0f);
-		
-		min = V2AddV2(min, sprite->offset);
-		max = V2AddV2(max, sprite->offset);
-		
-		aabb.min.x = min.x;
-		aabb.min.y = min.y;
-		aabb.max.x = max.x;
-		aabb.max.y = max.y;
+		v2 pos = v2(size.x / -2.0f, -size.y);
+		pos = V2AddV2(pos, sprite->offset);
 		
 		if (EntityHasProperty(entity, ENTITY_PROPERTY_parallaxable))
 		{
 			v2 parallax = GetEntityParallaxAmount(entity);
-			aabb.min.x += ParallaxPosition(entity->position, parallax).x;
-			aabb.min.y += ParallaxPosition(entity->position, parallax).y;
-			aabb.max.x += ParallaxPosition(entity->position, parallax).x;
-			aabb.max.y += ParallaxPosition(entity->position, parallax).y;
+			pos = V2AddV2(pos, ParallaxPosition(entity->position, parallax));
 		}
 		else
 		{
-			aabb.min.x += entity->position.x;
-			aabb.min.y += entity->position.y;
-			aabb.max.x += entity->position.x;
-			aabb.max.y += entity->position.y;
+			pos = V2AddV2(pos, entity->position);
 		}
 		
-		return aabb;
+		rect = v4(pos.x, pos.y, size.width, size.height);
 	}
 	
-	return aabb;
+	return rect;
 }
 
 internal b8 IsAABBOnScreen(c2AABB aabb)
@@ -542,7 +570,7 @@ internal b8 IsAABBOnScreen(c2AABB aabb)
 	return (manifold.count > 0);
 }
 
-internal v4 GetEntityVisibleParallaxBounds(Entity *entity)
+internal v4 GetEntityVisibleParallaxRect(Entity *entity)
 {
 	if (!EntityHasProperty(entity, ENTITY_PROPERTY_sprite) || !EntityHasProperty(entity, ENTITY_PROPERTY_parallaxable))
 	{
@@ -551,7 +579,7 @@ internal v4 GetEntityVisibleParallaxBounds(Entity *entity)
 	}
 	
 	v2 parallax = GetEntityParallaxAmount(entity);
-	v4 cam = GetCameraRegionRect(); // NOTE(randy): This should technically be max zoom
+	v2 max_camera_view = {1280.0f, 720.0f}; // NOTE(randy): This is in world-space (2.0 zoom on a 2k screen)
 	
 	SpriteData *sprite = &global_sprite_data[entity->sprite_data.sprite];
 	
@@ -560,20 +588,26 @@ internal v4 GetEntityVisibleParallaxBounds(Entity *entity)
 	
 	// NOTE(randy): This is fucked lmao
 	
-	f32 left_x = (2.0f * parallax.x + cam.width + (size.x / 2.0f + sprite->offset.x) * 2.0f) / (-2.0f * parallax.x + 2.0f);
-	left_x -= cam.width / 2.0f;
+	f32 left_x = (2.0f * parallax.x + max_camera_view.x + (size.x / 2.0f + sprite->offset.x) * 2.0f) / (-2.0f * parallax.x + 2.0f);
+	left_x -= max_camera_view.x / 2.0f;
 	
-	f32 right_x = (2.0f * parallax.x + cam.width + (size.x / 2.0f + sprite->offset.x) * 2.0f) / (-2.0f * parallax.x + 2.0f);
-	right_x -= cam.width / 2.0f;
+	f32 right_x = (2.0f * parallax.x + max_camera_view.x + (size.x / 2.0f + sprite->offset.x) * 2.0f) / (-2.0f * parallax.x + 2.0f);
+	right_x -= max_camera_view.x / 2.0f;
 	right_x *= -1.0f;
 	
-	f32 top_y = (2.0f * parallax.y + cam.height + (size.y + sprite->offset.y) * 2.0f) / (-2.0f * parallax.y + 2.0f);
-	top_y -= cam.height / 2.0f;
+	f32 top_y = (2.0f * parallax.y + max_camera_view.y + (size.y + sprite->offset.y) * 2.0f) / (-2.0f * parallax.y + 2.0f);
+	top_y -= max_camera_view.y / 2.0f;
+	top_y *= -1.0f;
 	
-	f32 bottom_y = (2.0f * parallax.y + cam.height + sprite->offset.y * 2.0f) / (-2.0f * parallax.y + 2.0f);
-	bottom_y -= cam.height / 2.0f;
+	f32 bottom_y = (2.0f * parallax.y + max_camera_view.y + sprite->offset.y * 2.0f) / (-2.0f * parallax.y + 2.0f);
+	bottom_y -= max_camera_view.y / 2.0f;
 	
-	return v4(left_x, right_x, top_y, bottom_y);
+	v4 bounds = v4(left_x + entity->position.x,
+				   top_y + entity->position.y,
+				   right_x - left_x,
+				   bottom_y - top_y);
+	
+	return bounds;
 }
 
 internal b8 IsPositionOverlappingEntity(Entity *entity, v2 pos)
@@ -583,7 +617,7 @@ internal b8 IsPositionOverlappingEntity(Entity *entity, v2 pos)
 	
 	if (EntityHasProperty(entity, ENTITY_PROPERTY_sprite))
 	{
-		c2AABB aabb = GetEntityAABBViaSprite(entity);
+		c2AABB aabb = RectToAABB(GetEntityRectViaSprite(entity));
 		c2Shape shape = {0};
 		shape.aabb = aabb;
 		return IsV2OverlappingShape(pos, shape, C2_SHAPE_TYPE_aabb);

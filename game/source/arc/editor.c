@@ -12,11 +12,12 @@ internal void InitMapEditor()
 	GetRunData()->debug_flags |= DEBUG_FLAGS_draw_chunk_grid;
 	GetRunData()->debug_flags |= DEBUG_FLAGS_draw_collision;
 	GetRunData()->debug_flags |= DEBUG_FLAGS_disable_draw_terrain;
+	
+	LoadMapData();
 }
 
 internal void EditorUpdate()
 {
-	UpdateMapChunks();
 	DrawEditorUI();
 	TransformEditorCamera();
 	GenerateTerrainSegments();
@@ -24,11 +25,77 @@ internal void EditorUpdate()
 	RenderColliders();
 }
 
+internal void SaveMapData()
+{
+	char file_path[300] = "";
+	FILE *file = 0;
+	
+	sprintf(file_path, "%sinitial_map\\", core->res_path);
+	if (!platform->DoesDirectoryExist(file_path))
+		platform->MakeDirectory(file_path);
+	
+	sprintf(file_path, "%sinitial_map\\entity_data.arc", core->res_path);
+	file = fopen(file_path, "wb");
+	Assert(file);
+	for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
+	{
+		Entity *entity = &GetRunData()->entities[i];
+		WriteEntityToFile(file, entity);
+	}
+	fclose(file);
+	
+	sprintf(file_path, "%sinitial_map\\terrain_data.arc", core->res_path);
+	file = fopen(file_path, "wb");
+	Assert(file);
+	WriteToFile(file, GetRunData()->terrain, sizeof(GetRunData()->terrain));
+	fclose(file);
+	
+	// NOTE(randy): Copy data to root res
+	sprintf(file_path, "%sinitial_map\\", core->res_path);
+	
+	char root_path[200] = "";
+	sprintf(root_path, "%s..\\..\\res\\initial_map\\", core->res_path);
+	if (!platform->DoesDirectoryExist(root_path))
+		platform->MakeDirectory(root_path);
+	
+	sprintf(root_path, "%s..\\..\\res\\initial_map\\", core->res_path);
+	platform->CopyDirectoryRecursively(root_path, file_path);
+}
+
+internal b8 LoadMapData()
+{
+	char file_path[300] = "";
+	FILE *file = 0;
+	
+	sprintf(file_path, "%sinitial_map\\", core->res_path);
+	if (!platform->DoesDirectoryExist(file_path))
+		return 0;
+	
+	sprintf(file_path, "%sinitial_map\\entity_data.arc", core->res_path);
+	file = fopen(file_path, "rb");
+	Assert(file);
+	memset(GetRunData()->entities, 0, sizeof(GetRunData()->entities));
+	for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
+	{
+		Entity *entity = NewEntity();
+		ReadEntityFromFile(file, entity);
+	}
+	fclose(file);
+	
+	sprintf(file_path, "%sinitial_map\\terrain_data.arc", core->res_path);
+	file = fopen(file_path, "rb");
+	Assert(file);
+	ReadFromFile(file, GetRunData()->terrain, sizeof(GetRunData()->terrain));
+	fclose(file);
+	
+	return 1;
+}
+
 internal void DrawEditorUI()
 {
 	if (platform->key_pressed[KEY_s] && platform->key_down[KEY_ctrl])
 	{
-		CommitActiveChunks();
+		SaveMapData();
 		TsPlatformCaptureKeyboard();
 	}
 	
@@ -64,90 +131,6 @@ internal void DrawEditorUI()
 		TsUIPopColumn();
 		TsUIEndInputGroup();
 	}
-	
-	
-}
-
-internal void DrawChunkGrid()
-{
-	iv2 chunks[MAX_WORLD_CHUNKS] = {0};
-	i32 count;
-	GetChunkPositionsInRegion(chunks, &count, GetCameraRegionRect(), 0);
-	
-	if (GetRunData()->debug_flags & DEBUG_FLAGS_draw_chunk_grid)
-	{
-		for (i32 i = 0; i < count; i++)
-		{
-			iv2 chunk = chunks[i];
-			
-			v4 colour = v4u(0.5f);
-			f32 layer = LAYER_FRONT_UI;
-			if (GetRunData()->selected_chunk.x == chunk.x &&
-				GetRunData()->selected_chunk.y == chunk.y)
-			{
-				colour = v4(1.0f, 0.0f, 0.0f, 1.0f);
-				layer -= 2.0f;
-			}
-			else if (GetChunkAtPos(chunk))
-			{
-				colour = v4u(1.0f);
-				layer -= 1.0f;
-			}
-			
-			ArcPushLine(colour,
-						v2view(v2((f32)CHUNK_SIZE * chunk.x,
-								  (f32)CHUNK_SIZE * chunk.y)),
-						v2view(v2((f32)CHUNK_SIZE * chunk.x,
-								  (f32)CHUNK_SIZE * chunk.y + CHUNK_SIZE)),
-						layer);
-			ArcPushLine(colour,
-						v2view(v2((f32)CHUNK_SIZE * chunk.x,
-								  (f32)CHUNK_SIZE * chunk.y + CHUNK_SIZE)),
-						v2view(v2((f32)CHUNK_SIZE * chunk.x + CHUNK_SIZE,
-								  (f32)CHUNK_SIZE * chunk.y + CHUNK_SIZE)),
-						layer);
-			ArcPushLine(colour,
-						v2view(v2((f32)CHUNK_SIZE * chunk.x + CHUNK_SIZE,
-								  (f32)CHUNK_SIZE * chunk.y + CHUNK_SIZE)),
-						v2view(v2((f32)CHUNK_SIZE * chunk.x + CHUNK_SIZE,
-								  (f32)CHUNK_SIZE * chunk.y)),
-						layer);
-			ArcPushLine(colour,
-						v2view(v2((f32)CHUNK_SIZE * chunk.x + CHUNK_SIZE,
-								  (f32)CHUNK_SIZE * chunk.y)),
-						v2view(v2((f32)CHUNK_SIZE * chunk.x,
-								  (f32)CHUNK_SIZE * chunk.y)),
-						layer);
-		}
-	}
-	
-	// NOTE(randy): Render load hints for all non-existent surrounding chunks
-	for (i32 i = 0; i < count; i++)
-	{
-		iv2 pos = chunks[i];
-		if (!GetChunkAtPos(pos))
-		{
-			v2 r_size = v2zoom(v2(CHUNK_SIZE / 5.0f, CHUNK_SIZE / 5.0f));
-			v2 r_pos = V2SubtractV2(v2view(v2((f32)pos.x * CHUNK_SIZE + CHUNK_SIZE / 2.0f,
-											  (f32)pos.y * CHUNK_SIZE + CHUNK_SIZE / 2.0f)),
-									V2DivideF32(r_size, 2.0f));
-			
-			v4 colour = v4u(1.0f);
-			if (IsPositionInBounds(GetMousePosition(),
-								   v4(r_pos.x, r_pos.y, r_size.x, r_size.y)))
-			{
-				colour = v4(0.8f, 0.8f, 0.8f, 1.0f);
-				
-				if (platform->left_mouse_pressed)
-				{
-					platform->left_mouse_pressed = 0;
-					AllocateNewChunk(pos);
-				}
-			}
-			
-			ArcPushFilledRect(colour, v4(r_pos.x, r_pos.y, r_size.x, r_size.y), 0.0f);
-		}
-	}
 }
 
 internal void SwitchEditorState(EditorState editor_state)
@@ -158,15 +141,7 @@ internal void SwitchEditorState(EditorState editor_state)
 	}
 	else if (GetRunData()->editor_state != EDITOR_STATE_none && editor_state == EDITOR_STATE_none)
 	{
-		for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
-		{
-			Chunk *chunk = &GetRunData()->chunks[i];
-			if (chunk->flags & CHUNK_FLAGS_is_allocated)
-			{
-				iv2 pos = chunk->pos;
-				UnloadMapChunk(pos);
-			}
-		}
+		SaveMapData();
 		
 		if (!LoadWorld("testing"))
 			CreateWorld("testing");
@@ -242,7 +217,7 @@ internal void DrawGeneralEditor()
 		{
 			if (TsUIButton("Write Map Data"))
 			{
-				CommitActiveChunks();
+				SaveMapData();
 			}
 		}
 		TsUIDropdownEnd();
@@ -294,17 +269,6 @@ internal void DrawGeneralEditor()
 		
 		sprintf(lbl, "mouse %f, %f", platform->mouse_x, platform->mouse_y);
 		TsUILabel(lbl);
-		
-		if (GetRunData()->selected_entity)
-		{
-			sprintf(lbl, "On screen: %i", IsAABBOnScreen(GetEntityAABBViaSprite(GetRunData()->selected_entity)));
-			
-			c2Shape shape = {0};
-			shape.aabb = GetEntityAABBViaSprite(GetRunData()->selected_entity);
-			PushDebugShape(shape, C2_SHAPE_TYPE_aabb, v2(0.0f, 0.0f), v4(1.0f, 0.0f, 0.0f, 1.0f));
-			
-			TsUILabel(lbl);
-		}
 		
 		TsUILabel("-------------");
 		
@@ -390,42 +354,43 @@ internal void DrawGeneralEditor()
 	{
 		GetRunData()->selected_entity = 0;
 		
-		iv2 mouse_chunk = iv2(WorldSpaceToChunkIndex(GetMousePositionInWorldSpace().x),
-							  WorldSpaceToChunkIndex(GetMousePositionInWorldSpace().y));
-		for (i32 x = -1; x < 2; x++)
-			for (i32 y = -1; y < 2; y++)
-		{
-			if (GetRunData()->selected_entity)
-				break;
-			
-			Chunk *chunk = GetChunkAtPos(iv2(mouse_chunk.x + x, mouse_chunk.y + y));
-			if (chunk)
-			{
-				for (i32 i = 0; i < chunk->entity_count; i++)
+		// TODO(randy):
+		
+		/*
+				iv2 mouse_chunk = iv2(WorldSpaceToChunkIndex(GetMousePositionInWorldSpace().x),
+									  WorldSpaceToChunkIndex(GetMousePositionInWorldSpace().y));
+				for (i32 x = -1; x < 2; x++)
+					for (i32 y = -1; y < 2; y++)
 				{
-					Entity *entity = chunk->entities[i];
-					if (EntityHasProperty(entity, ENTITY_PROPERTY_terrain_segment))
-						continue;
-					
-					if (IsPositionOverlappingEntity(entity, GetMousePositionInWorldSpace()))
-					{
-						GetRunData()->selected_entity = entity;
-						platform->left_mouse_pressed = 0;
-						
+					if (GetRunData()->selected_entity)
 						break;
+					
+					Chunk *chunk = GetChunkAtPos(iv2(mouse_chunk.x + x, mouse_chunk.y + y));
+					if (chunk)
+					{
+						for (i32 i = 0; i < chunk->entity_count; i++)
+						{
+							Entity *entity = chunk->entities[i];
+							if (EntityHasProperty(entity, ENTITY_PROPERTY_terrain_segment))
+								continue;
+							
+							if (IsPositionOverlappingEntity(entity, GetMousePositionInWorldSpace()))
+							{
+								GetRunData()->selected_entity = entity;
+								platform->left_mouse_pressed = 0;
+								
+								break;
+							}
+						}
 					}
 				}
-			}
-		}
+		 */
 	}
-	
-	DrawChunkGrid();
 }
 
 internal void DrawTerrainEditor()
 {
 	local_persist b8 prime_terrain_drawer = 0;
-	local_persist v2 last_point = {INFINITY, INFINITY};
 	
 	TsUIPushAutoRow(v2(0, 0), 30);
 	{
@@ -464,49 +429,51 @@ internal void DrawTerrainEditor()
 			platform->left_mouse_pressed = 0;
 		}
 		
+		/*
 		char lbl[50];
-		if (GetRunData()->selected_chunk.x != INT_MAX)
-		{
-			Chunk *chunk = GetChunkAtPos(GetRunData()->selected_chunk);
-			
-			sprintf(lbl, "Chunk %i, %i",
-					GetRunData()->selected_chunk.x,
-					GetRunData()->selected_chunk.y);
-			TsUILabel(lbl);
-			
-			if (chunk)
-			{
-				i32 vert_count = 0;
-				for (i32 i = 0; i < MAX_TERRAIN_VERT_IN_CHUNK; i++)
+				if (GetRunData()->selected_chunk.x != INT_MAX)
 				{
-					v2 *vert = &chunk->terrain_verts[i];
-					if (!isfinite(vert->x))
-					{
-						break;
-					}
-					vert_count++;
-				}
-				
-				if (vert_count > 0)
-				{
-					sprintf(lbl, "Terrain Vertices: %i", vert_count);
+					Chunk *chunk = GetChunkAtPos(GetRunData()->selected_chunk);
+					
+					sprintf(lbl, "Chunk %i, %i",
+							GetRunData()->selected_chunk.x,
+							GetRunData()->selected_chunk.y);
 					TsUILabel(lbl);
-					if (TsUIButton("Clear Vertices"))
+					
+					if (chunk)
 					{
+						i32 vert_count = 0;
 						for (i32 i = 0; i < MAX_TERRAIN_VERT_IN_CHUNK; i++)
 						{
-							chunk->terrain_verts[i].x = INFINITY;
-							chunk->terrain_verts[i].y = INFINITY;
+							v2 *vert = &chunk->terrain_verts[i];
+							if (!isfinite(vert->x))
+							{
+								break;
+							}
+							vert_count++;
+						}
+						
+						if (vert_count > 0)
+						{
+							sprintf(lbl, "Terrain Vertices: %i", vert_count);
+							TsUILabel(lbl);
+							if (TsUIButton("Clear Vertices"))
+							{
+								for (i32 i = 0; i < MAX_TERRAIN_VERT_IN_CHUNK; i++)
+								{
+									chunk->terrain_verts[i].x = INFINITY;
+									chunk->terrain_verts[i].y = INFINITY;
+								}
+							}
 						}
 					}
 				}
-			}
-		}
-		else
-		{
-			sprintf(lbl, "Alt left-click to select a chunk");
-			TsUILabel(lbl);
-		}
+				else
+				{
+					sprintf(lbl, "Alt left-click to select a chunk");
+					TsUILabel(lbl);
+				}
+		 */
 		
 		TsUIPopWidth();
 		TsUIPopColumn();
@@ -515,6 +482,8 @@ internal void DrawTerrainEditor()
 	
 	// NOTE(randy): Vertex drawing
 	local_persist b8 is_drawing_terrain = 0;
+	local_persist v2 last_point = {INFINITY, INFINITY};
+	
 	if (prime_terrain_drawer && platform->left_mouse_pressed)
 	{
 		is_drawing_terrain = 1;
@@ -536,22 +505,13 @@ internal void DrawTerrainEditor()
 			const f32 TERRAIN_LENGTH = 15.0f;
 			if (!isfinite(last_point.x) || dist >= TERRAIN_LENGTH)
 			{
-				last_point = GetMousePositionInWorldSpace();
-				iv2 lp_chunk_pos = iv2(WorldSpaceToChunkIndex(last_point.x),
-									   WorldSpaceToChunkIndex(last_point.y));
-				Chunk *chunk = GetChunkAtPos(lp_chunk_pos);
-				if (!chunk && !LoadMapChunk(lp_chunk_pos))
+				for (i32 i = 0; i < TERRAIN_TABLE_SIZE; i++)
 				{
-					chunk = AllocateNewChunk(lp_chunk_pos);
-				}
-				
-				for (i32 i = 0; i < MAX_TERRAIN_VERT_IN_CHUNK; i++)
-				{
-					v2 *vert = &chunk->terrain_verts[i];
+					v2 *vert = &GetRunData()->terrain[i];
 					if (!isfinite(vert->x))
 					{
-						*vert = V2SubtractV2(last_point, v2((f32)chunk->pos.x * CHUNK_SIZE,
-															(f32)chunk->pos.y * CHUNK_SIZE));
+						*vert = GetMousePositionInWorldSpace();
+						last_point = *vert;
 						break;
 					}
 				}
@@ -560,258 +520,107 @@ internal void DrawTerrainEditor()
 	}
 	
 	// NOTE(randy): Vertex adjustment
-	f32 circle_size = 3.0f;
-	c2Shape middle_bounds = {0};
-	middle_bounds.aabb.min = c2V(-circle_size / 2.0f, -circle_size / 2.0f);
-	middle_bounds.aabb.max = c2V(circle_size / 2.0f, circle_size / 2.0f);
-	SpriteData *circle = &global_sprite_data[SPRITE_circle_icon];
-	local_persist v2 *held_vert = 0;
-	for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
-	{
-		Chunk *chunk = &GetRunData()->chunks[i];
-		if (chunk->flags & CHUNK_FLAGS_is_allocated)
-		{
-			for (i32 j = 0; j < MAX_TERRAIN_VERT_IN_CHUNK; j++)
-			{
-				if (isfinite(chunk->terrain_verts[j].x))
-				{
-					v2 pos = V2AddV2(chunk->terrain_verts[j], v2((f32)chunk->pos.x * CHUNK_SIZE,
-																 (f32)chunk->pos.y * CHUNK_SIZE));
-					
-					v4 tint = v4u(1.0);
-					if (!is_drawing_terrain)
-					{
-						if (platform->left_mouse_down && held_vert == &chunk->terrain_verts[j])
-						{
-							tint = v4(0.5f, 0.5f, 0.5f, 1.0f);
-							
-							*held_vert = ClampV2(V2SubtractV2(GetMousePositionInWorldSpace(),
-															  v2((f32)chunk->pos.x * CHUNK_SIZE,
-																 (f32)chunk->pos.y * CHUNK_SIZE)),
-												 v2(0.0f, 0.0f),
-												 v2(CHUNK_SIZE, CHUNK_SIZE));
-						}
-						else
-						{
-							c2Shape vert_shape = middle_bounds;
-							AddPositionOffsetToShape(&vert_shape, C2_SHAPE_TYPE_aabb, pos);
-							if (IsV2OverlappingShape(GetMousePositionInWorldSpace(),
-													 vert_shape,
-													 C2_SHAPE_TYPE_aabb))
-							{
-								tint = v4(0.8f, 0.8f, 0.8f, 1.0f);
-								
-								if (platform->left_mouse_pressed)
-								{
-									held_vert = &chunk->terrain_verts[j];
-									platform->left_mouse_pressed = 0;
-								}
-							}
-						}
-						
-						if (core->left_mouse_released)
-						{
-							held_vert = 0;
-							core->left_mouse_released = 0;
-						}
-					}
-					
-					v2 r_pos = v2view(v2(pos.x - circle_size / 2.0f,
-										 pos.y - circle_size / 2.0f));
-					v2 r_size = v2zoom(v2(circle_size, circle_size));
-					
-					ArcPushTexture(circle->texture_atlas,
-								   0,
-								   circle->source,
-								   v4(r_pos.x, r_pos.y, r_size.x, r_size.y),
-								   tint,
-								   LAYER_HUD);
-				}
-			}
-			
-			// NOTE(randy): Sort all vertices in order of x pos
-			for (i32 step = 0; step < MAX_TERRAIN_VERT_IN_CHUNK - 1; step++)
-				for (i32 j = 0; j < MAX_TERRAIN_VERT_IN_CHUNK - step - 1; j++)
-			{
-				if (chunk->terrain_verts[j].x > chunk->terrain_verts[j + 1].x)
-				{
-					v2 temp = chunk->terrain_verts[j];
-					chunk->terrain_verts[j] = chunk->terrain_verts[j + 1];
-					chunk->terrain_verts[j + 1] = temp;
-					
-					if (held_vert == &chunk->terrain_verts[j])
-					{
-						held_vert = &chunk->terrain_verts[j + 1];
-					}
-					else if (held_vert == &chunk->terrain_verts[j + 1])
-					{
-						held_vert = &chunk->terrain_verts[j];
-					}
-				}
-			}
-		}
-	}
-	
-	DrawChunkGrid();
-}
-
-internal void UpdateMapChunks()
-{
-	// NOTE(randy): Update positional entities
-	for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
-	{
-		Chunk *chunk = &GetRunData()->chunks[i];
-		chunk->entity_count = 0;
-		MemorySet(chunk->entities, 0, sizeof(chunk->entities));
-	}
-	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_positional);)
-	{
-		iv2 pos = GetChunkPosFromEntity(entity);
-		Chunk *chunk = GetChunkAtPos(pos);
-		if (!chunk)
-			continue;
-		
-		Assert(chunk->entity_count + 1 < 512);
-		chunk->entities[chunk->entity_count++] = entity;
-	}
-	
-	// NOTE(randy): Load/unload map chunks depending on view
-	{
-		iv2 chunks[MAX_WORLD_CHUNKS] = {0};
-		i32 count;
-		GetChunkPositionsInRegion(chunks, &count, GetCameraRegionRect(), 1);
-		
-		for (i32 i = 0; i < count; i++)
-		{
-			iv2 pos = chunks[i];
-			if (!GetChunkAtPos(pos))
-			{
-				LoadMapChunk(pos);
-			}
-		}
-		
+	/*
+		f32 circle_size = 3.0f;
+		c2Shape middle_bounds = {0};
+		middle_bounds.aabb.min = c2V(-circle_size / 2.0f, -circle_size / 2.0f);
+		middle_bounds.aabb.max = c2V(circle_size / 2.0f, circle_size / 2.0f);
+		SpriteData *circle = &global_sprite_data[SPRITE_circle_icon];
+		local_persist v2 *held_vert = 0;
 		for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
 		{
 			Chunk *chunk = &GetRunData()->chunks[i];
 			if (chunk->flags & CHUNK_FLAGS_is_allocated)
 			{
-				b8 found = 0;
-				for (i32 j = 0; j < count; j++)
+				for (i32 j = 0; j < MAX_TERRAIN_VERT_IN_CHUNK; j++)
 				{
-					iv2 pos = chunks[j];
-					if (pos.x == chunk->pos.x && pos.y == chunk->pos.y)
+					if (isfinite(chunk->terrain_verts[j].x))
 					{
-						found = 1;
-						break;
+						v2 pos = V2AddV2(chunk->terrain_verts[j], v2((f32)chunk->pos.x * CHUNK_SIZE,
+																	 (f32)chunk->pos.y * CHUNK_SIZE));
+						
+						v4 tint = v4u(1.0);
+						if (!is_drawing_terrain)
+						{
+							if (platform->left_mouse_down && held_vert == &chunk->terrain_verts[j])
+							{
+								tint = v4(0.5f, 0.5f, 0.5f, 1.0f);
+								
+								*held_vert = ClampV2(V2SubtractV2(GetMousePositionInWorldSpace(),
+																  v2((f32)chunk->pos.x * CHUNK_SIZE,
+																	 (f32)chunk->pos.y * CHUNK_SIZE)),
+													 v2(0.0f, 0.0f),
+													 v2(CHUNK_SIZE, CHUNK_SIZE));
+							}
+							else
+							{
+								c2Shape vert_shape = middle_bounds;
+								AddPositionOffsetToShape(&vert_shape, C2_SHAPE_TYPE_aabb, pos);
+								if (IsV2OverlappingShape(GetMousePositionInWorldSpace(),
+														 vert_shape,
+														 C2_SHAPE_TYPE_aabb))
+								{
+									tint = v4(0.8f, 0.8f, 0.8f, 1.0f);
+									
+									if (platform->left_mouse_pressed)
+									{
+										held_vert = &chunk->terrain_verts[j];
+										platform->left_mouse_pressed = 0;
+									}
+								}
+							}
+							
+							if (core->left_mouse_released)
+							{
+								held_vert = 0;
+								core->left_mouse_released = 0;
+							}
+						}
+						
+						v2 r_pos = v2view(v2(pos.x - circle_size / 2.0f,
+											 pos.y - circle_size / 2.0f));
+						v2 r_size = v2zoom(v2(circle_size, circle_size));
+						
+						ArcPushTexture(circle->texture_atlas,
+									   0,
+									   circle->source,
+									   v4(r_pos.x, r_pos.y, r_size.x, r_size.y),
+									   tint,
+									   LAYER_HUD);
 					}
 				}
+				*/
+	
+	// NOTE(randy): Sort all vertices in order of x pos
+	for (i32 step = 0; step < TERRAIN_TABLE_SIZE - 1; step++)
+	{
+		if (!isfinite(GetRunData()->terrain[step].x))
+			break;
+		
+		for (i32 j = 0; j < TERRAIN_TABLE_SIZE - step - 1; j++)
+		{
+			if (!isfinite(GetRunData()->terrain[j].x))
+				break;
+			
+			if (GetRunData()->terrain[j].x > GetRunData()->terrain[j + 1].x)
+			{
+				v2 temp = GetRunData()->terrain[j];
+				GetRunData()->terrain[j] = GetRunData()->terrain[j + 1];
+				GetRunData()->terrain[j + 1] = temp;
 				
-				if (!found)
-				{
-					UnloadMapChunk(chunk->pos);
-				}
+				/*
+							if (held_vert == &GetRunData()->terrain[j])
+							{
+								held_vert = &GetRunData()->terrain[j + 1];
+							}
+							else if (held_vert == &GetRunData()->terrain[j + 1])
+							{
+								held_vert = &GetRunData()->terrain[j];
+							}
+				 */
 			}
 		}
 	}
-}
-
-internal b8 DoesMapChunkExistOnDisk(iv2 pos)
-{
-	char chunk_path[100];
-	sprintf(chunk_path, "%sinitial_map/chunks/%i.%i.arc", core->res_path, pos.x, pos.y);
-	FILE *file = fopen(chunk_path, "rb");
-	if (file)
-	{
-		fclose(file);
-		return 1;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-internal void CommitActiveChunks()
-{
-	for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
-	{
-		Chunk *chunk = &GetRunData()->chunks[i];
-		if (chunk->flags & CHUNK_FLAGS_is_allocated)
-		{
-			iv2 pos = chunk->pos;
-			// NOTE(randy): Stress test for now, there's a more efficent way of doin dis
-			UnloadMapChunk(pos);
-			LoadMapChunk(pos);
-		}
-	}
-}
-
-internal Chunk *LoadMapChunk(iv2 pos)
-{
-	Assert(pos.x != INT_MAX);
-	if (GetChunkAtPos(pos))
-	{
-		return GetChunkAtPos(pos);
-	}
-	
-	char chunk_path[100];
-	sprintf(chunk_path, "%sinitial_map/chunks/%i.%i.arc", core->res_path, pos.x, pos.y);
-	FILE *file = fopen(chunk_path, "rb");
-	if (file)
-	{
-		// NOTE(randy): Read in chunk
-		Chunk *chunk = GetUnallocatedChunk();
-		Assert(chunk);
-		ReadChunkFromFile(file, chunk);
-		fclose(file);
-		
-		return chunk;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-internal void UnloadMapChunk(iv2 pos)
-{
-	Chunk *chunk = GetChunkAtPos(pos);
-	if (!chunk)
-	{
-		LogWarning("There is no chunk to unload at %i, %i", pos.x, pos.y);
-		return;
-	}
-	
-	char path[100];
-	sprintf(path, "%sinitial_map\\", core->res_path);
-	if (!platform->DoesDirectoryExist(path))
-		platform->MakeDirectory(path);
-	
-	sprintf(path, "%sinitial_map\\chunks\\", core->res_path);
-	if (!platform->DoesDirectoryExist(path))
-		platform->MakeDirectory(path);
-	
-	sprintf(path, "%sinitial_map\\chunks\\%i.%i.arc", core->res_path, pos.x, pos.y);
-	FILE *file = fopen(path, "wb");
-	Assert(file);
-	
-	SaveChunkToFile(file, chunk);
-	fclose(file);
-	
-	// NOTE(randy): Commit chunk to the source map
-	char dest[200];
-	sprintf(dest, "%s..\\..\\res\\initial_map\\", core->res_path);
-	if (!platform->DoesDirectoryExist(dest))
-		platform->MakeDirectory(dest);
-	
-	sprintf(dest, "%s..\\..\\res\\initial_map\\chunks\\", core->res_path);
-	if (!platform->DoesDirectoryExist(dest))
-		platform->MakeDirectory(dest);
-	
-	sprintf(dest, "%s..\\..\\res\\initial_map\\chunks\\%i.%i.arc", core->res_path, pos.x, pos.y);
-	platform->CopyFile(dest, path);
-	
-	DeleteChunk(chunk);
 }
 
 internal void SetEjectedMode(b8 value)
@@ -837,31 +646,13 @@ internal void UpdateEjectedMode()
 {
 	Entity *entity = &GetRunData()->entities[1];
 	
-	v4 bounds = GetEntityVisibleParallaxBounds(entity);
+	v4 bounds = GetEntityVisibleParallaxRect(entity);
 	
-	ArcPushLine(v4(0.0f, 0.0f, 1.0f, 1.0f),
-				v2view(entity->position),
-				v2view(V2AddV2(v2(bounds.x, 0.0f), entity->position)),
-				-5.0f);
+	v2 pos = v2view(v2(bounds.x, bounds.y));
+	v2 size = v2zoom(v2(bounds.z, bounds.w));
+	bounds = v4(pos.x, pos.y, size.x, size.y);
 	
-	ArcPushLine(v4(0.0f, 1.0f, 1.0f, 1.0f),
-				v2view(entity->position),
-				v2view(V2AddV2(v2(bounds.y, 0.0f), entity->position)),
-				-5.0f);
-	
-	ArcPushLine(v4(1.0f, 0.0f, 0.0f, 1.0f),
-				v2view(entity->position),
-				v2view(V2AddV2(v2(0.0f, -bounds.z), entity->position)),
-				-5.0f);
-	
-	ArcPushLine(v4(1.0f, 1.0f, 0.0f, 1.0f),
-				v2view(entity->position),
-				v2view(V2AddV2(v2(0.0f, bounds.w), entity->position)),
-				-5.0f);
-	
-	c2Shape shape;
-	shape.aabb = GetEntityAABBViaSprite(entity);
-	PushDebugShape(shape, C2_SHAPE_TYPE_aabb, v2(0.0f, 0.0f), v4u(1.0f));
+	ArcPushRect(v4u(1.0f), bounds, 0.0f);
 	
 	TsUIWindowBegin("debug", v4(0.0f, 0.0f, 600.0f, 300.0f), 0, 0);
 	{

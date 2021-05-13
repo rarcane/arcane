@@ -403,7 +403,7 @@ v2 p1;
 v2 p2;
 } LineCol;
 
-#define MAX_LINE_SEGMENT_VERTICES (33)
+#define MAX_LINE_SEGMENT_VERTICES (32)
 typedef struct LineSegments
 {
 i32 count;
@@ -626,12 +626,12 @@ static char *GetEntityPropertyName(EntityProperty type);
 typedef struct Entity
 {
 u64 properties[ENTITY_PROPERTY_SIZE];
-i32 testint;
 char debug_name[100];
 v2 position;
 SpriteRender sprite_data;
 b8 is_flipped;
 b8 is_background_sprite;
+v4 previous_parallax_rect;
 AnimationFlags animation_flags;
 i32 current_frame;
 f32 interval_mult;
@@ -808,6 +808,7 @@ enum RenderableType
 {
 RENDERABLE_TYPE_texture,
 RENDERABLE_TYPE_text,
+RENDERABLE_TYPE_rect,
 RENDERABLE_TYPE_filled_rect,
 RENDERABLE_TYPE_line,
 RENDERABLE_TYPE_MAX,
@@ -833,11 +834,11 @@ f32 font_scale;
 char text[512];
 } Text;
 
-typedef struct FilledRect
+typedef struct Rect
 {
 v4 colour;
 v4 rect;
-} FilledRect;
+} Rect;
 
 typedef struct Line
 {
@@ -851,7 +852,7 @@ typedef union Renderable
 {
 Texture texture;
 Text text;
-FilledRect filled_rect;
+Rect rect;
 Line line;
 } Renderable;
 
@@ -931,18 +932,16 @@ f32 elapsed_world_time;
 iv2 character_chunk;
 } WorldData;
 
-#define MAX_POSITIONAL_ENTITIES (2048)
-#define MAX_FLOATING_ENTITIES (2048)
-#define ENTITY_TABLE_SIZE ((MAX_POSITIONAL_ENTITIES+MAX_FLOATING_ENTITIES))
+#define ENTITY_TABLE_SIZE (2048)
+#define TERRAIN_TABLE_SIZE (4096)
 #define MAX_CAMERA_CUES (32)
 typedef struct RunData
 {
 Timer timers[MAX_ACTIVE_TIMERS];
-Chunk chunks[MAX_WORLD_CHUNKS];
 Entity entities[ENTITY_TABLE_SIZE];
+v2 terrain[TERRAIN_TABLE_SIZE];
 char world_name[50];
 char world_path[300];
-char world_chunks_path[300];
 WorldData world_data;
 b8 is_paused;
 Entity *character_entity;

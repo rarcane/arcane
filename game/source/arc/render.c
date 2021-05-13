@@ -174,6 +174,24 @@ internal void RenderSprites()
 				}
 			} break;
 			
+			case RENDERABLE_TYPE_rect :
+			{
+				if (queued_renderable->clip.z != 0.0f &&
+					queued_renderable->clip.w != 0.0f)
+				{
+					Ts2dPushClip(queued_renderable->clip);
+				}
+				
+				Ts2dPushRect(queued_renderable->data.rect.colour,
+							 queued_renderable->data.rect.rect);
+				
+				if (queued_renderable->clip.z != 0.0f &&
+					queued_renderable->clip.w != 0.0f)
+				{
+					Ts2dPopClip();
+				}
+			} break;
+			
 			case RENDERABLE_TYPE_filled_rect :
 			{
 				if (queued_renderable->clip.z != 0.0f &&
@@ -182,8 +200,8 @@ internal void RenderSprites()
 					Ts2dPushClip(queued_renderable->clip);
 				}
 				
-				Ts2dPushFilledRect(queued_renderable->data.filled_rect.colour,
-								   queued_renderable->data.filled_rect.rect);
+				Ts2dPushFilledRect(queued_renderable->data.rect.colour,
+								   queued_renderable->data.rect.rect);
 				
 				if (queued_renderable->clip.z != 0.0f &&
 					queued_renderable->clip.w != 0.0f)
@@ -305,13 +323,30 @@ internal void ArcPushTextureWithClip(Ts2dTexture *texture_atlas, i32 flags, v4 s
 	core->run_data->queued_renderables[core->run_data->queued_renderable_count++] = new_texture;
 }
 
+internal void ArcPushRect(v4 colour, v4 rect, f32 layer)
+{
+	Assert(core->run_data->queued_renderable_count + 1 < MAX_QUEUED_RENDERABLES);
+	
+	SortRenderable new_renderable = {
+		.data = {
+			.rect = {
+				.colour = colour,
+				.rect = rect,
+			},
+		},
+		.type = RENDERABLE_TYPE_rect,
+		.layer = layer,
+	};
+	core->run_data->queued_renderables[core->run_data->queued_renderable_count++] = new_renderable;
+}
+
 internal void ArcPushFilledRect(v4 colour, v4 rect, f32 layer)
 {
 	Assert(core->run_data->queued_renderable_count + 1 < MAX_QUEUED_RENDERABLES);
 	
 	SortRenderable new_renderable = {
 		.data = {
-			.filled_rect = {
+			.rect = {
 				.colour = colour,
 				.rect = rect,
 			},
@@ -328,7 +363,7 @@ internal void ArcPushFilledRectWithClip(v4 colour, v4 rect, f32 layer, v4 clip)
 	
 	SortRenderable new_renderable = {
 		.data = {
-			.filled_rect = {
+			.rect = {
 				.colour = colour,
 				.rect = rect,
 			},
