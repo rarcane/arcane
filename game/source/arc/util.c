@@ -1,15 +1,15 @@
-v2 ClampV2(v2 v, v2 min, v2 max)
+internal v2 ClampV2(v2 v, v2 min, v2 max)
 {
 	return v2(ClampF32(v.x, min.x, max.x), ClampF32(v.y, min.y, max.y));
 }
 
-f32 sigmoid(f32 x)
+internal f32 sigmoid(f32 x)
 {
 	f32 exp_value = (f32)exp(-x);
 	return  1 / (1 + exp_value);
 }
 
-f32 EaseOut(f32 x)
+internal f32 EaseOut(f32 x)
 {
 	return 1 - (1 - x) * (1 - x);
 }
@@ -20,10 +20,10 @@ internal f32 Fade(f32 alpha)
 	return 6 * powf(alpha, 5) - 15 * powf(alpha, 4) + 10 * powf(alpha, 3);
 }
 
-internal b8 IsPositionInBounds(v2 position, v4 bounds)
+internal b8 IsV2InRect(v2 position, v4 rect)
 {
-	return position.x > bounds.x && position.x < bounds.x + bounds.z &&
-		position.y > bounds.y && position.y < bounds.y + bounds.w;
+	return position.x > rect.x && position.x < rect.x + rect.z &&
+		position.y > rect.y && position.y < rect.y + rect.w;
 }
 
 internal f32 LerpF32(f32 alpha, f32 a, f32 b)

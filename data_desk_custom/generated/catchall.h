@@ -618,6 +618,7 @@ ENTITY_PROPERTY_blueprint,
 ENTITY_PROPERTY_queryable,
 ENTITY_PROPERTY_terrain_segment,
 ENTITY_PROPERTY_tree,
+ENTITY_PROPERTY_do_not_serialise,
 ENTITY_PROPERTY_MAX,
 };
 static char *GetEntityPropertyName(EntityProperty type);

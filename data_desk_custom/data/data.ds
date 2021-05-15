@@ -630,8 +630,8 @@ EntityProperty :: enum
 	queryable,
 	
 	terrain_segment,
-	
 	tree,
+	do_not_serialise,
 }
 
 ENTITY_PROPERTY_SIZE :: (ENTITY_PROPERTY_MAX / 64 + 1)

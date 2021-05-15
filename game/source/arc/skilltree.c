@@ -8,7 +8,7 @@ internal void ElementalSkillNodeRender(ElementalSkillType skill, i32 depth, i32 
 	v2 render_size = v2zoom(v2(10.0f, 10.0f));
 	
 	v3 hsl_colour = RGBToHSV(v3(1.0f, 1.0f, 1.0f));
-	b8 is_hovered = IsPositionInBounds(v2(platform->mouse_x, platform->mouse_y), v4(render_pos.x, render_pos.y, render_size.x, render_size.y));
+	b8 is_hovered = IsV2InRect(v2(platform->mouse_x, platform->mouse_y), v4(render_pos.x, render_pos.y, render_size.x, render_size.y));
 	
 	if (is_hovered)
 	{

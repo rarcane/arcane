@@ -386,7 +386,12 @@ internal void SaveWorld()
 		for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
 		{
 			Entity *entity = &GetRunData()->entities[i];
-			WriteEntityToFile(file, entity);
+			
+			Entity empty_entity = {0};
+			if (EntityHasProperty(entity, ENTITY_PROPERTY_do_not_serialise))
+				WriteEntityToFile(file, &empty_entity);
+			else
+				WriteEntityToFile(file, entity);
 		}
 		
 		fclose(file);

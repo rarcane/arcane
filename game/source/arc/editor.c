@@ -40,7 +40,12 @@ internal void SaveMapData()
 	for (i32 i = 0; i < ENTITY_TABLE_SIZE; i++)
 	{
 		Entity *entity = &GetRunData()->entities[i];
-		WriteEntityToFile(file, entity);
+		
+		Entity empty_entity = {0};
+		if (EntityHasProperty(entity, ENTITY_PROPERTY_do_not_serialise))
+			WriteEntityToFile(file, &empty_entity);
+		else
+			WriteEntityToFile(file, entity);
 	}
 	fclose(file);
 	
@@ -406,80 +411,6 @@ internal void DrawTerrainEditor()
 	}
 	TsUIPopRow();
 	
-	v2 window_size = {300.0f, 400.0f};
-	TsUIWindowBegin("Info", v4(core->render_w - window_size.x, 0.0f, window_size.x, window_size.y), 0, 0);
-	{
-		TsUIPushColumn(v2(10, 10), v2(150, 30));
-		TsUIPushWidth(270.0f);
-		
-		if (platform->left_mouse_pressed && platform->key_down[KEY_alt])
-		{
-			iv2 new_sel_chunk = iv2(WorldSpaceToChunkIndex(GetMousePositionInWorldSpace().x),
-									WorldSpaceToChunkIndex(GetMousePositionInWorldSpace().y));
-			if (new_sel_chunk.x == GetRunData()->selected_chunk.x &&
-				new_sel_chunk.y == GetRunData()->selected_chunk.y)
-			{
-				GetRunData()->selected_chunk = iv2(INT_MAX, INT_MAX);
-			}
-			else
-			{
-				GetRunData()->selected_chunk = new_sel_chunk;
-			}
-			
-			platform->left_mouse_pressed = 0;
-		}
-		
-		/*
-		char lbl[50];
-				if (GetRunData()->selected_chunk.x != INT_MAX)
-				{
-					Chunk *chunk = GetChunkAtPos(GetRunData()->selected_chunk);
-					
-					sprintf(lbl, "Chunk %i, %i",
-							GetRunData()->selected_chunk.x,
-							GetRunData()->selected_chunk.y);
-					TsUILabel(lbl);
-					
-					if (chunk)
-					{
-						i32 vert_count = 0;
-						for (i32 i = 0; i < MAX_TERRAIN_VERT_IN_CHUNK; i++)
-						{
-							v2 *vert = &chunk->terrain_verts[i];
-							if (!isfinite(vert->x))
-							{
-								break;
-							}
-							vert_count++;
-						}
-						
-						if (vert_count > 0)
-						{
-							sprintf(lbl, "Terrain Vertices: %i", vert_count);
-							TsUILabel(lbl);
-							if (TsUIButton("Clear Vertices"))
-							{
-								for (i32 i = 0; i < MAX_TERRAIN_VERT_IN_CHUNK; i++)
-								{
-									chunk->terrain_verts[i].x = INFINITY;
-									chunk->terrain_verts[i].y = INFINITY;
-								}
-							}
-						}
-					}
-				}
-				else
-				{
-					sprintf(lbl, "Alt left-click to select a chunk");
-					TsUILabel(lbl);
-				}
-		 */
-		
-		TsUIPopWidth();
-		TsUIPopColumn();
-	}
-	TsUIWindowEnd();
-	
 	// NOTE(randy): Vertex drawing
 	local_persist b8 is_drawing_terrain = 0;
 	local_persist v2 last_point = {INFINITY, INFINITY};
@@ -519,87 +450,167 @@ internal void DrawTerrainEditor()
 		}
 	}
 	
-	// NOTE(randy): Vertex adjustment
-	/*
-		f32 circle_size = 3.0f;
-		c2Shape middle_bounds = {0};
-		middle_bounds.aabb.min = c2V(-circle_size / 2.0f, -circle_size / 2.0f);
-		middle_bounds.aabb.max = c2V(circle_size / 2.0f, circle_size / 2.0f);
-		SpriteData *circle = &global_sprite_data[SPRITE_circle_icon];
-		local_persist v2 *held_vert = 0;
-		for (i32 i = 0; i < MAX_WORLD_CHUNKS; i++)
+#define MAX_SEL_VERT 64
+	local_persist v2 *selected_vertices[MAX_SEL_VERT];
+	local_persist i32 selected_vert_count = 0;
+	local_persist v2 initial_pos = {INFINITY, INFINITY};
+	
+	if (platform->right_mouse_pressed && !is_drawing_terrain)
+	{
+		initial_pos = GetMousePositionInWorldSpace();
+	}
+	
+	if (platform->right_mouse_down && !is_drawing_terrain)
+	{
+		v2 current_pos = GetMousePositionInWorldSpace();
+		v2 diff = V2SubtractV2(current_pos, initial_pos);
+		diff.x = fabsf(diff.x);
+		diff.y = fabsf(diff.y);
+		
+		v2 pos;
+		pos.x = initial_pos.x < current_pos.x ? initial_pos.x : current_pos.x;
+		pos.y = initial_pos.y < current_pos.y ? initial_pos.y : current_pos.y;
+		pos = v2view(pos);
+		
+		v2 size = v2zoom(diff);
+		
+		ArcPushRect(v4(0.0f, 1.0f, 0.0f, 1.0f), v4(pos.x, pos.y, size.x, size.y), LAYER_FRONT_UI);
+	}
+	
+	if (core->right_mouse_released)
+	{
+		v2 current_pos = GetMousePositionInWorldSpace();
+		v2 diff = V2SubtractV2(current_pos, initial_pos);
+		diff.x = fabsf(diff.x);
+		diff.y = fabsf(diff.y);
+		
+		v2 pos;
+		pos.x = initial_pos.x < current_pos.x ? initial_pos.x : current_pos.x;
+		pos.y = initial_pos.y < current_pos.y ? initial_pos.y : current_pos.y;
+		
+		v4 rect = v4(pos.x, pos.y, diff.x, diff.y);
+		
+		selected_vert_count = 0;
+		for (i32 i = 0; i < TERRAIN_TABLE_SIZE; i++)
 		{
-			Chunk *chunk = &GetRunData()->chunks[i];
-			if (chunk->flags & CHUNK_FLAGS_is_allocated)
+			v2 *vert = &GetRunData()->terrain[i];
+			
+			if (IsV2InRect(*vert, rect))
 			{
-				for (i32 j = 0; j < MAX_TERRAIN_VERT_IN_CHUNK; j++)
+				if (selected_vert_count + 1 >= MAX_SEL_VERT)
 				{
-					if (isfinite(chunk->terrain_verts[j].x))
+					LogWarning("Selection too big");
+					break;
+				}
+				selected_vertices[selected_vert_count++] = vert;
+			}
+		}
+	}
+	
+	b8 bypass_inf = 0;
+	if (platform->key_pressed[KEY_delete])
+	{
+		for (i32 i = 0; i < selected_vert_count; i++)
+		{
+			*selected_vertices[i] = v2(INFINITY, INFINITY);
+		}
+		selected_vert_count = 0;
+		bypass_inf = 1;
+	}
+	
+	// NOTE(randy): Vertex adjustment
+	f32 circle_size = 3.0f;
+	c2Shape middle_bounds = {0};
+	middle_bounds.aabb.min = c2V(-circle_size / 2.0f, -circle_size / 2.0f);
+	middle_bounds.aabb.max = c2V(circle_size / 2.0f, circle_size / 2.0f);
+	SpriteData *circle = &global_sprite_data[SPRITE_circle_icon];
+	local_persist v2 *held_vert = 0;
+	
+	for (i32 i = 0; i < TERRAIN_TABLE_SIZE; i++)
+	{
+		v2 *vert = &GetRunData()->terrain[i];
+		if (isfinite(vert->x))
+		{
+			b8 is_group_selected_vert = 0;
+			for (i32 j = 0; j < selected_vert_count; j++)
+			{
+				if (selected_vertices[j] == vert)
+				{
+					is_group_selected_vert = 1;
+				}
+			}
+			
+			v4 tint = v4u(1.0);
+			if (!is_drawing_terrain)
+			{
+				if (platform->left_mouse_down && held_vert == vert)
+				{
+					tint = v4(0.5f, 0.5f, 0.5f, 1.0f);
+					
+					if (is_group_selected_vert)
 					{
-						v2 pos = V2AddV2(chunk->terrain_verts[j], v2((f32)chunk->pos.x * CHUNK_SIZE,
-																	 (f32)chunk->pos.y * CHUNK_SIZE));
-						
-						v4 tint = v4u(1.0);
-						if (!is_drawing_terrain)
+						v2 diff = V2SubtractV2(GetMousePositionInWorldSpace(), *held_vert);
+						for (i32 j = 0; j < selected_vert_count; j++)
 						{
-							if (platform->left_mouse_down && held_vert == &chunk->terrain_verts[j])
-							{
-								tint = v4(0.5f, 0.5f, 0.5f, 1.0f);
-								
-								*held_vert = ClampV2(V2SubtractV2(GetMousePositionInWorldSpace(),
-																  v2((f32)chunk->pos.x * CHUNK_SIZE,
-																	 (f32)chunk->pos.y * CHUNK_SIZE)),
-													 v2(0.0f, 0.0f),
-													 v2(CHUNK_SIZE, CHUNK_SIZE));
-							}
-							else
-							{
-								c2Shape vert_shape = middle_bounds;
-								AddPositionOffsetToShape(&vert_shape, C2_SHAPE_TYPE_aabb, pos);
-								if (IsV2OverlappingShape(GetMousePositionInWorldSpace(),
-														 vert_shape,
-														 C2_SHAPE_TYPE_aabb))
-								{
-									tint = v4(0.8f, 0.8f, 0.8f, 1.0f);
-									
-									if (platform->left_mouse_pressed)
-									{
-										held_vert = &chunk->terrain_verts[j];
-										platform->left_mouse_pressed = 0;
-									}
-								}
-							}
-							
-							if (core->left_mouse_released)
-							{
-								held_vert = 0;
-								core->left_mouse_released = 0;
-							}
+							*selected_vertices[j] = V2AddV2(*selected_vertices[j],
+															diff);
 						}
+					}
+					
+					*held_vert = GetMousePositionInWorldSpace();
+				}
+				else
+				{
+					c2Shape vert_shape = middle_bounds;
+					AddPositionOffsetToShape(&vert_shape, C2_SHAPE_TYPE_aabb, *vert);
+					if (IsV2OverlappingShape(GetMousePositionInWorldSpace(),
+											 vert_shape,
+											 C2_SHAPE_TYPE_aabb))
+					{
+						tint = v4(0.8f, 0.8f, 0.8f, 1.0f);
 						
-						v2 r_pos = v2view(v2(pos.x - circle_size / 2.0f,
-											 pos.y - circle_size / 2.0f));
-						v2 r_size = v2zoom(v2(circle_size, circle_size));
-						
-						ArcPushTexture(circle->texture_atlas,
-									   0,
-									   circle->source,
-									   v4(r_pos.x, r_pos.y, r_size.x, r_size.y),
-									   tint,
-									   LAYER_HUD);
+						if (platform->left_mouse_pressed)
+						{
+							held_vert = vert;
+							platform->left_mouse_pressed = 0;
+						}
 					}
 				}
-				*/
+				
+				if (core->left_mouse_released)
+				{
+					held_vert = 0;
+					core->left_mouse_released = 0;
+				}
+			}
+			
+			if (is_group_selected_vert)
+			{
+				tint = V4MultiplyV4(tint, v4(0.5f, 1.0f, 0.5f, 1.0f));
+			}
+			
+			v2 r_pos = v2view(v2(vert->x - circle_size / 2.0f,
+								 vert->y - circle_size / 2.0f));
+			v2 r_size = v2zoom(v2(circle_size, circle_size));
+			
+			ArcPushTexture(circle->texture_atlas,
+						   0,
+						   circle->source,
+						   v4(r_pos.x, r_pos.y, r_size.x, r_size.y),
+						   tint,
+						   LAYER_HUD);
+		}
+	}
 	
 	// NOTE(randy): Sort all vertices in order of x pos
 	for (i32 step = 0; step < TERRAIN_TABLE_SIZE - 1; step++)
 	{
-		if (!isfinite(GetRunData()->terrain[step].x))
+		if (!bypass_inf && !isfinite(GetRunData()->terrain[step].x))
 			break;
 		
 		for (i32 j = 0; j < TERRAIN_TABLE_SIZE - step - 1; j++)
 		{
-			if (!isfinite(GetRunData()->terrain[j].x))
+			if (!bypass_inf && !isfinite(GetRunData()->terrain[j].x))
 				break;
 			
 			if (GetRunData()->terrain[j].x > GetRunData()->terrain[j + 1].x)
@@ -608,19 +619,32 @@ internal void DrawTerrainEditor()
 				GetRunData()->terrain[j] = GetRunData()->terrain[j + 1];
 				GetRunData()->terrain[j + 1] = temp;
 				
-				/*
-							if (held_vert == &GetRunData()->terrain[j])
-							{
-								held_vert = &GetRunData()->terrain[j + 1];
-							}
-							else if (held_vert == &GetRunData()->terrain[j + 1])
-							{
-								held_vert = &GetRunData()->terrain[j];
-							}
-				 */
+				if (held_vert == &GetRunData()->terrain[j])
+				{
+					held_vert = &GetRunData()->terrain[j + 1];
+				}
+				else if (held_vert == &GetRunData()->terrain[j + 1])
+				{
+					held_vert = &GetRunData()->terrain[j];
+				}
 			}
 		}
 	}
+	
+	v2 window_size = {300.0f, 400.0f};
+	TsUIWindowBegin("Info", v4(core->render_w - window_size.x, 0.0f, window_size.x, window_size.y), 0, 0);
+	{
+		TsUIPushColumn(v2(10, 10), v2(150, 30));
+		TsUIPushWidth(270.0f);
+		
+		char lbl[100];
+		sprintf(lbl, "vert count: %i", selected_vert_count);
+		TsUILabel(lbl);
+		
+		TsUIPopWidth();
+		TsUIPopColumn();
+	}
+	TsUIWindowEnd();
 }
 
 internal void SetEjectedMode(b8 value)

@@ -2,6 +2,7 @@ EntityPresetCallback(TerrainSegment)
 {
 	EntitySetProperty(entity, ENTITY_PROPERTY_physical);
 	EntitySetProperty(entity, ENTITY_PROPERTY_terrain_segment);
+	EntitySetProperty(entity, ENTITY_PROPERTY_do_not_serialise);
 	char *name = "terrain segment";
 	strcpy(entity->debug_name, name);
 	

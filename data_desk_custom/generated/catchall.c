@@ -670,6 +670,9 @@ break;
 case ENTITY_PROPERTY_tree:
 return "Tree";
 break;
+case ENTITY_PROPERTY_do_not_serialise:
+return "Do Not Serialise";
+break;
 default:
 return "INVALID";
 break;
