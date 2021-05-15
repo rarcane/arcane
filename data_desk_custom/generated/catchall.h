@@ -88,8 +88,10 @@ SPRITE_ground_forest_10_degree,
 SPRITE_ground_rocks_v1,
 SPRITE_ground_rocks_v2,
 SPRITE_pine_tree_v1,
-SPRITE_hills_1_v1,
-SPRITE_hills_1_v2,
+SPRITE_bg1_hills_v1,
+SPRITE_bg1_hills_v2,
+SPRITE_bg1_hills_left_slant,
+SPRITE_bg1_hills_right_slant,
 SPRITE_bg1_shrub_v1,
 SPRITE_bg1_shrub_v2,
 SPRITE_bg1_shrub_v3,
@@ -164,8 +166,10 @@ global SpriteData global_sprite_data[SPRITE_MAX] = {
     { "scenic/forest_ground", {0.0f, 0.0f, 100.0f, 4.0f}, {0.0f, 0.0f}, 0, 0.0f, },
     { "scenic/forest_ground", {0.0f, 4.0f, 100.0f, 4.0f}, {0.0f, 0.0f}, 0, 0.0f, },
     { "scenic/trees/pine_tree", {0.0f, 0.0f, 90.0f, 170.0f}, {0.0f, 0.0f}, 0, 0.0f, },
-    { "scenic/background/bg1_hills", {0.0f, 0.0f, 200.0f, 35.0f}, {0.0f, 20.0f}, 0, 0.0f, },
-    { "scenic/background/bg1_hills", {0.0f, 35.0f, 200.0f, 35.0f}, {0.0f, 20.0f}, 0, 0.0f, },
+    { "scenic/background/bg1_hills", {0.0f, 0.0f, 100.0f, 15.0f}, {0.0f, 80.0f}, 0, 0.0f, },
+    { "scenic/background/bg1_hills", {100.0f, 0.0f, 100.0f, 100.0f}, {0.0f, 80.0f}, 0, 0.0f, },
+    { "scenic/background/bg1_hills", {0.0f, 100.0f, 100.0f, 100.0f}, {0.0f, 60.0f}, 0, 0.0f, },
+    { "scenic/background/bg1_hills", {100.0f, 100.0f, 100.0f, 100.0f}, {0.0f, 60.0f}, 0, 0.0f, },
     { "scenic/background/vegetation", {0.0f, 0.0f, 50.0f, 25.0f}, {0.0f, 0.0f}, 0, 0.0f, },
     { "scenic/background/vegetation", {50.0f, 0.0f, 50.0f, 25.0f}, {0.0f, 0.0f}, 0, 0.0f, },
     { "scenic/background/vegetation", {100.0f, 0.0f, 50.0f, 25.0f}, {0.0f, 0.0f}, 0, 0.0f, },
@@ -660,7 +664,7 @@ enum EntityPresetCategory
 {
 ENTITY_PRESET_CATEGORY_none,
 ENTITY_PRESET_CATEGORY_resource,
-ENTITY_PRESET_CATEGORY_background,
+ENTITY_PRESET_CATEGORY_background1,
 ENTITY_PRESET_CATEGORY_MAX,
 };
 static char *GetEntityPresetCategoryName(EntityPresetCategory type);
@@ -677,6 +681,7 @@ enum EntityPresetType
 {
 ENTITY_PRESET_TYPE_none,
 ENTITY_PRESET_TYPE_tree,
+ENTITY_PRESET_TYPE_bg1_hill,
 ENTITY_PRESET_TYPE_bg1_tree,
 ENTITY_PRESET_TYPE_bg2_tree,
 ENTITY_PRESET_TYPE_MAX,
@@ -684,8 +689,9 @@ ENTITY_PRESET_TYPE_MAX,
 global EntityPresetTypeData global_entity_preset_type_data[ENTITY_PRESET_TYPE_MAX] = {
     { "none", 0, 0, },
     { "Tree", TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_resource, },
-    { "BG1 Tree", BG1TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background, },
-    { "BG2 Tree", BG2TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background, },
+    { "BG1 Hill", BG1HillEntityPresetCallback, ENTITY_PRESET_CATEGORY_background1, },
+    { "BG1 Tree", BG1TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background1, },
+    { "BG2 Tree", BG2TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background1, },
 };
 
 static char *GetEntityPresetTypeName(EntityPresetType type);

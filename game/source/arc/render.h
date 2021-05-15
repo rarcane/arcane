@@ -14,7 +14,7 @@
 
 // Background parallax
 #define LAYER_BG1_HILL 28 + 40
-#define LAYER_BG1_TREE 28 + 25 //41
+#define LAYER_BG1_TREE 28 + 41
 #define LAYER_BG1_SHRUBS 28 + 42
 #define LAYER_BG1_SAPLINGS 28 + 43
 #define LAYER_BG2_HILL 28 + 60

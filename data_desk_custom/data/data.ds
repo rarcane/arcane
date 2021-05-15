@@ -132,10 +132,14 @@ Sprite :: enum
 	@Data("'scenic/trees/pine_tree'", "{0.0f, 0.0f, 90.0f, 170.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		pine_tree_v1,
 	
-	@Data("'scenic/background/bg1_hills'", "{0.0f, 0.0f, 200.0f, 35.0f}", "{0.0f, 20.0f}", 0, 0.0f)
-		hills_1_v1,
-	@Data("'scenic/background/bg1_hills'", "{0.0f, 35.0f, 200.0f, 35.0f}", "{0.0f, 20.0f}", 0, 0.0f)
-		hills_1_v2,
+	@Data("'scenic/background/bg1_hills'", "{0.0f, 0.0f, 100.0f, 15.0f}", "{0.0f, 80.0f}", 0, 0.0f)
+		bg1_hills_v1,
+	@Data("'scenic/background/bg1_hills'", "{100.0f, 0.0f, 100.0f, 100.0f}", "{0.0f, 80.0f}", 0, 0.0f)
+		bg1_hills_v2,
+	@Data("'scenic/background/bg1_hills'", "{0.0f, 100.0f, 100.0f, 100.0f}", "{0.0f, 60.0f}", 0, 0.0f)
+		bg1_hills_left_slant,
+	@Data("'scenic/background/bg1_hills'", "{100.0f, 100.0f, 100.0f, 100.0f}", "{0.0f, 60.0f}", 0, 0.0f)
+		bg1_hills_right_slant,
 	
 	@Data("'scenic/background/vegetation'", "{0.0f, 0.0f, 50.0f, 25.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		bg1_shrub_v1,
@@ -690,7 +694,7 @@ EntityPresetCategory :: enum
 {
 	none,
 	resource,
-	background,
+	background1,
 }
 
 @XMacro
@@ -709,9 +713,11 @@ EntityPresetType:: enum
 	@Data("'Tree'", TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_resource)
 		tree,
 	
-	@Data("'BG1 Tree'", BG1TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background)
+	@Data("'BG1 Hill'", BG1HillEntityPresetCallback, ENTITY_PRESET_CATEGORY_background1)
+		bg1_hill,
+	@Data("'BG1 Tree'", BG1TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background1)
 		bg1_tree,
-	@Data("'BG2 Tree'", BG2TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background)
+	@Data("'BG2 Tree'", BG2TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background1)
 		bg2_tree,
 }
 

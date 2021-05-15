@@ -118,11 +118,17 @@ break;
 case SPRITE_pine_tree_v1:
 return "Pine Tree V1";
 break;
-case SPRITE_hills_1_v1:
-return "Hills 1v1";
+case SPRITE_bg1_hills_v1:
+return "Bg1 Hills V1";
 break;
-case SPRITE_hills_1_v2:
-return "Hills 1v2";
+case SPRITE_bg1_hills_v2:
+return "Bg1 Hills V2";
+break;
+case SPRITE_bg1_hills_left_slant:
+return "Bg1 Hills Left Slant";
+break;
+case SPRITE_bg1_hills_right_slant:
+return "Bg1 Hills Right Slant";
 break;
 case SPRITE_bg1_shrub_v1:
 return "Bg1 Shrub V1";
@@ -689,8 +695,8 @@ break;
 case ENTITY_PRESET_CATEGORY_resource:
 return "Resource";
 break;
-case ENTITY_PRESET_CATEGORY_background:
-return "Background";
+case ENTITY_PRESET_CATEGORY_background1:
+return "Background1";
 break;
 default:
 return "INVALID";
@@ -707,6 +713,9 @@ return "None";
 break;
 case ENTITY_PRESET_TYPE_tree:
 return "Tree";
+break;
+case ENTITY_PRESET_TYPE_bg1_hill:
+return "Bg1 Hill";
 break;
 case ENTITY_PRESET_TYPE_bg1_tree:
 return "Bg1 Tree";

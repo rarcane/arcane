@@ -410,6 +410,7 @@ internal void GetChunkPositionsInRect(iv2 *positions, i32 *chunk_count, v4 rect,
 
 internal v2 GetEntityParallaxAmount(Entity *entity)
 {
+	Assert(entity);
 	if (entity->sprite_data.render_layer < 28)
 	{
 		LogWarning("Entity %s at layer %i is not the the parallax range", entity->debug_name, entity->sprite_data.render_layer);

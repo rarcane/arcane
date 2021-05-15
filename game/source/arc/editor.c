@@ -303,11 +303,15 @@ internal void DrawGeneralEditor()
 	// NOTE(randy): Selected entity movement handle
 	if (selected_entity)
 	{
+		v2 pos = (EntityHasProperty(selected_entity, ENTITY_PROPERTY_parallaxable) ?
+				  ParallaxPosition(selected_entity->position, GetEntityParallaxAmount(selected_entity)) :
+				  selected_entity->position);
+		
 		f32 circle_size = 3.0f;
 		c2Shape middle_bounds = {0};
 		middle_bounds.aabb.min = c2V(-circle_size / 2.0f, -circle_size / 2.0f);
 		middle_bounds.aabb.max = c2V(circle_size / 2.0f, circle_size / 2.0f);
-		AddPositionOffsetToShape(&middle_bounds, C2_SHAPE_TYPE_aabb, selected_entity->position);
+		AddPositionOffsetToShape(&middle_bounds, C2_SHAPE_TYPE_aabb, pos);
 		
 		PushDebugShape(middle_bounds, C2_SHAPE_TYPE_aabb, v2(0.0f, 0.0f), v4u(1.0f));
 		
@@ -324,7 +328,19 @@ internal void DrawGeneralEditor()
 		{
 			middle_tint = 0.5f;
 			
-			selected_entity->position = V2AddV2(GetMousePositionInWorldSpace(), grab_offset);
+			if (EntityHasProperty(selected_entity, ENTITY_PROPERTY_parallaxable))
+			{
+				v2 par_amount = GetEntityParallaxAmount(selected_entity);
+				v2 expected = V2AddV2(GetMousePositionInWorldSpace(), grab_offset);
+				selected_entity->position = v2((-par_amount.x * core->camera_position.x + expected.x) /
+											   (-par_amount.x + 1.0f),
+											   (-par_amount.y * core->camera_position.y + expected.y) /
+											   (-par_amount.y + 1.0f));
+			}
+			else
+			{
+				selected_entity->position = V2AddV2(GetMousePositionInWorldSpace(), grab_offset);
+			}
 		}
 		else if (IsV2OverlappingShape(GetMousePositionInWorldSpace(),
 									  middle_bounds,
@@ -335,13 +351,13 @@ internal void DrawGeneralEditor()
 			if (platform->left_mouse_pressed)
 			{
 				is_holding_middle = 1;
-				grab_offset = V2SubtractV2(selected_entity->position, GetMousePositionInWorldSpace());
+				grab_offset = V2SubtractV2(pos, GetMousePositionInWorldSpace());
 				platform->left_mouse_pressed = 0;
 			}
 		}
 		
-		v2 middle_pos = v2view(v2(selected_entity->position.x - circle_size / 2.0f,
-								  selected_entity->position.y - circle_size / 2.0f));
+		v2 middle_pos = v2view(v2(pos.x - circle_size / 2.0f,
+								  pos.y - circle_size / 2.0f));
 		v2 middle_size = v2zoom(v2(circle_size, circle_size));
 		
 		SpriteData *middle = &global_sprite_data[SPRITE_circle_icon];
@@ -359,37 +375,16 @@ internal void DrawGeneralEditor()
 	{
 		GetRunData()->selected_entity = 0;
 		
-		// TODO(randy):
-		
-		/*
-				iv2 mouse_chunk = iv2(WorldSpaceToChunkIndex(GetMousePositionInWorldSpace().x),
-									  WorldSpaceToChunkIndex(GetMousePositionInWorldSpace().y));
-				for (i32 x = -1; x < 2; x++)
-					for (i32 y = -1; y < 2; y++)
-				{
-					if (GetRunData()->selected_entity)
-						break;
-					
-					Chunk *chunk = GetChunkAtPos(iv2(mouse_chunk.x + x, mouse_chunk.y + y));
-					if (chunk)
-					{
-						for (i32 i = 0; i < chunk->entity_count; i++)
-						{
-							Entity *entity = chunk->entities[i];
-							if (EntityHasProperty(entity, ENTITY_PROPERTY_terrain_segment))
-								continue;
-							
-							if (IsPositionOverlappingEntity(entity, GetMousePositionInWorldSpace()))
-							{
-								GetRunData()->selected_entity = entity;
-								platform->left_mouse_pressed = 0;
-								
-								break;
-							}
-						}
-					}
-				}
-		 */
+		for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_positional);)
+		{
+			if (IsPositionOverlappingEntity(entity, GetMousePositionInWorldSpace()) &&
+				!EntityHasProperty(entity, ENTITY_PROPERTY_terrain_segment))
+			{
+				GetRunData()->selected_entity = entity;
+				platform->left_mouse_pressed = 0;
+				break;
+			}
+		}
 	}
 }
 
@@ -668,15 +663,17 @@ internal void SetEjectedMode(b8 value)
 
 internal void UpdateEjectedMode()
 {
-	Entity *entity = &GetRunData()->entities[1];
-	
-	v4 bounds = GetEntityVisibleParallaxRect(entity);
-	
-	v2 pos = v2view(v2(bounds.x, bounds.y));
-	v2 size = v2zoom(v2(bounds.z, bounds.w));
-	bounds = v4(pos.x, pos.y, size.x, size.y);
-	
-	ArcPushRect(v4u(1.0f), bounds, 0.0f);
+	/*
+		Entity *entity = &GetRunData()->entities[1];
+		
+		v4 bounds = GetEntityVisibleParallaxRect(entity);
+		
+		v2 pos = v2view(v2(bounds.x, bounds.y));
+		v2 size = v2zoom(v2(bounds.z, bounds.w));
+		bounds = v4(pos.x, pos.y, size.x, size.y);
+		
+		ArcPushRect(v4u(1.0f), bounds, 0.0f);
+	 */
 	
 	TsUIWindowBegin("debug", v4(0.0f, 0.0f, 600.0f, 300.0f), 0, 0);
 	{
