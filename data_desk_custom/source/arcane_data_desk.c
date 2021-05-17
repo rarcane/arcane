@@ -795,26 +795,26 @@ internal void GenerateVersionCode()
 				if (DataDeskGetNodeTag(member, "DoNotSerialise"))
 					continue;
 				
-				DataDeskNode *new_value = DataDeskGetTagParameter(DataDeskGetNodeTag(member, "NewValue"), 0);
 				DataDeskNode *map_from = DataDeskGetTagParameter(DataDeskGetNodeTag(member, "MapFrom"), 0);
 				
 				if (map_from)
 				{
-					if (new_value)
-					{
-						// TODO(randy)
-					}
-					else
-					{
-						fprintf(c_file, "MemoryCopy(&dest->%s, &origin.%s, sizeof(origin.%s));\n", member->name, map_from->name, map_from->name);
-					}
+					fprintf(c_file, "MemoryCopy(&dest->%s, &origin.%s, sizeof(dest->%s));\n", member->name, map_from->name, map_from->name);
 				}
 				else
 				{
-					if (new_value)
+					if (DataDeskGetNodeTag(member, "NewValue"))
 					{
-						// NOTE(randy): New member
-						fprintf(c_file, "    dest->%s = %s;\n", member->name, new_value->name);
+						DataDeskNode *new_value_param = DataDeskGetTagParameter(DataDeskGetNodeTag(member, "NewValue"), 0);
+						if (new_value_param)
+						{
+							// NOTE(randy): New member with init value
+							fprintf(c_file, "    dest->%s = %s;\n", member->name, new_value_param->name);
+						}
+						else
+						{
+							// mem set to 0?
+						}
 					}
 					else
 					{

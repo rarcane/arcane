@@ -23,6 +23,7 @@ internal void EditorUpdate()
 	GenerateTerrainSegments();
 	DrawWorld();
 	RenderColliders();
+	UpdateTextNoteEntities();
 }
 
 internal void SaveMapData()
@@ -703,3 +704,27 @@ internal void UpdateEjectedMode()
 	TsUIWindowEnd();
 }
 
+internal void UpdateTextNoteEntities()
+{
+	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_text_note);)
+	{
+		if (strcmp(entity->note, "") == 0)
+		{
+			Ts2dPushText(Ts2dGetDefaultFont(),
+						 TS2D_TEXT_ALIGN_CENTER_X | TS2D_TEXT_ALIGN_CENTER_Y,
+						 v4(1.0f, 1.0f, 1.0f, 1.0f),
+						 v2view(entity->position),
+						 core->camera_zoom / 10.0f,
+						 "Empty Note");
+		}
+		else
+		{
+			Ts2dPushText(Ts2dGetDefaultFont(),
+						 TS2D_TEXT_ALIGN_CENTER_X | TS2D_TEXT_ALIGN_CENTER_Y,
+						 v4(1.0f, 1.0f, 1.0f, 1.0f),
+						 v2view(entity->position),
+						 core->camera_zoom / 10.0f,
+						 entity->note);
+		}
+	}
+}

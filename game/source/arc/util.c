@@ -627,6 +627,20 @@ internal b8 IsPositionOverlappingEntity(Entity *entity, v2 pos)
 	{
 		return IsV2OverlappingShape(pos, GetEntityShapeInWorldspace(entity), entity->physics.shape_type);
 	}
+	else if (EntityHasProperty(entity, ENTITY_PROPERTY_text_note))
+	{
+		// TODO(randy): Make it the actual text size
+		f32 temp_size = 20.0f;
+		v4 rect = v4(entity->position.x - temp_size / 2.0f,
+					 entity->position.y - temp_size / 2.0f,
+					 temp_size,
+					 temp_size);
+		
+		c2AABB aabb = RectToAABB(rect);
+		c2Shape shape = {0};
+		shape.aabb = aabb;
+		return IsV2OverlappingShape(pos, shape, C2_SHAPE_TYPE_aabb);
+	}
 	
 	return 0;
 }

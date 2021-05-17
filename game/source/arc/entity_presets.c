@@ -74,3 +74,13 @@ EntityPresetCallback(BG2Tree)
 	
 	entity->sprite_data.render_layer = LAYER_BG2_TREE;
 }
+
+EntityPresetCallback(TextNote)
+{
+	EntitySetProperty(entity, ENTITY_PROPERTY_map_entity);
+	EntitySetProperty(entity, ENTITY_PROPERTY_positional);
+	EntitySetProperty(entity, ENTITY_PROPERTY_text_note);
+	
+	EntityPresetTypeData *preset_data = &global_entity_preset_type_data[ENTITY_PRESET_TYPE_text_note];
+	strcpy(entity->debug_name, preset_data->print_name);
+}

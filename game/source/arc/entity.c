@@ -194,6 +194,12 @@ internal void PrintEntityFields(Entity *entity)
 		TsUILabel(lbl);
 	}
 	
+	if (EntityHasProperty(entity, ENTITY_PROPERTY_text_note))
+	{
+		TsUILineEdit(entity->note, entity->note, sizeof(entity->note));
+	}
+	
+	
 	if (EntityHasProperty(entity, ENTITY_PROPERTY_sprite))
 	{
 		if (TsUICollapsable("Sprite"))

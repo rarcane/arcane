@@ -679,6 +679,9 @@ break;
 case ENTITY_PROPERTY_do_not_serialise:
 return "Do Not Serialise";
 break;
+case ENTITY_PROPERTY_text_note:
+return "Text Note";
+break;
 default:
 return "INVALID";
 break;
@@ -697,6 +700,9 @@ return "Resource";
 break;
 case ENTITY_PRESET_CATEGORY_background1:
 return "Background1";
+break;
+case ENTITY_PRESET_CATEGORY_misc:
+return "Misc";
 break;
 default:
 return "INVALID";
@@ -722,6 +728,9 @@ return "Bg1 Tree";
 break;
 case ENTITY_PRESET_TYPE_bg2_tree:
 return "Bg2 Tree";
+break;
+case ENTITY_PRESET_TYPE_text_note:
+return "Text Note";
 break;
 default:
 return "INVALID";
@@ -822,23 +831,33 @@ break;
 
 static void WriteEntityToFile(FILE *file, Entity *data)
 {
-    i32 version = 0;
+    i32 version = 2;
     WriteToFile(file, &version, sizeof(i32));
-    WriteEntity_Version0ToFile(file, data);
+    WriteEntity_Version2ToFile(file, data);
 }
 
 static void ReadEntityFromFile(FILE *file, Entity *data)
 {
     i32 actual_version = -1;
     ReadFromFile(file, &actual_version, sizeof(i32));
-    if (actual_version == 0)
+    if (actual_version == 2)
     {
-        ReadEntity_Version0FromFile(file, data);
+        ReadEntity_Version2FromFile(file, data);
         return;
     }
 
     switch (actual_version)
     {
+    case 1:
+    {
+        Entity_Version1 entity1 = {0};
+        ReadEntity_Version1FromFile(file, &entity1);
+
+        Entity entity2 = {0};
+        MapEntity_Version1ToEntity(entity1, &entity2);
+
+        memcpy(data, &entity2, sizeof(*data));
+    } break;
     }
 }
 
@@ -886,19 +905,24 @@ static void ReadWorldDataFromFile(FILE *file, WorldData *data)
     }
 }
 
-static void WriteEntity_Version0ToFile(FILE *file, Entity *data)
+static void WriteEntity_Version1ToFile(FILE *file, Entity_Version1 *data)
 {
     for (i32 i = 0; i < ENTITY_PROPERTY_SIZE; i++)
     {
         WriteToFile(file, &data->properties[i], sizeof(u64));
     }
 
-    for (i32 i = 0; i < 100; i++)
+    for (i32 i = 0; i < 128; i++)
     {
         WriteToFile(file, &data->debug_name[i], sizeof(char));
     }
 
     WriteToFile(file, &data->position, sizeof(data->position));
+
+    for (i32 i = 0; i < 1024; i++)
+    {
+        WriteToFile(file, &data->note[i], sizeof(char));
+    }
 
     WriteToFile(file, &data->sprite_data, sizeof(data->sprite_data));
 
@@ -952,19 +976,196 @@ static void WriteEntity_Version0ToFile(FILE *file, Entity *data)
 
 }
 
-static void ReadEntity_Version0FromFile(FILE *file, Entity *data)
+static void ReadEntity_Version1FromFile(FILE *file, Entity_Version1 *data)
 {
     for (i32 i = 0; i < ENTITY_PROPERTY_SIZE; i++)
     {
         ReadFromFile(file, &data->properties[i], sizeof(u64));
     }
 
-    for (i32 i = 0; i < 100; i++)
+    for (i32 i = 0; i < 128; i++)
     {
         ReadFromFile(file, &data->debug_name[i], sizeof(char));
     }
 
     ReadFromFile(file, &data->position, sizeof(data->position));
+
+    for (i32 i = 0; i < 1024; i++)
+    {
+        ReadFromFile(file, &data->note[i], sizeof(char));
+    }
+
+    ReadFromFile(file, &data->sprite_data, sizeof(data->sprite_data));
+
+    ReadFromFile(file, &data->is_flipped, sizeof(data->is_flipped));
+
+    ReadFromFile(file, &data->is_background_sprite, sizeof(data->is_background_sprite));
+
+    ReadFromFile(file, &data->previous_parallax_rect, sizeof(data->previous_parallax_rect));
+
+    ReadFromFile(file, &data->animation_flags, sizeof(data->animation_flags));
+
+    ReadFromFile(file, &data->current_frame, sizeof(data->current_frame));
+
+    ReadFromFile(file, &data->interval_mult, sizeof(data->interval_mult));
+
+    ReadFromFile(file, &data->frame_start_time, sizeof(data->frame_start_time));
+
+    ReadFromFile(file, &data->physics, sizeof(data->physics));
+
+    ReadFromFile(file, &data->smooth_velocity, sizeof(data->smooth_velocity));
+
+    ReadFromFile(file, &data->axis_x, sizeof(data->axis_x));
+
+    ReadFromFile(file, &data->move_speed, sizeof(data->move_speed));
+
+    ReadFromFile(file, &data->move_speed_mult, sizeof(data->move_speed_mult));
+
+    ReadFromFile(file, &data->entity_type, sizeof(data->entity_type));
+
+    ReadFromFile(file, &data->current_animation_state, sizeof(data->current_animation_state));
+
+    ReadFromFile(file, &data->item, sizeof(data->item));
+
+    for (i32 i = 0; i < MAX_ENCHANTMENTS; i++)
+    {
+        ReadFromFile(file, &data->enchantments[i], sizeof(Enchantment));
+    }
+
+    ReadFromFile(file, &data->priority, sizeof(data->priority));
+
+    ReadFromFile(file, &data->structure_type, sizeof(data->structure_type));
+
+    for (i32 i = 0; i < MAX_ITEMS_IN_BLUEPRINT_RECIPE; i++)
+    {
+        ReadFromFile(file, &data->remaining_items_in_blueprint[i], sizeof(Item));
+    }
+
+    ReadFromFile(file, &data->durability, sizeof(data->durability));
+
+    ReadFromFile(file, &data->tree_type, sizeof(data->tree_type));
+
+}
+
+static void MapEntity_Version1ToEntity(Entity_Version1 origin, Entity *dest)
+{
+    MemoryCopy(dest->properties, origin.properties, sizeof(origin.properties));
+    MemoryCopy(dest->debug_name, origin.debug_name, sizeof(origin.debug_name));
+    MemoryCopy(&dest->position, &origin.position, sizeof(origin.position));
+MemoryCopy(&dest->note, &origin.note, sizeof(dest->note));
+    MemoryCopy(&dest->sprite_data, &origin.sprite_data, sizeof(origin.sprite_data));
+    MemoryCopy(&dest->is_flipped, &origin.is_flipped, sizeof(origin.is_flipped));
+    MemoryCopy(&dest->is_background_sprite, &origin.is_background_sprite, sizeof(origin.is_background_sprite));
+    MemoryCopy(&dest->previous_parallax_rect, &origin.previous_parallax_rect, sizeof(origin.previous_parallax_rect));
+    MemoryCopy(&dest->animation_flags, &origin.animation_flags, sizeof(origin.animation_flags));
+    MemoryCopy(&dest->current_frame, &origin.current_frame, sizeof(origin.current_frame));
+    MemoryCopy(&dest->interval_mult, &origin.interval_mult, sizeof(origin.interval_mult));
+    MemoryCopy(&dest->frame_start_time, &origin.frame_start_time, sizeof(origin.frame_start_time));
+    MemoryCopy(&dest->physics, &origin.physics, sizeof(origin.physics));
+    MemoryCopy(&dest->smooth_velocity, &origin.smooth_velocity, sizeof(origin.smooth_velocity));
+    MemoryCopy(&dest->axis_x, &origin.axis_x, sizeof(origin.axis_x));
+    MemoryCopy(&dest->move_speed, &origin.move_speed, sizeof(origin.move_speed));
+    MemoryCopy(&dest->move_speed_mult, &origin.move_speed_mult, sizeof(origin.move_speed_mult));
+    MemoryCopy(&dest->entity_type, &origin.entity_type, sizeof(origin.entity_type));
+    MemoryCopy(&dest->current_animation_state, &origin.current_animation_state, sizeof(origin.current_animation_state));
+    MemoryCopy(&dest->item, &origin.item, sizeof(origin.item));
+    MemoryCopy(dest->enchantments, origin.enchantments, sizeof(origin.enchantments));
+    MemoryCopy(&dest->priority, &origin.priority, sizeof(origin.priority));
+    MemoryCopy(&dest->structure_type, &origin.structure_type, sizeof(origin.structure_type));
+    MemoryCopy(dest->remaining_items_in_blueprint, origin.remaining_items_in_blueprint, sizeof(origin.remaining_items_in_blueprint));
+    MemoryCopy(&dest->durability, &origin.durability, sizeof(origin.durability));
+    MemoryCopy(&dest->tree_type, &origin.tree_type, sizeof(origin.tree_type));
+}
+
+static void WriteEntity_Version2ToFile(FILE *file, Entity *data)
+{
+    for (i32 i = 0; i < ENTITY_PROPERTY_SIZE; i++)
+    {
+        WriteToFile(file, &data->properties[i], sizeof(u64));
+    }
+
+    for (i32 i = 0; i < 128; i++)
+    {
+        WriteToFile(file, &data->debug_name[i], sizeof(char));
+    }
+
+    WriteToFile(file, &data->position, sizeof(data->position));
+
+    for (i32 i = 0; i < 128; i++)
+    {
+        WriteToFile(file, &data->note[i], sizeof(char));
+    }
+
+    WriteToFile(file, &data->sprite_data, sizeof(data->sprite_data));
+
+    WriteToFile(file, &data->is_flipped, sizeof(data->is_flipped));
+
+    WriteToFile(file, &data->is_background_sprite, sizeof(data->is_background_sprite));
+
+    WriteToFile(file, &data->previous_parallax_rect, sizeof(data->previous_parallax_rect));
+
+    WriteToFile(file, &data->animation_flags, sizeof(data->animation_flags));
+
+    WriteToFile(file, &data->current_frame, sizeof(data->current_frame));
+
+    WriteToFile(file, &data->interval_mult, sizeof(data->interval_mult));
+
+    WriteToFile(file, &data->frame_start_time, sizeof(data->frame_start_time));
+
+    WriteToFile(file, &data->physics, sizeof(data->physics));
+
+    WriteToFile(file, &data->smooth_velocity, sizeof(data->smooth_velocity));
+
+    WriteToFile(file, &data->axis_x, sizeof(data->axis_x));
+
+    WriteToFile(file, &data->move_speed, sizeof(data->move_speed));
+
+    WriteToFile(file, &data->move_speed_mult, sizeof(data->move_speed_mult));
+
+    WriteToFile(file, &data->entity_type, sizeof(data->entity_type));
+
+    WriteToFile(file, &data->current_animation_state, sizeof(data->current_animation_state));
+
+    WriteToFile(file, &data->item, sizeof(data->item));
+
+    for (i32 i = 0; i < MAX_ENCHANTMENTS; i++)
+    {
+        WriteToFile(file, &data->enchantments[i], sizeof(Enchantment));
+    }
+
+    WriteToFile(file, &data->priority, sizeof(data->priority));
+
+    WriteToFile(file, &data->structure_type, sizeof(data->structure_type));
+
+    for (i32 i = 0; i < MAX_ITEMS_IN_BLUEPRINT_RECIPE; i++)
+    {
+        WriteToFile(file, &data->remaining_items_in_blueprint[i], sizeof(Item));
+    }
+
+    WriteToFile(file, &data->durability, sizeof(data->durability));
+
+    WriteToFile(file, &data->tree_type, sizeof(data->tree_type));
+
+}
+
+static void ReadEntity_Version2FromFile(FILE *file, Entity *data)
+{
+    for (i32 i = 0; i < ENTITY_PROPERTY_SIZE; i++)
+    {
+        ReadFromFile(file, &data->properties[i], sizeof(u64));
+    }
+
+    for (i32 i = 0; i < 128; i++)
+    {
+        ReadFromFile(file, &data->debug_name[i], sizeof(char));
+    }
+
+    ReadFromFile(file, &data->position, sizeof(data->position));
+
+    for (i32 i = 0; i < 128; i++)
+    {
+        ReadFromFile(file, &data->note[i], sizeof(char));
+    }
 
     ReadFromFile(file, &data->sprite_data, sizeof(data->sprite_data));
 

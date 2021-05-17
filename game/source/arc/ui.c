@@ -751,6 +751,14 @@ internal void DrawGameUI()
 				core->run_data->is_paused = 0;
 				core->world_delta_mult = 1.0f;
 			}
+			if (TsUIMenuButton("Reset World"))
+			{
+				core->run_data->is_paused = 0;
+				core->world_delta_mult = 1.0f;
+				
+				UnloadWorld();
+				CreateWorld("testing");
+			}
 			if (TsUIMenuButton("Main Menu"))
 			{
 				UnloadWorld();

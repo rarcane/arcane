@@ -5,3 +5,4 @@ internal void DrawGeneralEditor();
 internal void DrawTerrainEditor();
 internal void SetEjectedMode(b8 value);
 internal void UpdateEjectedMode();
+internal void UpdateTextNoteEntities();

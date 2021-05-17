@@ -623,16 +623,51 @@ ENTITY_PROPERTY_queryable,
 ENTITY_PROPERTY_terrain_segment,
 ENTITY_PROPERTY_tree,
 ENTITY_PROPERTY_do_not_serialise,
+ENTITY_PROPERTY_text_note,
 ENTITY_PROPERTY_MAX,
 };
 static char *GetEntityPropertyName(EntityProperty type);
 
 #define ENTITY_PROPERTY_SIZE (((ENTITY_PROPERTY_MAX/64)+1))
+typedef struct Entity_Version1
+{
+u64 properties[ENTITY_PROPERTY_SIZE];
+char debug_name[128];
+v2 position;
+char note[1024];
+SpriteRender sprite_data;
+b8 is_flipped;
+b8 is_background_sprite;
+v4 previous_parallax_rect;
+AnimationFlags animation_flags;
+i32 current_frame;
+f32 interval_mult;
+f32 frame_start_time;
+PhysicsBodyData physics;
+v2 smooth_velocity;
+f32 axis_x;
+f32 move_speed;
+f32 move_speed_mult;
+ArcEntityType entity_type;
+// @DoNotSerialise 
+char *current_general_state;
+ArcEntityAnimationState current_animation_state;
+Item item;
+Enchantment enchantments[MAX_ENCHANTMENTS];
+f32 priority;
+StructureType structure_type;
+Item remaining_items_in_blueprint[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
+f32 durability;
+TreeType tree_type;
+} Entity_Version1;
+
 typedef struct Entity
 {
 u64 properties[ENTITY_PROPERTY_SIZE];
-char debug_name[100];
+char debug_name[128];
 v2 position;
+// @MapFrom(note) 
+char note[128];
 SpriteRender sprite_data;
 b8 is_flipped;
 b8 is_background_sprite;
@@ -665,6 +700,7 @@ enum EntityPresetCategory
 ENTITY_PRESET_CATEGORY_none,
 ENTITY_PRESET_CATEGORY_resource,
 ENTITY_PRESET_CATEGORY_background1,
+ENTITY_PRESET_CATEGORY_misc,
 ENTITY_PRESET_CATEGORY_MAX,
 };
 static char *GetEntityPresetCategoryName(EntityPresetCategory type);
@@ -684,6 +720,7 @@ ENTITY_PRESET_TYPE_tree,
 ENTITY_PRESET_TYPE_bg1_hill,
 ENTITY_PRESET_TYPE_bg1_tree,
 ENTITY_PRESET_TYPE_bg2_tree,
+ENTITY_PRESET_TYPE_text_note,
 ENTITY_PRESET_TYPE_MAX,
 };
 global EntityPresetTypeData global_entity_preset_type_data[ENTITY_PRESET_TYPE_MAX] = {
@@ -692,6 +729,7 @@ global EntityPresetTypeData global_entity_preset_type_data[ENTITY_PRESET_TYPE_MA
     { "BG1 Hill", BG1HillEntityPresetCallback, ENTITY_PRESET_CATEGORY_background1, },
     { "BG1 Tree", BG1TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background1, },
     { "BG2 Tree", BG2TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background1, },
+    { "Text Note", TextNoteEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc, },
 };
 
 static char *GetEntityPresetTypeName(EntityPresetType type);
@@ -994,9 +1032,15 @@ static void WriteWorldDataToFile(FILE *file, WorldData *data);
 
 static void ReadWorldDataFromFile(FILE *file, WorldData *data);
 
-static void WriteEntity_Version0ToFile(FILE *file, Entity *data);
+static void WriteEntity_Version1ToFile(FILE *file, Entity_Version1 *data);
 
-static void ReadEntity_Version0FromFile(FILE *file, Entity *data);
+static void ReadEntity_Version1FromFile(FILE *file, Entity_Version1 *data);
+
+static void MapEntity_Version1ToEntity(Entity_Version1 origin, Entity *dest);
+
+static void WriteEntity_Version2ToFile(FILE *file, Entity *data);
+
+static void ReadEntity_Version2FromFile(FILE *file, Entity *data);
 
 static void WriteCharacterData_Version0ToFile(FILE *file, CharacterData *data);
 

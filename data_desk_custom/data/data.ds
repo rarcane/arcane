@@ -636,17 +636,73 @@ EntityProperty :: enum
 	terrain_segment,
 	tree,
 	do_not_serialise,
+	text_note,
 }
 
 ENTITY_PROPERTY_SIZE :: (ENTITY_PROPERTY_MAX / 64 + 1)
 
-@SerialisableStruct(0) @Version(0)
+@Version(1)
+Entity_Version1 :: struct
+{
+	properties : u64[ENTITY_PROPERTY_SIZE];
+	debug_name : char[128];
+	
+	position : v2;
+	
+	note : char[1024];
+	
+	sprite_data : SpriteRender;
+	is_flipped : b8;
+	is_background_sprite : b8; // Temp solution
+	
+	previous_parallax_rect : v4;
+	
+	animation_flags : AnimationFlags;
+	current_frame : i32;
+	interval_mult : f32;
+	frame_start_time : f32;
+	
+	// NOTE(randy): physics body
+	physics : PhysicsBodyData;
+	smooth_velocity : v2;
+	
+	// NOTE(randy): movement
+	axis_x : f32;
+	move_speed : f32;
+	move_speed_mult : f32;
+	
+	// NOTE(randy): arcentity
+	entity_type : ArcEntityType;
+	@DoNotSerialise
+		current_general_state : *char;
+	current_animation_state : ArcEntityAnimationState;
+	
+	// NOTE(randy): Item shit
+	item : Item;
+	enchantments : Enchantment[MAX_ENCHANTMENTS];
+	
+	// NOTE(randy): interactable
+	priority : f32;
+	
+	// NOTE(randy): blueprint
+	structure_type : StructureType;
+	remaining_items_in_blueprint : Item[MAX_ITEMS_IN_BLUEPRINT_RECIPE];
+	
+	durability : f32;
+	
+	tree_type : TreeType;
+}
+
+@SerialisableStruct(2) @Version(2)
 Entity :: struct
 {
 	properties : u64[ENTITY_PROPERTY_SIZE];
-	debug_name : char[100];
+	debug_name : char[128];
 	
 	position : v2;
+	
+	@MapFrom(note)
+		note : char[128];
 	
 	sprite_data : SpriteRender;
 	is_flipped : b8;
@@ -695,6 +751,7 @@ EntityPresetCategory :: enum
 	none,
 	resource,
 	background1,
+	misc,
 }
 
 @XMacro
@@ -719,6 +776,9 @@ EntityPresetType:: enum
 		bg1_tree,
 	@Data("'BG2 Tree'", BG2TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background1)
 		bg2_tree,
+	
+	@Data("'Text Note'", TextNoteEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc)
+		text_note,
 }
 
 
