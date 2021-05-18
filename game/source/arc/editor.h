@@ -1,4 +1,5 @@
 internal void InitMapEditor();
+internal void ClearSelectedEntities();
 internal b8 LoadMapData();
 internal void SaveMapData();
 internal void DrawGeneralEditor();

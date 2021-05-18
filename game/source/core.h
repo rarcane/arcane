@@ -10,6 +10,7 @@ typedef struct StorageComponent StorageComponent;
 typedef struct WorldData WorldData;
 typedef struct RunData RunData;
 typedef struct ClientData ClientData;
+typedef struct EditorData EditorData;
 
 typedef struct DebugLine
 {
@@ -57,6 +58,7 @@ struct Core
 	// Data stores
 	RunData *run_data;
 	ClientData *client_data;
+	EditorData *editor_data;
 	
 	// NOTE(rjf): Render size data.
 	union {

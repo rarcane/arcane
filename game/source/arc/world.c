@@ -125,7 +125,7 @@ internal void DrawWorld()
 	// NOTE(randy): Pass visible ground vertices to renderer
 	MemorySet(global_ts2d->ground_vertices, 0, sizeof(global_ts2d->ground_vertices));
 	global_ts2d->ground_vertex_count = 0;
-	if (!(GetRunData()->debug_flags & DEBUG_FLAGS_disable_draw_terrain))
+	if (!(GetEditorData()->debug_flags & DEBUG_FLAGS_disable_draw_terrain))
 	{
 		v4 camera_region = GetCameraRegionRect();
 		const float x_buffer = 50.0f;

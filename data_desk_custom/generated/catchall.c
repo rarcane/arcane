@@ -908,6 +908,28 @@ static void ReadWorldDataFromFile(FILE *file, WorldData *data)
     }
 }
 
+static void WriteEditorDataToFile(FILE *file, EditorData *data)
+{
+    i32 version = 0;
+    WriteToFile(file, &version, sizeof(i32));
+    WriteEditorData_Version0ToFile(file, data);
+}
+
+static void ReadEditorDataFromFile(FILE *file, EditorData *data)
+{
+    i32 actual_version = -1;
+    ReadFromFile(file, &actual_version, sizeof(i32));
+    if (actual_version == 0)
+    {
+        ReadEditorData_Version0FromFile(file, data);
+        return;
+    }
+
+    switch (actual_version)
+    {
+    }
+}
+
 static void WriteEntity_Version1ToFile(FILE *file, Entity_Version1 *data)
 {
     for (i32 i = 0; i < ENTITY_PROPERTY_SIZE; i++)
@@ -1335,6 +1357,40 @@ static void ReadWorldData_Version0FromFile(FILE *file, WorldData *data)
     ReadFromFile(file, &data->elapsed_world_time, sizeof(data->elapsed_world_time));
 
     ReadFromFile(file, &data->character_chunk, sizeof(data->character_chunk));
+
+}
+
+static void WriteEditorData_Version0ToFile(FILE *file, EditorData *data)
+{
+    for (i32 i = 0; i < MAX_SELECTED_ENTITIES; i++)
+    {
+        WriteToFile(file, &data->selected_entities[i], sizeof(i32));
+    }
+
+    WriteToFile(file, &data->debug_flags, sizeof(data->debug_flags));
+
+    WriteToFile(file, &data->grid_width, sizeof(data->grid_width));
+
+    WriteToFile(file, &data->last_camera_pos, sizeof(data->last_camera_pos));
+
+    WriteToFile(file, &data->last_camera_zoom, sizeof(data->last_camera_zoom));
+
+}
+
+static void ReadEditorData_Version0FromFile(FILE *file, EditorData *data)
+{
+    for (i32 i = 0; i < MAX_SELECTED_ENTITIES; i++)
+    {
+        ReadFromFile(file, &data->selected_entities[i], sizeof(i32));
+    }
+
+    ReadFromFile(file, &data->debug_flags, sizeof(data->debug_flags));
+
+    ReadFromFile(file, &data->grid_width, sizeof(data->grid_width));
+
+    ReadFromFile(file, &data->last_camera_pos, sizeof(data->last_camera_pos));
+
+    ReadFromFile(file, &data->last_camera_zoom, sizeof(data->last_camera_zoom));
 
 }
 

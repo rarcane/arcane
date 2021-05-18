@@ -92,7 +92,7 @@ internal void RenderSprites()
 		}
 		
 		v4 tint = v4u(1.0f);
-		if (entity == GetRunData()->selected_entity)
+		if (EntitySelectedIndex(entity) != -1)
 		{
 			tint = v4(1.0f, 0.6f, 0.6f, 1.0f);
 		}

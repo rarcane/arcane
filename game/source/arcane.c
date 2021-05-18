@@ -80,6 +80,9 @@ GameInit(void)
 		core->run_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(RunData));
 		Assert(core->run_data);
         
+		core->editor_data = MemoryArenaAllocateAndZero(core->permanent_arena, sizeof(EditorData));
+		Assert(core->run_data);
+		
 		// NOTE(rjf): Initialize TsDevTerminal.
 		{
 			TsDevTerminalCommand commands[] =

@@ -9,11 +9,45 @@ internal void InitMapEditor()
 	GetRunData()->editor_state = EDITOR_STATE_general;
 	InitialiseRunData();
 	
-	GetRunData()->debug_flags |= DEBUG_FLAGS_draw_chunk_grid;
-	GetRunData()->debug_flags |= DEBUG_FLAGS_draw_collision;
-	GetRunData()->debug_flags |= DEBUG_FLAGS_disable_draw_terrain;
-	
 	LoadMapData();
+	
+	char file_path[128];
+	sprintf(file_path, "%seditor_data.arc", core->res_path);
+	FILE *file = fopen(file_path, "rb");
+	if (file)
+	{
+		ReadEditorDataFromFile(file, core->editor_data);
+		
+		core->camera_position = GetEditorData()->last_camera_pos;
+		core->camera_zoom = GetEditorData()->last_camera_zoom;
+		
+		fclose(file);
+	}
+	else
+	{
+		ClearSelectedEntities();
+		GetEditorData()->debug_flags |= DEBUG_FLAGS_draw_collision;
+		GetEditorData()->debug_flags |= DEBUG_FLAGS_disable_draw_terrain;
+		GetEditorData()->grid_width = 1;
+	}
+}
+
+internal void SaveEditorData()
+{
+	GetEditorData()->last_camera_pos = core->camera_position;
+	GetEditorData()->last_camera_zoom = core->camera_zoom;
+	
+	char file_path[128];
+	sprintf(file_path, "%seditor_data.arc", core->res_path);
+	FILE *file = fopen(file_path, "wb");
+	Assert(file);
+	WriteEditorDataToFile(file, core->editor_data);
+	fclose(file);
+}
+
+internal void ClearSelectedEntities()
+{
+	memset(GetEditorData()->selected_entities, -1, sizeof(GetEditorData()->selected_entities));
 }
 
 internal void EditorUpdate()
@@ -122,20 +156,10 @@ internal void DrawEditorUI()
 		} break;
 		
 		default:
-		Assert(0);
+		Assert(0);{
+			
+		}
 		break;
-	}
-	
-	// NOTE(randy): Time dilation
-	if (core->run_data->editor_state)
-	{
-		TsUIBeginInputGroup();
-		TsUIPushColumn(v2(core->render_w / 2.0f - 125.0f, 40.0f), v2(250.0f, 30.0f));
-		
-		core->world_delta_mult = TsUISlider("World Time Dilation", core->world_delta_mult, 0.0f, 1.0f);
-		
-		TsUIPopColumn();
-		TsUIEndInputGroup();
 	}
 }
 
@@ -148,6 +172,9 @@ internal void SwitchEditorState(EditorState editor_state)
 	else if (GetRunData()->editor_state != EDITOR_STATE_none && editor_state == EDITOR_STATE_none)
 	{
 		SaveMapData();
+		
+		SaveEditorData();
+		memset(core->editor_data, 0, sizeof(EditorData));
 		
 		if (!LoadWorld("testing"))
 			CreateWorld("testing");
@@ -174,7 +201,9 @@ internal void EntityLibIconUpdateCallback(char *name, v4 rect, v2 mouse, void *u
 		Entity *entity = NewEntity();
 		entity_preset->setup_callback(entity);
 		dragged_entity = entity;
-		GetRunData()->selected_entity = entity;
+		
+		ClearSelectedEntities();
+		GetEditorData()->selected_entities[0] = (i32)(entity - GetRunData()->entities);
 		
 		platform->left_mouse_pressed = 0;
 	}
@@ -225,6 +254,23 @@ internal void DrawGeneralEditor()
 			{
 				SaveMapData();
 			}
+		}
+		TsUIDropdownEnd();
+		
+		if (TsUIDropdown("Options..."))
+		{
+			if (TsUIToggler("Draw Colliders", GetEditorData()->debug_flags & DEBUG_FLAGS_draw_collision))
+				GetEditorData()->debug_flags |= DEBUG_FLAGS_draw_collision;
+			else
+				GetEditorData()->debug_flags &= ~DEBUG_FLAGS_draw_collision;
+			
+			if (TsUIToggler("Disable Terrain", GetEditorData()->debug_flags & DEBUG_FLAGS_disable_draw_terrain))
+				GetEditorData()->debug_flags |= DEBUG_FLAGS_disable_draw_terrain;
+			else
+				GetEditorData()->debug_flags &= ~DEBUG_FLAGS_disable_draw_terrain;
+			
+			GetEditorData()->grid_width = TsUIIntSlider("Grid Width", GetEditorData()->grid_width, 0, 50);
+			
 		}
 		TsUIDropdownEnd();
 	}
@@ -278,9 +324,45 @@ internal void DrawGeneralEditor()
 		
 		TsUILabel("-------------");
 		
-		if (GetRunData()->selected_entity)
+		if (GetEditorData()->selected_entities[0] != -1)
 		{
-			PrintEntityFields(GetRunData()->selected_entity);
+			if (GetEditorData()->selected_entities[1] == -1)
+			{
+				PrintEntityFields(&GetRunData()->entities[GetEditorData()->selected_entities[0]]);
+			}
+			else
+			{
+				// NOTE(randy): Multiple entities selected. List them all out
+				for (i32 i = 0; i < MAX_SELECTED_ENTITIES; i++)
+				{
+					if (GetEditorData()->selected_entities[i] == -1)
+						break;
+					
+					Entity *selected_entity = &GetRunData()->entities[GetEditorData()->selected_entities[i]];
+					if (TsUICollapsable(selected_entity->debug_name))
+					{
+						PrintEntityFields(selected_entity);
+						TsUICollapsableEnd();
+					}
+				}
+				
+				// NOTE(randy): Mass selection actions
+				/*
+								if (TsUIButton("Floor Selection"))
+								{
+									for (i32 i = 0; i < MAX_SELECTED_ENTITIES; i++)
+									{
+										if (GetEditorData()->selected_entities[i] == -1)
+											break;
+										
+										Entity *selected_entity = &GetRunData()->entities[GetEditorData()->selected_entities[i]];
+										
+										selected_entity->position = v2((i32)(selected_entity->position.x),
+																	   (i32)(selected_entity->position.y));
+									}
+								}
+				 */
+			}
 		}
 		else
 		{
@@ -292,21 +374,40 @@ internal void DrawGeneralEditor()
 	}
 	TsUIWindowEnd();
 	
-	Entity *selected_entity = GetRunData()->selected_entity;
-	if (platform->key_pressed[KEY_delete] && selected_entity)
+	if (platform->key_pressed[KEY_delete] && GetEditorData()->selected_entities[0] != -1)
 	{
-		DeleteEntity(selected_entity);
-		selected_entity = 0;
+		for (i32 i = 0; i < MAX_SELECTED_ENTITIES; i++)
+		{
+			if (GetEditorData()->selected_entities[i] == -1)
+				break;
+			
+			Entity *selected_entity = &GetRunData()->entities[GetEditorData()->selected_entities[i]];
+			DeleteEntity(selected_entity);
+		}
 		
 		TsPlatformCaptureKeyboard();
 	}
 	
-	// NOTE(randy): Selected entity movement handle
-	if (selected_entity)
+	// NOTE(randy): Entity selection movement handle
+	local_persist v2 last_pos = {INFINITY, INFINITY};
+	v2 movement_amount = {INFINITY, INFINITY};
+	if (GetEditorData()->selected_entities[0] != -1)
 	{
-		v2 pos = (EntityHasProperty(selected_entity, ENTITY_PROPERTY_parallaxable) ?
-				  ParallaxPosition(selected_entity->position, GetEntityParallaxAmount(selected_entity)) :
-				  selected_entity->position);
+		Entity *selected_entity = &GetRunData()->entities[GetEditorData()->selected_entities[0]];
+		
+		i32 count = 0;
+		v2 pos_total = {0};
+		for (i32 i = 0; i < MAX_SELECTED_ENTITIES; i++)
+		{
+			if (GetEditorData()->selected_entities[i] == -1)
+				break;
+			
+			Entity *entity = &GetRunData()->entities[GetEditorData()->selected_entities[i]];
+			pos_total = V2AddV2(pos_total, GetEntityPosition(entity));
+			count++;
+		}
+		
+		v2 pos = V2DivideF32(pos_total, (f32)count);
 		
 		f32 circle_size = 3.0f;
 		c2Shape middle_bounds = {0};
@@ -323,25 +424,23 @@ internal void DrawGeneralEditor()
 		if (core->left_mouse_released)
 		{
 			is_holding_middle = 0;
+			last_pos = v2(INFINITY, INFINITY);
 		}
 		
 		if (is_holding_middle)
 		{
 			middle_tint = 0.5f;
 			
-			if (EntityHasProperty(selected_entity, ENTITY_PROPERTY_parallaxable))
+			v2 current_pos = V2AddV2(GetMousePositionInWorldSpace(), grab_offset);
+			if (GetEditorData()->grid_width > 0)
 			{
-				v2 par_amount = GetEntityParallaxAmount(selected_entity);
-				v2 expected = V2AddV2(GetMousePositionInWorldSpace(), grab_offset);
-				selected_entity->position = v2((-par_amount.x * core->camera_position.x + expected.x) /
-											   (-par_amount.x + 1.0f),
-											   (-par_amount.y * core->camera_position.y + expected.y) /
-											   (-par_amount.y + 1.0f));
+				current_pos= v2(floorf(current_pos.x / (f32)GetEditorData()->grid_width) * GetEditorData()->grid_width,
+								floorf(current_pos.y / (f32)GetEditorData()->grid_width) * GetEditorData()->grid_width);
 			}
-			else
-			{
-				selected_entity->position = V2AddV2(GetMousePositionInWorldSpace(), grab_offset);
-			}
+			
+			if (last_pos.x != INFINITY)
+				movement_amount = V2SubtractV2(current_pos, last_pos);
+			last_pos = current_pos;
 		}
 		else if (IsV2OverlappingShape(GetMousePositionInWorldSpace(),
 									  middle_bounds,
@@ -354,6 +453,21 @@ internal void DrawGeneralEditor()
 				is_holding_middle = 1;
 				grab_offset = V2SubtractV2(pos, GetMousePositionInWorldSpace());
 				platform->left_mouse_pressed = 0;
+				
+				if (platform->key_down[KEY_alt])
+				{
+					for (i32 i = 0; i < MAX_SELECTED_ENTITIES; i++)
+					{
+						if (GetEditorData()->selected_entities[i] == -1)
+							break;
+						
+						Entity *selected_entity = &GetRunData()->entities[GetEditorData()->selected_entities[i]];
+						
+						Entity *new_entity = GetUnallocatedEntity();
+						memcpy(new_entity, selected_entity, sizeof(Entity));
+						GetEditorData()->selected_entities[i] = (i32)(new_entity - GetRunData()->entities);
+					}
+				}
 			}
 		}
 		
@@ -371,17 +485,43 @@ internal void DrawGeneralEditor()
 					   LAYER_HUD);
 	}
 	
+	// NOTE(randy): Move selected entities based on movement handle
+	if (movement_amount.x != INFINITY)
+		for (i32 i = 0; i < MAX_SELECTED_ENTITIES; i++)
+	{
+		if (GetEditorData()->selected_entities[i] == -1)
+			break;
+		
+		Entity *selected_entity = &GetRunData()->entities[GetEditorData()->selected_entities[i]];
+		
+		if (EntityHasProperty(selected_entity, ENTITY_PROPERTY_parallaxable))
+		{
+			v2 par_amount = GetEntityParallaxAmount(selected_entity);
+			v2 expected = V2AddV2(ParallaxPosition(selected_entity->position, par_amount), movement_amount);
+			
+			selected_entity->position = v2((-par_amount.x * core->camera_position.x + expected.x) /
+										   (-par_amount.x + 1.0f),
+										   (-par_amount.y * core->camera_position.y + expected.y) /
+										   (-par_amount.y + 1.0f));
+		}
+		else
+		{
+			selected_entity->position = V2AddV2(selected_entity->position, movement_amount);
+		}
+	}
+	
 	// NOTE(randy): Entity selection logic
 	if (platform->left_mouse_pressed)
 	{
-		GetRunData()->selected_entity = 0;
+		if (!platform->key_down[KEY_shift])
+			ClearSelectedEntities();
 		
 		for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_positional);)
 		{
 			if (IsPositionOverlappingEntity(entity, GetMousePositionInWorldSpace()) &&
 				!EntityHasProperty(entity, ENTITY_PROPERTY_terrain_segment))
 			{
-				GetRunData()->selected_entity = entity;
+				SelectNewEntity(entity);
 				platform->left_mouse_pressed = 0;
 				break;
 			}
@@ -645,21 +785,7 @@ internal void DrawTerrainEditor()
 
 internal void SetEjectedMode(b8 value)
 {
-	if (value == GetRunData()->is_ejected)
-	{
-		return;
-	}
-	
-	if (value)
-	{
-		GetRunData()->debug_flags = DEFAULT_EJECTED_DEBUG_FLAGS;
-		GetRunData()->is_ejected = 1;
-	}
-	else
-	{
-		GetRunData()->debug_flags = 0;
-		GetRunData()->is_ejected = 0;
-	}
+	GetRunData()->is_ejected = value;
 }
 
 internal void UpdateEjectedMode()

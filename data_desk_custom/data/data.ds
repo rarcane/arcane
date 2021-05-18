@@ -62,13 +62,6 @@ PixelFlags :: flags
 	apply_gravity,
 }
 
-DebugFlags :: flags
-{
-	draw_collision,
-	draw_chunk_grid,
-	disable_draw_terrain,
-}
-
 //~Sprites
 @XMacro
 SpriteData :: struct
@@ -132,7 +125,7 @@ Sprite :: enum
 	@Data("'scenic/trees/pine_tree'", "{0.0f, 0.0f, 90.0f, 170.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		pine_tree_v1,
 	
-	@Data("'scenic/background/bg1_hills'", "{0.0f, 0.0f, 100.0f, 15.0f}", "{0.0f, 80.0f}", 0, 0.0f)
+	@Data("'scenic/background/bg1_hills'", "{0.0f, 0.0f, 100.0f, 100.0f}", "{0.0f, 80.0f}", 0, 0.0f)
 		bg1_hills_v1,
 	@Data("'scenic/background/bg1_hills'", "{100.0f, 0.0f, 100.0f, 100.0f}", "{0.0f, 80.0f}", 0, 0.0f)
 		bg1_hills_v2,
@@ -483,7 +476,7 @@ PhysicsBodyTypeFlags :: flags
 
 
 
-// NOTE(randy): $Crafting recipes
+//~Crafting
 MAX_ITEMS_IN_CRAFTING_RECIPE :: 10
 @XMacro
 CraftingRecipeTypeData :: struct
@@ -504,7 +497,7 @@ CraftingRecipeType :: enum
 
 
 
-// NOTE(randy): $Strucutres
+//~Strucutres
 StructureCategory :: enum
 {
 	none,
@@ -1092,14 +1085,35 @@ RunData :: struct
 	//~Editor
 	is_ejected : b8;
 	editor_state : EditorState;
-	debug_flags : DebugFlags;
-	
-	selected_entity : *Entity;
-	selected_chunk : iv2;
 }
 
 // TODO: serialise client options
 ClientData :: struct // Game client data, settings that should be remembered globally
 {
 	bloom : b32;
+}
+
+//~Editor
+DebugFlags :: flags
+{
+	draw_collision,
+	disable_draw_terrain,
+}
+
+MAX_SELECTED_ENTITIES :: 128
+@SerialisableStruct(0) @Version(0)
+EditorData :: struct
+{
+	/*
+		selected_entity_index : i32;
+		@DoNotSerialise
+			selected_entity : *Entity;
+	 */
+	selected_entities : i32[MAX_SELECTED_ENTITIES];
+	
+	debug_flags : DebugFlags;
+	grid_width : i32;
+	
+	last_camera_pos : v2;
+	last_camera_zoom : f32;
 }

@@ -1,25 +1,19 @@
 #ifdef DEVELOPER_TOOLS
 internal void RenderColliders()
 {
-	if (!(core->run_data->debug_flags & DEBUG_FLAGS_draw_collision))
+	if (!(GetEditorData()->debug_flags & DEBUG_FLAGS_draw_collision))
 		return;
 	
 	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_physical);)
 	{
 		v4 col = v4u(1.0f);
-		if (core->run_data->selected_entity &&
-			entity == core->run_data->selected_entity)
+		if (EntitySelectedIndex(entity) != -1)
 			col = v4(1.0f, 0.0f, 0.0f, 1.0f);
 		
 		PushDebugShape(entity->physics.shape,
 					   entity->physics.shape_type,
 					   entity->position,
 					   col);
-	}
-	
-	if (platform->left_mouse_pressed)
-	{
-		core->run_data->selected_entity = 0;
 	}
 }
 #endif

@@ -25,8 +25,13 @@ internal Entity *NewEntity()
 
 internal void DeleteEntity(Entity *entity)
 {
-	if (GetRunData()->selected_entity == entity)
-		GetRunData()->selected_entity = 0;
+	Assert(entity);
+	
+	i32 sel_index = EntitySelectedIndex(entity);
+	if (sel_index != -1)
+	{
+		GetEditorData()->selected_entities[sel_index] = -1;
+	}
 	
 	MemorySet(entity, 0, sizeof(Entity));
 }

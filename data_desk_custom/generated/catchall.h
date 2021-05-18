@@ -51,11 +51,6 @@ typedef uint32 ParticleEmitterFlags;
 #define PIXEL_FLAGS_apply_gravity (1<<0)
 typedef uint32 PixelFlags;
 
-#define DEBUG_FLAGS_draw_collision (1<<0)
-#define DEBUG_FLAGS_draw_chunk_grid (1<<1)
-#define DEBUG_FLAGS_disable_draw_terrain (1<<2)
-typedef uint32 DebugFlags;
-
 typedef struct SpriteData
 {
 char texture_path[50];
@@ -166,7 +161,7 @@ global SpriteData global_sprite_data[SPRITE_MAX] = {
     { "scenic/forest_ground", {0.0f, 0.0f, 100.0f, 4.0f}, {0.0f, 0.0f}, 0, 0.0f, },
     { "scenic/forest_ground", {0.0f, 4.0f, 100.0f, 4.0f}, {0.0f, 0.0f}, 0, 0.0f, },
     { "scenic/trees/pine_tree", {0.0f, 0.0f, 90.0f, 170.0f}, {0.0f, 0.0f}, 0, 0.0f, },
-    { "scenic/background/bg1_hills", {0.0f, 0.0f, 100.0f, 15.0f}, {0.0f, 80.0f}, 0, 0.0f, },
+    { "scenic/background/bg1_hills", {0.0f, 0.0f, 100.0f, 100.0f}, {0.0f, 80.0f}, 0, 0.0f, },
     { "scenic/background/bg1_hills", {100.0f, 0.0f, 100.0f, 100.0f}, {0.0f, 80.0f}, 0, 0.0f, },
     { "scenic/background/bg1_hills", {0.0f, 100.0f, 100.0f, 100.0f}, {0.0f, 60.0f}, 0, 0.0f, },
     { "scenic/background/bg1_hills", {100.0f, 100.0f, 100.0f, 100.0f}, {0.0f, 60.0f}, 0, 0.0f, },
@@ -1012,15 +1007,26 @@ f32 move_to_time;
 f32 move_to_start_time;
 b8 is_ejected;
 EditorState editor_state;
-DebugFlags debug_flags;
-Entity *selected_entity;
-iv2 selected_chunk;
 } RunData;
 
 typedef struct ClientData
 {
 b32 bloom;
 } ClientData;
+
+#define DEBUG_FLAGS_draw_collision (1<<0)
+#define DEBUG_FLAGS_disable_draw_terrain (1<<1)
+typedef uint32 DebugFlags;
+
+#define MAX_SELECTED_ENTITIES (128)
+typedef struct EditorData
+{
+i32 selected_entities[MAX_SELECTED_ENTITIES];
+DebugFlags debug_flags;
+i32 grid_width;
+v2 last_camera_pos;
+f32 last_camera_zoom;
+} EditorData;
 
 static void WriteEntityToFile(FILE *file, Entity *data);
 
@@ -1033,6 +1039,10 @@ static void ReadCharacterDataFromFile(FILE *file, CharacterData *data);
 static void WriteWorldDataToFile(FILE *file, WorldData *data);
 
 static void ReadWorldDataFromFile(FILE *file, WorldData *data);
+
+static void WriteEditorDataToFile(FILE *file, EditorData *data);
+
+static void ReadEditorDataFromFile(FILE *file, EditorData *data);
 
 static void WriteEntity_Version1ToFile(FILE *file, Entity_Version1 *data);
 
@@ -1051,4 +1061,8 @@ static void ReadCharacterData_Version0FromFile(FILE *file, CharacterData *data);
 static void WriteWorldData_Version0ToFile(FILE *file, WorldData *data);
 
 static void ReadWorldData_Version0FromFile(FILE *file, WorldData *data);
+
+static void WriteEditorData_Version0ToFile(FILE *file, EditorData *data);
+
+static void ReadEditorData_Version0FromFile(FILE *file, EditorData *data);
 

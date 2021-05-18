@@ -695,3 +695,56 @@ internal CharacterData *GetCharacterData()
 {
 	return &core->run_data->world_data.character_data;
 }
+
+internal EditorData *GetEditorData()
+{
+	return core->editor_data;
+}
+
+internal i32 EntitySelectedIndex(Entity *entity)
+{
+	Assert(entity);
+	
+	for (i32 i = 0; i < MAX_SELECTED_ENTITIES; i++)
+	{
+		if (GetEditorData()->selected_entities[i] == -1)
+			return -1;
+		
+		Entity *selected_entity = &GetRunData()->entities[GetEditorData()->selected_entities[i]];
+		if (entity == selected_entity)
+			return i;
+	}
+	
+	return -1;
+}
+
+internal void SelectNewEntity(Entity *entity)
+{
+	Assert(entity);
+	i32 slot = -1;
+	for (i32 i = 0; i < MAX_SELECTED_ENTITIES; i++)
+	{
+		if (GetEditorData()->selected_entities[i] == -1)
+		{
+			slot = i;
+			break;
+		}
+	}
+	
+	if (slot == -1)
+		return;
+	
+	GetEditorData()->selected_entities[slot] = (i32)(entity - GetRunData()->entities);
+}
+
+internal v2 GetEntityPosition(Entity *entity)
+{
+	Assert(entity && EntityHasProperty(entity, ENTITY_PROPERTY_positional));
+	
+	if (EntityHasProperty(entity, ENTITY_PROPERTY_parallaxable))
+	{
+		return ParallaxPosition(entity->position, GetEntityParallaxAmount(entity));
+	}
+	
+	return entity->position;
+}

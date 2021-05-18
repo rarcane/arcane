@@ -20,7 +20,7 @@ TSDEVTERMINAL_COMMAND_PROC(LoadLevelCommand)
 
 TSDEVTERMINAL_COMMAND_PROC(DrawCollidersCommand)
 {
-	core->run_data->debug_flags ^= DEBUG_FLAGS_draw_collision;
+	GetEditorData()->debug_flags ^= DEBUG_FLAGS_draw_collision;
 	
 	return 0;
 }
