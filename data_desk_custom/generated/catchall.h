@@ -605,7 +605,7 @@ enum EntityProperty
 {
 ENTITY_PROPERTY_is_allocated,
 ENTITY_PROPERTY_is_character,
-ENTITY_PROPERTY_map_entity,
+ENTITY_PROPERTY__empty,
 ENTITY_PROPERTY_positional,
 ENTITY_PROPERTY_interactable,
 ENTITY_PROPERTY_interactable_left_click,
@@ -721,6 +721,7 @@ ENTITY_PRESET_TYPE_bg1_hill,
 ENTITY_PRESET_TYPE_bg1_tree,
 ENTITY_PRESET_TYPE_bg2_tree,
 ENTITY_PRESET_TYPE_text_note,
+ENTITY_PRESET_TYPE_item,
 ENTITY_PRESET_TYPE_MAX,
 };
 global EntityPresetTypeData global_entity_preset_type_data[ENTITY_PRESET_TYPE_MAX] = {
@@ -730,6 +731,7 @@ global EntityPresetTypeData global_entity_preset_type_data[ENTITY_PRESET_TYPE_MA
     { "BG1 Tree", BG1TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background1, },
     { "BG2 Tree", BG2TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background1, },
     { "Text Note", TextNoteEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc, },
+    { "Item", ItemEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc, },
 };
 
 static char *GetEntityPresetTypeName(EntityPresetType type);

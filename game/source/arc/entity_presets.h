@@ -6,3 +6,4 @@ EntityPresetCallback(BG1Hill);
 EntityPresetCallback(BG1Tree);
 EntityPresetCallback(BG2Tree);
 EntityPresetCallback(TextNote);
+EntityPresetCallback(Item);

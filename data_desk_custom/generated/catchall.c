@@ -625,8 +625,8 @@ break;
 case ENTITY_PROPERTY_is_character:
 return "Is Character";
 break;
-case ENTITY_PROPERTY_map_entity:
-return "Map Entity";
+case ENTITY_PROPERTY__empty:
+return "empty";
 break;
 case ENTITY_PROPERTY_positional:
 return "Positional";
@@ -731,6 +731,9 @@ return "Bg2 Tree";
 break;
 case ENTITY_PRESET_TYPE_text_note:
 return "Text Note";
+break;
+case ENTITY_PRESET_TYPE_item:
+return "Item";
 break;
 default:
 return "INVALID";

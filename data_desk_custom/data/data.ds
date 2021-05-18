@@ -331,7 +331,7 @@ Enchantment :: struct
 	// ...
 }
 
-//~ Items
+//~Items
 ItemCategory :: enum
 {
 	none,
@@ -612,7 +612,7 @@ EntityProperty :: enum
 {
 	is_allocated,
 	is_character,
-	map_entity,
+	_empty,
 	positional,
 	
 	// TODO(randy): yeet this ugly shit
@@ -779,6 +779,8 @@ EntityPresetType:: enum
 	
 	@Data("'Text Note'", TextNoteEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc)
 		text_note,
+	@Data("'Item'", ItemEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc)
+		item,
 }
 
 

@@ -187,9 +187,10 @@ internal void DrawCraftingUI()
 										item_pool_count);
 			}
 			
-			Entity *entity = NewGroundItemEntity(v2(item_position.x,
-													item_position.y - 43.0f),
-												 recipe->output);
+			Entity *entity = NewEntity();
+			entity->position = v2(item_position.x,
+								  item_position.y - 43.0f);
+			entity->item = recipe->output;
 			entity->priority = 10.0f;
 			
 			core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;

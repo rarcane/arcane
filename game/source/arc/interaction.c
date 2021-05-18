@@ -105,8 +105,17 @@ internal void InteractableUpdate()
 							.type = ITEM_TYPE_twig,
 							.stack_size = 2
 						};
-						NewGroundItemEntity(V2AddV2(entity->position, v2(-5.0f, -30.0f)), item);
-						NewGroundItemEntity(V2AddV2(entity->position, v2(5.0f, -60.0f)), item);
+						
+						Entity *twig = NewEntity();
+						ItemEntityPresetCallback(twig);
+						twig->position = V2AddV2(entity->position, v2(-5.0f, -30.0f));
+						twig->item = item;
+						
+						twig = NewEntity();
+						ItemEntityPresetCallback(twig);
+						twig->position = V2AddV2(entity->position, v2(-5.0f, -60.0f));
+						twig->item = item;
+						
 						DeleteEntity(entity);
 						
 					}

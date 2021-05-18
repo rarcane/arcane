@@ -3,10 +3,11 @@
 // render_layer
 // -128 -> 128
 // -28 -> 28 is parallax free
-#define LAYER_FRONT_UI -4
-#define LAYER_FRONT_GROUND -3
-#define LAYER_HUD -2
-#define LAYER_GROUND -1
+#define LAYER_FRONT_UI -5
+#define LAYER_FRONT_GROUND -4
+#define LAYER_HUD -4
+#define LAYER_GROUND -3
+#define LAYER_ITEMS -1
 #define LAYER_PLAYER 0
 #define LAYER_GROUND_ROCKS 1 // Small rocks that go behind the player to give extra depth
 #define LAYER_TREE 2

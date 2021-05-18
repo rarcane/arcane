@@ -162,6 +162,11 @@ internal void UpdateEntitySprite(Entity *entity)
 			} break;
 		}
 	}
+	else if (EntityHasProperty(entity, ENTITY_PROPERTY_item))
+	{
+		ItemTypeData *item_data = &global_item_type_data[entity->item.type];
+		entity->sprite_data.sprite = item_data->ground_sprite;
+	}
 }
 
 internal void PrintEntityFields(Entity *entity)
@@ -196,9 +201,25 @@ internal void PrintEntityFields(Entity *entity)
 	
 	if (EntityHasProperty(entity, ENTITY_PROPERTY_text_note))
 	{
-		TsUILineEdit(entity->note, entity->note, sizeof(entity->note));
+		TsUILineEdit("Input text note...", entity->note, sizeof(entity->note));
 	}
 	
+	if (EntityHasProperty(entity, ENTITY_PROPERTY_item))
+	{
+		if (TsUICollapsable("Item Type"))
+		{
+			for (i32 i = 1; i < ITEM_TYPE_MAX; i++)
+			{
+				if (TsUIToggler(GetItemTypeName(i), entity->item.type == i))
+				{
+					entity->item.type = i;
+					UpdateEntitySprite(entity);
+				}
+			}
+			
+			TsUICollapsableEnd();
+		}
+	}
 	
 	if (EntityHasProperty(entity, ENTITY_PROPERTY_sprite))
 	{
