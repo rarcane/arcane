@@ -208,5 +208,7 @@ internal void SetArcaneMode(i32 on)
 		core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;
 		core->run_data->character_state &= ~CHARACTER_STATE_is_enchanting;
 		core->run_data->character_state &= ~CHARACTER_STATE_is_in_elemental_skill_tree;
+		
+		SetCameraLock(0);
 	}
 }

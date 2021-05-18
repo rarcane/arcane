@@ -729,6 +729,11 @@ internal void DrawGameUI()
 		}
 	}
 	
+	DrawCraftingUI();
+	DrawEnchantingUI();
+	DrawBlueprintUI();
+	ElementalSkillTreeUIDraw();
+	
 	if (platform->key_pressed[KEY_esc])
 	{
 		core->run_data->is_paused = !core->run_data->is_paused;
@@ -769,9 +774,4 @@ internal void DrawGameUI()
 		TsUIPopColumn();
 		TsUIEndInputGroup();
 	}
-	
-	DrawCraftingUI();
-	DrawEnchantingUI();
-	DrawBlueprintUI();
-	ElementalSkillTreeUIDraw();
 }

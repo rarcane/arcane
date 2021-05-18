@@ -664,44 +664,7 @@ internal void SetEjectedMode(b8 value)
 
 internal void UpdateEjectedMode()
 {
-	/*
-		Entity *entity = &GetRunData()->entities[1];
-		
-		v4 bounds = GetEntityVisibleParallaxRect(entity);
-		
-		v2 pos = v2view(v2(bounds.x, bounds.y));
-		v2 size = v2zoom(v2(bounds.z, bounds.w));
-		bounds = v4(pos.x, pos.y, size.x, size.y);
-		
-		ArcPushRect(v4u(1.0f), bounds, 0.0f);
-	 */
-	
-	TsUIWindowBegin("debug", v4(0.0f, 0.0f, 600.0f, 300.0f), 0, 0);
-	{
-		TsUIPushColumn(v2(0.0f, 0.0f), v2(100.0f, 20.0f));
-		char lbl[200];
-		
-		sprintf(lbl, "camera pos: %f, %f", core->camera_position.x, core->camera_position.y);
-		TsUILabel(lbl);
-		
-		sprintf(lbl, "camera zoom: %f", core->camera_zoom);
-		TsUILabel(lbl);
-		
-		v4 camera_region = GetCameraRegionRect();
-		sprintf(lbl, "camera region: %f, %f, %f, %f", camera_region.x, camera_region.y, camera_region.z, camera_region.w);
-		TsUILabel(lbl);
-		
-		/*
-				sprintf(lbl, "value: %f", x);
-				TsUILabel(lbl);
-				
-				sprintf(lbl, "x bound: %f", x + entity->position.x);
-				TsUILabel(lbl);
-		 */
-		
-		TsUIPopColumn();
-	}
-	TsUIWindowEnd();
+	DrawGeneralEditor();
 }
 
 internal void UpdateTextNoteEntities()

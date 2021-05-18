@@ -151,19 +151,21 @@ static void TransformInGameCamera()
 	
 	core->camera_offset.y = -DEFAULT_CAMERA_OFFSET_Y;
 	
-	//core->camera_zoom = (core->render_h / (1080.0f / DEFAULT_CAMERA_ZOOM)) * core->camera_zoom_mult;
+	core->camera_zoom = (core->render_h / (1080.0f / DEFAULT_CAMERA_ZOOM)) * core->camera_zoom_mult;
 	//core->camera_zoom = 1.0f;
 	
 	f32 transform_mult = platform->key_down[KEY_shift] ? 2.0f : 1.0f;
 	
-	if (platform->mouse_scroll_y != 0.0f)
-	{
-		core->camera_zoom += platform->mouse_scroll_y / 120.0f / 4 * transform_mult;
-		if (core->camera_zoom <= MIN_CAMERA_ZOOM)
-			core->camera_zoom = MIN_CAMERA_ZOOM;
-		else if (core->camera_zoom > 10.0f)
-			core->camera_zoom = 10.0f;
-	}
+	/*
+		if (platform->mouse_scroll_y != 0.0f)
+		{
+			core->camera_zoom += platform->mouse_scroll_y / 120.0f / 4 * transform_mult;
+			if (core->camera_zoom <= MIN_CAMERA_ZOOM)
+				core->camera_zoom = MIN_CAMERA_ZOOM;
+			else if (core->camera_zoom > 10.0f)
+				core->camera_zoom = 10.0f;
+		}
+	 */
 	
 	// NOTE(randy): Clear camera cue buffer
 	//MemorySet(core->run_data->camera_cues, 0, sizeof(core->run_data->camera_cues));
@@ -181,4 +183,17 @@ internal void MoveCameraToLocation(v2 location, f32 zoom, f32 time)
 	core->run_data->move_to_zoom = zoom;
 	core->run_data->move_to_time = time;
 	core->run_data->move_to_start_time = platform->GetTime();
+}
+
+internal void SetCameraLock(b8 state)
+{
+	if (state)
+	{
+		core->run_data->lock_camera = 1;
+	}
+	else
+	{
+		core->run_data->lock_camera = 0;
+		core->camera_zoom_mult = 1.0f;
+	}
 }

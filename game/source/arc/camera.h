@@ -18,3 +18,4 @@ static inline v2 GetZeroWorldPosition()
 internal void TransformEditorCamera();
 internal void TransformInGameCamera();
 internal void MoveCameraToLocation(v2 location, f32 zoom, f32 time);
+internal void SetCameraLock(b8 state);

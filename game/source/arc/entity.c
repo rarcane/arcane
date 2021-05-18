@@ -219,6 +219,9 @@ internal void PrintEntityFields(Entity *entity)
 			
 			TsUICollapsableEnd();
 		}
+		
+		ItemTypeData *item_data = &global_item_type_data[entity->item.type];
+		entity->item.stack_size = TsUIIntSlider("Stack Size", entity->item.stack_size, 0, item_data->max_stack_size);
 	}
 	
 	if (EntityHasProperty(entity, ENTITY_PROPERTY_sprite))

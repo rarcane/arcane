@@ -10,6 +10,8 @@ internal Entity *NewGroundItemEntityAtPlayer(Item item_data)
 	entity->item = item_data;
 	entity->physics.velocity.x = 50.0f * flipped_multiplier;
 	
+	UpdateEntitySprite(entity);
+	
 	return entity;
 }
 

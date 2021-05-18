@@ -55,17 +55,19 @@ internal void DrawCraftingUI()
 	i32 overlap_count = GetOverlappingBodiesWithShape(overlapping_entities, shape, C2_SHAPE_TYPE_aabb);
 	
 	Item item_pool[32] = {0};
+	Entity *entity_item_pool[32] = {0};
 	i32 item_pool_count = 0;
 	
 	v2 item_position = {0};
 	
 	for (i32 i = 0; i < overlap_count; i++)
 	{
-		if (overlapping_entities[i]->item.type)
+		if (EntityHasProperty(overlapping_entities[i], ENTITY_PROPERTY_item))
 		{
 			if (item_pool_count == 0)
 				item_position = overlapping_entities[i]->position;
 			
+			entity_item_pool[item_pool_count] = overlapping_entities[i];
 			item_pool[item_pool_count++] = overlapping_entities[i]->item;
 		}
 	}
@@ -94,6 +96,9 @@ internal void DrawCraftingUI()
 		platform->key_pressed[KEY_e])
 	{
 		core->run_data->character_state |= CHARACTER_STATE_is_crafting;
+		
+		MoveCameraToLocation(V2AddV2(item_position, v2(0.0f, -50.0f)), 2.0f, 2.0f);
+		
 		TsPlatformCaptureKeyboard();
 	}
 	
@@ -187,20 +192,33 @@ internal void DrawCraftingUI()
 										item_pool_count);
 			}
 			
+			for (i32 i = 0; i < 32; i++)
+			{
+				Entity *entity = entity_item_pool[i];
+				if (!entity)
+					break;
+				
+				entity->item = item_pool[i];
+				
+				if (entity->item.stack_size <= 0)
+					DeleteEntity(entity);
+			}
+			
 			Entity *entity = NewEntity();
+			ItemEntityPresetCallback(entity);
 			entity->position = v2(item_position.x,
 								  item_position.y - 43.0f);
 			entity->item = recipe->output;
 			entity->priority = 10.0f;
+			UpdateEntitySprite(entity);
 			
-			core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;
-			core->run_data->character_state &= ~CHARACTER_STATE_arcane_mode;
+			SetArcaneMode(0);
 			TsPlatformCaptureKeyboard();
 		}
 		
 		if (platform->key_pressed[KEY_esc])
 		{
-			core->run_data->character_state &= ~CHARACTER_STATE_is_crafting;
+			SetArcaneMode(0);
 			TsPlatformCaptureKeyboard();
 		}
 	}

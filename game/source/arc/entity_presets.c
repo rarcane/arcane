@@ -93,6 +93,7 @@ EntityPresetCallback(Item)
 	
 	entity->sprite_data.render_layer = LAYER_ITEMS;
 	entity->item.type = ITEM_TYPE_flint;
+	entity->item.stack_size = 1;
 	
 	UpdateEntitySprite(entity);
 	

@@ -31,8 +31,6 @@ internal void WorldUpdate()
         
 		PostMoveUpdatePlayer();
 	}
-    
-	InteractableUpdate();
 	
 	GenerateTerrainSegments();
 	
@@ -41,8 +39,10 @@ internal void WorldUpdate()
 #ifdef DEVELOPER_TOOLS
 	RenderColliders();
 #endif
-    
+	
 	DrawGameUI();
+	
+	InteractableUpdate();
 	
 	END_PERF_TIMER;
 }
@@ -239,29 +239,33 @@ internal b8 CreateWorld(char *world_name)
 		
 		CharacterData *character_data = GetCharacterData();
 		
-		Item flint_sword = { .type = ITEM_TYPE_flint_sword, .stack_size = 1 };
-		character_data->inventory[0] = flint_sword;
-		Item flint_axe = { .type = ITEM_TYPE_flint_axe, .stack_size = 1 };
-		character_data->inventory[3] = flint_axe;
-		
-		Item flint = { .type = ITEM_TYPE_flint, .stack_size = 7 };
-		character_data->inventory[1] = flint;
-		
-		Item twig = { .type = ITEM_TYPE_twig, .stack_size = 14 };
-		character_data->inventory[2] = twig;
-		
-		Item tool = { .type = ITEM_TYPE_crafting_tool, .stack_size = 1 };
-		character_data->hotbar[0] = tool;
-		
 		character_data->inventory_size = 9;
 		character_data->hotbar_size = 2;
-		
-		Item chest = { .type = ITEM_TYPE_test_chestpiece, .stack_size = 1 };
-		character_data->equipment_slots[1] = chest;
-		
 		character_data->freehand_spell_count = 2;
-		character_data->freehand_spell_slots[0].type = SPELL_TYPE_fireball;
-		character_data->freehand_spell_slots[1].type = SPELL_TYPE_yeet;
+		
+		/*
+				Item flint_sword = { .type = ITEM_TYPE_flint_sword, .stack_size = 1 };
+				character_data->inventory[0] = flint_sword;
+				Item flint_axe = { .type = ITEM_TYPE_flint_axe, .stack_size = 1 };
+				character_data->inventory[3] = flint_axe;
+				
+				Item flint = { .type = ITEM_TYPE_flint, .stack_size = 7 };
+				character_data->inventory[1] = flint;
+				
+				Item twig = { .type = ITEM_TYPE_twig, .stack_size = 14 };
+				character_data->inventory[2] = twig;
+				
+				Item tool = { .type = ITEM_TYPE_crafting_tool, .stack_size = 1 };
+				character_data->hotbar[0] = tool;
+				
+				
+				
+				Item chest = { .type = ITEM_TYPE_test_chestpiece, .stack_size = 1 };
+				character_data->equipment_slots[1] = chest;
+				
+				character_data->freehand_spell_slots[0].type = SPELL_TYPE_fireball;
+				character_data->freehand_spell_slots[1].type = SPELL_TYPE_yeet;
+		 */
 	}
 	
 	core->is_ingame = 1;
