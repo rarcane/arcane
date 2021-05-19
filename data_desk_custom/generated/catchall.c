@@ -701,6 +701,15 @@ break;
 case ENTITY_PRESET_CATEGORY_background1:
 return "Background1";
 break;
+case ENTITY_PRESET_CATEGORY_background2:
+return "Background2";
+break;
+case ENTITY_PRESET_CATEGORY_background3:
+return "Background3";
+break;
+case ENTITY_PRESET_CATEGORY_far_background:
+return "Far Background";
+break;
 case ENTITY_PRESET_CATEGORY_misc:
 return "Misc";
 break;
@@ -726,8 +735,35 @@ break;
 case ENTITY_PRESET_TYPE_bg1_tree:
 return "Bg1 Tree";
 break;
+case ENTITY_PRESET_TYPE_bg1_shrubs:
+return "Bg1 Shrubs";
+break;
+case ENTITY_PRESET_TYPE_bg1_sapling:
+return "Bg1 Sapling";
+break;
+case ENTITY_PRESET_TYPE_bg2_hill:
+return "Bg2 Hill";
+break;
 case ENTITY_PRESET_TYPE_bg2_tree:
 return "Bg2 Tree";
+break;
+case ENTITY_PRESET_TYPE_bg2_shrubs:
+return "Bg2 Shrubs";
+break;
+case ENTITY_PRESET_TYPE_bg3_hill:
+return "Bg3 Hill";
+break;
+case ENTITY_PRESET_TYPE_bg3_trees:
+return "Bg3 Trees";
+break;
+case ENTITY_PRESET_TYPE_bg3_shrubs:
+return "Bg3 Shrubs";
+break;
+case ENTITY_PRESET_TYPE_mid_mountains:
+return "Mid Mountains";
+break;
+case ENTITY_PRESET_TYPE_far_mountains:
+return "Far Mountains";
 break;
 case ENTITY_PRESET_TYPE_text_note:
 return "Text Note";
@@ -1371,6 +1407,10 @@ static void WriteEditorData_Version0ToFile(FILE *file, EditorData *data)
 
     WriteToFile(file, &data->grid_width, sizeof(data->grid_width));
 
+    WriteToFile(file, &data->view_min, sizeof(data->view_min));
+
+    WriteToFile(file, &data->view_max, sizeof(data->view_max));
+
     WriteToFile(file, &data->last_camera_pos, sizeof(data->last_camera_pos));
 
     WriteToFile(file, &data->last_camera_zoom, sizeof(data->last_camera_zoom));
@@ -1387,6 +1427,10 @@ static void ReadEditorData_Version0FromFile(FILE *file, EditorData *data)
     ReadFromFile(file, &data->debug_flags, sizeof(data->debug_flags));
 
     ReadFromFile(file, &data->grid_width, sizeof(data->grid_width));
+
+    ReadFromFile(file, &data->view_min, sizeof(data->view_min));
+
+    ReadFromFile(file, &data->view_max, sizeof(data->view_max));
 
     ReadFromFile(file, &data->last_camera_pos, sizeof(data->last_camera_pos));
 

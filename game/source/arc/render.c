@@ -65,6 +65,11 @@ internal void RenderSprites()
 {
 	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_sprite);)
 	{
+		if (GetRunData()->editor_state && !IsEntityInViewRange(entity))
+		{
+			continue;
+		}
+		
 		SpriteData *sprite = &global_sprite_data[entity->sprite_data.sprite];
 		
 		v2 render_size = v2zoom(v2(sprite->source.z * entity->sprite_data.scale.x * (entity->is_flipped ? -1.0f : 1.0f), sprite->source.w * entity->sprite_data.scale.y));
@@ -99,7 +104,7 @@ internal void RenderSprites()
 		
 		ArcPushTexture(sprite->texture_atlas,
 					   0,
-					   v4(source_pos.x, source_pos.y, sprite->source.z - 0.5f, sprite->source.w - 0.5f),
+					   v4(source_pos.x, source_pos.y, sprite->source.z, sprite->source.w),
 					   v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
 					   V4MultiplyV4(entity->sprite_data.tint, tint),
 					   entity->sprite_data.render_layer);

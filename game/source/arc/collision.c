@@ -6,6 +6,9 @@ internal void RenderColliders()
 	
 	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_physical);)
 	{
+		if (!IsEntityInViewRange(entity))
+			continue;
+		
 		v4 col = v4u(1.0f);
 		if (EntitySelectedIndex(entity) != -1)
 			col = v4(1.0f, 0.0f, 0.0f, 1.0f);

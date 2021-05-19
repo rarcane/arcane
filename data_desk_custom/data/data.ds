@@ -93,9 +93,9 @@ Sprite :: enum
 		player,
 	
 	// Background
-	@Data("'scenic/mountains'", "{0.0f, 0.0f, 600.0f, 160.0f}", "{0.0f, 5.0f}", 0, 0.0f)
+	@Data("'scenic/mountains'", "{0.0f, 0.0f, 600.0f, 150.0f}", "{0.0f, 5.0f}", 0, 0.0f)
 		far_mountains,
-	@Data("'scenic/mountains'", "{0.0f, 160.0f, 600.0f, 90.0f}", "{0.0f, 10.0f}", 0, 0.0f)
+	@Data("'scenic/mountains'", "{0.0f, 150.0f, 600.0f, 100.0f}", "{0.0f, 10.0f}", 0, 0.0f)
 		mid_mountains,
 	
 	@Data("'scenic/clouds'", "{0.0f, 0.0f, 80.0f, 25.0f}", "{0.0f, 0.0f}", 0, 0.0f)
@@ -158,11 +158,11 @@ Sprite :: enum
 	@Data("'scenic/background/bg2_hills'", "{0.0f, 40.0f, 200.0f, 40.0f}", "{0.0f, 21.0f}", 0, 0.0f)
 		bg2_hills_v2,
 	
-	@Data("'scenic/background/vegetation'", "{0.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, -13.0f}", 0, 0.0f)
+	@Data("'scenic/background/vegetation'", "{0.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		bg2_shrub_v1,
-	@Data("'scenic/background/vegetation'", "{25.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, -13.0f}", 0, 0.0f)
+	@Data("'scenic/background/vegetation'", "{25.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		bg2_shrub_v2,
-	@Data("'scenic/background/vegetation'", "{50.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, -13.0f}", 0, 0.0f)
+	@Data("'scenic/background/vegetation'", "{50.0f, 25.0f, 25.0f, 20.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		bg2_shrub_v3,
 	
 	@Data("'scenic/background/bg2_pine_tree'", "{0.0f, 0.0f, 40.0f, 110.0f}", "{0.0f, -5.0f}", 0, 0.0f)
@@ -172,30 +172,30 @@ Sprite :: enum
 	
 	@Data("'scenic/background/bg3_hills'", "{0.0f, 0.0f, 200.0f, 40.0f}", "{0.0f, 17.0f}", 0, 0.0f)
 		bg3_hills_v1,
-	@Data("'scenic/background/vegetation'", "{0.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, -20.0f}", 0, 0.0f)
+	@Data("'scenic/background/vegetation'", "{0.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		bg3_shrub_v1,
-	@Data("'scenic/background/vegetation'", "{15.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, -20.0f}", 0, 0.0f)
+	@Data("'scenic/background/vegetation'", "{15.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		bg3_shrub_v2,
-	@Data("'scenic/background/vegetation'", "{30.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, -20.0f}", 0, 0.0f)
+	@Data("'scenic/background/vegetation'", "{30.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		bg3_shrub_v3,
-	@Data("'scenic/background/vegetation'", "{45.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, -20.0f}", 0, 0.0f)
+	@Data("'scenic/background/vegetation'", "{45.0f, 45.0f, 15.0f, 10.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		bg3_shrub_v4,
 	
-	@Data("'scenic/background/bg3_pine_tree'", "{0.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}", 0, 0.0f)
+	@Data("'scenic/background/bg3_pine_tree'", "{0.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		bg3_pine_tree_v1,
-	@Data("'scenic/background/bg3_pine_tree'", "{20.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}", 0, 0.0f)
+	@Data("'scenic/background/bg3_pine_tree'", "{20.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		bg3_pine_tree_v2,
-	@Data("'scenic/background/bg3_pine_tree'", "{40.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}", 0, 0.0f)
+	@Data("'scenic/background/bg3_pine_tree'", "{40.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		bg3_pine_tree_v3,
-	@Data("'scenic/background/bg3_pine_tree'", "{60.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}", 0, 0.0f)
+	@Data("'scenic/background/bg3_pine_tree'", "{60.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		bg3_pine_tree_v4,
-	@Data("'scenic/background/bg3_pine_tree'", "{80.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}", 0, 0.0f)
+	@Data("'scenic/background/bg3_pine_tree'", "{80.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		bg3_pine_tree_v5,
-	@Data("'scenic/background/bg3_pine_tree'", "{100.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}", 0, 0.0f)
+	@Data("'scenic/background/bg3_pine_tree'", "{100.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		bg3_pine_tree_v6,
-	@Data("'scenic/background/bg3_pine_tree'", "{120.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}", 0, 0.0f)
+	@Data("'scenic/background/bg3_pine_tree'", "{120.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		bg3_pine_tree_v7,
-	@Data("'scenic/background/bg3_pine_tree'", "{140.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, -18.0f}", 0, 0.0f)
+	@Data("'scenic/background/bg3_pine_tree'", "{140.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		bg3_pine_tree_v8,
 	
 	// Icons
@@ -739,11 +739,15 @@ Entity :: struct
 	tree_type : TreeType;
 }
 
+//~Entity Presets
 EntityPresetCategory :: enum
 {
 	none,
 	resource,
 	background1,
+	background2,
+	background3,
+	far_background,
 	misc,
 }
 
@@ -767,8 +771,29 @@ EntityPresetType:: enum
 		bg1_hill,
 	@Data("'BG1 Tree'", BG1TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background1)
 		bg1_tree,
-	@Data("'BG2 Tree'", BG2TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background1)
+	@Data("'BG1 Shrubs'", BG1ShrubsEntityPresetCallback, ENTITY_PRESET_CATEGORY_background1)
+		bg1_shrubs,
+	@Data("'BG1 Sapling'", BG1SaplingEntityPresetCallback, ENTITY_PRESET_CATEGORY_background1)
+		bg1_sapling,
+	
+	@Data("'BG2 Hill'", BG2HillEntityPresetCallback, ENTITY_PRESET_CATEGORY_background2)
+		bg2_hill,
+	@Data("'BG2 Tree'", BG2TreeEntityPresetCallback, ENTITY_PRESET_CATEGORY_background2)
 		bg2_tree,
+	@Data("'BG2 Shrubs'", BG2ShrubsEntityPresetCallback, ENTITY_PRESET_CATEGORY_background2)
+		bg2_shrubs,
+	
+	@Data("'BG3 Hill'", BG3HillEntityPresetCallback, ENTITY_PRESET_CATEGORY_background3)
+		bg3_hill,
+	@Data("'BG3 Trees'", BG3TreesEntityPresetCallback, ENTITY_PRESET_CATEGORY_background3)
+		bg3_trees,
+	@Data("'BG3 Shrubs'", BG3ShrubsEntityPresetCallback, ENTITY_PRESET_CATEGORY_background3)
+		bg3_shrubs,
+	
+	@Data("'Mid Mountains'", MidMountainsEntityPresetCallback, ENTITY_PRESET_CATEGORY_far_background)
+		mid_mountains,
+	@Data("'Far Mountains'", FarMountainsEntityPresetCallback, ENTITY_PRESET_CATEGORY_far_background)
+		far_mountains,
 	
 	@Data("'Text Note'", TextNoteEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc)
 		text_note,
@@ -1113,6 +1138,8 @@ EditorData :: struct
 	
 	debug_flags : DebugFlags;
 	grid_width : i32;
+	view_min : i8;
+	view_max : i8;
 	
 	last_camera_pos : v2;
 	last_camera_zoom : f32;

@@ -59,6 +59,45 @@ EntityPresetCallback(BG1Tree)
 	entity->sprite_data.sprite = SPRITE_bg1_pine_tree_v1;
 }
 
+EntityPresetCallback(BG1Shrubs)
+{
+	EntitySetProperty(entity, ENTITY_PROPERTY_positional);
+	EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+	EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+	
+	EntityPresetTypeData *preset_data = &global_entity_preset_type_data[ENTITY_PRESET_TYPE_bg1_tree];
+	strcpy(entity->debug_name, preset_data->print_name);
+	
+	entity->sprite_data.render_layer = LAYER_BG1_SHRUBS;
+	entity->sprite_data.sprite = SPRITE_bg1_shrub_v1;
+}
+
+EntityPresetCallback(BG1Sapling)
+{
+	EntitySetProperty(entity, ENTITY_PROPERTY_positional);
+	EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+	EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+	
+	EntityPresetTypeData *preset_data = &global_entity_preset_type_data[ENTITY_PRESET_TYPE_bg1_tree];
+	strcpy(entity->debug_name, preset_data->print_name);
+	
+	entity->sprite_data.render_layer = LAYER_BG1_SAPLING;
+	entity->sprite_data.sprite = SPRITE_bg1_sapling_v1;
+}
+
+EntityPresetCallback(BG2Hill)
+{
+	EntitySetProperty(entity, ENTITY_PROPERTY_positional);
+	EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+	EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+	
+	EntityPresetTypeData *preset_data = &global_entity_preset_type_data[ENTITY_PRESET_TYPE_bg1_tree];
+	strcpy(entity->debug_name, preset_data->print_name);
+	
+	entity->sprite_data.render_layer = LAYER_BG2_HILL;
+	entity->sprite_data.sprite = SPRITE_bg2_hills_v1;
+}
+
 EntityPresetCallback(BG2Tree)
 {
 	EntitySetProperty(entity, ENTITY_PROPERTY_positional);
@@ -69,6 +108,85 @@ EntityPresetCallback(BG2Tree)
 	strcpy(entity->debug_name, preset_data->print_name);
 	
 	entity->sprite_data.render_layer = LAYER_BG2_TREE;
+	entity->sprite_data.sprite = SPRITE_bg2_pine_tree_v1;
+}
+
+EntityPresetCallback(BG2Shrubs)
+{
+	EntitySetProperty(entity, ENTITY_PROPERTY_positional);
+	EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+	EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+	
+	EntityPresetTypeData *preset_data = &global_entity_preset_type_data[ENTITY_PRESET_TYPE_bg2_tree];
+	strcpy(entity->debug_name, preset_data->print_name);
+	
+	entity->sprite_data.render_layer = LAYER_BG2_SHRUBS;
+	entity->sprite_data.sprite = SPRITE_bg2_shrub_v1;
+}
+
+EntityPresetCallback(BG3Hill)
+{
+	EntitySetProperty(entity, ENTITY_PROPERTY_positional);
+	EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+	EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+	
+	EntityPresetTypeData *preset_data = &global_entity_preset_type_data[ENTITY_PRESET_TYPE_bg1_tree];
+	strcpy(entity->debug_name, preset_data->print_name);
+	
+	entity->sprite_data.render_layer = LAYER_BG3_HILL;
+	entity->sprite_data.sprite = SPRITE_bg3_hills_v1;
+}
+
+EntityPresetCallback(BG3Trees)
+{
+	EntitySetProperty(entity, ENTITY_PROPERTY_positional);
+	EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+	EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+	
+	EntityPresetTypeData *preset_data = &global_entity_preset_type_data[ENTITY_PRESET_TYPE_bg2_tree];
+	strcpy(entity->debug_name, preset_data->print_name);
+	
+	entity->sprite_data.render_layer = LAYER_BG3_TREES;
+	entity->sprite_data.sprite = SPRITE_bg3_pine_tree_v1;
+}
+
+EntityPresetCallback(BG3Shrubs)
+{
+	EntitySetProperty(entity, ENTITY_PROPERTY_positional);
+	EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+	EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+	
+	EntityPresetTypeData *preset_data = &global_entity_preset_type_data[ENTITY_PRESET_TYPE_bg2_tree];
+	strcpy(entity->debug_name, preset_data->print_name);
+	
+	entity->sprite_data.render_layer = LAYER_BG3_SHRUBS;
+	entity->sprite_data.sprite = SPRITE_bg3_shrub_v1;
+}
+
+EntityPresetCallback(MidMountains)
+{
+	EntitySetProperty(entity, ENTITY_PROPERTY_positional);
+	EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+	EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+	
+	EntityPresetTypeData *preset_data = &global_entity_preset_type_data[ENTITY_PRESET_TYPE_bg2_tree];
+	strcpy(entity->debug_name, preset_data->print_name);
+	
+	entity->sprite_data.render_layer = LAYER_MID_MOUNTAINS;
+	entity->sprite_data.sprite = SPRITE_mid_mountains;
+}
+
+EntityPresetCallback(FarMountains)
+{
+	EntitySetProperty(entity, ENTITY_PROPERTY_positional);
+	EntitySetProperty(entity, ENTITY_PROPERTY_parallaxable);
+	EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+	
+	EntityPresetTypeData *preset_data = &global_entity_preset_type_data[ENTITY_PRESET_TYPE_bg2_tree];
+	strcpy(entity->debug_name, preset_data->print_name);
+	
+	entity->sprite_data.render_layer = LAYER_FAR_MOUNTAINS;
+	entity->sprite_data.sprite = SPRITE_far_mountains;
 }
 
 EntityPresetCallback(TextNote)

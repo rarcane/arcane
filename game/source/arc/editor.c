@@ -29,6 +29,8 @@ internal void InitMapEditor()
 		GetEditorData()->debug_flags |= DEBUG_FLAGS_draw_collision;
 		GetEditorData()->debug_flags |= DEBUG_FLAGS_disable_draw_terrain;
 		GetEditorData()->grid_width = 1;
+		GetEditorData()->view_min = -128;
+		GetEditorData()->view_max = 127;
 	}
 }
 
@@ -156,9 +158,7 @@ internal void DrawEditorUI()
 		} break;
 		
 		default:
-		Assert(0);{
-			
-		}
+		Assert(0);
 		break;
 	}
 }
@@ -271,6 +271,8 @@ internal void DrawGeneralEditor()
 			
 			GetEditorData()->grid_width = TsUIIntSlider("Grid Width", GetEditorData()->grid_width, 0, 50);
 			
+			GetEditorData()->view_min = TsUIIntSlider("View Min", GetEditorData()->view_min, -128, GetEditorData()->view_max);
+			GetEditorData()->view_max = TsUIIntSlider("View Max", GetEditorData()->view_max, GetEditorData()->view_min, 127);
 		}
 		TsUIDropdownEnd();
 	}
@@ -278,7 +280,7 @@ internal void DrawGeneralEditor()
 	
 	//~Entity Library
 	v2 window_size = {300.0f, 400.0f};
-	TsUIWindowBegin("Entity Library", v4(0.0f, 80.0f, window_size.x, window_size.y), 0, 0);
+	TsUIWindowBegin("Entity Library", v4(0.0f, 200.0f, window_size.x, window_size.y), 0, 0);
 	{
 		TsUIPushColumn(v2(0.0f, 0.0f), v2(window_size.x, 30.0f));
 		
@@ -329,6 +331,14 @@ internal void DrawGeneralEditor()
 			if (GetEditorData()->selected_entities[1] == -1)
 			{
 				PrintEntityFields(&GetRunData()->entities[GetEditorData()->selected_entities[0]]);
+				
+				if (TsUIButton("Floor Selection"))
+				{
+					Entity *selected_entity = &GetRunData()->entities[GetEditorData()->selected_entities[0]];
+					
+					selected_entity->position = v2(floorf(selected_entity->position.x),
+												   floorf(selected_entity->position.y));
+				}
 			}
 			else
 			{
@@ -347,21 +357,18 @@ internal void DrawGeneralEditor()
 				}
 				
 				// NOTE(randy): Mass selection actions
-				/*
-								if (TsUIButton("Floor Selection"))
-								{
-									for (i32 i = 0; i < MAX_SELECTED_ENTITIES; i++)
-									{
-										if (GetEditorData()->selected_entities[i] == -1)
-											break;
-										
-										Entity *selected_entity = &GetRunData()->entities[GetEditorData()->selected_entities[i]];
-										
-										selected_entity->position = v2((i32)(selected_entity->position.x),
-																	   (i32)(selected_entity->position.y));
-									}
-								}
-				 */
+				if (TsUIButton("Parallax Selection"))
+				{
+					for (i32 i = 0; i < MAX_SELECTED_ENTITIES; i++)
+					{
+						if (GetEditorData()->selected_entities[i] == -1)
+							break;
+						
+						Entity *selected_entity = &GetRunData()->entities[GetEditorData()->selected_entities[i]];
+						
+						EntitySetProperty(selected_entity, ENTITY_PROPERTY_parallaxable);
+					}
+				}
 			}
 		}
 		else
@@ -494,20 +501,7 @@ internal void DrawGeneralEditor()
 		
 		Entity *selected_entity = &GetRunData()->entities[GetEditorData()->selected_entities[i]];
 		
-		if (EntityHasProperty(selected_entity, ENTITY_PROPERTY_parallaxable))
-		{
-			v2 par_amount = GetEntityParallaxAmount(selected_entity);
-			v2 expected = V2AddV2(ParallaxPosition(selected_entity->position, par_amount), movement_amount);
-			
-			selected_entity->position = v2((-par_amount.x * core->camera_position.x + expected.x) /
-										   (-par_amount.x + 1.0f),
-										   (-par_amount.y * core->camera_position.y + expected.y) /
-										   (-par_amount.y + 1.0f));
-		}
-		else
-		{
-			selected_entity->position = V2AddV2(selected_entity->position, movement_amount);
-		}
+		selected_entity->position = V2AddV2(selected_entity->position, movement_amount);
 	}
 	
 	// NOTE(randy): Entity selection logic
@@ -518,7 +512,8 @@ internal void DrawGeneralEditor()
 		
 		for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_positional);)
 		{
-			if (IsPositionOverlappingEntity(entity, GetMousePositionInWorldSpace()) &&
+			if (IsEntityInViewRange(entity) &&
+				IsPositionOverlappingEntity(entity, GetMousePositionInWorldSpace()) &&
 				!EntityHasProperty(entity, ENTITY_PROPERTY_terrain_segment))
 			{
 				SelectNewEntity(entity);

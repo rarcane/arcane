@@ -423,8 +423,8 @@ internal v2 GetEntityParallaxAmount(Entity *entity)
 
 internal v2 ParallaxPosition(v2 position, v2 parallax)
 {
-	return v2(position.x + (core->camera_position.x - position.x) * parallax.x,
-			  position.y + (core->camera_position.y - position.y) * parallax.y);
+	return v2(position.x + core->camera_position.x * parallax.x,
+			  position.y + core->camera_position.y * parallax.y);
 }
 
 internal iv2 GetChunkPosFromEntity(Entity *entity)
@@ -747,4 +747,10 @@ internal v2 GetEntityPosition(Entity *entity)
 	}
 	
 	return entity->position;
+}
+
+internal b8 IsEntityInViewRange(Entity *entity)
+{
+	return (entity->sprite_data.render_layer >= GetEditorData()->view_min &&
+			entity->sprite_data.render_layer <= GetEditorData()->view_max);
 }
