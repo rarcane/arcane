@@ -34,3 +34,5 @@ internal CharacterData *GetCharacterData();
 typedef struct Entity Entity;
 internal v4 GetEntityVisibleParallaxRect(Entity *entity);
 internal v4 GetEntityRectViaSprite(Entity *entity);
+
+internal b8 IsLayerInViewRange(i8 layer);

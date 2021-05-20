@@ -34,8 +34,6 @@ internal void WorldUpdate()
 	
 	GenerateTerrainSegments();
 	
-	DrawWorld();
-	
 #ifdef DEVELOPER_TOOLS
 	RenderColliders();
 #endif
@@ -43,6 +41,8 @@ internal void WorldUpdate()
 	DrawGameUI();
 	
 	InteractableUpdate();
+	
+	DrawWorld();
 	
 	END_PERF_TIMER;
 }
@@ -109,7 +109,7 @@ internal void DrawWorld()
 		// PostUpdateWorldAnimations();
 		//RenderForegroundSprites();
 		
-		RenderSprites();
+		RenderArc();
 	}
     
 	/*
@@ -243,6 +243,9 @@ internal b8 CreateWorld(char *world_name)
 		character_data->hotbar_size = 2;
 		character_data->freehand_spell_count = 2;
 		
+		Item twig = { .type = ITEM_TYPE_twig, .stack_size = 8 };
+		character_data->inventory[2] = twig;
+		
 		/*
 				Item flint_sword = { .type = ITEM_TYPE_flint_sword, .stack_size = 1 };
 				character_data->inventory[0] = flint_sword;
@@ -252,8 +255,7 @@ internal b8 CreateWorld(char *world_name)
 				Item flint = { .type = ITEM_TYPE_flint, .stack_size = 7 };
 				character_data->inventory[1] = flint;
 				
-				Item twig = { .type = ITEM_TYPE_twig, .stack_size = 14 };
-				character_data->inventory[2] = twig;
+				
 				
 				Item tool = { .type = ITEM_TYPE_crafting_tool, .stack_size = 1 };
 				character_data->hotbar[0] = tool;

@@ -1,1 +1,2 @@
-internal void DrawBlueprintUI();
+internal void OnWoodenWallBuild(Entity *entity);
+internal void UpdateBlueprints();

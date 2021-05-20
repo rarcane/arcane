@@ -215,6 +215,8 @@ Sprite :: enum
 		crafting_stump,
 	@Data("'structures/runic_enchanter'", "{0.0f, 0.0f, 32.0f, 32.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		runic_enchanter,
+	@Data("'structures/wooden_wall'", "{0.0f, 0.0f, 27.0f, 60.0f}", "{-10.0f, 0.0f}", 0, 0.0f)
+		wooden_wall,
 	
 	// NOTE(randy): Items
 	@Data("'item/flint_sword'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{6.0f, 2.0f}", 0, 0.0f)
@@ -506,7 +508,7 @@ StructureCategory :: enum
 	base,
 }
 
-MAX_ITEMS_IN_BLUEPRINT_RECIPE :: 10
+MAX_ITEMS_IN_BLUEPRINT_RECIPE :: 8
 @XMacro
 StructureTypeData :: struct
 {
@@ -520,19 +522,13 @@ StructureTypeData :: struct
 @XMacro
 StructureType :: enum
 {
-	@Data("'none'", STRUCTURE_CATEGORY_none, 0, 0, "{0}", 0)
+	@Data("'none'", 0, 0, 0, "{0}", 0)
 		none,
-	@Data("'Shia'", STRUCTURE_CATEGORY_shia, SPRITE_shia, SPRITE_shia, "{0}", 0)
-		shia,
-	@Data("'Crafting Stump'", STRUCTURE_CATEGORY_crafting, SPRITE_crafting_stump, SPRITE_crafting_stump, "{ {ITEM_TYPE_twig, 5}, {ITEM_TYPE_flint, 2} }", 0)
-		crafting_stump,
-	@Data("'Shia 2'", STRUCTURE_CATEGORY_shia, SPRITE_shia2, SPRITE_shia2, "{0}", 0)
-		shia2,
-	@Data("'Base'", STRUCTURE_CATEGORY_base, SPRITE_shia2, SPRITE_shia2, "{0}", 0)
-		base,
+	@Data("'Wooden Wall'", 0, SPRITE_wooden_wall, SPRITE_wooden_wall, "{{ITEM_TYPE_twig, 4}}", OnWoodenWallBuild)
+		wooden_wall,
 }
 
-// NOTE(randy): $Spells
+//~Magic
 MagicType :: enum
 {
 	conscientiousness,
@@ -572,9 +568,6 @@ Spell :: struct
 	type : SpellType;
 	last_used : f32;
 }
-
-@ForwardDeclare(Chunk)
-ForwardChunk :: _;
 
 @GenerateComponentCode
 Dummy2 :: _;
@@ -799,126 +792,11 @@ EntityPresetType:: enum
 		text_note,
 	@Data("'Item'", ItemEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc)
 		item,
+	@Data("'Blueprint'", BlueprintEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc)
+		blueprint,
 }
 
-
-//~CA
-//FLUID_COMPRESSION :: 0.1f
-MINIMUM_AIR_PRESSURE :: 1.0f;
-LIQUID_RESOLUTION :: 0.2f;
-MAX_LIQUID_MASS :: 1.0f;
-
-CellPropertiesType :: enum
-{
-	air,
-	liquid,
-	solid,
-}
-
-DynamicAirProperties :: struct
-{
-	pressure : f32;
-}
-DynamicLiquidProperties :: struct
-{
-	mass : f32;
-}
-DynamicSolidProperties :: struct
-{
-	hardness : f32;
-}
-DynamicCellProperties :: union
-{
-	air : DynamicAirProperties;
-	liquid : DynamicLiquidProperties;
-	solid : DynamicSolidProperties;
-}
-
-StaticAirProperties :: struct
-{
-	resting_temp : f32;
-	test : b8;
-}
-StaticLiquidProperties :: struct
-{
-	default_mass : f32;
-}
-StaticSolidProperties :: struct
-{
-	default_mass : f32;
-	restitution : f32;
-	max_height : i32;
-	crust_depth : i32;
-}
-StaticCellProperties :: union
-{
-	air : StaticAirProperties;
-	liquid : StaticLiquidProperties;
-	solid : StaticSolidProperties;
-}
-@XMacro
-CellMaterialTypeData :: struct
-{
-	static_properties : StaticCellProperties;
-	properties_type : CellPropertiesType;
-}
-@XMacro
-CellMaterialType :: enum
-{
-	@Data(".static_properties.air = { .resting_temp = 2.0f, .test = 1}", CELL_PROPERTIES_TYPE_air)
-		air,
-	@Data(".static_properties.liquid = { .default_mass = 1.5f} ", CELL_PROPERTIES_TYPE_liquid)
-		water,
-	@Data(".static_properties.solid = { .default_mass = 1.0f, .max_height = 3, .crust_depth = 3 }", CELL_PROPERTIES_TYPE_solid)
-		dirt,
-	@Data(".static_properties.solid = { .default_mass = 0.5f, .max_height = 1, .crust_depth = 6 }", CELL_PROPERTIES_TYPE_solid)
-		sand,
-}
-
-Cell :: struct
-{
-	material_type : CellMaterialType;
-	dynamic_properties : DynamicCellProperties;
-}
-
-CellHelper :: struct
-{
-	cell : *Cell;
-	
-	dynamic_id : i32;
-	x_position : i32;
-	y_position : i32;
-	parent_chunk : *Chunk;
-}
-
-//~Chunks
-ChunkFlags :: flags
-{
-	is_allocated,
-}
-
-MAX_TERRAIN_VERT_IN_CHUNK :: 32
-CHUNK_VERSION :: 0
-
-Chunk :: struct
-{
-	flags : ChunkFlags;
-	entities : *Entity[512]; // TODO(randy): Turn this into a nested array within rundata to prevent entity cap to any particular chunk
-	entity_count : i32;
-	pos: iv2;
-	
-	terrain_verts: v2[MAX_TERRAIN_VERT_IN_CHUNK];
-}
-
-/*
-ChunkSave :: struct
-{
-	skele_chunk : SkeletonChunk;
-	cells : Cell[CHUNK_SIZE][CHUNK_SIZE];
-	entity_count : i32;
-	entity_ids : *i32;
-}
- */
+//~Render
 
 RenderableType :: enum
 {
@@ -978,6 +856,7 @@ SortRenderable :: struct
 	clip : v4;
 }
 
+//~Character
 CharacterState :: flags
 {
 	// disable_player_input,

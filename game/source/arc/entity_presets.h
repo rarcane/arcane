@@ -21,3 +21,4 @@ EntityPresetCallback(FarMountains);
 
 EntityPresetCallback(TextNote);
 EntityPresetCallback(Item);
+EntityPresetCallback(Blueprint);

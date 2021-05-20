@@ -611,7 +611,7 @@ internal v4 GetEntityVisibleParallaxRect(Entity *entity)
 	return bounds;
 }
 
-internal b8 IsPositionOverlappingEntity(Entity *entity, v2 pos)
+internal b8 IsV2OverlappingEntity(Entity *entity, v2 pos)
 {
 	if (!EntityHasProperty(entity, ENTITY_PROPERTY_positional))
 		return 0;
@@ -621,11 +621,13 @@ internal b8 IsPositionOverlappingEntity(Entity *entity, v2 pos)
 		c2AABB aabb = RectToAABB(GetEntityRectViaSprite(entity));
 		c2Shape shape = {0};
 		shape.aabb = aabb;
-		return IsV2OverlappingShape(pos, shape, C2_SHAPE_TYPE_aabb);
+		return (IsV2OverlappingShape(pos, shape, C2_SHAPE_TYPE_aabb) &&
+				IsLayerInViewRange(entity->sprite_data.render_layer));
 	}
 	else if (EntityHasProperty(entity, ENTITY_PROPERTY_physical))
 	{
-		return IsV2OverlappingShape(pos, GetEntityShapeInWorldspace(entity), entity->physics.shape_type);
+		return (IsV2OverlappingShape(pos, GetEntityShapeInWorldspace(entity), entity->physics.shape_type) &&
+				IsLayerInViewRange(entity->sprite_data.render_layer));
 	}
 	else if (EntityHasProperty(entity, ENTITY_PROPERTY_text_note))
 	{
@@ -639,7 +641,7 @@ internal b8 IsPositionOverlappingEntity(Entity *entity, v2 pos)
 		c2AABB aabb = RectToAABB(rect);
 		c2Shape shape = {0};
 		shape.aabb = aabb;
-		return IsV2OverlappingShape(pos, shape, C2_SHAPE_TYPE_aabb);
+		return (IsV2OverlappingShape(pos, shape, C2_SHAPE_TYPE_aabb) && IsLayerInViewRange(LAYER_DEBUG_TEXT));
 	}
 	
 	return 0;
@@ -749,8 +751,8 @@ internal v2 GetEntityPosition(Entity *entity)
 	return entity->position;
 }
 
-internal b8 IsEntityInViewRange(Entity *entity)
+internal b8 IsLayerInViewRange(i8 layer)
 {
-	return (entity->sprite_data.render_layer >= GetEditorData()->view_min &&
-			entity->sprite_data.render_layer <= GetEditorData()->view_max);
+	return (layer >= GetEditorData()->view_min &&
+			layer <= GetEditorData()->view_max);
 }

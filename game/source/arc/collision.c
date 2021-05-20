@@ -6,7 +6,7 @@ internal void RenderColliders()
 	
 	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_physical);)
 	{
-		if (!IsEntityInViewRange(entity))
+		if (!IsLayerInViewRange(entity->sprite_data.render_layer))
 			continue;
 		
 		v4 col = v4u(1.0f);

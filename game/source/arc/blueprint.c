@@ -1,13 +1,11 @@
-/*
-internal void OnCraftingStumpBuild(Entity *entity)
+internal void OnWoodenWallBuild(Entity *entity)
 {
 	EntityUnsetProperty(entity, ENTITY_PROPERTY_blueprint);
 	EntitySetProperty(entity, ENTITY_PROPERTY_physical);
 	entity->sprite_data.tint = v4u(1.0f);
-	entity->interact_callback = OnCraftingTableInteract;
 	c2AABB aabb = {
-		.min = c2V(-15.0f, -25.0f),
-		.max = c2V(15.0f, 0.0f),
+		.min = c2V(-5.0f, -60.0f),
+		.max = c2V(5.0f, 0.0f),
 	};
 	entity->physics.shape.aabb = aabb;
 	entity->physics.shape_type = C2_SHAPE_TYPE_aabb;
@@ -15,12 +13,11 @@ internal void OnCraftingStumpBuild(Entity *entity)
 	entity->physics.material.static_friction = 0.1f;
 	entity->physics.material.dynamic_friction = 0.1f;
 	entity->physics.gravity_multiplier = 0.0f;
-	entity->physics.type |= PHYSICS_BODY_TYPE_FLAGS_station;
-	entity->physics.collide_against |= PHYSICS_BODY_TYPE_FLAGS_item;
+	entity->physics.type |= PHYSICS_BODY_TYPE_FLAGS_ground;
+	entity->physics.collide_against |= PHYSICS_BODY_TYPE_FLAGS_item | PHYSICS_BODY_TYPE_FLAGS_character;
 }
- */
 
-internal void DrawBlueprintUI()
+internal void UpdateBlueprints()
 {
 	Entity *character = core->run_data->character_entity;
 	
@@ -34,7 +31,7 @@ internal void DrawBlueprintUI()
 	}
 	
 	// NOTE(randy): Blueprint UI & placement
-	if (!!(core->run_data->character_state & CHARACTER_STATE_is_blueprinting))
+	if (core->run_data->character_state & CHARACTER_STATE_is_blueprinting)
 	{
 		local_persist i32 selected_category = (STRUCTURE_CATEGORY_MAX - 1) / 2 + 1;
 		
@@ -224,10 +221,9 @@ internal void DrawBlueprintUI()
 		}
 	}
 	
-	// NOTE(randy): $Remaining Items UI
+	//~Remaining Items UI
 	Entity *current_blueprint = GetClosestEntityWithProperty(ENTITY_PROPERTY_blueprint, 50.0f);
-	if ((core->run_data->character_state & CHARACTER_STATE_arcane_mode) &&
-		current_blueprint &&
+	if (current_blueprint &&
 		current_blueprint->structure_type)
 	{
 		StructureTypeData *structure_data = &global_structure_type_data[current_blueprint->structure_type];
@@ -270,12 +266,13 @@ internal void DrawBlueprintUI()
 				char remaining_count[5];
 				sprintf(remaining_count, "%i", item->stack_size);
 				
-				Ts2dPushText(Ts2dGetDefaultFont(),
-							 0,
-							 v4u(1.0f),
-							 render_pos,
-							 0.3f,
-							 remaining_count);
+				ArcPushText(Ts2dGetDefaultFont(),
+							0,
+							v4u(1.0f),
+							render_pos,
+							0.3f,
+							remaining_count,
+							LAYER_HUD);
 				
 				index++;
 			}

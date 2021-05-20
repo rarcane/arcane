@@ -210,7 +210,7 @@ internal void DrawCraftingUI()
 								  item_position.y - 43.0f);
 			entity->item = recipe->output;
 			entity->priority = 10.0f;
-			UpdateEntitySprite(entity);
+			UpdateEntityWithDefaults(entity);
 			
 			SetArcaneMode(0);
 			TsPlatformCaptureKeyboard();

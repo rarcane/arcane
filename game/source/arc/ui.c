@@ -731,7 +731,7 @@ internal void DrawGameUI()
 	
 	DrawCraftingUI();
 	DrawEnchantingUI();
-	DrawBlueprintUI();
+	UpdateBlueprints();
 	ElementalSkillTreeUIDraw();
 	
 	if (platform->key_pressed[KEY_esc])

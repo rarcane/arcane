@@ -147,7 +147,7 @@ IncrementEntityWithProperty(Entity **entity_ptr, EntityProperty property)
 	return result;
 }
 
-internal void UpdateEntitySprite(Entity *entity)
+internal void UpdateEntityWithDefaults(Entity *entity)
 {
 	if (EntityHasProperty(entity, ENTITY_PROPERTY_tree))
 	{
@@ -171,6 +171,12 @@ internal void UpdateEntitySprite(Entity *entity)
 	{
 		ItemTypeData *item_data = &global_item_type_data[entity->item.type];
 		entity->sprite_data.sprite = item_data->ground_sprite;
+	}
+	else if (EntityHasProperty(entity, ENTITY_PROPERTY_blueprint))
+	{
+		StructureTypeData *structure_data = &global_structure_type_data[entity->structure_type];
+		memcpy(entity->remaining_items_in_blueprint, structure_data->recipe, sizeof(entity->remaining_items_in_blueprint));
+		entity->sprite_data.sprite = structure_data->world_sprite;
 	}
 }
 
@@ -218,7 +224,7 @@ internal void PrintEntityFields(Entity *entity)
 				if (TsUIToggler(GetItemTypeName(i), entity->item.type == i))
 				{
 					entity->item.type = i;
-					UpdateEntitySprite(entity);
+					UpdateEntityWithDefaults(entity);
 				}
 			}
 			
@@ -229,12 +235,35 @@ internal void PrintEntityFields(Entity *entity)
 		entity->item.stack_size = TsUIIntSlider("Stack Size", entity->item.stack_size, 0, item_data->max_stack_size);
 	}
 	
+	if (EntityHasProperty(entity, ENTITY_PROPERTY_blueprint))
+	{
+		if (TsUICollapsable("Blueprint"))
+		{
+			if (TsUICollapsable("Structure Type"))
+			{
+				for (i32 i = 0; i < STRUCTURE_TYPE_MAX; i++)
+				{
+					if (TsUIToggler(GetStructureTypeName(i), entity->structure_type == i))
+					{
+						entity->structure_type = i;
+						UpdateEntityWithDefaults(entity);
+					}
+				}
+				
+				TsUICollapsableEnd();
+			}
+			
+			TsUICollapsableEnd();
+		}
+	}
+	
 	if (EntityHasProperty(entity, ENTITY_PROPERTY_sprite))
 	{
 		if (TsUICollapsable("Sprite"))
 		{
-			sprintf(lbl, "Render Layer: %i", entity->sprite_data.render_layer);
-			TsUILabel(lbl);
+			entity->sprite_data.render_layer = TsUIIntSlider("Render Layer", entity->sprite_data.render_layer, -128, 127);
+			
+			entity->is_flipped = TsUIToggler("Is Flipped", entity->is_flipped);
 			
 			if (TsUICollapsable("Sprite Type"))
 			{
@@ -262,7 +291,7 @@ internal void PrintEntityFields(Entity *entity)
 				if (TsUIToggler(GetTreeTypeName(i), entity->tree_type == i))
 				{
 					entity->tree_type = i;
-					UpdateEntitySprite(entity);
+					UpdateEntityWithDefaults(entity);
 				}
 			}
 			

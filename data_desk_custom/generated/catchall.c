@@ -235,6 +235,9 @@ break;
 case SPRITE_runic_enchanter:
 return "Runic Enchanter";
 break;
+case SPRITE_wooden_wall:
+return "Wooden Wall";
+break;
 case SPRITE_flint_sword_icon:
 return "Flint Sword Icon";
 break;
@@ -518,17 +521,8 @@ switch(type)
 case STRUCTURE_TYPE_none:
 return "None";
 break;
-case STRUCTURE_TYPE_shia:
-return "Shia";
-break;
-case STRUCTURE_TYPE_crafting_stump:
-return "Crafting Stump";
-break;
-case STRUCTURE_TYPE_shia2:
-return "Shia2";
-break;
-case STRUCTURE_TYPE_base:
-return "Base";
+case STRUCTURE_TYPE_wooden_wall:
+return "Wooden Wall";
 break;
 default:
 return "INVALID";
@@ -771,46 +765,8 @@ break;
 case ENTITY_PRESET_TYPE_item:
 return "Item";
 break;
-default:
-return "INVALID";
-break;
-}
-}
-
-static char *GetCellPropertiesTypeName(CellPropertiesType type)
-{
-switch(type)
-{
-case CELL_PROPERTIES_TYPE_air:
-return "Air";
-break;
-case CELL_PROPERTIES_TYPE_liquid:
-return "Liquid";
-break;
-case CELL_PROPERTIES_TYPE_solid:
-return "Solid";
-break;
-default:
-return "INVALID";
-break;
-}
-}
-
-static char *GetCellMaterialTypeName(CellMaterialType type)
-{
-switch(type)
-{
-case CELL_MATERIAL_TYPE_air:
-return "Air";
-break;
-case CELL_MATERIAL_TYPE_water:
-return "Water";
-break;
-case CELL_MATERIAL_TYPE_dirt:
-return "Dirt";
-break;
-case CELL_MATERIAL_TYPE_sand:
-return "Sand";
+case ENTITY_PRESET_TYPE_blueprint:
+return "Blueprint";
 break;
 default:
 return "INVALID";

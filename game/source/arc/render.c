@@ -61,11 +61,11 @@ internal void UpdateAnimations()
 	}
 }
 
-internal void RenderSprites()
+internal void PushSprites()
 {
 	for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_sprite);)
 	{
-		if (GetRunData()->editor_state && !IsEntityInViewRange(entity))
+		if (GetRunData()->editor_state && !IsLayerInViewRange(entity->sprite_data.render_layer))
 		{
 			continue;
 		}
@@ -108,13 +108,12 @@ internal void RenderSprites()
 					   v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
 					   V4MultiplyV4(entity->sprite_data.tint, tint),
 					   entity->sprite_data.render_layer);
-		
-		if (GetRunData()->editor_state && EntityHasProperty(entity, ENTITY_PROPERTY_parallaxable))
-		{
-			// TODO(randy): draw parallax bounds
-			
-		}
 	}
+}
+
+internal void RenderArc()
+{
+	PushSprites();
 	
 	// NOTE(randy): Sort & render everything in the queue
 	for (i32 step = 0; step < core->run_data->queued_renderable_count - 1; step++)

@@ -122,6 +122,7 @@ SPRITE_side_arrow,
 SPRITE_test_icon,
 SPRITE_crafting_stump,
 SPRITE_runic_enchanter,
+SPRITE_wooden_wall,
 SPRITE_flint_sword_icon,
 SPRITE_flint_sword_ground,
 SPRITE_flint_axe,
@@ -200,6 +201,7 @@ global SpriteData global_sprite_data[SPRITE_MAX] = {
     { "icon/test_icon", {0.0f, 0.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 0, 0.0f, },
     { "structures/crafting_stump", {0.0f, 0.0f, 32.0f, 32.0f}, {0.0f, 0.0f}, 0, 0.0f, },
     { "structures/runic_enchanter", {0.0f, 0.0f, 32.0f, 32.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "structures/wooden_wall", {0.0f, 0.0f, 27.0f, 60.0f}, {-10.0f, 0.0f}, 0, 0.0f, },
     { "item/flint_sword", {0.0f, 0.0f, 16.0f, 16.0f}, {6.0f, 2.0f}, 0, 0.0f, },
     { "item/flint_sword_ground", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, 0, 0.0f, },
     { "item/flint_axe", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, 0, 0.0f, },
@@ -486,7 +488,7 @@ STRUCTURE_CATEGORY_MAX,
 };
 static char *GetStructureCategoryName(StructureCategory type);
 
-#define MAX_ITEMS_IN_BLUEPRINT_RECIPE (10)
+#define MAX_ITEMS_IN_BLUEPRINT_RECIPE (8)
 typedef struct StructureTypeData
 {
 char print_name[20];
@@ -501,18 +503,12 @@ typedef enum StructureType StructureType;
 enum StructureType
 {
 STRUCTURE_TYPE_none,
-STRUCTURE_TYPE_shia,
-STRUCTURE_TYPE_crafting_stump,
-STRUCTURE_TYPE_shia2,
-STRUCTURE_TYPE_base,
+STRUCTURE_TYPE_wooden_wall,
 STRUCTURE_TYPE_MAX,
 };
 global StructureTypeData global_structure_type_data[STRUCTURE_TYPE_MAX] = {
-    { "none", STRUCTURE_CATEGORY_none, 0, 0, {0}, 0, },
-    { "Shia", STRUCTURE_CATEGORY_shia, SPRITE_shia, SPRITE_shia, {0}, 0, },
-    { "Crafting Stump", STRUCTURE_CATEGORY_crafting, SPRITE_crafting_stump, SPRITE_crafting_stump, { {ITEM_TYPE_twig, 5}, {ITEM_TYPE_flint, 2} }, 0, },
-    { "Shia 2", STRUCTURE_CATEGORY_shia, SPRITE_shia2, SPRITE_shia2, {0}, 0, },
-    { "Base", STRUCTURE_CATEGORY_base, SPRITE_shia2, SPRITE_shia2, {0}, 0, },
+    { "none", 0, 0, 0, {0}, 0, },
+    { "Wooden Wall", 0, SPRITE_wooden_wall, SPRITE_wooden_wall, {{ITEM_TYPE_twig, 4}}, OnWoodenWallBuild, },
 };
 
 static char *GetStructureTypeName(StructureType type);
@@ -567,8 +563,6 @@ typedef struct Spell
 SpellType type;
 f32 last_used;
 } Spell;
-
-typedef struct Chunk Chunk;
 
 // @GenerateComponentCode 
 #define Dummy2 (_)
@@ -729,6 +723,7 @@ ENTITY_PRESET_TYPE_mid_mountains,
 ENTITY_PRESET_TYPE_far_mountains,
 ENTITY_PRESET_TYPE_text_note,
 ENTITY_PRESET_TYPE_item,
+ENTITY_PRESET_TYPE_blueprint,
 ENTITY_PRESET_TYPE_MAX,
 };
 global EntityPresetTypeData global_entity_preset_type_data[ENTITY_PRESET_TYPE_MAX] = {
@@ -748,123 +743,10 @@ global EntityPresetTypeData global_entity_preset_type_data[ENTITY_PRESET_TYPE_MA
     { "Far Mountains", FarMountainsEntityPresetCallback, ENTITY_PRESET_CATEGORY_far_background, },
     { "Text Note", TextNoteEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc, },
     { "Item", ItemEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc, },
+    { "Blueprint", BlueprintEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc, },
 };
 
 static char *GetEntityPresetTypeName(EntityPresetType type);
-
-#define MINIMUM_AIR_PRESSURE (1.0f)
-#define LIQUID_RESOLUTION (0.2f)
-#define MAX_LIQUID_MASS (1.0f)
-typedef enum CellPropertiesType CellPropertiesType;
-enum CellPropertiesType
-{
-CELL_PROPERTIES_TYPE_air,
-CELL_PROPERTIES_TYPE_liquid,
-CELL_PROPERTIES_TYPE_solid,
-CELL_PROPERTIES_TYPE_MAX,
-};
-static char *GetCellPropertiesTypeName(CellPropertiesType type);
-
-typedef struct DynamicAirProperties
-{
-f32 pressure;
-} DynamicAirProperties;
-
-typedef struct DynamicLiquidProperties
-{
-f32 mass;
-} DynamicLiquidProperties;
-
-typedef struct DynamicSolidProperties
-{
-f32 hardness;
-} DynamicSolidProperties;
-
-typedef union DynamicCellProperties
-{
-DynamicAirProperties air;
-DynamicLiquidProperties liquid;
-DynamicSolidProperties solid;
-} DynamicCellProperties;
-
-typedef struct StaticAirProperties
-{
-f32 resting_temp;
-b8 test;
-} StaticAirProperties;
-
-typedef struct StaticLiquidProperties
-{
-f32 default_mass;
-} StaticLiquidProperties;
-
-typedef struct StaticSolidProperties
-{
-f32 default_mass;
-f32 restitution;
-i32 max_height;
-i32 crust_depth;
-} StaticSolidProperties;
-
-typedef union StaticCellProperties
-{
-StaticAirProperties air;
-StaticLiquidProperties liquid;
-StaticSolidProperties solid;
-} StaticCellProperties;
-
-typedef struct CellMaterialTypeData
-{
-StaticCellProperties static_properties;
-CellPropertiesType properties_type;
-} CellMaterialTypeData;
-
-typedef enum CellMaterialType CellMaterialType;
-enum CellMaterialType
-{
-CELL_MATERIAL_TYPE_air,
-CELL_MATERIAL_TYPE_water,
-CELL_MATERIAL_TYPE_dirt,
-CELL_MATERIAL_TYPE_sand,
-CELL_MATERIAL_TYPE_MAX,
-};
-global CellMaterialTypeData global_cell_material_type_data[CELL_MATERIAL_TYPE_MAX] = {
-    { .static_properties.air = { .resting_temp = 2.0f, .test = 1}, CELL_PROPERTIES_TYPE_air, },
-    { .static_properties.liquid = { .default_mass = 1.5f} , CELL_PROPERTIES_TYPE_liquid, },
-    { .static_properties.solid = { .default_mass = 1.0f, .max_height = 3, .crust_depth = 3 }, CELL_PROPERTIES_TYPE_solid, },
-    { .static_properties.solid = { .default_mass = 0.5f, .max_height = 1, .crust_depth = 6 }, CELL_PROPERTIES_TYPE_solid, },
-};
-
-static char *GetCellMaterialTypeName(CellMaterialType type);
-
-typedef struct Cell
-{
-CellMaterialType material_type;
-DynamicCellProperties dynamic_properties;
-} Cell;
-
-typedef struct CellHelper
-{
-Cell *cell;
-i32 dynamic_id;
-i32 x_position;
-i32 y_position;
-Chunk *parent_chunk;
-} CellHelper;
-
-#define CHUNK_FLAGS_is_allocated (1<<0)
-typedef uint32 ChunkFlags;
-
-#define MAX_TERRAIN_VERT_IN_CHUNK (32)
-#define CHUNK_VERSION (0)
-typedef struct Chunk
-{
-ChunkFlags flags;
-Entity *entities[512];
-i32 entity_count;
-iv2 pos;
-v2 terrain_verts[MAX_TERRAIN_VERT_IN_CHUNK];
-} Chunk;
 
 typedef enum RenderableType RenderableType;
 enum RenderableType

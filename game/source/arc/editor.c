@@ -10,7 +10,11 @@ internal void InitMapEditor()
 	InitialiseRunData();
 	
 	LoadMapData();
-	
+	LoadEditorData();
+}
+
+internal void LoadEditorData()
+{
 	char file_path[128];
 	sprintf(file_path, "%seditor_data.arc", core->res_path);
 	FILE *file = fopen(file_path, "rb");
@@ -510,16 +514,21 @@ internal void DrawGeneralEditor()
 		if (!platform->key_down[KEY_shift])
 			ClearSelectedEntities();
 		
+		Entity *highest_visible_entity = 0;
 		for (Entity *entity = 0; IncrementEntityWithProperty(&entity, ENTITY_PROPERTY_positional);)
 		{
-			if (IsEntityInViewRange(entity) &&
-				IsPositionOverlappingEntity(entity, GetMousePositionInWorldSpace()) &&
-				!EntityHasProperty(entity, ENTITY_PROPERTY_terrain_segment))
+			if (IsV2OverlappingEntity(entity, GetMousePositionInWorldSpace()) &&
+				!EntityHasProperty(entity, ENTITY_PROPERTY_terrain_segment) &&
+				(!highest_visible_entity || entity->sprite_data.render_layer < highest_visible_entity->sprite_data.render_layer))
 			{
-				SelectNewEntity(entity);
-				platform->left_mouse_pressed = 0;
-				break;
+				highest_visible_entity = entity;
 			}
+		}
+		
+		if (highest_visible_entity)
+		{
+			SelectNewEntity(highest_visible_entity);
+			platform->left_mouse_pressed = 0;
 		}
 	}
 }
@@ -778,9 +787,14 @@ internal void DrawTerrainEditor()
 	TsUIWindowEnd();
 }
 
-internal void SetEjectedMode(b8 value)
+internal void SetEjectedMode(b8 state)
 {
-	GetRunData()->is_ejected = value;
+	GetRunData()->is_ejected = state;
+	
+	if (state)
+		LoadEditorData();
+	else
+		SaveEditorData();
 }
 
 internal void UpdateEjectedMode()
@@ -794,21 +808,23 @@ internal void UpdateTextNoteEntities()
 	{
 		if (strcmp(entity->note, "") == 0)
 		{
-			Ts2dPushText(Ts2dGetDefaultFont(),
-						 TS2D_TEXT_ALIGN_CENTER_X | TS2D_TEXT_ALIGN_CENTER_Y,
-						 v4(1.0f, 1.0f, 1.0f, 1.0f),
-						 v2view(entity->position),
-						 core->camera_zoom / 10.0f,
-						 "Empty Note");
+			ArcPushText(Ts2dGetDefaultFont(),
+						TS2D_TEXT_ALIGN_CENTER_X | TS2D_TEXT_ALIGN_CENTER_Y,
+						v4(1.0f, 1.0f, 1.0f, 1.0f),
+						v2view(entity->position),
+						core->camera_zoom / 10.0f,
+						"Empty Note",
+						LAYER_DEBUG_TEXT);
 		}
 		else
 		{
-			Ts2dPushText(Ts2dGetDefaultFont(),
-						 TS2D_TEXT_ALIGN_CENTER_X | TS2D_TEXT_ALIGN_CENTER_Y,
-						 v4(1.0f, 1.0f, 1.0f, 1.0f),
-						 v2view(entity->position),
-						 core->camera_zoom / 10.0f,
-						 entity->note);
+			ArcPushText(Ts2dGetDefaultFont(),
+						TS2D_TEXT_ALIGN_CENTER_X | TS2D_TEXT_ALIGN_CENTER_Y,
+						v4(1.0f, 1.0f, 1.0f, 1.0f),
+						v2view(entity->position),
+						core->camera_zoom / 10.0f,
+						entity->note,
+						LAYER_DEBUG_TEXT);
 		}
 	}
 }
