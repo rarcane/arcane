@@ -27,13 +27,25 @@ EntityPresetCallback(Tree)
 	EntitySetProperty(entity, ENTITY_PROPERTY_tree);
 	EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
 	
-	char *name = "Tree";
-	strcpy(entity->debug_name, name);
+	EntityPresetTypeData *preset_data = &global_entity_preset_type_data[ENTITY_PRESET_TYPE_tree];
+	strcpy(entity->debug_name, preset_data->print_name);
 	
 	entity->sprite_data.render_layer = LAYER_TREE;
 	entity->tree_type = TREE_TYPE_pine;
 	
 	UpdateEntityWithDefaults(entity);
+}
+
+EntityPresetCallback(Yucca)
+{
+	EntitySetProperty(entity, ENTITY_PROPERTY_positional);
+	EntitySetProperty(entity, ENTITY_PROPERTY_sprite);
+	
+	EntityPresetTypeData *preset_data = &global_entity_preset_type_data[ENTITY_PRESET_TYPE_yucca];
+	strcpy(entity->debug_name, preset_data->print_name);
+	
+	entity->sprite_data.render_layer = LAYER_SHRUB;
+	entity->sprite_data.sprite = SPRITE_yucca;
 }
 
 EntityPresetCallback(BG1Hill)

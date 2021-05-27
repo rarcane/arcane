@@ -44,6 +44,8 @@ internal void WorldUpdate()
 	
 	DrawWorld();
 	
+	UpdateBlueprints();
+	
 	END_PERF_TIMER;
 }
 

@@ -92,7 +92,6 @@ Sprite :: enum
 	@Data("'entity/player/temp_player'", "{0.0f, 0.0f, 14.0f, 35.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		player,
 	
-	// Background
 	@Data("'scenic/mountains'", "{0.0f, 0.0f, 600.0f, 150.0f}", "{0.0f, 5.0f}", 0, 0.0f)
 		far_mountains,
 	@Data("'scenic/mountains'", "{0.0f, 150.0f, 600.0f, 100.0f}", "{0.0f, 10.0f}", 0, 0.0f)
@@ -111,7 +110,6 @@ Sprite :: enum
 	@Data("'scenic/clouds'", "{160.0f, 25.0f, 80.0f, 25.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		cloud_v6,
 	
-	// Forest
 	@Data("'scenic/forest_ground'", "{0.0f, 40.0f, 100.0f, 90.0f }", "{20.0f, 87.0f}", 0, 0.0f)
 		ground_forest_flat,
 	@Data("'scenic/forest_ground'", "{100.0f, 25.0f, 100.0f, 105.0f}", "{0.0f, 87.0f}", 0, 0.0f)
@@ -198,7 +196,6 @@ Sprite :: enum
 	@Data("'scenic/background/bg3_pine_tree'", "{140.0f, 0.0f, 20.0f, 50.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		bg3_pine_tree_v8,
 	
-	// Icons
 	@Data("'icon/axis_icons'", "{0.0f, 0.0f, 7.0f, 40.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		y_axis_arrow_icon,
 	@Data("'icon/axis_icons'", "{0.0f, 33.0f, 40.0f, 7.0f}", "{0.0f, 0.0f}", 0, 0.0f)
@@ -210,7 +207,6 @@ Sprite :: enum
 	@Data("'icon/test_icon'", "{0.0f, 0.0f, 64.0f, 64.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		test_icon,
 	
-	// NOTE(randy): Structures
 	@Data("'structures/crafting_stump'", "{0.0f, 0.0f, 32.0f, 32.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		crafting_stump,
 	@Data("'structures/runic_enchanter'", "{0.0f, 0.0f, 32.0f, 32.0f}", "{0.0f, 0.0f}", 0, 0.0f)
@@ -218,7 +214,6 @@ Sprite :: enum
 	@Data("'structures/wooden_wall'", "{0.0f, 0.0f, 27.0f, 60.0f}", "{-10.0f, 0.0f}", 0, 0.0f)
 		wooden_wall,
 	
-	// NOTE(randy): Items
 	@Data("'item/flint_sword'", "{0.0f, 0.0f, 16.0f, 16.0f}", "{6.0f, 2.0f}", 0, 0.0f)
 		flint_sword_icon,
 	@Data("'item/flint_sword_ground'", "{0.0f, 0.0f, 24.0f, 24.0f}", "{0.0f, 0.0f}", 0, 0.0f)
@@ -233,13 +228,11 @@ Sprite :: enum
 		crafting_tool,
 	@Data("'item/test_chestpiece'", "{0.0f, 0.0f, 24.0f, 24.0f}", "{0.0f, 0.0f}", 0, 0.0f)
 		test_chestpiece,
+	@Data("'resources/yucca_fiber'", "{0.0f, 0.0f, 24.0f, 24.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		yucca_fiber,
+	@Data("'resources/yucca'", "{0.0f, 0.0f, 32.0f, 32.0f}", "{0.0f, 0.0f}", 0, 0.0f)
+		yucca,
 	
-	@Data("'item/shia'", "{0.0f, 0.0f, 800.0f, 1200.0f}", "{0.0f, 0.0f}", 0, 0.0f)
-		shia,
-	@Data("'item/shia2'", "{0.0f, 0.0f, 590.0f, 631.0f}", "{0.0f, 0.0f}", 0, 0.0f)
-		shia2,
-	@Data("'entity/ron'", "{0.0f, 0.0f, 512.0f, 512.0f}", "{0.0f, 0.0f}", 0, 0.0f)
-		dummy,
 	
 	//~Dynamic Sprites
 	@Data("'invalid_texture'", "{0.0f, 0.0f, 64.0f, 64.0f}", "{0.0f, 0.0f}", 0, 0.0f)
@@ -378,6 +371,8 @@ ItemType :: enum
 		crafting_tool,
 	@Data("'Test Chestpiece'", SPRITE_test_chestpiece, SPRITE_test_chestpiece, 1, ITEM_CATEGORY_chestpiece, 0)
 		test_chestpiece,
+	@Data("'Yucca Fiber'", SPRITE_yucca_fiber, SPRITE_yucca_fiber, 1, 0, 0)
+		yucca_fiber,
 }
 
 Item :: struct
@@ -491,7 +486,7 @@ CraftingRecipeType :: enum
 {
 	@Data("{0}", "{0}")
 		none,
-	@Data("{ITEM_TYPE_flint_axe, 1}", "{{ITEM_TYPE_flint, 1}, {ITEM_TYPE_twig, 1}}")
+	@Data("{ITEM_TYPE_flint_axe, 1}", "{{ITEM_TYPE_flint, 1}, {ITEM_TYPE_twig, 1}, {ITEM_TYPE_yucca_fiber, 1}}")
 		flint_axe,
 	@Data("{ITEM_TYPE_flint_sword, 1}", "{{ITEM_TYPE_flint, 3}, {ITEM_TYPE_twig, 2}}")
 		flint_sword,
@@ -524,7 +519,7 @@ StructureType :: enum
 {
 	@Data("'none'", 0, 0, 0, "{0}", 0)
 		none,
-	@Data("'Wooden Wall'", 0, SPRITE_wooden_wall, SPRITE_wooden_wall, "{{ITEM_TYPE_twig, 4}}", OnWoodenWallBuild)
+	@Data("'Wooden Wall'", 0, SPRITE_wooden_wall, SPRITE_wooden_wall, "{{ITEM_TYPE_twig, 4}, {ITEM_TYPE_yucca_fiber, 2}}", OnWoodenWallBuild)
 		wooden_wall,
 }
 
@@ -794,6 +789,8 @@ EntityPresetType:: enum
 		item,
 	@Data("'Blueprint'", BlueprintEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc)
 		blueprint,
+	@Data("'Yucca'", YuccaEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc)
+		yucca, // TODO(randy): Put this into a plant category
 }
 
 //~Render

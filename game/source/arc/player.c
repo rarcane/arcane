@@ -119,45 +119,47 @@ internal void PreMoveUpdatePlayer()
 		{
 			core->world_delta_mult = 0.5f;
 			
-			{
-				Spell *spell = &character_data->freehand_spell_slots[0];
-				
-				v2 render_pos = v2screen(v2(0.2f, 0.5f));
-				v2 render_size = v2GUI(v2(0.1f, 0.1f));
-				
-				render_pos = V2SubtractV2(render_pos, V2MultiplyF32(render_size, 0.5f));
-				
-				SpriteData *sprite = &global_sprite_data[SPRITE_shia];
-				ArcPushTexture(sprite->texture_atlas,
-							   0,
-							   sprite->source,
-							   v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-							   v4u(1.0f),
-							   LAYER_FRONT_UI);
-				
-				if (platform->mouse_x < core->render_w / 2.0f)
-					selected_spell = spell;
-			}
-			
-			{
-				Spell *spell = &character_data->freehand_spell_slots[1];
-				
-				v2 render_pos = v2screen(v2(0.8f, 0.5f));
-				v2 render_size = v2GUI(v2(0.1f, 0.1f));
-				
-				render_pos = V2SubtractV2(render_pos, V2MultiplyF32(render_size, 0.5f));
-				
-				SpriteData *sprite = &global_sprite_data[SPRITE_shia2];
-				ArcPushTexture(sprite->texture_atlas,
-							   0,
-							   sprite->source,
-							   v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
-							   v4u(1.0f),
-							   LAYER_FRONT_UI);
-				
-				if (platform->mouse_x >= core->render_w / 2.0f)
-					selected_spell = spell;
-			}
+			/*
+						{
+							Spell *spell = &character_data->freehand_spell_slots[0];
+							
+							v2 render_pos = v2screen(v2(0.2f, 0.5f));
+							v2 render_size = v2GUI(v2(0.1f, 0.1f));
+							
+							render_pos = V2SubtractV2(render_pos, V2MultiplyF32(render_size, 0.5f));
+							
+							SpriteData *sprite = &global_sprite_data[SPRITE_shia];
+							ArcPushTexture(sprite->texture_atlas,
+										   0,
+										   sprite->source,
+										   v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
+										   v4u(1.0f),
+										   LAYER_FRONT_UI);
+							
+							if (platform->mouse_x < core->render_w / 2.0f)
+								selected_spell = spell;
+						}
+						
+						{
+							Spell *spell = &character_data->freehand_spell_slots[1];
+							
+							v2 render_pos = v2screen(v2(0.8f, 0.5f));
+							v2 render_size = v2GUI(v2(0.1f, 0.1f));
+							
+							render_pos = V2SubtractV2(render_pos, V2MultiplyF32(render_size, 0.5f));
+							
+							SpriteData *sprite = &global_sprite_data[SPRITE_shia2];
+							ArcPushTexture(sprite->texture_atlas,
+										   0,
+										   sprite->source,
+										   v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
+										   v4u(1.0f),
+										   LAYER_FRONT_UI);
+							
+							if (platform->mouse_x >= core->render_w / 2.0f)
+								selected_spell = spell;
+						}
+			 */
 			
 			was_down = 1;
 		}
@@ -181,6 +183,21 @@ internal void PreMoveUpdatePlayer()
 
 internal void PostMoveUpdatePlayer()
 {
+	if (GetCharacterData()->hotbar[GetCharacterData()->active_hotbar_slot].type)
+	{
+		ItemTypeData *item_data = &global_item_type_data[GetCharacterData()->hotbar[GetCharacterData()->active_hotbar_slot].type];
+		SpriteData *sprite = &global_sprite_data[item_data->icon_sprite];
+		
+		v2 render_pos = v2view(V2AddV2(GetRunData()->character_entity->position, v2(0.0f, -40.0f)));
+		v2 render_size = v2zoom(v2(sprite->source.width, sprite->source.height));
+		
+		ArcPushTexture(sprite->texture_atlas,
+					   0,
+					   sprite->source,
+					   v4(render_pos.x, render_pos.y, render_size.x, render_size.y),
+					   v4u(1.0f),
+					   LAYER_ITEMS);
+	}
 }
 
 internal b8 CanPlayerMove()

@@ -259,14 +259,11 @@ break;
 case SPRITE_test_chestpiece:
 return "Test Chestpiece";
 break;
-case SPRITE_shia:
-return "Shia";
+case SPRITE_yucca_fiber:
+return "Yucca Fiber";
 break;
-case SPRITE_shia2:
-return "Shia2";
-break;
-case SPRITE_dummy:
-return "Dummy";
+case SPRITE_yucca:
+return "Yucca";
 break;
 case SPRITE_default_dynamic:
 return "Default Dynamic";
@@ -416,6 +413,9 @@ return "Crafting Tool";
 break;
 case ITEM_TYPE_test_chestpiece:
 return "Test Chestpiece";
+break;
+case ITEM_TYPE_yucca_fiber:
+return "Yucca Fiber";
 break;
 default:
 return "INVALID";
@@ -767,6 +767,9 @@ return "Item";
 break;
 case ENTITY_PRESET_TYPE_blueprint:
 return "Blueprint";
+break;
+case ENTITY_PRESET_TYPE_yucca:
+return "Yucca";
 break;
 default:
 return "INVALID";

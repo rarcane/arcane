@@ -130,9 +130,8 @@ SPRITE_flint,
 SPRITE_twig,
 SPRITE_crafting_tool,
 SPRITE_test_chestpiece,
-SPRITE_shia,
-SPRITE_shia2,
-SPRITE_dummy,
+SPRITE_yucca_fiber,
+SPRITE_yucca,
 SPRITE_default_dynamic,
 SPRITE_player_idle,
 SPRITE_player_walking,
@@ -209,9 +208,8 @@ global SpriteData global_sprite_data[SPRITE_MAX] = {
     { "item/twig", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, 0, 0.0f, },
     { "item/crafting_tool", {0.0f, 0.0f, 16.0f, 16.0f}, {0.0f, 0.0f}, 0, 0.0f, },
     { "item/test_chestpiece", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, 0, 0.0f, },
-    { "item/shia", {0.0f, 0.0f, 800.0f, 1200.0f}, {0.0f, 0.0f}, 0, 0.0f, },
-    { "item/shia2", {0.0f, 0.0f, 590.0f, 631.0f}, {0.0f, 0.0f}, 0, 0.0f, },
-    { "entity/ron", {0.0f, 0.0f, 512.0f, 512.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "resources/yucca_fiber", {0.0f, 0.0f, 24.0f, 24.0f}, {0.0f, 0.0f}, 0, 0.0f, },
+    { "resources/yucca", {0.0f, 0.0f, 32.0f, 32.0f}, {0.0f, 0.0f}, 0, 0.0f, },
     { "invalid_texture", {0.0f, 0.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 0, 0.0f, },
     { "entity/player/player_animations", {0.0f, 192.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 4, 0.15f, },
     { "entity/player/player_animations", {0.0f, 256.0f, 64.0f, 64.0f}, {0.0f, 0.0f}, 8, 0.1f, },
@@ -346,6 +344,7 @@ ITEM_TYPE_flint,
 ITEM_TYPE_twig,
 ITEM_TYPE_crafting_tool,
 ITEM_TYPE_test_chestpiece,
+ITEM_TYPE_yucca_fiber,
 ITEM_TYPE_MAX,
 };
 global ItemTypeData global_item_type_data[ITEM_TYPE_MAX] = {
@@ -356,6 +355,7 @@ global ItemTypeData global_item_type_data[ITEM_TYPE_MAX] = {
     { "Twig", SPRITE_twig, SPRITE_twig, 8, 0, 0, },
     { "Crafting Tool", SPRITE_crafting_tool, SPRITE_crafting_tool, 1, 0, ITEM_FLAGS_hotbarable, },
     { "Test Chestpiece", SPRITE_test_chestpiece, SPRITE_test_chestpiece, 1, ITEM_CATEGORY_chestpiece, 0, },
+    { "Yucca Fiber", SPRITE_yucca_fiber, SPRITE_yucca_fiber, 1, 0, 0, },
 };
 
 static char *GetItemTypeName(ItemType type);
@@ -471,7 +471,7 @@ CRAFTING_RECIPE_TYPE_MAX,
 };
 global CraftingRecipeTypeData global_crafting_recipe_type_data[CRAFTING_RECIPE_TYPE_MAX] = {
     { {0}, {0}, },
-    { {ITEM_TYPE_flint_axe, 1}, {{ITEM_TYPE_flint, 1}, {ITEM_TYPE_twig, 1}}, },
+    { {ITEM_TYPE_flint_axe, 1}, {{ITEM_TYPE_flint, 1}, {ITEM_TYPE_twig, 1}, {ITEM_TYPE_yucca_fiber, 1}}, },
     { {ITEM_TYPE_flint_sword, 1}, {{ITEM_TYPE_flint, 3}, {ITEM_TYPE_twig, 2}}, },
 };
 
@@ -508,7 +508,7 @@ STRUCTURE_TYPE_MAX,
 };
 global StructureTypeData global_structure_type_data[STRUCTURE_TYPE_MAX] = {
     { "none", 0, 0, 0, {0}, 0, },
-    { "Wooden Wall", 0, SPRITE_wooden_wall, SPRITE_wooden_wall, {{ITEM_TYPE_twig, 4}}, OnWoodenWallBuild, },
+    { "Wooden Wall", 0, SPRITE_wooden_wall, SPRITE_wooden_wall, {{ITEM_TYPE_twig, 4}, {ITEM_TYPE_yucca_fiber, 2}}, OnWoodenWallBuild, },
 };
 
 static char *GetStructureTypeName(StructureType type);
@@ -724,6 +724,7 @@ ENTITY_PRESET_TYPE_far_mountains,
 ENTITY_PRESET_TYPE_text_note,
 ENTITY_PRESET_TYPE_item,
 ENTITY_PRESET_TYPE_blueprint,
+ENTITY_PRESET_TYPE_yucca,
 ENTITY_PRESET_TYPE_MAX,
 };
 global EntityPresetTypeData global_entity_preset_type_data[ENTITY_PRESET_TYPE_MAX] = {
@@ -744,6 +745,7 @@ global EntityPresetTypeData global_entity_preset_type_data[ENTITY_PRESET_TYPE_MA
     { "Text Note", TextNoteEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc, },
     { "Item", ItemEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc, },
     { "Blueprint", BlueprintEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc, },
+    { "Yucca", YuccaEntityPresetCallback, ENTITY_PRESET_CATEGORY_misc, },
 };
 
 static char *GetEntityPresetTypeName(EntityPresetType type);
