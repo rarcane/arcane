@@ -137,6 +137,16 @@ GameInit(void)
 			InitialiseSpriteData();
 			ShufflePerlinNoise();
             
+#if 1
+			{
+#include "test_model.c"
+				Ts2dSubModel sub_model = Ts2dSubModelInit(TS2D_VERTEX_POSITION | TS2D_VERTEX_UV | TS2D_VERTEX_NORMAL,
+														  ArrayCount(global_test_model_data) / 8, global_test_model_data,
+														  0, 0, 0);
+				core->model = Ts2dModelInit(1, &sub_model, 0, 0);
+			}
+#endif
+			
 			core->camera_zoom_mult = 1.0f;
 			
 			core->delta_mult = 1.0f;

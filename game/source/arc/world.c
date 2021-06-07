@@ -46,6 +46,10 @@ internal void WorldUpdate()
 	
 	UpdateBlueprints();
 	
+	m3 transform = M3Rotate(platform->current_time * 180.f, v3(0, 1, 0));
+	transform = M3MultiplyM3(M3Rotate(-45.f, v3(0, 0, 1)), transform);
+	Ts2dPushModel(&core->model, v2(300, 300), v2(512, 512), transform, 3.f);
+	
 	END_PERF_TIMER;
 }
 

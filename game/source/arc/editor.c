@@ -527,7 +527,11 @@ internal void DrawGeneralEditor()
 		
 		if (highest_visible_entity)
 		{
-			SelectNewEntity(highest_visible_entity);
+			if (EntitySelectedIndex(highest_visible_entity) == -1)
+			{
+				SelectNewEntity(highest_visible_entity);
+			}
+			
 			platform->left_mouse_pressed = 0;
 		}
 	}

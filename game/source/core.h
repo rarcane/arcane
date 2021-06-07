@@ -36,21 +36,6 @@ struct Core
 	f32 camera_zoom;
 	f32 camera_zoom_mult;
 	
-	// Temp entity stores
-	//Entity *backpack;
-	//Entity *sword;
-	
-	// Grabbed inventory item.
-	//ItemComponent *grabbed_inv_item_comp;
-	//i32 grabbed_inv_item_origin_slot;
-	//StorageComponent *grabbed_inv_item_origin_storage_comp;
-	//v2 grabbed_inventory_item_offset;
-	// Hotbar & held item.
-	//Entity *held_item;
-	//Entity *hotbar;
-	//i32 active_hotbar_slot;
-	
-	// Temp
 	b32 is_ingame;
 	
 	v2 random_field[PERLIN_NOISE_LENGTH][PERLIN_NOISE_LENGTH];
@@ -59,6 +44,8 @@ struct Core
 	RunData *run_data;
 	ClientData *client_data;
 	EditorData *editor_data;
+	
+	Ts2dModel model;
 	
 	// NOTE(rjf): Render size data.
 	union {

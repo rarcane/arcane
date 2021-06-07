@@ -355,7 +355,7 @@ global ItemTypeData global_item_type_data[ITEM_TYPE_MAX] = {
     { "Twig", SPRITE_twig, SPRITE_twig, 8, 0, 0, },
     { "Crafting Tool", SPRITE_crafting_tool, SPRITE_crafting_tool, 1, 0, ITEM_FLAGS_hotbarable, },
     { "Test Chestpiece", SPRITE_test_chestpiece, SPRITE_test_chestpiece, 1, ITEM_CATEGORY_chestpiece, 0, },
-    { "Yucca Fiber", SPRITE_yucca_fiber, SPRITE_yucca_fiber, 1, 0, 0, },
+    { "Yucca Fiber", SPRITE_yucca_fiber, SPRITE_yucca_fiber, 8, 0, 0, },
 };
 
 static char *GetItemTypeName(ItemType type);

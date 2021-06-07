@@ -371,7 +371,7 @@ ItemType :: enum
 		crafting_tool,
 	@Data("'Test Chestpiece'", SPRITE_test_chestpiece, SPRITE_test_chestpiece, 1, ITEM_CATEGORY_chestpiece, 0)
 		test_chestpiece,
-	@Data("'Yucca Fiber'", SPRITE_yucca_fiber, SPRITE_yucca_fiber, 1, 0, 0)
+	@Data("'Yucca Fiber'", SPRITE_yucca_fiber, SPRITE_yucca_fiber, 8, 0, 0)
 		yucca_fiber,
 }
 
