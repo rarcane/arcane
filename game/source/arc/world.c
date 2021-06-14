@@ -46,9 +46,25 @@ internal void WorldUpdate()
 	
 	UpdateBlueprints();
 	
-	m3 transform = M3Rotate(platform->current_time * 180.f, v3(0, 1, 0));
-	transform = M3MultiplyM3(M3Rotate(-45.f, v3(0, 0, 1)), transform);
-	Ts2dPushModel(&core->model, v2(300, 300), v2(512, 512), transform, 3.f);
+	{
+		m3 transform = M3Rotate(platform->mouse_x, v3(0, 0, 1));
+		transform = M3MultiplyM3(M3Rotate(-90.f, v3(1, 0, 0)), transform);
+		// Ts2dPushModelWithSkeleton(&core->model, &core->skeleton, v2(100, 100), v2(512, 512), transform, 1.f);
+		Ts2dPushModel(&core->model, v2(100, 100), v2(512, 512), transform, 1.f);
+	}
+	
+	/*
+		{
+			m3 transform = M3Rotate(platform->current_time * 18.f, v3(0, 0, 1));
+			transform = M3MultiplyM3(M3Rotate(-90.f, v3(1, 0, 0)), transform);
+			Ts2dPushModel(&core->model_sphere, v2(900, 100), v2(512, 512), transform, 1.f);
+		}
+		
+		{
+			m3 transform = M3Rotate(platform->current_time * 18.f, v3(0, 1, 0));
+			Ts2dPushModel(&core->model_link, v2(500, 300), v2(512, 512), transform, 1.f);
+		}
+	 */
 	
 	END_PERF_TIMER;
 }

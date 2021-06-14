@@ -57,19 +57,19 @@ Ts2dInit(MemoryArena *arena)
     // NOTE(rjf): Initialize instance type data
     {
 #define Ts2dInstanceType(name, size_per_instance, max) \
-{\
-global_ts2d->name.instance_data_max = size_per_instance * max;\
-global_ts2d->name.instance_data = MemoryArenaAllocate(arena, global_ts2d->name.instance_data_max);\
-global_ts2d->name.instance_data_stride = size_per_instance;\
-glGenVertexArrays(1, &global_ts2d->name.vao);\
-glBindVertexArray(global_ts2d->name.vao);\
-{\
-glGenBuffers(1, &global_ts2d->name.instance_buffer);\
-glBindBuffer(GL_ARRAY_BUFFER, global_ts2d->name.instance_buffer);\
-glBufferData(GL_ARRAY_BUFFER, global_ts2d->name.instance_data_max, 0, GL_DYNAMIC_DRAW);\
-}\
-glBindVertexArray(0);\
-}
+		{\
+			global_ts2d->name.instance_data_max = size_per_instance * max;\
+			global_ts2d->name.instance_data = MemoryArenaAllocate(arena, global_ts2d->name.instance_data_max);\
+			global_ts2d->name.instance_data_stride = size_per_instance;\
+			glGenVertexArrays(1, &global_ts2d->name.vao);\
+			glBindVertexArray(global_ts2d->name.vao);\
+			{\
+				glGenBuffers(1, &global_ts2d->name.instance_buffer);\
+				glBindBuffer(GL_ARRAY_BUFFER, global_ts2d->name.instance_buffer);\
+				glBufferData(GL_ARRAY_BUFFER, global_ts2d->name.instance_data_max, 0, GL_DYNAMIC_DRAW);\
+			}\
+			glBindVertexArray(0);\
+		}
 #include "ts2d_opengl_instance_type_list.inc"
     }
     
@@ -1226,7 +1226,7 @@ Ts2dEndFrame(void)
                         {
                             glEnableVertexAttribArray(1);
                             glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, bytes_per_vertex, (void *)(sizeof(float)*offset));
-                            offset += 2;
+							offset += 2;
                         }
                         
                         // NOTE(rjf): Normal

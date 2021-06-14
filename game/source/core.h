@@ -45,7 +45,12 @@ struct Core
 	ClientData *client_data;
 	EditorData *editor_data;
 	
+	TSM *tsm;
 	Ts2dModel model;
+	Ts2dSkeleton skeleton;
+	
+	Ts2dModel model_sphere;
+	Ts2dModel model_link;
 	
 	// NOTE(rjf): Render size data.
 	union {
