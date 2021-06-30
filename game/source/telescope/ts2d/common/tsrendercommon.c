@@ -340,7 +340,7 @@ TsRenderPrefix(ModelInitFromTSMData)(void *data, u32 data_size)
                 i32 parent_index = -1;
                 HardAssert(MemoryArenaRead(read, &parent_index, sizeof(parent_index)));
                 skeleton->bones[j].parent_index = parent_index;
-                HardAssert(MemoryArenaRead(read, &skeleton->bones[j].transform[0][0],
+                HardAssert(MemoryArenaRead(read, &skeleton->bones[j].transform,
                                            sizeof(skeleton->bones[j].transform)));
             }
         }

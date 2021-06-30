@@ -239,17 +239,20 @@ TsRenderPrefix(SubModelInitFromTSMData)(TSM *tsm)
         glBindBuffer(GL_ARRAY_BUFFER, sub_model.vertex_buffer);
         glBufferData(GL_ARRAY_BUFFER, sub_model.vertex_count * bytes_per_vertex, tsm->meshes[0].vertices, GL_STATIC_DRAW);
 		
+		sub_model.index_count = tsm->meshes[0].index_count;
+		glGenBuffers(1, &sub_model.index_buffer);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sub_model.index_buffer);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(tsm->meshes[0].indices), tsm->meshes[0].indices, GL_STATIC_DRAW);
+		
 		/*
-				if(index_data)
-				{
-					sub_model.index_count = index_count;
-					glGenBuffers(1, &sub_model.index_buffer);
-					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sub_model.index_buffer);
-					glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_count * sizeof(index_data[0]), index_data, GL_STATIC_DRAW);
-				}
-				
-				sub_model.material = material;
-		 */
+								if(index_data)
+								{
+									sub_model.index_count = index_count;
+									
+								}
+								
+								sub_model.material = material;
+						 */
     }
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);

@@ -162,7 +162,7 @@ typedef u32 Ts2dVertexDataFormat;
 #define TS2D_VERTEX_UV               (1<<1)
 #define TS2D_VERTEX_NORMAL           (1<<2)
 #define TS2D_VERTEX_BONES            (1<<3)
-#define TS2D_VERTEX_INTERLEAVED      (1<<16) 
+#define TS2D_VERTEX_INTERLEAVED      (1<<16)
 
 #define TS2D_VERTEX_FORMAT_POSITION                              (TS2D_VERTEX_POSITION)
 #define TS2D_VERTEX_FORMAT_POSITION_UV_NORMAL_SPLIT              (TS2D_VERTEX_POSITION | TS2D_VERTEX_UV | TS2D_VERTEX_NORMAL)
@@ -218,7 +218,8 @@ typedef struct Ts2dSkeletonBone Ts2dSkeletonBone;
 struct Ts2dSkeletonBone
 {
     int parent_index;
-    float transform[4][4];
+	m4 transform;
+    // float transform[4][4];
 };
 
 #ifndef TS2D_SKELETON_BONE_MAX
@@ -283,11 +284,11 @@ struct Ts2dSkeleton
 #define TS2D_COMMON_DATA                \
 struct                              \
 {                                   \
-Ts2dRequest active_request;     \
-Ts2dRequest *first_request;     \
-Ts2dRequest *last_request;      \
-f32         current_time;       \
-Ts2dFont    *default_font;      \
+	Ts2dRequest active_request;     \
+	Ts2dRequest *first_request;     \
+	Ts2dRequest *last_request;      \
+	f32         current_time;       \
+	Ts2dFont    *default_font;      \
 }
 
 #include "common/tsrendercommon.h"

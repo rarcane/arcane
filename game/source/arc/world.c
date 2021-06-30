@@ -12,45 +12,51 @@ internal void WorldUpdate()
     
 	START_PERF_TIMER("Update");
 	
-	{
-		ElementalSkillTreeUpdate();
+	/*
+		{
+			ElementalSkillTreeUpdate();
+			
+			PreMoveUpdatePlayer();
+			
+			UpdatePhysics();
+			
+			if (GetRunData()->is_ejected)
+			{
+				TransformEditorCamera();
+				UpdateEjectedMode();
+			}
+			else
+			{
+				TransformInGameCamera();
+			}
+			
+			PostMoveUpdatePlayer();
+		}
 		
-		PreMoveUpdatePlayer();
-        
-		UpdatePhysics();
-        
-		if (GetRunData()->is_ejected)
-		{
-			TransformEditorCamera();
-			UpdateEjectedMode();
-		}
-		else
-		{
-			TransformInGameCamera();
-		}
-        
-		PostMoveUpdatePlayer();
-	}
-	
-	GenerateTerrainSegments();
-	
-#ifdef DEVELOPER_TOOLS
-	RenderColliders();
-#endif
-	
-	DrawGameUI();
-	
-	InteractableUpdate();
-	
+		GenerateTerrainSegments();
+		
+	#ifdef DEVELOPER_TOOLS
+		RenderColliders();
+	#endif
+		
+		DrawGameUI();
+		
+		InteractableUpdate();
+		
+	 */
 	DrawWorld();
 	
 	UpdateBlueprints();
 	
 	{
-		m3 transform = M3Rotate(platform->mouse_x, v3(0, 0, 1));
-		transform = M3MultiplyM3(M3Rotate(-90.f, v3(1, 0, 0)), transform);
-		// Ts2dPushModelWithSkeleton(&core->model, &core->skeleton, v2(100, 100), v2(512, 512), transform, 1.f);
-		Ts2dPushModel(&core->model, v2(100, 100), v2(512, 512), transform, 1.f);
+		m3 transform = M3Rotate(-90.f, v3(1, 0, 0));
+		transform = M3MultiplyM3(M3Rotate(platform->mouse_x, v3(0, 1, 0)), transform);
+		
+		
+		TransformSkeleton(&core->skeleton);
+		
+		Ts2dPushModelWithSkeleton(&core->model, &core->skeleton, v2(0, 0), v2(2024, 2024), transform, 10.f);
+		//Ts2dPushModel(&core->model, v2(100, 100), v2(1024, 1024), transform, 1.f);
 	}
 	
 	/*
@@ -59,7 +65,9 @@ internal void WorldUpdate()
 			transform = M3MultiplyM3(M3Rotate(-90.f, v3(1, 0, 0)), transform);
 			Ts2dPushModel(&core->model_sphere, v2(900, 100), v2(512, 512), transform, 1.f);
 		}
-		
+	 */
+	
+	/*
 		{
 			m3 transform = M3Rotate(platform->current_time * 18.f, v3(0, 1, 0));
 			Ts2dPushModel(&core->model_link, v2(500, 300), v2(512, 512), transform, 1.f);
@@ -124,14 +132,14 @@ internal void DrawWorld()
 	}
     
 	Ts2dPushWorldBegin(&world_info);
-    
+	
 	// NOTE(randy): Sprite rendering.
 	{
 		UpdateAnimations();
 		// PostUpdateWorldAnimations();
 		//RenderForegroundSprites();
 		
-		RenderArc();
+		//RenderArc();
 	}
     
 	/*

@@ -38,6 +38,7 @@
 #include "tsarcane/assets.c"
 #include "tsarcane/arcane_tsui_callbacks.c"
 // NOTE(randy): Game Implementation Code
+#include "arc/animation.c"
 #include "arc/entity_presets.c"
 #include "arc/util.c"
 #include "tsarcane/terminalcommands.c"
@@ -139,17 +140,14 @@ GameInit(void)
 			ShufflePerlinNoise();
             
 			{
-				core->tsm = MemoryArenaAllocate(core->permanent_arena, sizeof(TSM));
+				//core->tsm = MemoryArenaAllocate(core->permanent_arena, sizeof(TSM));
 				
 				char path[256];
 				sprintf(path, "%s/models/ron.tsm", core->res_path);
-				ReadTSMFromFile(core->tsm, path);
+				ReadTSMFromFile(&core->tsm, path);
 				
-				Ts2dSubModel sub_model = Ts2dSubModelInitFromTSMData(core->tsm);
+				Ts2dSubModel sub_model = Ts2dSubModelInitFromTSMData(&core->tsm);
 				core->model = Ts2dModelInit(1, &sub_model, 0, 0);
-				
-				// TODO(randy): fill out skele
-				// core->skeleton;
 			}
 			
 			/*
@@ -160,7 +158,9 @@ GameInit(void)
 																	  0, 0, 0);
 							core->model_sphere = Ts2dModelInit(1, &sub_model, 0, 0);
 						}
-						
+			 */
+			
+			/*
 						{
 			#include "test_model.c"
 							Ts2dSubModel sub_model = Ts2dSubModelInit(TS2D_VERTEX_POSITION | TS2D_VERTEX_UV | TS2D_VERTEX_NORMAL,

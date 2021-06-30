@@ -1147,50 +1147,53 @@ Ts2dEndFrame(void)
                                        1, GL_FALSE, &view_projection.elements[0][0]);
                     
                     glUniform1i(glGetUniformLocation(shader, "transform_with_bones"),
-                                (int)transform_with_skeleton);
+                                (int)1);
                     
-                    if(transform_with_skeleton)
-                    {
-                        char bone_transform_uniform_str_1_digit_because_opengl_drivers_are_awful[32] =
-                            "bone_transform[x]";
-                        char bone_transform_uniform_str_2_digit_because_opengl_drivers_are_awful[32] =
-                            "bone_transform[xx]";
-                        
-                        // NOTE(rjf): Transform + upload bones.
-                        for(int i = 0; i < ArrayCount(skeleton->bones); ++i)
-                        {
-                            Ts2dSkeletonBone *bone = skeleton->bones + i;
-                            
-                            m4 transform;
-                            MemoryCopy(&transform.elements[0][0], &bone->transform[0][0], sizeof(transform.elements));
-                            for(Ts2dSkeletonBone *parent = bone; parent;
-                                parent->parent_index >= 0
-                                ? skeleton->bones + parent->parent_index
-                                : 0)
-                            {
-                                m4 next_transform;
-                                MemoryCopy(&next_transform.elements[0][0], &parent->transform[0][0], sizeof(next_transform.elements));
-                                transform = M4MultiplyM4(next_transform, transform);
-                            }
-                            
-                            char *bone_transform_uniform_str = i < 10 ? bone_transform_uniform_str_1_digit_because_opengl_drivers_are_awful :
-                            bone_transform_uniform_str_2_digit_because_opengl_drivers_are_awful;
-                            
-                            if(i < 10)
-                            {
-                                bone_transform_uniform_str[15] = '0' + i;
-                            }
-                            else
-                            {
-                                int ten_num = i / 10;
-                                bone_transform_uniform_str[15] = '0' + ten_num;
-                                bone_transform_uniform_str[16] = '0' + (i - ten_num * 10);
-                            }
-                            
-                            glUniformMatrix4fv(glGetUniformLocation(shader, bone_transform_uniform_str),
-                                               1, GL_FALSE, &transform.elements[0][0]);
-                        }
-                    }
+					if(transform_with_skeleton)
+					{
+						char bone_transform_uniform_str_1_digit_because_opengl_drivers_are_awful[32] =
+							"bone_transform[x]";
+						char bone_transform_uniform_str_2_digit_because_opengl_drivers_are_awful[32] =
+							"bone_transform[xx]";
+						
+						// NOTE(rjf): Transform + upload bones.
+						for(int i = 0; i < ArrayCount(skeleton->bones); ++i)
+						{
+							Ts2dSkeletonBone *bone = skeleton->bones + i;
+							
+							if (i == 1)
+							{
+								bone->transform = M4MultiplyM4(M4Rotate(platform->current_time * 45.f, v3(0, 1, 0)), bone->transform);
+							}
+							
+							m4 transform = M4InitD(1.0f);
+							if (bone->parent_index >= 0)
+							{
+								for (Ts2dSkeletonBone *parent = &skeleton->bones[bone->parent_index]; parent->parent_index >= 0; parent = &skeleton->bones[parent->parent_index])
+								{
+									m4 next_transform = parent->transform;
+									transform = M4MultiplyM4(next_transform, transform);
+								}
+							}
+							
+							char *bone_transform_uniform_str = i < 10 ? bone_transform_uniform_str_1_digit_because_opengl_drivers_are_awful :
+							bone_transform_uniform_str_2_digit_because_opengl_drivers_are_awful;
+							
+							if(i < 10)
+							{
+								bone_transform_uniform_str[15] = '0' + i;
+							}
+							else
+							{
+								int ten_num = i / 10;
+								bone_transform_uniform_str[15] = '0' + ten_num;
+								bone_transform_uniform_str[16] = '0' + (i - ten_num * 10);
+							}
+							
+							glUniformMatrix4fv(glGetUniformLocation(shader, bone_transform_uniform_str),
+											   1, GL_FALSE, &transform.elements[0][0]);
+						}
+					}
                     
                     v3 shadow_vector =
                     {
