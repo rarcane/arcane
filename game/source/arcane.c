@@ -143,7 +143,7 @@ GameInit(void)
 				//core->tsm = MemoryArenaAllocate(core->permanent_arena, sizeof(TSM));
 				
 				char path[256];
-				sprintf(path, "%s/models/ron.tsm", core->res_path);
+				sprintf(path, "%s/models/big_ron.tsm", core->res_path);
 				ReadTSMFromFile(&core->tsm, path);
 				
 				Ts2dSubModel sub_model = Ts2dSubModelInitFromTSMData(&core->tsm);

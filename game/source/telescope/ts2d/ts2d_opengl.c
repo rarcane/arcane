@@ -1161,20 +1161,26 @@ Ts2dEndFrame(void)
 						{
 							Ts2dSkeletonBone *bone = skeleton->bones + i;
 							
-							if (i == 1)
-							{
-								bone->transform = M4MultiplyM4(M4Rotate(platform->current_time * 45.f, v3(0, 1, 0)), bone->transform);
-							}
+							/*
+														 if (i == 1)
+														{
+															bone->transform = M4MultiplyM4(M4Rotate(platform->current_time * 45.f, v3(0, 1, 0)), bone->transform);
+														}
+							 */
 							
-							m4 transform = M4InitD(1.0f);
-							if (bone->parent_index >= 0)
-							{
-								for (Ts2dSkeletonBone *parent = &skeleton->bones[bone->parent_index]; parent->parent_index >= 0; parent = &skeleton->bones[parent->parent_index])
-								{
-									m4 next_transform = parent->transform;
-									transform = M4MultiplyM4(next_transform, transform);
-								}
-							}
+							m4 transform = bone->transform;
+							
+							/*
+														m4 transform = M4InitD(1.0f);
+														if (bone->parent_index >= 0)
+														{
+															for (Ts2dSkeletonBone *parent = &skeleton->bones[bone->parent_index]; parent->parent_index >= 0; parent = &skeleton->bones[parent->parent_index])
+															{
+																m4 next_transform = parent->transform;
+																transform = M4MultiplyM4(next_transform, transform);
+															}
+														}
+							 */
 							
 							char *bone_transform_uniform_str = i < 10 ? bone_transform_uniform_str_1_digit_because_opengl_drivers_are_awful :
 							bone_transform_uniform_str_2_digit_because_opengl_drivers_are_awful;

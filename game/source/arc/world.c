@@ -49,13 +49,13 @@ internal void WorldUpdate()
 	UpdateBlueprints();
 	
 	{
-		m3 transform = M3Rotate(-90.f, v3(1, 0, 0));
+		m3 transform = M3InitD(1.0f);//M3Rotate(-90.f, v3(1, 0, 0));
 		transform = M3MultiplyM3(M3Rotate(platform->mouse_x, v3(0, 1, 0)), transform);
-		
+		transform = M3MultiplyM3(transform, M3InitD(0.02f));
 		
 		TransformSkeleton(&core->skeleton);
 		
-		Ts2dPushModelWithSkeleton(&core->model, &core->skeleton, v2(0, 0), v2(2024, 2024), transform, 10.f);
+		Ts2dPushModelWithSkeleton(&core->model, &core->skeleton, v2(0.0f, 0.0f), v2(1024, 1024), transform, 1.0f);
 		//Ts2dPushModel(&core->model, v2(100, 100), v2(1024, 1024), transform, 1.f);
 	}
 	
@@ -124,7 +124,7 @@ internal void DrawWorld()
 		if (core->client_data->bloom)
 			world_info.flags |= TS2D_BLOOM;
 		// world_info.shadow_opacity = 1.0f;
-		world_info.shadow_vector = v2(32.0f, 64.0f);
+		world_info.shadow_vector = v2(10.0f, -32.0f);
 		world_info.camera_pos = core->camera_position;
 		world_info.camera_zoom = core->camera_zoom;
 		world_info.brightness = 1.0f;

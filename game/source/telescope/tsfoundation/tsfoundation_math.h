@@ -223,9 +223,9 @@ RandomI32(i32 low   TS_DOC_PARAM("The inclusive lower-bound of the random number
 #define ClampFunc(name, type)                  \
 type Clamp##name(type a, type low, type high)  \
 {                                              \
-if(a < low)  a = low;                      \
-if(a > high) a = high;                     \
-return a;                                  \
+	if(a < low)  a = low;                      \
+	if(a > high) a = high;                     \
+	return a;                                  \
 }
 ClampFunc(F32, f32)
 ClampFunc(I32, i32)
@@ -300,15 +300,15 @@ V4InitUniform(f32 x)
 #define IV2IV2OpFunc(name, op)                        \
 internal IV2 IV2##name##IV2(IV2 a, IV2 b)             \
 {                                                     \
-IV2 result = {a.x op b.x, a.y op b.y};            \
-return result;                                    \
+	IV2 result = {a.x op b.x, a.y op b.y};            \
+	return result;                                    \
 }
 
 #define IV2I32OpFunc(name, op)                        \
 internal IV2 IV2##name##I32(IV2 a, i32 v)             \
 {                                                     \
-IV2 result = {a.x op v, a.y op v};                \
-return result;                                    \
+	IV2 result = {a.x op v, a.y op v};                \
+	return result;                                    \
 }
 
 IV2IV2OpFunc(Add, +)
@@ -326,15 +326,15 @@ IV2I32OpFunc(Divide, /)
 #define V2V2OpFunc(name, op)                         \
 internal V2 V2##name##V2(V2 a, V2 b)                 \
 {                                                    \
-V2 result = {a.x op b.x, a.y op b.y};        \
-return result;                               \
+	V2 result = {a.x op b.x, a.y op b.y};        \
+	return result;                               \
 }
 
 #define V2F32OpFunc(name, op)                        \
 internal V2 V2##name##F32(V2 a, f32 v)               \
 {                                                    \
-V2 result = {a.x op v, a.y op v};            \
-return result;                               \
+	V2 result = {a.x op v, a.y op v};            \
+	return result;                               \
 }
 
 V2V2OpFunc (Add, +)
@@ -352,14 +352,14 @@ V2F32OpFunc(Divide, /)
 #define V3V3OpFunc(name, op)                                 \
 internal V3 V3##name##V3(V3 a, V3 b)                         \
 {                                                            \
-V3 result = {a.x op b.x, a.y op b.y, a.z op b.z};    \
-return result;                                       \
+	V3 result = {a.x op b.x, a.y op b.y, a.z op b.z};    \
+	return result;                                       \
 }
 #define V3F32OpFunc(name, op)                                \
 internal V3 V3##name##F32(V3 a, f32 v)                       \
 {                                                            \
-V3 result = {a.x op v, a.y op v, a.z op v};          \
-return result;                                       \
+	V3 result = {a.x op v, a.y op v, a.z op v};          \
+	return result;                                       \
 }
 
 V3V3OpFunc (Add, +)
@@ -377,14 +377,14 @@ V3F32OpFunc(Divide, /)
 #define V4V4OpFunc(name, op)                                            \
 internal V4 V4##name##V4(V4 a, V4 b)                                    \
 {                                                                       \
-V4 result = {a.x op b.x, a.y op b.y, a.z op b.z, a.w op b.w};   \
-return result;                                                  \
+	V4 result = {a.x op b.x, a.y op b.y, a.z op b.z, a.w op b.w};   \
+	return result;                                                  \
 }
 #define V4F32OpFunc(name, op)                                           \
 internal V4 V4##name##F32(V4 a, f32 v)                                  \
 {                                                                       \
-V4 result = {a.x op v, a.y op v, a.z op v, a.w op v};           \
-return result;                                                  \
+	V4 result = {a.x op v, a.y op v, a.z op v, a.w op v};           \
+	return result;                                                  \
 }
 
 V4V4OpFunc (Add, +)
@@ -589,7 +589,7 @@ M3MultiplyM3(m3 a, m3 b)
 
 internal m3
 M3Rotate(f32 angle, v3 axis)
-{   
+{
     m3 result = M3InitD(1.f);
     
     f32 axis_length = V3Length(axis);
@@ -783,7 +783,7 @@ M4RemoveRotation(m4 mat)
 
 internal m4
 M4Rotate(f32 angle, v3 axis)
-{   
+{
     m4 result = M4InitD(1.f);
     
     f32 axis_length = V3Length(axis);
@@ -988,3 +988,5 @@ BoundingBoxesIntersect(f32 x1, f32 y1, f32 w1, f32 h1,
     return (x1 + w1 >= x2 && x1 <= x2 + w2 &&
             y1 + h1 >= y2 && y2 <= y2 + h2);
 }
+
+#include "../../arc/arc_math.h"

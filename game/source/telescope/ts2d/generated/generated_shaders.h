@@ -363,7 +363,8 @@ _ts_render_global_opengl_shaders[] = {
 "    vec4 clip_space_position = view_projection * world_space_position;\n"
 "    gl_Position = clip_space_position;\n"
 "    frag_position = vertex_position;\n"
-"    frag_normal = model_transform * vert_normal;\n"
+"    \n"
+"	frag_normal = normalize(model_transform * vert_normal);\n"
 "}\n"
 "",
 "#version 330 core\n"
