@@ -139,16 +139,18 @@ GameInit(void)
 			InitialiseSpriteData();
 			ShufflePerlinNoise();
             
-			{
-				//core->tsm = MemoryArenaAllocate(core->permanent_arena, sizeof(TSM));
-				
-				char path[256];
-				sprintf(path, "%s/models/big_ron.tsm", core->res_path);
-				ReadTSMFromFile(&core->tsm, path);
-				
-				Ts2dSubModel sub_model = Ts2dSubModelInitFromTSMData(&core->tsm);
-				core->model = Ts2dModelInit(1, &sub_model, 0, 0);
-			}
+			/*
+						{
+							//core->tsm = MemoryArenaAllocate(core->permanent_arena, sizeof(TSM));
+							
+							char path[256];
+							sprintf(path, "%s/models/big_ron.tsm", core->res_path);
+							ReadTSMFromFile(&core->tsm, path);
+							
+							Ts2dSubModel sub_model = Ts2dSubModelInitFromTSMData(&core->tsm);
+							core->model = Ts2dModelInit(1, &sub_model, 0, 0);
+						}
+			 */
 			
 			/*
 						{
@@ -160,15 +162,13 @@ GameInit(void)
 						}
 			 */
 			
-			/*
-						{
-			#include "test_model.c"
-							Ts2dSubModel sub_model = Ts2dSubModelInit(TS2D_VERTEX_POSITION | TS2D_VERTEX_UV | TS2D_VERTEX_NORMAL,
-																	  ArrayCount(global_test_model_data) / 8, global_test_model_data,
-																	  0, 0, 0);
-							core->model_link = Ts2dModelInit(1, &sub_model, 0, 0);
-						}
-			 */
+			{
+#include "big_ron.tsm"
+				Ts2dSubModel sub_model = Ts2dSubModelInit(TS2D_VERTEX_POSITION | TS2D_VERTEX_NORMAL,
+														  ArrayCount(global_test_model_data) / 6, global_test_model_data,
+														  0, 0, 0);
+				core->model = Ts2dModelInit(1, &sub_model, 0, 0);
+			}
 			
 			core->camera_zoom_mult = 1.0f;
 			

@@ -1147,7 +1147,7 @@ Ts2dEndFrame(void)
                                        1, GL_FALSE, &view_projection.elements[0][0]);
                     
                     glUniform1i(glGetUniformLocation(shader, "transform_with_bones"),
-                                (int)1);
+                                (int)0);
                     
 					if(transform_with_skeleton)
 					{
