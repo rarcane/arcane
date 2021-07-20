@@ -1146,6 +1146,7 @@ Ts2dEndFrame(void)
                     glUniformMatrix4fv(glGetUniformLocation(shader, "view_projection"),
                                        1, GL_FALSE, &view_projection.elements[0][0]);
                     
+					// TODO(randy): This is being hard coded
                     glUniform1i(glGetUniformLocation(shader, "transform_with_bones"),
                                 (int)0);
                     

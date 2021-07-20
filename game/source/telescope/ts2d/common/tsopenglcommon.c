@@ -225,24 +225,26 @@ TsRenderPrefix(SubModelInit)(TsRenderPrefix(VertexDataFormat) format, int vertex
 }
 
 TsRenderPrefix(SubModel)
-TsRenderPrefix(SubModelInitFromTSMData)(TSM *tsm)
+TsRenderPrefix(SubModelInitFromTSMFile)(TSM *tsm)
 {
-    TsRenderPrefix(SubModel) sub_model = {0};
-    sub_model.vertex_format = TS2D_VERTEX_POSITION | TS2D_VERTEX_UV | TS2D_VERTEX_NORMAL | TS2D_VERTEX_BONES;
+	TsRenderPrefix(SubModel) sub_model = {0};
+    sub_model.vertex_format = TS2D_VERTEX_POSITION | TS2D_VERTEX_UV | TS2D_VERTEX_NORMAL;// | TS2D_VERTEX_BONES;
     glGenVertexArrays(1, &sub_model.vao);
     glBindVertexArray(sub_model.vao);
     {
         int bytes_per_vertex = TsRenderPrefix(GetBytesPerVertexWithFormat)(sub_model.vertex_format);
 		
-        sub_model.vertex_count = tsm->meshes[0].vertex_count;
-        glGenBuffers(1, &sub_model.vertex_buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, sub_model.vertex_buffer);
-        glBufferData(GL_ARRAY_BUFFER, sub_model.vertex_count * bytes_per_vertex, tsm->meshes[0].vertices, GL_STATIC_DRAW);
+		sub_model.vertex_count = tsm->vert_count;
+		glGenBuffers(1, &sub_model.vertex_buffer);
+		glBindBuffer(GL_ARRAY_BUFFER, sub_model.vertex_buffer);
+		glBufferData(GL_ARRAY_BUFFER, sub_model.vertex_count * bytes_per_vertex, tsm->vertices, GL_STATIC_DRAW);
 		
-		sub_model.index_count = tsm->meshes[0].index_count;
-		glGenBuffers(1, &sub_model.index_buffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sub_model.index_buffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(tsm->meshes[0].indices), tsm->meshes[0].indices, GL_STATIC_DRAW);
+		sub_model.index_count = 0;
+		/*
+				glGenBuffers(1, &sub_model.index_buffer);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sub_model.index_buffer);
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(tsm->meshes[0].indices), tsm->meshes[0].indices, GL_STATIC_DRAW);
+		 */
 		
 		/*
 								if(index_data)
@@ -259,45 +261,47 @@ TsRenderPrefix(SubModelInitFromTSMData)(TSM *tsm)
     
     // NOTE(rjf): Calculate bounding box of this sub-model.
     // TODO(rjf): Is this a problem?
-    if(sub_model.vertex_format & TsRenderPrefixUpper(VERTEX_POSITION))
-    {
-        int floats_per_vertex = TsRenderPrefix(GetFloatsPerVertexWithFormat)(sub_model.vertex_format);
-        for(int i = 0; i < tsm->meshes[0].vertex_count; ++i)
-        {
-            v3 vertex = tsm->meshes[0].vertices[i].position;
-            
-            if(i == 0 || vertex.x < sub_model.model_space_bounding_box.min.x)
-            {
-                sub_model.model_space_bounding_box.min.x = vertex.x;
-            }
-            
-            if(i == 0 || vertex.y < sub_model.model_space_bounding_box.min.y)
-            {
-                sub_model.model_space_bounding_box.min.y = vertex.y;
-            }
-            
-            if(i == 0 || vertex.z < sub_model.model_space_bounding_box.min.z)
-            {
-                sub_model.model_space_bounding_box.min.z = vertex.z;
-            }
-            
-            if(i == 0 || vertex.x > sub_model.model_space_bounding_box.max.x)
-            {
-                sub_model.model_space_bounding_box.max.x = vertex.x;
-            }
-            
-            if(i == 0 || vertex.y > sub_model.model_space_bounding_box.max.y)
-            {
-                sub_model.model_space_bounding_box.max.y = vertex.y;
-            }
-            
-            if(i == 0 || vertex.z > sub_model.model_space_bounding_box.max.z)
-            {
-                sub_model.model_space_bounding_box.max.z = vertex.z;
-            }
-            
-        }
-    }
+	/*
+		if(sub_model.vertex_format & TsRenderPrefixUpper(VERTEX_POSITION))
+		{
+			int floats_per_vertex = TsRenderPrefix(GetFloatsPerVertexWithFormat)(sub_model.vertex_format);
+			for(int i = 0; i < tsm->meshes[0].vertex_count; ++i)
+			{
+				v3 vertex = tsm->meshes[0].vertices[i].position;
+				
+				if(i == 0 || vertex.x < sub_model.model_space_bounding_box.min.x)
+				{
+					sub_model.model_space_bounding_box.min.x = vertex.x;
+				}
+				
+				if(i == 0 || vertex.y < sub_model.model_space_bounding_box.min.y)
+				{
+					sub_model.model_space_bounding_box.min.y = vertex.y;
+				}
+				
+				if(i == 0 || vertex.z < sub_model.model_space_bounding_box.min.z)
+				{
+					sub_model.model_space_bounding_box.min.z = vertex.z;
+				}
+				
+				if(i == 0 || vertex.x > sub_model.model_space_bounding_box.max.x)
+				{
+					sub_model.model_space_bounding_box.max.x = vertex.x;
+				}
+				
+				if(i == 0 || vertex.y > sub_model.model_space_bounding_box.max.y)
+				{
+					sub_model.model_space_bounding_box.max.y = vertex.y;
+				}
+				
+				if(i == 0 || vertex.z > sub_model.model_space_bounding_box.max.z)
+				{
+					sub_model.model_space_bounding_box.max.z = vertex.z;
+				}
+				
+			}
+		}
+	 */
     
     return sub_model;
 }
