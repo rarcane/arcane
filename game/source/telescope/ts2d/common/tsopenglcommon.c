@@ -225,10 +225,10 @@ TsRenderPrefix(SubModelInit)(TsRenderPrefix(VertexDataFormat) format, int vertex
 }
 
 TsRenderPrefix(SubModel)
-TsRenderPrefix(SubModelInitFromTSMFile)(TSM *tsm)
+TsRenderPrefix(SubModelInitFromTSM)(TSM *tsm)
 {
 	TsRenderPrefix(SubModel) sub_model = {0};
-    sub_model.vertex_format = TS2D_VERTEX_POSITION | TS2D_VERTEX_UV | TS2D_VERTEX_NORMAL;// | TS2D_VERTEX_BONES;
+    sub_model.vertex_format = TS2D_VERTEX_POSITION | TS2D_VERTEX_NORMAL;// | TS2D_VERTEX_BONES;
     glGenVertexArrays(1, &sub_model.vao);
     glBindVertexArray(sub_model.vao);
     {
@@ -239,22 +239,12 @@ TsRenderPrefix(SubModelInitFromTSMFile)(TSM *tsm)
 		glBindBuffer(GL_ARRAY_BUFFER, sub_model.vertex_buffer);
 		glBufferData(GL_ARRAY_BUFFER, sub_model.vertex_count * bytes_per_vertex, tsm->vertices, GL_STATIC_DRAW);
 		
-		sub_model.index_count = 0;
-		/*
-				glGenBuffers(1, &sub_model.index_buffer);
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sub_model.index_buffer);
-				glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(tsm->meshes[0].indices), tsm->meshes[0].indices, GL_STATIC_DRAW);
-		 */
+		sub_model.index_count = tsm->index_count;
+		glGenBuffers(1, &sub_model.index_buffer);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sub_model.index_buffer);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(tsm->indices), tsm->indices, GL_STATIC_DRAW);
 		
-		/*
-								if(index_data)
-								{
-									sub_model.index_count = index_count;
-									
-								}
-								
-								sub_model.material = material;
-						 */
+		//sub_model.material = material;
     }
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);

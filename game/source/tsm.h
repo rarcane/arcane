@@ -55,13 +55,13 @@ typedef struct Animation
 typedef struct BoneInfo BoneInfo;
 struct BoneInfo
 {
-	i32 id; // ID can be implicit in the array it's sorted in?
+	i32 id;
 	char name[64];
-	m4 offset;
-	m4 transform;
+	m4 offset; // offset relative to origin
+	m4 transform; // transform relative to parent
 	i32 parent_index;
 	
-	BoneKeyFrames key_frames[MAX_ANIMATION_COUNT];
+	// BoneKeyFrames key_frames[MAX_ANIMATION_COUNT];
 };
 
 #define MAX_VERT_COUNT 16384
@@ -74,24 +74,29 @@ typedef struct Mesh
 	u32 indices[MAX_INDEX_COUNT];
 	i32 index_count;
 	
-	/*
-		BoneInfo bone_infos[MAX_BONE_COUNT];
-		i32 bone_count;
-		
-		Animation animations[MAX_ANIMATION_COUNT];
-		i32 animation_count;
-		
-		i32 root_bone_index;
-		m4 inverse_root_matrix;
-	 */
+	BoneInfo bone_infos[MAX_BONE_COUNT];
+	i32 bone_count;
+	
+	Animation animations[MAX_ANIMATION_COUNT];
+	i32 animation_count;
+	
+	i32 root_bone_index;
+	m4 inverse_root_matrix;
 } Mesh;
 
 #define MAX_MESH_COUNT 4
 typedef struct TSM
 {
 	i32 version;
+	
 	i32 vert_count;
 	Vertex vertices[MAX_VERT_COUNT];
+	
+	i32 index_count;
+	i32 indices[MAX_INDEX_COUNT];
+	
+	BoneInfo bone_infos[MAX_BONE_COUNT];
+	i32 bone_count;
 	
 	/*
 		Mesh meshes[MAX_MESH_COUNT];

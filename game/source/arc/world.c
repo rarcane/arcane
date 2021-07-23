@@ -54,9 +54,10 @@ internal void WorldUpdate()
 		transform = M3MultiplyM3(transform, M3InitD(1.5f));
 		
 		/*
-						TransformSkeleton(&core->skeleton);
-						
-						Ts2dPushModelWithSkeleton(&core->model, &core->skeleton, v2(0.0f, 0.0f), v2(1024, 1024), transform, 1.0f);
+				Ts2dSkeleton skele = {0};;
+				TransformSkeletonFromTSM(&skele, &core->little_ron);
+				
+				Ts2dPushModelWithSkeleton(&core->model, &skele, v2(100.0f, 100.0f), v2(1024, 1024), transform, 1.0f);
 		 */
 		Ts2dPushModel(&core->model, v2(100, 100), v2(1024, 1024), transform, 1.f);
 	}

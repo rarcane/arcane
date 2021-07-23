@@ -45,9 +45,8 @@ struct Core
 	ClientData *client_data;
 	EditorData *editor_data;
 	
-	TSM big_ron;
+	TSM little_ron;
 	Ts2dModel model;
-	Ts2dSkeleton skeleton;
 	
 	Ts2dModel model_sphere;
 	Ts2dModel model_link;

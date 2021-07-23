@@ -1,6 +1,7 @@
 // NOTE(rjf): Third-Party Code
 #define CUTE_C2_IMPLEMENTATION
 #include "ext/cute_c2.h"
+#include "ext/json.h"
 
 #define ARCANE_UI_STYLE_MENU (1 << 0)
 #define ARCANE_UI_STYLE_GAME (1 << 1)
@@ -41,6 +42,7 @@
 #include "arc/animation.c"
 #include "arc/entity_presets.c"
 #include "arc/util.c"
+#include "tsm.c"
 #include "tsarcane/terminalcommands.c"
 #include "arc/interaction.c"
 #include "arc/render.c"
@@ -143,10 +145,11 @@ GameInit(void)
 				//core->tsm = MemoryArenaAllocate(core->permanent_arena, sizeof(TSM));
 				
 				char path[256];
-				sprintf(path, "%s/models/big_ron.tsm", core->res_path);
-				ReadTSMFromFile(&core->big_ron, path);
+				sprintf(path, "%s/models/little_ron.gltf", core->res_path);
 				
-				Ts2dSubModel sub_model = Ts2dSubModelInitFromTSMFile(&core->big_ron);
+				InitTSMFromGLTFFile(&core->little_ron, path);
+				
+				Ts2dSubModel sub_model = Ts2dSubModelInitFromTSM(&core->little_ron);
 				core->model = Ts2dModelInit(1, &sub_model, 0, 0);
 			}
 			
