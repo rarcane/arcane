@@ -145,7 +145,7 @@ GameInit(void)
 				//core->tsm = MemoryArenaAllocate(core->permanent_arena, sizeof(TSM));
 				
 				char path[256];
-				sprintf(path, "%s/models/little_ron.gltf", core->res_path);
+				sprintf(path, "%smodels\\little_ron.gltf", core->res_path);
 				
 				InitTSMFromGLTFFile(&core->little_ron, path);
 				

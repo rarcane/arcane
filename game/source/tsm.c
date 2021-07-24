@@ -47,16 +47,22 @@ InitTSMFromGLTFFile(TSM *tsm, char *path)
 	fseek(f, 0, SEEK_END);
 	i32 size = ftell(f);
 	fseek(f, 0, SEEK_SET);
+	i32 cur = ftell(f);
 	
 	void *data = MemoryArenaAllocateAndZero(core->frame_arena, size);
 	ReadFromFile(f, data, size);
+	
+	/*
+		i32 yeet;
+		ReadFromFile(f, &yeet, sizeof(i32));
+		
+		void *data = 0;
+	 */
 	
 	JValue* root = json_parse(data, size);
 	Assert(root->type == json_type_object);
 	
 	JObject* object = (struct json_object_s*)root->payload;
-	
-	
 	
 	// NOTE(randy): Mesh stuff
 	JArray *mesh_array = FindElementInJObject(object, "meshes")->value->payload;
