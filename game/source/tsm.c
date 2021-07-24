@@ -52,17 +52,13 @@ InitTSMFromGLTFFile(TSM *tsm, char *path)
 	void *data = MemoryArenaAllocateAndZero(core->frame_arena, size);
 	ReadFromFile(f, data, size);
 	
-	/*
-		i32 yeet;
-		ReadFromFile(f, &yeet, sizeof(i32));
-		
-		void *data = 0;
-	 */
-	
 	JValue* root = json_parse(data, size);
 	Assert(root->type == json_type_object);
 	
 	JObject* object = (struct json_object_s*)root->payload;
+	
+	// NOTE(randy): Skeleton
+	// TODO(randy): Parse in bones and create a hierachy
 	
 	// NOTE(randy): Mesh stuff
 	JArray *mesh_array = FindElementInJObject(object, "meshes")->value->payload;
@@ -141,11 +137,11 @@ InitTSMFromGLTFFile(TSM *tsm, char *path)
 	
 	// NOTE(randy): Yoink index data
 	fseek(f, index_byte_offset, SEEK_SET);
-	for (i32 i = 0; i < tsm->index_count; i++)
+	for (u32 i = 0; i < tsm->index_count; i++)
 	{
-		i16 index;
-		ReadFromFile(f, &index, sizeof(i16));
-		tsm->indices[i] = (i32)index;
+		u16 index;
+		ReadFromFile(f, &index, sizeof(u16));
+		tsm->indices[i] = (u32)index;
 	}
 	
 	fclose(f);

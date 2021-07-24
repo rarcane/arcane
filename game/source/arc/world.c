@@ -59,7 +59,7 @@ internal void WorldUpdate()
 				
 				Ts2dPushModelWithSkeleton(&core->model, &skele, v2(100.0f, 100.0f), v2(1024, 1024), transform, 1.0f);
 		 */
-		Ts2dPushModel(&core->model, v2(100, 100), v2(1024, 1024), transform, 1.f);
+		Ts2dPushModel(&core->model, v2(0, 0), v2(1024, 1024), transform, 1.f);
 	}
 	
 	/*

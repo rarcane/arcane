@@ -92,8 +92,8 @@ typedef struct TSM
 	i32 vert_count;
 	Vertex vertices[MAX_VERT_COUNT];
 	
-	i32 index_count;
-	i32 indices[MAX_INDEX_COUNT];
+	u32 index_count;
+	u32 indices[MAX_INDEX_COUNT];
 	
 	BoneInfo bone_infos[MAX_BONE_COUNT];
 	i32 bone_count;
