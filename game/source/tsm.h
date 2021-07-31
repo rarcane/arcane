@@ -6,13 +6,11 @@ typedef struct Vertex
 	v3 position;
 	v2 UVs;
     v3 normal;
-	/*
-		short bone_index_1;
-		short bone_index_2;
-		short bone_index_3;
-		short bone_index_4;
-		v4 bone_weights;
-	 */
+	u8 bone_index_1;
+	u8 bone_index_2;
+	u8 bone_index_3;
+	u8 bone_index_4;
+	v4 bone_weights;
 } Vertex;
 
 typedef struct KeyPosition
@@ -52,8 +50,7 @@ typedef struct Animation
 	i32 ticks_per_second;
 } Animation;
 
-typedef struct BoneInfo BoneInfo;
-struct BoneInfo
+typedef struct Bone
 {
 	i32 id;
 	char name[64];
@@ -62,11 +59,12 @@ struct BoneInfo
 	i32 parent_index;
 	
 	// BoneKeyFrames key_frames[MAX_ANIMATION_COUNT];
-};
+} Bone;
 
 #define MAX_VERT_COUNT 16384
 #define MAX_INDEX_COUNT 16384
 #define MAX_BONE_COUNT 32
+/*
 typedef struct Mesh
 {
     Vertex vertices[MAX_VERT_COUNT];
@@ -83,6 +81,7 @@ typedef struct Mesh
 	i32 root_bone_index;
 	m4 inverse_root_matrix;
 } Mesh;
+ */
 
 #define MAX_MESH_COUNT 4
 typedef struct TSM
@@ -95,8 +94,10 @@ typedef struct TSM
 	u32 index_count;
 	u32 indices[MAX_INDEX_COUNT];
 	
-	BoneInfo bone_infos[MAX_BONE_COUNT];
-	i32 bone_count;
+	Bone bones[MAX_BONE_COUNT];
+	u8 bone_count;
+	
+	m4 global_transform;
 	
 	/*
 		Mesh meshes[MAX_MESH_COUNT];

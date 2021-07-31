@@ -191,7 +191,7 @@ Ts2dGetFloatsPerVertexWithFormat(Ts2dVertexDataFormat format)
     
     if(format & TS2D_VERTEX_BONES)
     {
-        result += 6;
+        result += 5;
     }
     
     return result;

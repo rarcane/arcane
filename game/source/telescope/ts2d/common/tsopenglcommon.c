@@ -228,7 +228,7 @@ TsRenderPrefix(SubModel)
 TsRenderPrefix(SubModelInitFromTSM)(TSM *tsm)
 {
 	TsRenderPrefix(SubModel) sub_model = {0};
-    sub_model.vertex_format = TS2D_VERTEX_POSITION | TS2D_VERTEX_UV | TS2D_VERTEX_NORMAL;// | TS2D_VERTEX_BONES;
+    sub_model.vertex_format = TS2D_VERTEX_POSITION | TS2D_VERTEX_UV | TS2D_VERTEX_NORMAL | TS2D_VERTEX_BONES;
     glGenVertexArrays(1, &sub_model.vao);
     glBindVertexArray(sub_model.vao);
     {

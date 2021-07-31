@@ -1146,9 +1146,8 @@ Ts2dEndFrame(void)
                     glUniformMatrix4fv(glGetUniformLocation(shader, "view_projection"),
                                        1, GL_FALSE, &view_projection.elements[0][0]);
                     
-					// TODO(randy): This is being hard coded
                     glUniform1i(glGetUniformLocation(shader, "transform_with_bones"),
-                                (int)0);
+                                (int)transform_with_skeleton);
                     
 					if(transform_with_skeleton)
 					{
@@ -1231,8 +1230,8 @@ Ts2dEndFrame(void)
                         if(sub_model->vertex_format & TS2D_VERTEX_BONES)
                         {
                             glEnableVertexAttribArray(3);
-                            glVertexAttribIPointer(3, 4, GL_SHORT, bytes_per_vertex, (void *)(sizeof(float)*offset));
-                            offset += 2;
+                            glVertexAttribIPointer(3, 4, GL_BYTE, bytes_per_vertex, (void *)(sizeof(float)*offset));
+                            offset += 1;
                             
                             glEnableVertexAttribArray(4);
                             glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, bytes_per_vertex, (void *)(sizeof(float)*offset));

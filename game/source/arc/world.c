@@ -50,16 +50,18 @@ internal void WorldUpdate()
 	
 	{
 		m3 transform = M3InitD(1.0f);//M3Rotate(-90.f, v3(1, 0, 0));
-		transform = M3MultiplyM3(M3Rotate(platform->mouse_x, v3(0, 1, 0)), transform);
+		//transform = M3MultiplyM3(M3Rotate(platform->mouse_x, v3(0, 1, 0)), transform);
 		transform = M3MultiplyM3(transform, M3InitD(1.5f));
 		
-		/*
-				Ts2dSkeleton skele = {0};;
-				TransformSkeletonFromTSM(&skele, &core->little_ron);
-				
-				Ts2dPushModelWithSkeleton(&core->model, &skele, v2(100.0f, 100.0f), v2(1024, 1024), transform, 1.0f);
-		 */
-		Ts2dPushModel(&core->model, v2(0, 0), v2(1024, 1024), transform, 1.f);
+		//transform = M3MultiplyM3(transform, M3RotateQuat(v4(0.77f, 0.0f, 0.77f, 0.0f)));
+		
+		Ts2dSkeleton skele = {0};
+		TransformSkeletonFromTSM(&skele, &core->little_ron);
+		
+		if (platform->key_down[KEY_r])
+			Ts2dPushModelWithSkeleton(&core->model, &skele, v2(0.0f, 0.0f), v2(1024, 1024), transform, 1.0f);
+		else
+			Ts2dPushModel(&core->model, v2(0, 0), v2(1024, 1024), transform, 1.f);
 	}
 	
 	/*

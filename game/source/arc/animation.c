@@ -10,32 +10,49 @@ internal void TransformSkeletonFromTSM(Ts2dSkeleton *skeleton, TSM *model)
 	// NOTE(randy): Take bone data from the model and put it into a neat lil Ts2dSkeleton
 	for (i32 i = 0; i < model->bone_count; i++)
 	{
-		BoneInfo *bone_info = &model->bone_infos[i];
-		skeleton->bones[i].parent_index = bone_info->parent_index;
+		Bone *bone = &model->bones[i];
+		skeleton->bones[i].parent_index = bone->parent_index;
 		
-		m4 transform = M4InitD(1.0f);
+		// TODO(randy): i hav no fucking clue what is happening.
 		
-		skeleton->bones[i].transform = transform;
-		
-		/*
-				m4 parent_transform = M4InitD(1.0f);
-				if (bone_info->parent_index >= 0)
+		m4 global_joint_trans;
+		if (platform->key_down[KEY_u])
+			global_joint_trans = M4MultiplyM4(bone->transform, model->global_transform);
+		else
+			global_joint_trans = model->global_transform;
+		if (bone->parent_index >= 0)
+		{
+			// NOTE(randy): Loop through parents, applying their transforms
+			for (Bone *parent = &model->bones[bone->parent_index]; 1; parent = &model->bones[parent->parent_index])
+			{
+				if (platform->key_down[KEY_y])
+					global_joint_trans = M4MultiplyM4(global_joint_trans, parent->transform);
+				else
+					global_joint_trans = M4MultiplyM4(parent->transform, global_joint_trans);
+				
+				if (parent->parent_index == -1)
 				{
-					// NOTE(randy): Loop through parents, applying their transforms
-					for (BoneInfo *parent = &mesh->bone_infos[bone_info->parent_index]; 1; parent = &mesh->bone_infos[parent->parent_index])
-					{
-						parent_transform = M4MultiplyM4(parent->transform, parent_transform);
-						
-						if (parent->parent_index == -1)
-						{
-							break;
-						}
-					}
+					break;
 				}
-		 */
+			}
+		}
 		
-		// TODO(randy): Rotations are being applied bc I have no clue how to not apply them yay
-		// This shouldn't matter though, they're local rotations, once we slap on the inverse to get it back to the world origin, it rly shouldn't make a diff?
+		m4 inv_global = M4Inverse(model->global_transform);
+		m4 offset = bone->offset;
+		
+		if (platform->key_down[KEY_t])
+		{
+			m4 transform = M4MultiplyM4(global_joint_trans, offset);
+			transform = M4MultiplyM4(transform, inv_global);
+			skeleton->bones[i].transform = transform;
+		}
+		else
+		{
+			m4 transform = M4MultiplyM4(global_joint_trans, offset);
+			skeleton->bones[i].transform = transform;
+		}
+		
+		
 		
 		/*
 				BoneKeyFrames *key_frames = &bone_info->key_frames[animation_index];
