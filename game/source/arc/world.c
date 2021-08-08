@@ -53,7 +53,8 @@ internal void WorldUpdate()
 		//transform = M3MultiplyM3(M3Rotate(platform->mouse_x, v3(0, 1, 0)), transform);
 		transform = M3MultiplyM3(transform, M3InitD(1.5f));
 		
-		//transform = M3MultiplyM3(transform, M3RotateQuat(v4(0.77f, 0.0f, 0.77f, 0.0f)));
+		// TODO(randy): This is just a final transform axis angle, don't worry about it homie
+		transform = M3MultiplyM3(transform, M3Rotate(90.f, v3(0.f, 1.f, 0.f)));
 		
 		Ts2dSkeleton skele = {0};
 		TransformSkeletonFromTSM(&skele, &core->little_ron);
