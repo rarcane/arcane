@@ -39,7 +39,7 @@ internal JArrayE *FindArrayElementAtIndex(JArray *array, i32 index)
 
 internal v4 GetRotationFromObject(JObject *object)
 {
-	v4 rot = v4(1.0f, 0.0f, 0.0f, 0.0f);
+	v4 rot = v4(0.0f, 0.0f, 0.0f, 1.0f);
 	
 	JObjectE *rot_e = FindElementInJObject(object, "rotation");
 	if (rot_e)
@@ -78,8 +78,11 @@ internal void RecursivelyStoreBoneNodesInTSM(JArray *node_array, JObject *root, 
 	strcpy(bone->name, json_value_as_string(FindElementInJObject(root, "name")->value)->string);
 	tsm->bone_count++;
 	
-	bone->transform = M4TranslateV3(GetTranslationFromObject(root));
+	// TODO(randy): Wrong order?
+	// NOTE(randy): Pretty sure* this is the right order.
+	bone->transform = M4InitD(1.0f);
 	bone->transform = M4MultiplyM4(bone->transform, M4RotateQuat(GetRotationFromObject(root)));
+	bone->transform = M4MultiplyM4(bone->transform, M4TranslateV3(GetTranslationFromObject(root)));
 	
 	JObjectE *children_e = FindElementInJObject(root, "children");
 	if (children_e)
@@ -331,7 +334,7 @@ internal InitTSMFromGLTFFile(TSM *tsm, char *path)
 		ReadFromFile(f, &mat, sizeof(m4));
 		
 		u8 bone_id = joint_map_of_bone_ids[joint_index];
-		tsm->bones[bone_id].offset = mat;
+		tsm->bones[bone_id].inverse_bind_matrix = mat;
 	}
 	
 	fclose(f);

@@ -54,7 +54,7 @@ typedef struct Bone
 {
 	i32 id;
 	char name[64];
-	m4 offset; // offset relative to origin
+	m4 inverse_bind_matrix;
 	m4 transform; // transform relative to parent
 	i32 parent_index;
 	
