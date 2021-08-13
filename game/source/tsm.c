@@ -72,17 +72,16 @@ internal v3 GetTranslationFromObject(JObject *object)
 
 internal void RecursivelyStoreBoneNodesInTSM(JArray *node_array, JObject *root, TSM *tsm, i32 parent_index)
 {
+	Assert(tsm->bone_count + 1 < MAX_BONE_COUNT);
 	Bone *bone = &tsm->bones[tsm->bone_count];
 	bone->id = tsm->bone_count;
 	bone->parent_index = parent_index;
 	strcpy(bone->name, json_value_as_string(FindElementInJObject(root, "name")->value)->string);
 	tsm->bone_count++;
 	
-	// TODO(randy): Wrong order?
-	// NOTE(randy): Pretty sure* this is the right order.
-	bone->transform = M4InitD(1.0f);
-	bone->transform = M4MultiplyM4(bone->transform, M4RotateQuat(GetRotationFromObject(root)));
-	bone->transform = M4MultiplyM4(bone->transform, M4TranslateV3(GetTranslationFromObject(root)));
+	bone->local_transform = M4InitD(1.0f);
+	bone->local_transform = M4MultiplyM4(bone->local_transform, M4TranslateV3(GetTranslationFromObject(root)));
+	bone->local_transform = M4MultiplyM4(bone->local_transform, M4RotateQuat(GetRotationFromObject(root)));
 	
 	JObjectE *children_e = FindElementInJObject(root, "children");
 	if (children_e)
@@ -163,11 +162,11 @@ internal InitTSMFromGLTFFile(TSM *tsm, char *path)
 	Assert(skin_0);
 	
 	// NOTE(randy): Find root bone and store him
-	JObject *root_bone_node = FindArrayElementAtIndex(nodes, atoi(json_value_as_number(FindArrayElementAtIndex(armature_children, 1)->value)->number))->value->payload;
+	i32 root_bone_index = atoi(json_value_as_number(FindArrayElementAtIndex(armature_children, 1)->value)->number);
+	JObject *root_bone_node = FindArrayElementAtIndex(nodes, root_bone_index)->value->payload;
 	RecursivelyStoreBoneNodesInTSM(nodes, root_bone_node, tsm, -1);
 	
-	
-	tsm->global_transform = M4TranslateV3(GetTranslationFromObject(armature));
+	tsm->root_transform = M4TranslateV3(GetTranslationFromObject(armature));
 	
 	/*
 	i32 mesh_index = atoi(json_value_as_number(FindElementInJObject(next->value->payload, "mesh")->value)->number);
@@ -231,21 +230,9 @@ internal InitTSMFromGLTFFile(TSM *tsm, char *path)
 	i32 inverse_bind_byte_offset = atoi(json_value_as_number(FindElementInJObject(inverse_bind_buffer_view, "byteOffset")->value)->number);
 	Assert(inverse_bind_byte_length == sizeof(m4) * inverse_bind_count);
 	
+	// NOTE(randy): Paranoia
 	JArray *joints = FindElementInJObject(skin_0, "joints")->value->payload;
-	u8 joint_map_of_bone_ids[MAX_BONE_COUNT] = {0};
-	u8 joint_count = (u8)joints->length;
-	for (JArrayE *next = joints->start; next; next = next->next)
-	{
-		i32 joint_index = atoi(json_value_as_number(next->value)->number);
-		JObject *joint_obj = FindArrayElementAtIndex(nodes, joint_index)->value->payload;
-		
-		const char* joint_name = json_value_as_string(FindElementInJObject(joint_obj, "name")->value)->string;
-		
-		u8 id = GetBoneIDFromName(joint_name, tsm);
-		Assert(id != -1 && joint_index >= 0);
-		joint_map_of_bone_ids[joint_index] = id;
-	}
-	Assert(joint_count == tsm->bone_count && inverse_bind_count == joint_count);
+	//Assert(joint_index == tsm->bone_count);
 	
 	// NOTE(randy): Vertex weights
 	i32 weights_accessor_index = atoi(json_value_as_number(FindElementInJObject(attributes, "WEIGHTS_0")->value)->number);
@@ -291,20 +278,16 @@ internal InitTSMFromGLTFFile(TSM *tsm, char *path)
 		
 		u8 joint_index;
 		ReadFromFile(f, &joint_index, sizeof(u8));
-		u8 bone_id = joint_map_of_bone_ids[joint_index];
-		vert->bone_index_1 = bone_id;
+		vert->bone_index_1 = joint_index;//joint_map_of_bone_ids[joint_index];
 		
 		ReadFromFile(f, &joint_index, sizeof(u8));
-		bone_id = joint_map_of_bone_ids[joint_index];
-		vert->bone_index_2 = bone_id;
+		vert->bone_index_2 = joint_index;//joint_map_of_bone_ids[joint_index];
 		
 		ReadFromFile(f, &joint_index, sizeof(u8));
-		bone_id = joint_map_of_bone_ids[joint_index];
-		vert->bone_index_3 = bone_id;
+		vert->bone_index_3 = joint_index;//joint_map_of_bone_ids[joint_index];
 		
 		ReadFromFile(f, &joint_index, sizeof(u8));
-		bone_id = joint_map_of_bone_ids[joint_index];
-		vert->bone_index_4 = bone_id;
+		vert->bone_index_4 = joint_index;//joint_map_of_bone_ids[joint_index];
 	}
 	
 	// NOTE(randy): weight data
@@ -325,16 +308,23 @@ internal InitTSMFromGLTFFile(TSM *tsm, char *path)
 	
 	// NOTE(randy): Get the inverse bind matricies
 	fseek(f, inverse_bind_byte_offset, SEEK_SET);
+	i32 joint_index = 0;
 	for (JArrayE *next = joints->start; next; next = next->next)
 	{
-		i32 joint_index = atoi(json_value_as_number(next->value)->number);
-		JObject *joint_obj = FindArrayElementAtIndex(nodes, joint_index)->value->payload;
+		i32 joint_node_index = atoi(json_value_as_number(next->value)->number);
+		JObject *joint_obj = FindArrayElementAtIndex(nodes, joint_node_index)->value->payload;
+		
+		const char* joint_name = json_value_as_string(FindElementInJObject(joint_obj, "name")->value)->string;
+		u8 id = GetBoneIDFromName(joint_name, tsm);
+		// NOTE(randy): assume there will be no mismatch between our janky reconstruction and the skins->joints gltf array
+		Assert(id == joint_index);
 		
 		m4 mat;
 		ReadFromFile(f, &mat, sizeof(m4));
 		
-		u8 bone_id = joint_map_of_bone_ids[joint_index];
-		tsm->bones[bone_id].inverse_bind_matrix = mat;
+		tsm->bones[joint_index].inverse_bind_matrix = mat;
+		
+		joint_index++;
 	}
 	
 	fclose(f);

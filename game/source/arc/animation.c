@@ -23,10 +23,8 @@ internal void TransformSkeletonFromTSM(Ts2dSkeleton *skeleton, TSM *model)
 			m4 bone_transform = bone->transform;
 			
 			m4 transform = M4MultiplyM4(bone_transform, M4Inverse(global_transform));
-			// TODO(randy): This transform should match the inverse bind matrix in order for it to cancel out.
 			
-			
-			skeleton->bones[0].transform = transform;
+skeleton->bones[0].transform = transform;
 		}
 	 */
 	
@@ -38,19 +36,28 @@ internal void TransformSkeletonFromTSM(Ts2dSkeleton *skeleton, TSM *model)
 	
 	
 	
-	// TODO(randy): figure out how to do this for the entire hierarchy
-	for (i32 i = 0; i < 1; i++)
+	for (i32 i = 0; i < model->bone_count; i++)
 	{
 		Bone *bone = &model->bones[i];
 		
-		m4 inverse_bind_matrix = bone->inverse_bind_matrix;
+		m4 current_global_transform = M4MultiplyM4(model->root_transform, bone->local_transform);
 		
-		m4 current_global_transform = model->global_transform;
+		Bone *next_bone = bone;
+		while (next_bone->parent_index != -1)
+		{
+			Bone *parent_bone = &model->bones[next_bone->parent_index];
+			
+			current_global_transform = M4MultiplyM4(parent_bone->local_transform, current_global_transform);
+			
+			next_bone = parent_bone;
+		}
 		
-		//skeleton->bones[i].transform = M4MultiplyM4(M4MultiplyM4(bone->transform, inverse_bind_matrix), current_global_transform);
+		// NOTE(randy): Pretty sure the inverse bind matrix from gltf is the same as this, chief.
+		m4 inverse_bind_matrix = bone->inverse_bind_matrix;//M4Inverse(current_global_transform);
 		
-		// TODO(randy): use the right bones in this transform thingo
-		skeleton->bones[i].transform = bone->transform;
+		m4 transform = M4MultiplyM4(current_global_transform, inverse_bind_matrix);
+		
+		skeleton->bones[i].transform = transform;
 	}
 }
 

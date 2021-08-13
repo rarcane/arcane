@@ -54,9 +54,10 @@ typedef struct Bone
 {
 	i32 id;
 	char name[64];
-	m4 inverse_bind_matrix;
-	m4 transform; // transform relative to parent
+	m4 local_transform;
 	i32 parent_index;
+	
+	m4 inverse_bind_matrix;
 	
 	// BoneKeyFrames key_frames[MAX_ANIMATION_COUNT];
 } Bone;
@@ -97,7 +98,7 @@ typedef struct TSM
 	Bone bones[MAX_BONE_COUNT];
 	u8 bone_count;
 	
-	m4 global_transform;
+	m4 root_transform;
 	
 	/*
 		Mesh meshes[MAX_MESH_COUNT];
