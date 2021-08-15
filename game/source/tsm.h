@@ -13,76 +13,65 @@ typedef struct Vertex
 	v4 bone_weights;
 } Vertex;
 
-typedef struct KeyPosition
+typedef struct Transform
 {
-	f64 time_stamp;
-	v3 position;
-} KeyPosition;
+	v4 rotation;
+	v3 translation;
+	f32 scale;
+} Transform;
+
+internal m4 GetM4FromTransform(Transform t)
+{
+	return M4MultiplyM4(M4MultiplyM4(M4TranslateV3(t.translation), M4RotateQuat(t.rotation)), M4ScaleV3(v3(t.scale, t.scale, t.scale)));
+}
 
 typedef struct KeyRotation
 {
-	f64 time_stamp;
 	v4 rotation;
+	f32 time_stamp;
 } KeyRotation;
+
+typedef struct KeyTranslation
+{
+	v3 translation;
+	f32 time_stamp;
+} KeyTranslation;
 
 typedef struct KeyScale
 {
-	f64 time_stamp;
-	v3 scale;
+	f32 scale;
+	f32 time_stamp;
 } KeyScale;
 
-#define MAX_KEY_FRAMES 256
-typedef struct BoneKeyFrames
-{
-	KeyPosition key_positions[MAX_KEY_FRAMES];
-	i32 key_position_count;
-	KeyRotation key_rotations[MAX_KEY_FRAMES];
-	i32 key_rotation_count;
-	KeyScale key_scales[MAX_KEY_FRAMES];
-	i32 key_scale_count;
-} BoneKeyFrames;
-
 #define MAX_ANIMATION_COUNT 32
+#define MAX_KEY_FRAME_COUNT 16
+#define MAX_VERT_COUNT 16384
+#define MAX_INDEX_COUNT 16384
+#define MAX_BONE_COUNT 32
 typedef struct Animation
 {
 	char name[64];
 	f32 duration;
-	i32 ticks_per_second;
+	
+	KeyRotation rotations[MAX_BONE_COUNT][MAX_KEY_FRAME_COUNT];
+	i32 rotation_count;
+	KeyTranslation translations[MAX_BONE_COUNT][MAX_KEY_FRAME_COUNT];
+	i32 translation_count;
+	KeyScale scales[MAX_BONE_COUNT][MAX_KEY_FRAME_COUNT];
+	i32 scale_count;
 } Animation;
 
 typedef struct Bone
 {
 	i32 id;
 	char name[64];
-	m4 local_transform;
+	Transform local_transform;
 	i32 parent_index;
 	
 	m4 inverse_bind_matrix;
 	
-	// BoneKeyFrames key_frames[MAX_ANIMATION_COUNT];
+	//BoneKeyFrames key_frames[MAX_ANIMATION_COUNT];
 } Bone;
-
-#define MAX_VERT_COUNT 16384
-#define MAX_INDEX_COUNT 16384
-#define MAX_BONE_COUNT 32
-/*
-typedef struct Mesh
-{
-    Vertex vertices[MAX_VERT_COUNT];
-	i32 vertex_count;
-	u32 indices[MAX_INDEX_COUNT];
-	i32 index_count;
-	
-	BoneInfo bone_infos[MAX_BONE_COUNT];
-	i32 bone_count;
-	
-	Animation animations[MAX_ANIMATION_COUNT];
-	i32 animation_count;
-	
-	i32 root_bone_index;
-	m4 inverse_root_matrix;
-} Mesh;
- */
 
 #define MAX_MESH_COUNT 4
 typedef struct TSM
@@ -99,6 +88,9 @@ typedef struct TSM
 	u8 bone_count;
 	
 	m4 root_transform;
+	
+	Animation animations[MAX_ANIMATION_COUNT];
+	i32 animation_count;
 	
 	/*
 		Mesh meshes[MAX_MESH_COUNT];

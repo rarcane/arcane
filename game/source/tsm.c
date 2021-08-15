@@ -37,6 +37,11 @@ internal JArrayE *FindArrayElementAtIndex(JArray *array, i32 index)
 	return 0;
 }
 
+internal i32 GetIntFromJObjectE(JObjectE *object)
+{
+	return atoi(json_value_as_number(object->value)->number);
+}
+
 internal v4 GetRotationFromObject(JObject *object)
 {
 	v4 rot = v4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -79,9 +84,9 @@ internal void RecursivelyStoreBoneNodesInTSM(JArray *node_array, JObject *root, 
 	strcpy(bone->name, json_value_as_string(FindElementInJObject(root, "name")->value)->string);
 	tsm->bone_count++;
 	
-	bone->local_transform = M4InitD(1.0f);
-	bone->local_transform = M4MultiplyM4(bone->local_transform, M4TranslateV3(GetTranslationFromObject(root)));
-	bone->local_transform = M4MultiplyM4(bone->local_transform, M4RotateQuat(GetRotationFromObject(root)));
+	bone->local_transform.translation = GetTranslationFromObject(root);
+	bone->local_transform.rotation = GetRotationFromObject(root);
+	bone->local_transform.scale = 1.0f;
 	
 	JObjectE *children_e = FindElementInJObject(root, "children");
 	if (children_e)
@@ -125,6 +130,7 @@ internal InitTSMFromGLTFFile(TSM *tsm, char *path)
 	
 	void *data = MemoryArenaAllocateAndZero(core->frame_arena, size);
 	ReadFromFile(f, data, size);
+	fclose(f);
 	
 	JValue* root = json_parse(data, size);
 	Assert(root->type == json_type_object);
@@ -144,6 +150,7 @@ internal InitTSMFromGLTFFile(TSM *tsm, char *path)
 		}
 	}
 	Assert(armature);
+	tsm->root_transform = M4TranslateV3(GetTranslationFromObject(armature));
 	
 	JArray *armature_children = FindElementInJObject(armature, "children")->value->payload;
 	
@@ -161,22 +168,13 @@ internal InitTSMFromGLTFFile(TSM *tsm, char *path)
 	JObject *skin_0 = FindArrayElementAtIndex(skin_array, skin_0_index)->value->payload;
 	Assert(skin_0);
 	
-	// NOTE(randy): Find root bone and store him
+	// NOTE(randy): Find root bone, then recursively store all bone nodes
 	i32 root_bone_index = atoi(json_value_as_number(FindArrayElementAtIndex(armature_children, 1)->value)->number);
 	JObject *root_bone_node = FindArrayElementAtIndex(nodes, root_bone_index)->value->payload;
 	RecursivelyStoreBoneNodesInTSM(nodes, root_bone_node, tsm, -1);
 	
-	tsm->root_transform = M4TranslateV3(GetTranslationFromObject(armature));
 	
-	/*
-	i32 mesh_index = atoi(json_value_as_number(FindElementInJObject(next->value->payload, "mesh")->value)->number);
-	mesh_0 = FindArrayElementAtIndex(mesh_array, mesh_index)->value->payload;
-	
-	i32 skin_index = atoi(json_value_as_number(FindElementInJObject(next->value->payload, "skin")->value)->number);
-	skin_0 = FindArrayElementAtIndex(skin_array, skin_index)->value->payload;
-*/
-	
-	JArray *accessor_array = FindElementInJObject(object, "accessors")->value->payload;
+	JArray *accessors = FindElementInJObject(object, "accessors")->value->payload;
 	JArray *buffer_views_array = FindElementInJObject(object, "bufferViews")->value->payload;
 	
 	// NOTE(randy): Mesh stuff
@@ -184,7 +182,7 @@ internal InitTSMFromGLTFFile(TSM *tsm, char *path)
 	JObject *mesh_0_prims = json_value_as_array(FindElementInJObject(mesh_0, "primitives")->value)->start->value->payload;
 	JObject *attributes = FindElementInJObject(mesh_0_prims, "attributes")->value->payload;
 	i32 index_accessor_index = atoi(json_value_as_number(FindElementInJObject(mesh_0_prims, "indices")->value)->number);
-	JObject *index_accessor = FindArrayElementAtIndex(accessor_array, index_accessor_index)->value->payload;
+	JObject *index_accessor = FindArrayElementAtIndex(accessors, index_accessor_index)->value->payload;
 	i32 index_buffer_view_index = atoi(json_value_as_number(FindElementInJObject(index_accessor, "bufferView")->value)->number);
 	tsm->index_count = atoi(json_value_as_number(FindElementInJObject(index_accessor, "count")->value)->number);
 	JObject *index_buffer_view = FindArrayElementAtIndex(buffer_views_array, index_buffer_view_index)->value->payload;
@@ -194,7 +192,7 @@ internal InitTSMFromGLTFFile(TSM *tsm, char *path)
 	
 	// NOTE(randy): Vertex positions
 	i32 pos_accessor_index = atoi(json_value_as_number(FindElementInJObject(attributes, "POSITION")->value)->number);
-	JObject *pos_accessor = FindArrayElementAtIndex(accessor_array, pos_accessor_index)->value->payload;
+	JObject *pos_accessor = FindArrayElementAtIndex(accessors, pos_accessor_index)->value->payload;
 	i32 pos_buffer_view_index = atoi(json_value_as_number(FindElementInJObject(pos_accessor, "bufferView")->value)->number);
 	JObject *pos_buffer_view = FindArrayElementAtIndex(buffer_views_array, pos_buffer_view_index)->value->payload;
 	i32 buffer_index = atoi(json_value_as_number(FindElementInJObject(pos_buffer_view, "buffer")->value)->number);
@@ -205,7 +203,7 @@ internal InitTSMFromGLTFFile(TSM *tsm, char *path)
 	
 	// NOTE(randy): Vertex normals
 	i32 normal_accessor_index = atoi(json_value_as_number(FindElementInJObject(attributes, "NORMAL")->value)->number);
-	JObject *normal_accessor = FindArrayElementAtIndex(accessor_array, normal_accessor_index)->value->payload;
+	JObject *normal_accessor = FindArrayElementAtIndex(accessors, normal_accessor_index)->value->payload;
 	i32 normal_buffer_view_index = atoi(json_value_as_number(FindElementInJObject(normal_accessor, "bufferView")->value)->number);
 	JObject *normal_buffer_view = FindArrayElementAtIndex(buffer_views_array, normal_buffer_view_index)->value->payload;
 	i32 normal_byte_length = atoi(json_value_as_number(FindElementInJObject(normal_buffer_view, "byteLength")->value)->number);
@@ -214,7 +212,7 @@ internal InitTSMFromGLTFFile(TSM *tsm, char *path)
 	
 	// NOTE(randy): Vertex joints
 	i32 joints_accessor_index = atoi(json_value_as_number(FindElementInJObject(attributes, "JOINTS_0")->value)->number);
-	JObject *joints_accessor = FindArrayElementAtIndex(accessor_array, joints_accessor_index)->value->payload;
+	JObject *joints_accessor = FindArrayElementAtIndex(accessors, joints_accessor_index)->value->payload;
 	i32 joints_buffer_view_index = atoi(json_value_as_number(FindElementInJObject(joints_accessor, "bufferView")->value)->number);
 	JObject *joints_buffer_view = FindArrayElementAtIndex(buffer_views_array, joints_buffer_view_index)->value->payload;
 	i32 joints_byte_length = atoi(json_value_as_number(FindElementInJObject(joints_buffer_view, "byteLength")->value)->number);
@@ -222,7 +220,7 @@ internal InitTSMFromGLTFFile(TSM *tsm, char *path)
 	Assert(joints_byte_length == sizeof(u8) * 4 * tsm->vert_count);
 	
 	i32 inverse_bind_accessor_index = atoi(json_value_as_number(FindElementInJObject(skin_0, "inverseBindMatrices")->value)->number);
-	JObject *inverse_bind_accessor = FindArrayElementAtIndex(accessor_array, inverse_bind_accessor_index)->value->payload;
+	JObject *inverse_bind_accessor = FindArrayElementAtIndex(accessors, inverse_bind_accessor_index)->value->payload;
 	i32 inverse_bind_count = atoi(json_value_as_number(FindElementInJObject(inverse_bind_accessor, "count")->value)->number);
 	i32 inverse_bind_buffer_view_index = atoi(json_value_as_number(FindElementInJObject(inverse_bind_accessor, "bufferView")->value)->number);
 	JObject *inverse_bind_buffer_view = FindArrayElementAtIndex(buffer_views_array, inverse_bind_buffer_view_index)->value->payload;
@@ -236,7 +234,7 @@ internal InitTSMFromGLTFFile(TSM *tsm, char *path)
 	
 	// NOTE(randy): Vertex weights
 	i32 weights_accessor_index = atoi(json_value_as_number(FindElementInJObject(attributes, "WEIGHTS_0")->value)->number);
-	JObject *weights_accessor = FindArrayElementAtIndex(accessor_array, weights_accessor_index)->value->payload;
+	JObject *weights_accessor = FindArrayElementAtIndex(accessors, weights_accessor_index)->value->payload;
 	i32 weights_buffer_view_index = atoi(json_value_as_number(FindElementInJObject(weights_accessor, "bufferView")->value)->number);
 	JObject *weights_buffer_view = FindArrayElementAtIndex(buffer_views_array, weights_buffer_view_index)->value->payload;
 	i32 weights_byte_length = atoi(json_value_as_number(FindElementInJObject(weights_buffer_view, "byteLength")->value)->number);
@@ -252,8 +250,7 @@ internal InitTSMFromGLTFFile(TSM *tsm, char *path)
 	char buffer_path[256] = "";
 	strcat(strncpy(buffer_path, path, strlen(path) - 5), ".bin");
 	
-	// NOTE(randy): Close old .gltf file and read in binary buffer
-	fclose(f);
+	// NOTE(randy): Read in binary buffer
 	f = fopen(buffer_path, "rb");
 	
 	// NOTE(randy): Read in position data
@@ -325,6 +322,122 @@ internal InitTSMFromGLTFFile(TSM *tsm, char *path)
 		tsm->bones[joint_index].inverse_bind_matrix = mat;
 		
 		joint_index++;
+	}
+	
+	// NOTE(randy): Animation stuff
+	JArray *animation_array = FindElementInJObject(object, "animations")->value->payload;
+	for (JArrayE *next = animation_array->start; next; next = next->next)
+	{
+		JObject *animation_obj = next->value->payload;
+		
+		Animation *animation = &tsm->animations[tsm->animation_count++];
+		strcpy(animation->name, json_value_as_string(FindElementInJObject(animation_obj, "name")->value)->string);
+		
+		JArray *channels = FindElementInJObject(animation_obj, "channels")->value->payload;
+		JArray *samplers = FindElementInJObject(animation_obj, "samplers")->value->payload;
+		for (JArrayE *next_channel = channels->start; next_channel; next_channel = next_channel->next)
+		{
+			JObject *channel = next_channel->value->payload;
+			
+			JObject *target = FindElementInJObject(channel, "target")->value->payload;
+			i32 target_node_index = GetIntFromJObjectE(FindElementInJObject(target, "node"));
+			char path[64] = "";
+			strcpy(path, json_value_as_string(FindElementInJObject(target, "path")->value)->string);
+			
+			JObject *channel_node = FindArrayElementAtIndex(nodes, target_node_index)->value->payload;
+			char node_name[64] = "";
+			strcpy(node_name, json_value_as_string(FindElementInJObject(channel_node, "name")->value)->string);
+			i32 bone_id = GetBoneIDFromName(node_name, tsm);
+			
+			i32 sampler_index = GetIntFromJObjectE(FindElementInJObject(channel, "sampler"));
+			JObject *sampler = FindArrayElementAtIndex(samplers, sampler_index)->value->payload;
+			
+			// NOTE(randy): Grab all the keyframe timings
+			i32 input_accessor_index = GetIntFromJObjectE(FindElementInJObject(sampler, "input"));
+			JObject *input_accessor = FindArrayElementAtIndex(accessors, input_accessor_index)->value->payload;
+			
+			i32 key_frame_count = GetIntFromJObjectE(FindElementInJObject(input_accessor, "count"));
+			
+			i32 input_buffer_view_index = GetIntFromJObjectE(FindElementInJObject(input_accessor, "bufferView"));
+			JObject *input_buffer_view = FindArrayElementAtIndex(buffer_views_array, input_buffer_view_index)->value->payload;
+			i32 input_byte_length = GetIntFromJObjectE(FindElementInJObject(input_buffer_view, "byteLength"));
+			i32 input_byte_offset = GetIntFromJObjectE(FindElementInJObject(input_buffer_view, "byteOffset"));
+			Assert(input_byte_length == sizeof(f32) * key_frame_count);
+			
+			fseek(f, input_byte_offset, SEEK_SET);
+			f32 key_frame_timings[MAX_KEY_FRAME_COUNT] = {0};
+			for (i32 i = 0; i < key_frame_count; i++)
+			{
+				ReadFromFile(f, &key_frame_timings[i], sizeof(f32));
+			}
+			
+			// NOTE(randy): Grab all the transform data from the keyframes
+			i32 output_accessor_index = GetIntFromJObjectE(FindElementInJObject(sampler, "output"));
+			JObject *output_accessor = FindArrayElementAtIndex(accessors, output_accessor_index)->value->payload;
+			
+			i32 key_frame_transform_count = GetIntFromJObjectE(FindElementInJObject(output_accessor, "count"));
+			
+			i32 output_buffer_view_index = GetIntFromJObjectE(FindElementInJObject(output_accessor, "bufferView"));
+			JObject *output_buffer_view = FindArrayElementAtIndex(buffer_views_array, output_buffer_view_index)->value->payload;
+			i32 output_byte_length = GetIntFromJObjectE(FindElementInJObject(output_buffer_view, "byteLength"));
+			i32 output_byte_offset = GetIntFromJObjectE(FindElementInJObject(output_buffer_view, "byteOffset"));
+			if (strcmp(path, "rotation") == 0)
+			{
+				Assert(output_byte_length == sizeof(v4) * key_frame_transform_count);
+				Assert(key_frame_transform_count / 3 == key_frame_count); // NOTE(randy): Weird buffer padding in gltf
+				
+				fseek(f, output_byte_offset, SEEK_SET);
+				v4 rotation_buffer[MAX_KEY_FRAME_COUNT * MAX_BONE_COUNT * 3] = {0};
+				ReadFromFile(f, rotation_buffer, sizeof(v4) * key_frame_transform_count);
+				
+				// NOTE(randy): The above buffer is wierdly padded for some reason.
+				v4 key_frame_rotations[MAX_KEY_FRAME_COUNT * MAX_BONE_COUNT] = {0};
+				for (i32 i = 0; i < key_frame_count; i++)
+				{
+					key_frame_rotations[i] = rotation_buffer[i * 3 + 1];
+				}
+				
+				// NOTE(randy): Populate key frames
+				for (i32 i = 0; i < key_frame_count; i++)
+				{
+					KeyRotation *key_rot = &animation->rotations[bone_id][i];
+					key_rot->rotation = key_frame_rotations[i];
+					key_rot->time_stamp = key_frame_timings[i];
+					animation->rotation_count++;
+				}
+			}
+			else if (strcmp(path, "translation") == 0)
+			{
+				Assert(output_byte_length == sizeof(v3) * key_frame_transform_count);
+				Assert(key_frame_transform_count / 3 == key_frame_count); // NOTE(randy): Weird buffer padding in gltf
+				
+				fseek(f, output_byte_offset, SEEK_SET);
+				v3 translation_buffer[MAX_KEY_FRAME_COUNT * MAX_BONE_COUNT * 3] = {0};
+				ReadFromFile(f, translation_buffer, sizeof(v3) * key_frame_transform_count);
+				
+				// NOTE(randy): The above buffer is wierdly padded for some reason.
+				v3 key_frame_translations[MAX_KEY_FRAME_COUNT * MAX_BONE_COUNT] = {0};
+				for (i32 i = 0; i < key_frame_count; i++)
+				{
+					key_frame_translations[i] = translation_buffer[i * 3 + 1];
+				}
+				
+				// NOTE(randy): Populate key frames
+				for (i32 i = 0; i < key_frame_count; i++)
+				{
+					KeyTranslation *key_rot = &animation->translations[bone_id][i];
+					key_rot->translation = key_frame_translations[i];
+					key_rot->time_stamp = key_frame_timings[i];
+					animation->translation_count++;
+				}
+			}
+			else if (strcmp(path, "scale") == 0)
+			{
+				
+			}
+			else
+				Assert(0);
+		}
 	}
 	
 	fclose(f);

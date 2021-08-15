@@ -15,45 +15,43 @@ internal void TransformSkeletonFromTSM(Ts2dSkeleton *skeleton, TSM *model)
 		skeleton->bones[i].parent_index = bone->parent_index;
 	}
 	
-	/*
-		{
-			Bone *bone = &model->bones[0];
-			
-			m4 inverse_bind_matrix = bone->inverse_bind_matrix;
-			m4 bone_transform = bone->transform;
-			
-			m4 transform = M4MultiplyM4(bone_transform, M4Inverse(global_transform));
-			
-skeleton->bones[0].transform = transform;
-		}
-	 */
-	
-	/*
-		v2 initial_pos = v2(200.f, 400.f);
-		
-		Ts2dPushLine(v4u(1.0f), , v2(100.f, 100.f));
-	 */
-	
-	
+	i32 key_frame = 0;
 	
 	for (i32 i = 0; i < model->bone_count; i++)
 	{
 		Bone *bone = &model->bones[i];
 		
-		m4 current_global_transform = M4MultiplyM4(model->root_transform, bone->local_transform);
+		Transform anim_local = {
+			model->animations[0].rotations[i][key_frame].rotation,
+			model->animations[0].translations[i][key_frame].translation,
+			1.0f
+		};
+		m4 anim_local_mat = GetM4FromTransform(anim_local);
+		
+		//m4 current_global_transform = M4MultiplyM4(model->root_transform, GetM4FromTransform(bone->local_transform));
+		m4 current_global_transform = M4MultiplyM4(model->root_transform, anim_local_mat);
 		
 		Bone *next_bone = bone;
 		while (next_bone->parent_index != -1)
 		{
 			Bone *parent_bone = &model->bones[next_bone->parent_index];
 			
-			current_global_transform = M4MultiplyM4(parent_bone->local_transform, current_global_transform);
+			Transform parent_anim_local = {
+				model->animations[0].rotations[parent_bone->id][key_frame].rotation,
+				model->animations[0].translations[parent_bone->id][key_frame].translation,
+				1.0f
+			};
+			m4 parent_anim_local_mat = GetM4FromTransform(parent_anim_local);
+			
+			// TODO(randy): Figure out what the translation data looks like
+			
+			//current_global_transform = M4MultiplyM4(GetM4FromTransform(parent_bone->local_transform), current_global_transform);
+			current_global_transform = M4MultiplyM4(parent_anim_local_mat, current_global_transform);
 			
 			next_bone = parent_bone;
 		}
 		
-		// NOTE(randy): Pretty sure the inverse bind matrix from gltf is the same as this, chief.
-		m4 inverse_bind_matrix = bone->inverse_bind_matrix;//M4Inverse(current_global_transform);
+		m4 inverse_bind_matrix = bone->inverse_bind_matrix;
 		
 		m4 transform = M4MultiplyM4(current_global_transform, inverse_bind_matrix);
 		
